@@ -46,3 +46,8 @@ Schedule::call(function () {
 Schedule::command('seo:indexnow --new')
     ->dailyAt('02:45')
     ->appendOutputTo(storage_path('logs/indexnow.log'));
+
+// Notification Queue Processor — every 5 minutes
+Schedule::command('notifications:process --limit=100')
+    ->everyFiveMinutes()
+    ->withoutOverlapping();

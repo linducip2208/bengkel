@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Branch;
 use App\Models\RepairCategory;
+use App\Models\Service;
 use Illuminate\Http\Request;
 
 class BookingController extends Controller
@@ -68,5 +69,22 @@ class BookingController extends Controller
     {
         $booking->delete();
         return back()->with('success', 'Booking dihapus.');
+    }
+
+    public function calendar() { return view('bookings.calendar'); }
+
+    public function calendarEvents()
+    {
+        $start = request('start', now()->startOfMonth()->toDateString());
+        $end = request('end', now()->endOfMonth()->toDateString());
+        $bookings = Booking::whereBetween('booking_date', [$start, $end])->get()->map(fn($b) => [
+            'id' => $b->id, 'title' => ($b->customer_name ?? 'Booking') . ' - ' . ($b->vehicle_plate ?? ''),
+            'start' => $b->booking_date->format('Y-m-d\TH:i'), 'backgroundColor' => $b->status === 'confirmed' ? '#10b981' : '#f59e0b', 'url' => route('bookings.index'),
+        ]);
+        $services = Service::with('customer')->whereBetween('service_date', [$start, $end])->get()->map(fn($s) => [
+            'id' => 'svc-'.$s->id, 'title' => '🔧 '.($s->customer->name ?? 'Service').' - '.$s->title,
+            'start' => $s->service_date->format('Y-m-d\TH:i'), 'backgroundColor' => '#3b82f6', 'url' => route('services.show', $s),
+        ]);
+        return response()->json($bookings->concat($services));
     }
 }

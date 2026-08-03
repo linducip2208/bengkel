@@ -113,4 +113,23 @@ class RoleController extends Controller
         $role->delete();
         return back()->with('success', 'Role dihapus.');
     }
+
+    public function apiTokens()
+    {
+        return view('users.api-tokens');
+    }
+
+    public function createToken(Request $request)
+    {
+        $request->validate(['name' => 'required|string|max:255']);
+        $token = auth()->user()->createToken($request->name);
+        return back()->with('plain_text_token', $token->plainTextToken)->with('success', 'Token berhasil dibuat.');
+    }
+
+    public function revokeToken($tokenId)
+    {
+        $token = auth()->user()->tokens()->findOrFail($tokenId);
+        $token->delete();
+        return back()->with('success', 'Token direvoke.');
+    }
 }

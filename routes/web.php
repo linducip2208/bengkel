@@ -263,6 +263,8 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
 
     // --- Booking Customer (admin) ---
+    Route::get('/bookings/calendar', [\App\Http\Controllers\BookingController::class, 'calendar'])->name('bookings.calendar');
+    Route::get('/bookings/calendar/events', [\App\Http\Controllers\BookingController::class, 'calendarEvents'])->name('bookings.calendar.events');
     Route::get('/bookings', [\App\Http\Controllers\BookingController::class, 'adminIndex'])->name('bookings.index');
     Route::put('/bookings/{booking}', [\App\Http\Controllers\BookingController::class, 'adminUpdate'])->name('bookings.update');
     Route::delete('/bookings/{booking}', [\App\Http\Controllers\BookingController::class, 'adminDestroy'])->name('bookings.destroy');
@@ -325,6 +327,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/users', [\App\Http\Controllers\Tenant\RoleController::class, 'userStore'])->name('users.store');
     Route::put('/users/{user}', [\App\Http\Controllers\Tenant\RoleController::class, 'userUpdate'])->name('users.update');
     Route::delete('/users/{user}', [\App\Http\Controllers\Tenant\RoleController::class, 'userDestroy'])->name('users.destroy');
+    Route::get('/users/api-tokens', [\App\Http\Controllers\Tenant\RoleController::class, 'apiTokens'])->name('users.api-tokens');
+    Route::post('/users/api-tokens', [\App\Http\Controllers\Tenant\RoleController::class, 'createToken'])->name('users.create-token');
+    Route::delete('/admin/api-tokens/{token}', [\App\Http\Controllers\Tenant\RoleController::class, 'revokeToken'])->name('admin.revoke-token');
     Route::get('/roles', [\App\Http\Controllers\Tenant\RoleController::class, 'roleIndex'])->name('roles.index');
     Route::post('/roles', [\App\Http\Controllers\Tenant\RoleController::class, 'roleStore'])->name('roles.store');
     Route::put('/roles/{role}', [\App\Http\Controllers\Tenant\RoleController::class, 'roleUpdate'])->name('roles.update');

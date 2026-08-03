@@ -520,14 +520,15 @@
             @can('booking.view')
             {{-- Booking Online --}}
             <li class="nav-item">
-                <a href="{{ route('bookings.index') }}" class="nav-link {{ request()->routeIs('bookings.*') ? 'active' : '' }}">
+                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuBooking"
+                    aria-expanded="{{ request()->routeIs('bookings.*') ? 'true' : 'false' }}">
                     <i class="fas fa-calendar-check"></i> Booking Online
-                    @php
-                        try { $pendingCount = \App\Models\Booking::where('status','pending')->count(); }
-                        catch(\Throwable $e) { $pendingCount = 0; }
-                    @endphp
-                    @if($pendingCount > 0)<span class="badge bg-danger ms-auto">{{ $pendingCount }}</span>@endif
-                </a>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <ul class="collapse submenu {{ request()->routeIs('bookings.*') ? 'show' : '' }}" id="menuBooking">
+                    <li><a href="{{ route('bookings.index') }}" class="nav-link {{ request()->routeIs('bookings.index') ? 'active' : '' }}"><i class="fas fa-list me-1"></i> Daftar Booking</a></li>
+                    <li><a href="{{ route('bookings.calendar') }}" class="nav-link {{ request()->routeIs('bookings.calendar*') ? 'active' : '' }}"><i class="fas fa-calendar-alt me-1"></i> Kalender</a></li>
+                </ul>
             </li>
             @endcan
 
@@ -677,6 +678,7 @@
                     @can('user.view')<li><a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}"><i class="fas fa-users-cog me-1"></i> Manajemen User</a></li>@endcan
                     @can('role.view')<li><a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}"><i class="fas fa-lock me-1"></i> Role & Permission</a></li>@endcan
                     @can('activity-log.view')<li><a href="{{ route('activity-logs.index') }}" class="nav-link {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}"><i class="fas fa-history me-1"></i> Activity Log</a></li>@endcan
+                    <li><a href="{{ route('users.api-tokens') }}" class="nav-link {{ request()->routeIs('users.api-tokens') ? 'active' : '' }}"><i class="fas fa-key me-1"></i> API Tokens</a></li>
                 </ul>
             </li>
             @endcanany
