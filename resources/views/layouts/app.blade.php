@@ -424,7 +424,7 @@
                     <li><a href="{{ route('observation-points.index') }}" class="nav-link {{ request()->is('observation-points*') ? 'active' : '' }}"><i class="fas fa-list-ol me-1"></i> Observation Points</a></li>
                     <li><a href="{{ route('inspection-points.index') }}" class="nav-link {{ request()->is('inspection-points*') ? 'active' : '' }}"><i class="fas fa-search me-1"></i> Inspection Points</a></li>
                     <li><a href="{{ route('checkout-categories.index') }}" class="nav-link {{ request()->is('checkout-categories*') ? 'active' : '' }}"><i class="fas fa-check-double me-1"></i> Checkout Categories</a></li>
-                    <li><a href="{{ route('service-packages.index') }}" class="nav-link {{ request()->is('service-packages*') ? 'active' : '' }}"><i class="fas fa-cubes me-1"></i> Service Packages</a></li>
+                    @can('service-package.view')<li><a href="{{ route('service-packages.index') }}" class="nav-link {{ request()->is('service-packages*') ? 'active' : '' }}"><i class="fas fa-cubes me-1"></i> Service Packages</a></li>@endcan
                 </ul>
             </li>
             @endcan
@@ -440,7 +440,7 @@
                 <ul class="collapse submenu {{ request()->is('customers*','customer-groups*') ? 'show' : '' }}" id="menuCustomer">
                     <li><a href="{{ route('customers.index') }}" class="nav-link {{ request()->is('customers') ? 'active' : '' }}"><i class="fas fa-list me-1"></i> All Customers</a></li>
                     @can('customer.create')<li><a href="{{ route('customers.create') }}" class="nav-link {{ request()->is('customers/create') ? 'active' : '' }}"><i class="fas fa-user-plus me-1"></i> Add Customer</a></li>@endcan
-                    <li><a href="{{ route('customer-groups.index') }}" class="nav-link {{ request()->is('customer-groups*') ? 'active' : '' }}"><i class="fas fa-layer-group me-1"></i> Customer Groups</a></li>
+                    @can('customer-group.view')<li><a href="{{ route('customer-groups.index') }}" class="nav-link {{ request()->is('customer-groups*') ? 'active' : '' }}"><i class="fas fa-layer-group me-1"></i> Customer Groups</a></li>@endcan
                 </ul>
             </li>
             @endcan
@@ -472,7 +472,7 @@
                     <li><a href="{{ route('services.index') }}" class="nav-link {{ request()->routeIs('services.index') ? 'active' : '' }}"><i class="fas fa-list me-1"></i> All Services</a></li>
                     @can('jobcard.view')<li><a href="{{ route('jobcards.index') }}" class="nav-link {{ request()->routeIs('jobcards.*') ? 'active' : '' }}"><i class="fas fa-clipboard-list me-1"></i> Jobcards</a></li>@endcan
                     @can('service.create')<li><a href="{{ route('services.create') }}" class="nav-link {{ request()->routeIs('services.create') ? 'active' : '' }}"><i class="fas fa-plus-circle me-1"></i> Add Service</a></li>@endcan
-                    <li><a href="{{ route('subcontractors.index') }}" class="nav-link {{ request()->routeIs('subcontractors.*') ? 'active' : '' }}"><i class="fas fa-user-gear me-1"></i> Subkontraktor</a></li>
+                    @can('subcontractor.view')<li><a href="{{ route('subcontractors.index') }}" class="nav-link {{ request()->routeIs('subcontractors.*') ? 'active' : '' }}"><i class="fas fa-user-gear me-1"></i> Subkontraktor</a></li>@endcan
                 </ul>
             </li>
             @endcan
@@ -520,8 +520,8 @@
                     @can('product.stock-opname')<li><a href="{{ route('products.stock-opname') }}" class="nav-link {{ request()->routeIs('products.stock-opname') ? 'active' : '' }}"><i class="fas fa-clipboard me-1"></i> Stock</a></li>@endcan
                     @can('supplier.view')<li><a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"><i class="fas fa-truck me-1"></i> Suppliers</a></li>@endcan
                     @can('purchase.view')<li><a href="{{ route('purchases.index') }}" class="nav-link {{ request()->routeIs('purchases.*') ? 'active' : '' }}"><i class="fas fa-shopping-basket me-1"></i> Purchases</a></li>@endcan
-                    <li><a href="{{ route('equipment.index') }}" class="nav-link {{ request()->routeIs('equipment.*') ? 'active' : '' }}"><i class="fas fa-toolbox me-1"></i> Peralatan Bengkel</a></li>
-                    <li><a href="{{ route('warehouses.index') }}" class="nav-link {{ request()->routeIs('warehouses.*') ? 'active' : '' }}"><i class="fas fa-warehouse me-1"></i> Gudang</a></li>
+                    @can('equipment.view')<li><a href="{{ route('equipment.index') }}" class="nav-link {{ request()->routeIs('equipment.*') ? 'active' : '' }}"><i class="fas fa-toolbox me-1"></i> Peralatan Bengkel</a></li>@endcan
+                    @can('warehouse.view')<li><a href="{{ route('warehouses.index') }}" class="nav-link {{ request()->routeIs('warehouses.*') ? 'active' : '' }}"><i class="fas fa-warehouse me-1"></i> Gudang</a></li>@endcan
                 </ul>
             </li>
             @endcanany
@@ -568,8 +568,8 @@
                     @can('voucher.view')<li><a href="{{ route('vouchers.index') }}" class="nav-link {{ request()->routeIs('vouchers.*') ? 'active' : '' }}"><i class="fas fa-ticket-alt me-1"></i> Voucher / Promo</a></li>@endcan
                     @can('loyalty.view')<li><a href="{{ route('loyalty.index') }}" class="nav-link {{ request()->routeIs('loyalty.*') ? 'active' : '' }}"><i class="fas fa-star me-1"></i> Loyalty & Membership</a></li>@endcan
                     @can('review.view')<li><a href="{{ route('reviews.index') }}" class="nav-link {{ request()->routeIs('reviews.*') ? 'active' : '' }}"><i class="fas fa-comment-dots me-1"></i> Review & Rating</a></li>@endcan
-                    <li><a href="{{ route('blog.admin.index') }}" class="nav-link {{ request()->routeIs('blog.admin.*') ? 'active' : '' }}"><i class="fas fa-blog me-1"></i> Blog Artikel</a></li>
-                    <li><a href="{{ route('marketing.campaign') }}" class="nav-link {{ request()->routeIs('marketing.campaign*') ? 'active' : '' }}"><i class="fas fa-bullhorn me-1"></i> Campaign</a></li>
+                    @can('blog.view')<li><a href="{{ route('blog.admin.index') }}" class="nav-link {{ request()->routeIs('blog.admin.*') ? 'active' : '' }}"><i class="fas fa-blog me-1"></i> Blog Artikel</a></li>@endcan
+                    @can('campaign.view')<li><a href="{{ route('marketing.campaign') }}" class="nav-link {{ request()->routeIs('marketing.campaign*') ? 'active' : '' }}"><i class="fas fa-bullhorn me-1"></i> Campaign</a></li>@endcan
                 </ul>
             </li>
             @endcanany
@@ -624,8 +624,8 @@
                 <ul class="collapse submenu {{ request()->routeIs('incomes.*','expenses.*','finance.*') ? 'show' : '' }}" id="menuFinancial">
                     @can('income.view')<li><a href="{{ route('incomes.index') }}" class="nav-link {{ request()->routeIs('incomes.*') ? 'active' : '' }}"><i class="fas fa-arrow-up me-1 text-success"></i> Income</a></li>@endcan
                     @can('expense.view')<li><a href="{{ route('expenses.index') }}" class="nav-link {{ request()->routeIs('expenses.*') ? 'active' : '' }}"><i class="fas fa-arrow-down me-1 text-danger"></i> Expenses</a></li>@endcan
-                    <li><a href="{{ route('finance.coa') }}" class="nav-link {{ request()->routeIs('finance.coa*') ? 'active' : '' }}"><i class="fas fa-list-ol me-1"></i> Chart of Accounts</a></li>
-                    <li><a href="{{ route('finance.journal') }}" class="nav-link {{ request()->routeIs('finance.journal*') ? 'active' : '' }}"><i class="fas fa-book me-1"></i> Journal Entry</a></li>
+                    @can('finance-coa.view')<li><a href="{{ route('finance.coa') }}" class="nav-link {{ request()->routeIs('finance.coa*') ? 'active' : '' }}"><i class="fas fa-list-ol me-1"></i> Chart of Accounts</a></li>@endcan
+                    @can('finance-journal.view')<li><a href="{{ route('finance.journal') }}" class="nav-link {{ request()->routeIs('finance.journal*') ? 'active' : '' }}"><i class="fas fa-book me-1"></i> Journal Entry</a></li>@endcan
                 </ul>
             </li>
             @endcanany
@@ -703,7 +703,7 @@
                     @can('user.view')<li><a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}"><i class="fas fa-users-cog me-1"></i> Manajemen User</a></li>@endcan
                     @can('role.view')<li><a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}"><i class="fas fa-lock me-1"></i> Role & Permission</a></li>@endcan
                     @can('activity-log.view')<li><a href="{{ route('activity-logs.index') }}" class="nav-link {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}"><i class="fas fa-history me-1"></i> Activity Log</a></li>@endcan
-                    <li><a href="{{ route('users.api-tokens') }}" class="nav-link {{ request()->routeIs('users.api-tokens') ? 'active' : '' }}"><i class="fas fa-key me-1"></i> API Tokens</a></li>
+                    @can('api-token.view')<li><a href="{{ route('users.api-tokens') }}" class="nav-link {{ request()->routeIs('users.api-tokens') ? 'active' : '' }}"><i class="fas fa-key me-1"></i> API Tokens</a></li>@endcan
                 </ul>
             </li>
             @endcanany
@@ -723,7 +723,7 @@
                     @can('custom-field.view')<li><a href="{{ route('custom-fields.index') }}" class="nav-link {{ request()->is('custom-fields*') ? 'active' : '' }}"><i class="fas fa-puzzle-piece me-1"></i> Custom Fields</a></li>@endcan
                     @can('payment-gateway.view')<li><a href="{{ route('payment-gateways.index') }}" class="nav-link {{ request()->routeIs('payment-gateways.*') ? 'active' : '' }}"><i class="fas fa-credit-card me-1"></i> Payment Gateway</a></li>@endcan
                     @can('two-factor.view')<li><a href="{{ route('2fa.enable.form') }}" class="nav-link {{ request()->routeIs('2fa.*') ? 'active' : '' }}"><i class="fas fa-fingerprint me-1"></i> Two-Factor Auth (2FA)</a></li>@endcan
-                    <li><a href="{{ route('settings.backup-page') }}" class="nav-link {{ request()->routeIs('settings.backup*') ? 'active' : '' }}"><i class="fas fa-database me-1"></i> Backup & Restore</a></li>
+                    @can('backup.view')<li><a href="{{ route('settings.backup-page') }}" class="nav-link {{ request()->routeIs('settings.backup*') ? 'active' : '' }}"><i class="fas fa-database me-1"></i> Backup & Restore</a></li>@endcan
                 </ul>
             </li>
             @endcanany

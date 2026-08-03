@@ -127,16 +127,16 @@ class PermissionSeeder extends Seeder
 
         $this->command->info('  Created 5 roles: super_admin, admin, manager, kasir, mekanik.');
 
-        // Assign roles
+        // Assign roles — syncRoles ensures only the intended role is active
         $adminUser = \App\Models\User::where('email', 'admin@bengkel.test')->first();
-        if ($adminUser) { $adminUser->assignRole('super_admin'); $this->command->info('  admin@bengkel.test → super_admin'); }
+        if ($adminUser) { $adminUser->syncRoles('super_admin'); $this->command->info('  admin@bengkel.test → super_admin'); }
 
         $mekanikUser = \App\Models\User::where('email', 'teknisi@bengkel.test')->first();
-        if ($mekanikUser) { $mekanikUser->assignRole('mekanik'); $this->command->info('  teknisi@bengkel.test → mekanik'); }
+        if ($mekanikUser) { $mekanikUser->syncRoles('mekanik'); $this->command->info('  teknisi@bengkel.test → mekanik'); }
 
-        \App\Models\User::firstOrCreate(['email' => 'manager@bengkel.test'], ['name' => 'Manager Cabang', 'password' => bcrypt('password'), 'is_active' => true])->assignRole('manager');
-        \App\Models\User::firstOrCreate(['email' => 'kasir@bengkel.test'], ['name' => 'Kasir Counter', 'password' => bcrypt('password'), 'is_active' => true])->assignRole('kasir');
-        \App\Models\User::firstOrCreate(['email' => 'sales@bengkel.test'], ['name' => 'Sales Counter', 'password' => bcrypt('password'), 'is_active' => true])->assignRole('kasir');
+        \App\Models\User::firstOrCreate(['email' => 'manager@bengkel.test'], ['name' => 'Manager Cabang', 'password' => bcrypt('password'), 'is_active' => true])->syncRoles('manager');
+        \App\Models\User::firstOrCreate(['email' => 'kasir@bengkel.test'], ['name' => 'Kasir Counter', 'password' => bcrypt('password'), 'is_active' => true])->syncRoles('kasir');
+        \App\Models\User::firstOrCreate(['email' => 'sales@bengkel.test'], ['name' => 'Sales Counter', 'password' => bcrypt('password'), 'is_active' => true])->syncRoles('kasir');
 
         $this->command->info('  Demo users ready: admin / manager / kasir / teknisi / sales @bengkel.test');
     }
