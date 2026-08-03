@@ -9,7 +9,7 @@
 
 @section('content')
 <div class="row justify-content-center">
-    <div class="col-lg-10">
+    <div class="col-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-plus-circle text-danger me-2"></i>Servis Baru</span>
@@ -57,11 +57,17 @@
                             </select>
                             @error('repair_category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <label class="form-label">Tanggal Servis <span class="text-danger">*</span></label>
                             <input type="datetime-local" name="service_date" class="form-control @error('service_date') is-invalid @enderror"
                                    value="{{ old('service_date', now()->format('Y-m-d\TH:i')) }}" required>
                             @error('service_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Estimasi (jam)</label>
+                            <input type="number" name="estimated_hours" class="form-control @error('estimated_hours') is-invalid @enderror"
+                                   value="{{ old('estimated_hours') }}" step="0.5" min="0.5" max="24" placeholder="2.5">
+                            @error('estimated_hours') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
 

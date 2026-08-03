@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['customer_id', 'vehicle_id', 'repair_category_id', 'title', 'description', 'service_date', 'charge', 'done_status', 'mot_status', 'is_quotation', 'is_approved', 'created_by', 'branch_id', 'job_no'])]
+#[Fillable(['customer_id', 'vehicle_id', 'repair_category_id', 'title', 'description', 'service_date', 'charge', 'estimated_hours', 'started_at', 'completed_at', 'done_status', 'mot_status', 'is_quotation', 'is_approved', 'created_by', 'branch_id', 'job_no'])]
 class Service extends Model
 {
     use HasFactory, SoftDeletes, HasBranchScope;
@@ -22,6 +22,9 @@ class Service extends Model
         return [
             'service_date' => 'datetime',
             'charge' => 'decimal:2',
+            'estimated_hours' => 'decimal:1',
+            'started_at' => 'datetime',
+            'completed_at' => 'datetime',
             'done_status' => 'integer',
             'mot_status' => 'boolean',
             'is_quotation' => 'boolean',
@@ -102,5 +105,33 @@ class Service extends Model
     public function scopeToday($query)
     {
         return $query->whereDate('service_date', today());
+    }
+
+    public function getDurationAttribute(): ?float
+    {
+        if ($this->started_at && $this->completed_at) {
+            return round($this->started_at->diffInMinutes($this->completed_at) / 60, 1);
+        }
+        return null;
+    }
+
+    public function getDurationLabelAttribute(): string
+    {
+        if (!$this->duration) {
+            if ($this->started_at && !$this->completed_at) {
+                $elapsed = round(now()->diffInMinutes($this->started_at) / 60, 1);
+                return $elapsed . ' jam (berjalan)';
+            }
+            return $this->estimated_hours ? $this->estimated_hours . ' jam (estimasi)' : '-';
+        }
+        return $this->duration . ' jam';
+    }
+
+    public function getIsOverdueAttribute(): bool
+    {
+        if (!$this->estimated_hours || !$this->started_at || $this->completed_at) {
+            return false;
+        }
+        return now()->diffInHours($this->started_at) > $this->estimated_hours;
     }
 }

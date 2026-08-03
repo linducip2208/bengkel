@@ -120,6 +120,36 @@ class ProgrammaticSeoController extends Controller
 
     public function blogArticle(string $slug): View
     {
+        // Try DB first
+        if (class_exists(\App\Models\BlogPost::class)) {
+            $dbPost = \App\Models\BlogPost::where('slug', $slug)->published()->first();
+            if ($dbPost) {
+                $article = [
+                    'title' => $dbPost->title,
+                    'excerpt' => $dbPost->excerpt ?? '',
+                    'date' => ($dbPost->published_at ?? $dbPost->created_at)->toDateString(),
+                    'content' => $dbPost->content,
+                ];
+                $relatedCategories = RepairCategory::inRandomOrder()->limit(4)->get();
+
+                $metaTitle = ($dbPost->meta_title ?: $dbPost->title) . ' | Bengkel Paten Blog';
+                $metaDescription = $dbPost->meta_description ?: $dbPost->excerpt;
+
+                $jsonLd = [
+                    '@context' => 'https://schema.org',
+                    '@type' => 'Article',
+                    'headline' => $dbPost->title,
+                    'description' => $metaDescription,
+                    'author' => ['@type' => 'Organization', 'name' => 'Bengkel Paten'],
+                    'publisher' => ['@type' => 'Organization', 'name' => 'Bengkel Paten'],
+                    'datePublished' => ($dbPost->published_at ?? $dbPost->created_at)->toIso8601String(),
+                ];
+
+                return view('seo.blog-article', compact('article', 'relatedCategories', 'metaTitle', 'metaDescription', 'jsonLd'));
+            }
+        }
+
+        // Fallback to static articles
         $article = $this->getStaticArticle($slug);
         $relatedCategories = RepairCategory::inRandomOrder()->limit(4)->get();
 

@@ -59,6 +59,9 @@ class ServiceService extends BaseService
             $validated['job_no'] = $this->generateJobNo();
             $validated['done_status'] = $validated['done_status'] ?? 1;
             $validated['created_by'] = auth()->id();
+            if (($validated['done_status'] ?? 0) >= 1) {
+                $validated['started_at'] = $validated['started_at'] ?? now();
+            }
 
             $technicianIds = $validated['assign_to'] ?? [];
             unset($validated['assign_to']);
@@ -157,6 +160,7 @@ class ServiceService extends BaseService
         DB::transaction(function () use ($service) {
             $service->update([
                 'done_status' => 2,
+                'completed_at' => now(),
             ]);
 
             if ($service->jobcardDetail) {
@@ -186,6 +190,17 @@ class ServiceService extends BaseService
         return redirect()
             ->route('services.show', $service)
             ->with('success', 'Servis selesai.');
+    }
+
+    public function startService($id)
+    {
+        $service = Service::findOrFail($id);
+        $service->update([
+            'done_status' => 1,
+            'started_at' => $service->started_at ?? now(),
+        ]);
+
+        return back()->with('success', 'Servis dimulai. Timer berjalan.');
     }
 
     public function uploadImage(Request $request, $id)

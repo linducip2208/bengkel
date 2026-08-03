@@ -16,6 +16,8 @@ class ServiceRequest extends FormRequest
             'description' => 'nullable|string',
             'service_date' => 'required|date',
             'charge' => 'nullable|numeric|min:0',
+            'estimated_hours' => 'nullable|numeric|min:0.5|max:24',
+            'done_status' => 'nullable|integer|in:0,1,2',
             'assign_to' => 'nullable|array',
             'assign_to.*' => 'exists:users,id',
             'products' => 'nullable|array',

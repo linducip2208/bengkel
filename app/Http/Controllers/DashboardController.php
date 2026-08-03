@@ -2,24 +2,92 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Expense;
+use App\Models\Income;
+use App\Models\Invoice;
+use App\Models\Service;
 use App\Services\ReportService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index(ReportService $reportService)
     {
+        $user = auth()->user();
         $stats = $reportService->getDashboardStats();
-        $recentServices = \App\Models\Service::with(['customer', 'vehicle'])
+        $recentServices = Service::with(['customer', 'vehicle'])
             ->latest()
             ->limit(10)
             ->get();
 
-        $upcomingServices = \App\Models\Service::with(['customer', 'vehicle'])
+        $upcomingServices = Service::with(['customer', 'vehicle'])
             ->where('service_date', '>=', now())
             ->where('service_date', '<=', now()->addDays(7))
             ->orderBy('service_date')
             ->get();
 
-        return view('dashboard', compact('stats', 'recentServices', 'upcomingServices'));
+        // Chart data: revenue per day (last 14 days)
+        $chartData = $this->getRevenueChartData();
+
+        // Chart data: service status pie
+        $statusChart = $this->getStatusChartData();
+
+        // Role-specific data
+        $roleWidgets = $this->getRoleWidgets($user);
+
+        return view('dashboard', compact(
+            'stats', 'recentServices', 'upcomingServices',
+            'chartData', 'statusChart', 'roleWidgets'
+        ));
+    }
+
+    protected function getRevenueChartData(): array
+    {
+        $days = [];
+        $revenue = [];
+        $expenses = [];
+
+        for ($i = 13; $i >= 0; $i--) {
+            $date = now()->subDays($i)->toDateString();
+            $days[] = now()->subDays($i)->format('d/m');
+            $revenue[] = Income::whereDate('income_date', $date)->sum('amount');
+            $expenses[] = Expense::whereDate('expense_date', $date)->sum('amount');
+        }
+
+        return ['days' => $days, 'revenue' => $revenue, 'expenses' => $expenses];
+    }
+
+    protected function getStatusChartData(): array
+    {
+        return [
+            'pending' => Service::where('done_status', 0)->count(),
+            'in_progress' => Service::where('done_status', 1)->count(),
+            'done' => Service::where('done_status', 2)->whereDate('updated_at', today())->count(),
+        ];
+    }
+
+    protected function getRoleWidgets($user): array
+    {
+        $widgets = [];
+
+        if ($user->hasRole('owner') || $user->hasRole('admin')) {
+            $widgets['revenue'] = Income::whereMonth('income_date', now()->month)->sum('amount');
+            $widgets['expense'] = Expense::whereMonth('expense_date', now()->month)->sum('amount');
+            $widgets['profit'] = $widgets['revenue'] - $widgets['expense'];
+        }
+
+        // Specific for role 'teknisi' (assigned services)
+        $widgets['my_tasks'] = Service::where('done_status', '!=', 2)
+            ->where(function ($q) use ($user) {
+                $q->where('assign_to', $user->id)
+                  ->orWhereHas('technicians', fn($t) => $t->where('users.id', $user->id));
+            })->count();
+
+        // Specific for role 'kasir' (POS sessions today)
+        $widgets['pos_today'] = Invoice::where('invoice_type', 'pos')
+            ->whereDate('invoice_date', today())->count();
+
+        return $widgets;
     }
 }

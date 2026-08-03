@@ -6,6 +6,14 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0"><i class="fas fa-clipboard-list text-warning me-2"></i>{{ $service->job_no }}</h5>
     <div>
+        @if($service->done_status == 0)
+        <form action="{{ route('services.start', $service) }}" method="POST" class="d-inline">
+            @csrf
+            <button class="btn btn-warning btn-sm" onclick="return confirm('Mulai servis sekarang?')">
+                <i class="fas fa-play me-1"></i> Mulai
+            </button>
+        </form>
+        @endif
         @if($service->done_status < 2)
         <form action="{{ route('services.complete', $service) }}" method="POST" class="d-inline">
             @csrf
@@ -57,6 +65,17 @@
                         <span class="badge bg-{{ $colors[$service->done_status] }} bg-opacity-10 text-{{ $colors[$service->done_status] }} rounded-pill px-3">
                             {{ $labels[$service->done_status] }}
                         </span>
+                    </td></tr>
+                    <tr><td class="text-muted">Durasi</td><td>
+                        <span class="fw-bold {{ $service->is_overdue && !$service->completed_at ? 'text-danger' : '' }}">
+                            {{ $service->duration_label }}
+                        </span>
+                        @if($service->is_overdue && !$service->completed_at)
+                            <span class="badge bg-danger ms-2">OVERDUE</span>
+                        @endif
+                        @if($service->started_at && !$service->completed_at)
+                            <small class="text-muted ms-2">mulai {{ $service->started_at->format('H:i') }}</small>
+                        @endif
                     </td></tr>
                     <tr><td class="text-muted">Biaya</td><td><strong>@include('partials.rupiah', ['amount' => $service->charge])</strong></td></tr>
                     <tr><td class="text-muted">Teknisi</td><td>

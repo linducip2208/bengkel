@@ -19,6 +19,7 @@ use App\Http\Controllers\Tenant\CustomerController;
 use App\Http\Controllers\Tenant\CustomFieldController;
 use App\Http\Controllers\DashboardController as TenantDashboardController;
 use App\Http\Controllers\Tenant\EmailLogController;
+use App\Http\Controllers\Tenant\EquipmentController;
 use App\Http\Controllers\Tenant\ExpenseController;
 use App\Http\Controllers\Tenant\FuelTypeController;
 use App\Http\Controllers\Tenant\GatePassController;
@@ -48,6 +49,7 @@ use App\Http\Controllers\Tenant\ServiceController;
 use App\Http\Controllers\Tenant\SettingsController;
 use App\Http\Controllers\Tenant\StateController;
 use App\Http\Controllers\Tenant\StockHistoryController;
+use App\Http\Controllers\Tenant\SubcontractorController;
 use App\Http\Controllers\Tenant\SupplierController;
 use App\Http\Controllers\Tenant\TaxRateController;
 use App\Http\Controllers\Tenant\VehicleBrandController;
@@ -89,12 +91,20 @@ Route::get('/alternatives-to/{slug}', [ProgrammaticSeoController::class, 'servic
 Route::get('/compare/{a}-vs-{b}', [ProgrammaticSeoController::class, 'compareServices'])->name('seo.compare');
 
 // Blog public
-Route::get('/blog', fn() => view('seo.blog-list', [
-    'metaTitle' => 'Blog Bengkel Paten — Tips & Berita Otomotif',
-    'metaDescription' => 'Baca tips perawatan mobil, berita otomotif, dan panduan service dari Bengkel Paten.',
-    'jsonLd' => ['@context'=>'https://schema.org','@type'=>'Blog','name'=>'Blog Bengkel Paten'],
-]))->name('blog.index');
+Route::get('/blog', function () {
+    $articles = [];
+    if (class_exists(\App\Models\BlogPost::class)) {
+        $articles = \App\Models\BlogPost::published()->orderBy('published_at', 'desc')->limit(12)->get();
+    }
+    return view('seo.blog-list', [
+        'metaTitle' => 'Blog Bengkel Paten — Tips & Berita Otomotif',
+        'metaDescription' => 'Baca tips perawatan mobil, berita otomotif, dan panduan service dari Bengkel Paten.',
+        'jsonLd' => ['@context'=>'https://schema.org','@type'=>'Blog','name'=>'Blog Bengkel Paten'],
+        'articles' => $articles,
+    ]);
+})->name('blog.index');
 Route::get('/blog/{slug}', [ProgrammaticSeoController::class, 'blogArticle'])->name('seo.blog');
+Route::get('/blog/feed.xml', [\App\Http\Controllers\Tenant\BlogController::class, 'rss'])->name('blog.rss');
 
 // Sitemap
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
@@ -155,6 +165,7 @@ Route::middleware(['auth'])->group(function () {
 
     // --- Services custom routes (before resource to avoid conflicts) ---
     Route::post('/services/{service}/complete', [ServiceController::class, 'complete'])->name('services.complete');
+    Route::post('/services/{service}/start', [ServiceController::class, 'start'])->name('services.start');
     Route::post('/services/{service}/upload-image', [ServiceController::class, 'uploadImage'])->name('services.upload-image');
     Route::get('/services/customers/search', [ServiceController::class, 'searchCustomers'])->name('services.customers.search');
     Route::get('/services/vehicles-by-customer/{customer}', [ServiceController::class, 'vehiclesByCustomer'])->name('services.vehicles-by-customer');
@@ -330,6 +341,26 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/email-logs', [EmailLogController::class, 'index'])->name('email-logs.index');
     Route::get('/email-logs/{emailLog}', [EmailLogController::class, 'show'])->name('email-logs.show');
     Route::delete('/email-logs/{emailLog}', [EmailLogController::class, 'destroy'])->name('email-logs.destroy');
+
+    // --- Equipment / Peralatan ---
+    Route::resource('equipment', EquipmentController::class);
+
+    // --- Subcontractors ---
+    Route::resource('subcontractors', SubcontractorController::class);
+
+    // --- Blog Admin ---
+    Route::prefix('blog-admin')->name('blog.admin.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Tenant\BlogController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Tenant\BlogController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Tenant\BlogController::class, 'store'])->name('store');
+        Route::get('/{post}/edit', [\App\Http\Controllers\Tenant\BlogController::class, 'edit'])->name('edit');
+        Route::put('/{post}', [\App\Http\Controllers\Tenant\BlogController::class, 'update'])->name('update');
+        Route::delete('/{post}', [\App\Http\Controllers\Tenant\BlogController::class, 'destroy'])->name('destroy');
+        Route::get('/categories', [\App\Http\Controllers\Tenant\BlogController::class, 'categoryIndex'])->name('categories');
+        Route::post('/categories', [\App\Http\Controllers\Tenant\BlogController::class, 'categoryStore'])->name('categories.store');
+        Route::put('/categories/{category}', [\App\Http\Controllers\Tenant\BlogController::class, 'categoryUpdate'])->name('categories.update');
+        Route::delete('/categories/{category}', [\App\Http\Controllers\Tenant\BlogController::class, 'categoryDestroy'])->name('categories.destroy');
+    });
 });
 
 // License v3 pairing routes (must be at bottom to avoid route conflict)
@@ -338,5 +369,5 @@ require base_path('routes/pair-routes.php');
 // Generic PSEO handler — menangkap semua pattern URL masif (HARUS DI PALING BAWAH)
 // Exclude: admin paths, assets, and well-known routes
 Route::get('/{slug}', [ProgrammaticSeoController::class, 'genericPseo'])
-    ->where('slug', '^(?!admin|api|__pair|webhooks|login|logout|docs|customer|track|booking|payment/callback|sitemap).*')
+    ->where('slug', '^(?!admin|api|__pair|webhooks|login|logout|docs|customer|track|booking|payment/callback|sitemap|blog-admin).*')
     ->name('seo.generic');

@@ -26,7 +26,13 @@ class ExpenseController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('expenses.index', compact('expenses'));
+        $totalAmount = Expense::query()
+            ->when($request->date_from, fn($q) => $q->whereDate('expense_date', '>=', $request->date_from))
+            ->when($request->date_to, fn($q) => $q->whereDate('expense_date', '<=', $request->date_to))
+            ->when($request->search, fn($q) => $q->where('label', 'like', "%{$request->search}%"))
+            ->sum('amount');
+
+        return view('expenses.index', compact('expenses', 'totalAmount'));
     }
 
     public function create(): View

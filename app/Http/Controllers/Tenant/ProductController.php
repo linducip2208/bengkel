@@ -193,6 +193,7 @@ class ProductController extends Controller
 
         $products->each(function ($p) {
             $p->current_stock = $p->stockRecord?->quantity ?? 0;
+            $p->stock_status = $p->stockRecord?->quantity > 0 ? 'in_stock' : 'out';
         });
 
         return response()->json($products);

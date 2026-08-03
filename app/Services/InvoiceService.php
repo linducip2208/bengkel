@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Invoice;
+use App\Models\StockHistory;
 
 class InvoiceService extends BaseService
 {
@@ -22,11 +23,17 @@ class InvoiceService extends BaseService
 
         foreach ($items as $item) {
             $invoice->items()->create([
+                'product_id' => $item['product_id'] ?? null,
                 'description' => $item['description'],
                 'quantity' => $item['quantity'] ?? 1,
                 'unit_price' => $item['unit_price'] ?? 0,
                 'total_price' => ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0),
             ]);
+
+            // Auto-reduce stock when product_id is linked
+            if (!empty($item['product_id'])) {
+                $this->reduceStock((int) $item['product_id'], (float) ($item['quantity'] ?? 1), $invoice);
+            }
         }
 
         return $invoice;
@@ -47,11 +54,16 @@ class InvoiceService extends BaseService
             $invoice->items()->delete();
             foreach ($items as $item) {
                 $invoice->items()->create([
+                    'product_id' => $item['product_id'] ?? null,
                     'description' => $item['description'],
                     'quantity' => $item['quantity'] ?? 1,
                     'unit_price' => $item['unit_price'] ?? 0,
                     'total_price' => ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0),
                 ]);
+
+                if (!empty($item['product_id'])) {
+                    $this->reduceStock((int) $item['product_id'], (float) ($item['quantity'] ?? 1), $invoice);
+                }
             }
         }
 
@@ -74,6 +86,28 @@ class InvoiceService extends BaseService
         $invoice->update([
             'total_amount' => $total,
             'grand_total' => $total + ($invoice->tax_amount ?? 0) - ($invoice->discount ?? 0),
+        ]);
+    }
+
+    protected function reduceStock(int $productId, float $quantity, Invoice $invoice): void
+    {
+        $stockRecord = \App\Models\StockRecord::where('product_id', $productId)->first();
+        if (!$stockRecord) return;
+
+        $before = $stockRecord->quantity;
+        $stockRecord->decrement('quantity', $quantity);
+
+        StockHistory::create([
+            'product_id' => $productId,
+            'reference_type' => 'invoice',
+            'reference_id' => $invoice->id,
+            'type' => 'out',
+            'quantity' => $quantity,
+            'before' => $before,
+            'after' => $before - $quantity,
+            'note' => 'Invoice #' . $invoice->invoice_number,
+            'user_id' => auth()->id() ?? 1,
+            'branch_id' => session('current_branch_id'),
         ]);
     }
 

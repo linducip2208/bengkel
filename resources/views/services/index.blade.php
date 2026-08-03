@@ -82,6 +82,7 @@
                         <th>Kendaraan</th>
                         <th>Kategori</th>
                         <th>Tanggal</th>
+                        <th class="text-center">Durasi</th>
                         <th>Status</th>
                         <th>Teknisi</th>
                         <th>Biaya</th>
@@ -96,6 +97,11 @@
                         <td>{{ $service->vehicle->number_plate ?? '-' }}</td>
                         <td>{{ $service->repairCategory->repair_category_name ?? '-' }}</td>
                         <td>{{ $service->service_date->format('d/m/Y H:i') }}</td>
+                        <td class="text-center">
+                            <small class="{{ $service->is_overdue && !$service->completed_at ? 'text-danger fw-bold' : 'text-muted' }}">
+                                {{ $service->duration_label }}
+                            </small>
+                        </td>
                         <td>
                             @php
                                 $statusLabels = [0 => 'Pending', 1 => 'In Progress', 2 => 'Done'];
@@ -136,7 +142,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="text-center text-muted py-4">Belum ada data servis.</td>
+                        <td colspan="10" class="text-center text-muted py-4">Belum ada data servis.</td>
                     </tr>
                     @endforelse
                 </tbody>

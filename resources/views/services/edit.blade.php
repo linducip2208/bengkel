@@ -43,7 +43,7 @@
                     </div>
 
                     <div class="row mb-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">Kategori Perbaikan <span class="text-danger">*</span></label>
                             <select name="repair_category_id" class="form-select @error('repair_category_id') is-invalid @enderror" required>
                                 @foreach($repairCategories as $cat)
@@ -54,11 +54,17 @@
                             </select>
                             @error('repair_category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">Tanggal Servis <span class="text-danger">*</span></label>
                             <input type="datetime-local" name="service_date" class="form-control @error('service_date') is-invalid @enderror"
                                    value="{{ old('service_date', $service->service_date->format('Y-m-d\TH:i')) }}" required>
                             @error('service_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Estimasi (jam)</label>
+                            <input type="number" name="estimated_hours" class="form-control @error('estimated_hours') is-invalid @enderror"
+                                   value="{{ old('estimated_hours', $service->estimated_hours) }}" step="0.5" min="0.5" max="24" placeholder="2.5">
+                            @error('estimated_hours') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
 

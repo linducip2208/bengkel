@@ -442,10 +442,11 @@
                     <i class="fas fa-tools"></i> Service
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('services.*','jobcards.*') ? 'show' : '' }}" id="menuService">
+                <ul class="collapse submenu {{ request()->routeIs('services.*','jobcards.*','subcontractors.*') ? 'show' : '' }}" id="menuService">
                     <li><a href="{{ route('services.index') }}" class="nav-link {{ request()->routeIs('services.index') ? 'active' : '' }}"><i class="fas fa-list me-1"></i> All Services</a></li>
                     @can('jobcard.view')<li><a href="{{ route('jobcards.index') }}" class="nav-link {{ request()->routeIs('jobcards.*') ? 'active' : '' }}"><i class="fas fa-clipboard-list me-1"></i> Jobcards</a></li>@endcan
                     @can('service.create')<li><a href="{{ route('services.create') }}" class="nav-link {{ request()->routeIs('services.create') ? 'active' : '' }}"><i class="fas fa-plus-circle me-1"></i> Add Service</a></li>@endcan
+                    <li><a href="{{ route('subcontractors.index') }}" class="nav-link {{ request()->routeIs('subcontractors.*') ? 'active' : '' }}"><i class="fas fa-user-gear me-1"></i> Subkontraktor</a></li>
                 </ul>
             </li>
             @endcan
@@ -484,15 +485,16 @@
             {{-- Inventory --}}
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuInventory"
-                    aria-expanded="{{ request()->routeIs('products.*','suppliers.*','purchases.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('products.*','suppliers.*','purchases.*','equipment.*') ? 'true' : 'false' }}">
                     <i class="fas fa-boxes"></i> Inventory
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('products.*','suppliers.*','purchases.*') ? 'show' : '' }}" id="menuInventory">
+                <ul class="collapse submenu {{ request()->routeIs('products.*','suppliers.*','purchases.*','equipment.*') ? 'show' : '' }}" id="menuInventory">
                     @can('product.view')<li><a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.index') ? 'active' : '' }}"><i class="fas fa-box me-1"></i> Products</a></li>@endcan
                     @can('product.stock-opname')<li><a href="{{ route('products.stock-opname') }}" class="nav-link {{ request()->routeIs('products.stock-opname') ? 'active' : '' }}"><i class="fas fa-clipboard me-1"></i> Stock</a></li>@endcan
                     @can('supplier.view')<li><a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"><i class="fas fa-truck me-1"></i> Suppliers</a></li>@endcan
                     @can('purchase.view')<li><a href="{{ route('purchases.index') }}" class="nav-link {{ request()->routeIs('purchases.*') ? 'active' : '' }}"><i class="fas fa-shopping-basket me-1"></i> Purchases</a></li>@endcan
+                    <li><a href="{{ route('equipment.index') }}" class="nav-link {{ request()->routeIs('equipment.*') ? 'active' : '' }}"><i class="fas fa-toolbox me-1"></i> Peralatan Bengkel</a></li>
                 </ul>
             </li>
             @endcanany
@@ -538,6 +540,7 @@
                     @can('voucher.view')<li><a href="{{ route('vouchers.index') }}" class="nav-link {{ request()->routeIs('vouchers.*') ? 'active' : '' }}"><i class="fas fa-ticket-alt me-1"></i> Voucher / Promo</a></li>@endcan
                     @can('loyalty.view')<li><a href="{{ route('loyalty.index') }}" class="nav-link {{ request()->routeIs('loyalty.*') ? 'active' : '' }}"><i class="fas fa-star me-1"></i> Loyalty & Membership</a></li>@endcan
                     @can('review.view')<li><a href="{{ route('reviews.index') }}" class="nav-link {{ request()->routeIs('reviews.*') ? 'active' : '' }}"><i class="fas fa-comment-dots me-1"></i> Review & Rating</a></li>@endcan
+                    <li><a href="{{ route('blog.admin.index') }}" class="nav-link {{ request()->routeIs('blog.admin.*') ? 'active' : '' }}"><i class="fas fa-blog me-1"></i> Blog Artikel</a></li>
                 </ul>
             </li>
             @endcanany

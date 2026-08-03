@@ -3,7 +3,10 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4>Pengeluaran</h4>
+    <div class="d-flex align-items-center gap-3">
+        <h4 class="mb-0">Pengeluaran</h4>
+        <span class="badge bg-danger fs-6">Total: @money($totalAmount)</span>
+    </div>
     <a href="{{ route('expenses.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Catat Pengeluaran</a>
 </div>
 

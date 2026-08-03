@@ -18,6 +18,7 @@ class ServiceController extends Controller
     public function update(Request $request, $id) { return $this->service->update($request, $id); }
     public function destroy($id) { return $this->service->destroy($id); }
     public function complete(Request $request, $id) { return $this->service->complete($request, $id); }
+    public function start($id) { return $this->service->startService($id); }
     public function uploadImage(Request $request, $id) { return $this->service->uploadImage($request, $id); }
     public function searchCustomers(Request $request) { return $this->service->searchCustomers($request); }
     public function vehiclesByCustomer($customer) { return $this->service->vehiclesByCustomer($customer); }

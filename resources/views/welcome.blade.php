@@ -42,6 +42,18 @@
         h1, h2, h3, h4 { font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; color: var(--c-ink); margin: 0; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
 
+        /* === ANIMATIONS === */
+        @keyframes scanLine { 0%{top:0} 50%{top:95%} 100%{top:0} }
+        @keyframes floatSlow { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+        @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+        @keyframes fadeSlideUp { 0%{transform:translateY(40px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+        @keyframes scaleIn { 0%{transform:scale(.85);opacity:0} 100%{transform:scale(1);opacity:1} }
+        @keyframes pingSlow { 0%{transform:scale(1);opacity:1} 100%{transform:scale(1.5);opacity:0} }
+        .card-lift { transition: transform .35s,box-shadow .35s; }
+        .card-lift:hover { transform:translateY(-6px);box-shadow:0 24px 48px -12px rgba(0,0,0,.18); }
+        .reveal { opacity:0;transform:translateY(30px);transition:opacity .7s,transform .7s cubic-bezier(.16,1,.3,1); }
+        .reveal.visible { opacity:1;transform:translateY(0); }
+
         /* Topbar */
         .nav {
             position: sticky; top: 0; z-index: 50;
@@ -1018,6 +1030,125 @@
     </div>
 </section>
 
+{{-- ====================== SECTION DEMO & PRICING ====================== --}}
+<section id="demo" class="alt">
+    <div class="container">
+        <div class="sec-head">
+            <div class="eyebrow">Akun Demo</div>
+            <h2>Coba semua fitur dengan akun demo</h2>
+            <p>Gunakan kredensial di bawah untuk login dan eksplorasi semua 44 modul Bengkel Paten.</p>
+        </div>
+
+        <div class="table-responsive" style="max-width:700px;margin:0 auto;">
+            <table class="table table-bordered" style="background:#fff;border-radius:12px;overflow:hidden;">
+                <thead style="background:var(--c-primary);color:#fff;">
+                    <tr>
+                        <th style="font-size:0.85rem;">Role</th>
+                        <th style="font-size:0.85rem;">Email</th>
+                        <th style="font-size:0.85rem;">Password</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge bg-primary">Admin</span></td>
+                        <td><code style="font-size:0.82rem;">admin@bengkel.test</code></td>
+                        <td><code style="font-size:0.82rem;">password</code></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge bg-info">Manager</span></td>
+                        <td><code style="font-size:0.82rem;">manager@bengkel.test</code></td>
+                        <td><code style="font-size:0.82rem;">password</code></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge bg-success">Kasir</span></td>
+                        <td><code style="font-size:0.82rem;">kasir@bengkel.test</code></td>
+                        <td><code style="font-size:0.82rem;">password</code></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge bg-warning text-dark">Teknisi</span></td>
+                        <td><code style="font-size:0.82rem;">teknisi@bengkel.test</code></td>
+                        <td><code style="font-size:0.82rem;">password</code></td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge bg-secondary">Sales</span></td>
+                        <td><code style="font-size:0.82rem;">sales@bengkel.test</code></td>
+                        <td><code style="font-size:0.82rem;">password</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+{{-- ====================== SECTION PRICING ====================== --}}
+<section id="pricing">
+    <div class="container">
+        <div class="sec-head">
+            <div class="eyebrow">Harga</div>
+            <h2>Paket yang sesuai dengan skala bengkel Anda</h2>
+            <p>Dari bengkel kecil satu cabang sampai jaringan multi-cabang — semua dilayani.</p>
+        </div>
+
+        <div class="row g-4 justify-content-center" style="max-width:1000px;margin:0 auto;">
+            <div class="col-md-4">
+                <div class="card h-100 border" style="border-radius:14px;">
+                    <div class="card-body text-center p-4">
+                        <span class="badge bg-light text-dark mb-3" style="font-size:0.8rem;padding:0.4rem 0.8rem;">Starter</span>
+                        <h3 style="font-size:2rem;font-weight:800;">Gratis</h3>
+                        <p class="text-muted" style="font-size:0.88rem;">Untuk bengkel kecil 1 cabang</p>
+                        <ul class="list-unstyled text-start mt-3" style="font-size:0.88rem;">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>3 user</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>1 cabang</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Modul dasar</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Laporan standar</li>
+                            <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>POS & Booking</li>
+                            <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Multi-cabang</li>
+                        </ul>
+                        <a href="{{ route('login') }}" class="btn btn-outline-primary w-100 mt-3" style="border-radius:10px;">Mulai Gratis</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm" style="border-radius:14px;border:2px solid var(--c-primary);position:relative;">
+                    <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--c-primary);color:#fff;padding:0.2rem 1rem;border-radius:20px;font-size:0.75rem;font-weight:700;">POPULER</div>
+                    <div class="card-body text-center p-4">
+                        <span class="badge bg-primary mb-3" style="font-size:0.8rem;padding:0.4rem 0.8rem;">Growth</span>
+                        <h3 style="font-size:2rem;font-weight:800;">Rp 299rb<span style="font-size:0.9rem;font-weight:500;color:var(--c-muted);">/bln</span></h3>
+                        <p class="text-muted" style="font-size:0.88rem;">Untuk bengkel berkembang</p>
+                        <ul class="list-unstyled text-start mt-3" style="font-size:0.88rem;">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>10 user</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>3 cabang</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Semua modul</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>POS & Booking</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Laporan lengkap</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Reminder WA/Email</li>
+                        </ul>
+                        <a href="{{ route('login') }}" class="btn btn-primary w-100 mt-3" style="border-radius:10px;">Coba Sekarang</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border" style="border-radius:14px;">
+                    <div class="card-body text-center p-4">
+                        <span class="badge bg-dark mb-3" style="font-size:0.8rem;padding:0.4rem 0.8rem;">Enterprise</span>
+                        <h3 style="font-size:2rem;font-weight:800;">Custom</h3>
+                        <p class="text-muted" style="font-size:0.88rem;">Untuk jaringan bengkel besar</p>
+                        <ul class="list-unstyled text-start mt-3" style="font-size:0.88rem;">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>User unlimited</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Cabang unlimited</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Source code full</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Custom branding</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>API & integrasi</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Priority support</li>
+                        </ul>
+                        <a href="https://wa.me/6281234567890" class="btn btn-outline-dark w-100 mt-3" style="border-radius:10px;">Hubungi Kami</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section class="cta">
     <div class="container">
         <h2>Siap mulai dengan Bengkel Paten?</h2>
@@ -1094,6 +1225,23 @@
 </script>
 
 @include('components.purchase-cta')
+
+<script>
+// Scroll reveal animation
+(function() {
+    const reveals = document.querySelectorAll('.feature, .mini-card, .module-tile, .timeline-step, .stat');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('reveal', 'visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => el.classList.add('reveal'));
+    reveals.forEach(el => observer.observe(el));
+})();
+</script>
 
 </body>
 </html>
