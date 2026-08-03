@@ -169,6 +169,7 @@ Route::middleware(['auth'])->group(function () {
     // --- Services custom routes (before resource to avoid conflicts) ---
     Route::post('/services/{service}/complete', [ServiceController::class, 'complete'])->name('services.complete');
     Route::post('/services/{service}/start', [ServiceController::class, 'start'])->name('services.start');
+    Route::post('/services/{service}/advance', [ServiceController::class, 'advance'])->name('services.advance');
     Route::post('/services/{service}/upload-image', [ServiceController::class, 'uploadImage'])->name('services.upload-image');
     Route::get('/services/customers/search', [ServiceController::class, 'searchCustomers'])->name('services.customers.search');
     Route::get('/services/vehicles-by-customer/{customer}', [ServiceController::class, 'vehiclesByCustomer'])->name('services.vehicles-by-customer');

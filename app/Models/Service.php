@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['customer_id', 'vehicle_id', 'repair_category_id', 'title', 'description', 'service_date', 'charge', 'estimated_hours', 'started_at', 'completed_at', 'done_status', 'mot_status', 'is_quotation', 'is_approved', 'created_by', 'branch_id', 'job_no'])]
+#[Fillable(['customer_id', 'vehicle_id', 'repair_category_id', 'title', 'description', 'service_date', 'charge', 'estimated_hours', 'started_at', 'completed_at', 'done_status', 'workflow_status', 'checked_in_at', 'qc_passed_at', 'mot_status', 'is_quotation', 'is_approved', 'created_by', 'branch_id', 'job_no'])]
 class Service extends Model
 {
     use HasFactory, SoftDeletes, HasBranchScope;
@@ -86,6 +86,39 @@ class Service extends Model
     {
         return $this->hasOne(Invoice::class);
     }
+
+    public function getStatusLabelAttribute(): string
+    {
+        if ($this->workflow_status !== null) {
+            return match ((int) $this->workflow_status) {
+                0 => 'Pending', 1 => 'Checked In', 2 => 'In Progress',
+                3 => 'QC', 4 => 'Ready', 5 => 'Delivered',
+                default => 'Pending',
+            };
+        }
+        return match ((int) $this->done_status) {
+            0 => 'Pending', 1 => 'In Progress', 2 => 'Done',
+            default => 'Pending',
+        };
+    }
+
+    public function getStatusColorAttribute(): string
+    {
+        if ($this->workflow_status !== null) {
+            return match ((int) $this->workflow_status) {
+                0 => 'secondary', 1 => 'info', 2 => 'warning',
+                3 => 'primary', 4 => 'teal', 5 => 'success',
+                default => 'secondary',
+            };
+        }
+        return match ((int) $this->done_status) {
+            0 => 'secondary', 1 => 'warning', 2 => 'success',
+            default => 'secondary',
+        };
+    }
+
+    public function getWorkflowLabelAttribute(): string { return $this->status_label; }
+    public function getWorkflowColorAttribute(): string { return $this->status_color; }
 
     public function scopeOpen($query)
     {

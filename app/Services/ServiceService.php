@@ -160,6 +160,7 @@ class ServiceService extends BaseService
         DB::transaction(function () use ($service) {
             $service->update([
                 'done_status' => 2,
+                'workflow_status' => 5,
                 'completed_at' => now(),
             ]);
 
@@ -197,10 +198,34 @@ class ServiceService extends BaseService
         $service = Service::findOrFail($id);
         $service->update([
             'done_status' => 1,
+            'workflow_status' => 1,
             'started_at' => $service->started_at ?? now(),
+            'checked_in_at' => $service->checked_in_at ?? now(),
         ]);
 
         return back()->with('success', 'Servis dimulai. Timer berjalan.');
+    }
+
+    public function advanceWorkflow($id)
+    {
+        $service = Service::findOrFail($id);
+        $nextStatus = ($service->workflow_status ?? 0) + 1;
+        if ($nextStatus > 5) $nextStatus = 5;
+
+        $data = ['workflow_status' => $nextStatus];
+        if ($nextStatus >= 5) {
+            $data['done_status'] = 2;
+            $data['completed_at'] = now();
+        } elseif ($nextStatus >= 2) {
+            $data['done_status'] = 1;
+            $data['started_at'] = $data['started_at'] ?? now();
+        }
+        if ($nextStatus >= 3) $data['qc_passed_at'] = now();
+
+        $service->update($data);
+
+        $labels = [0=>'Pending',1=>'Checked In',2=>'In Progress',3=>'QC',4=>'Ready',5=>'Delivered'];
+        return back()->with('success', 'Status: ' . $labels[$nextStatus]);
     }
 
     public function uploadImage(Request $request, $id)

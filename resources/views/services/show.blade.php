@@ -6,11 +6,12 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0"><i class="fas fa-clipboard-list text-warning me-2"></i>{{ $service->job_no }}</h5>
     <div>
-        @if($service->done_status == 0)
-        <form action="{{ route('services.start', $service) }}" method="POST" class="d-inline">
+        @php $ws = $service->workflow_status ?? 0; @endphp
+        @if($ws < 5)
+        <form action="{{ route('services.advance', $service) }}" method="POST" class="d-inline">
             @csrf
-            <button class="btn btn-warning btn-sm" onclick="return confirm('Mulai servis sekarang?')">
-                <i class="fas fa-play me-1"></i> Mulai
+            <button class="btn btn-{{ $ws==0 ? 'secondary' : ($ws==1 ? 'info' : ($ws==2 ? 'warning' : ($ws==3 ? 'primary' : 'teal'))) }} btn-sm" onclick="return confirm('Lanjut ke step berikutnya?')">
+                <i class="fas fa-arrow-right me-1"></i> {{ ['Mulai','Check In','Kerjakan','QC','Ready'][$ws] ?? 'Next' }}
             </button>
         </form>
         @endif
