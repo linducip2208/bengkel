@@ -144,6 +144,11 @@ Route::middleware(['auth'])->group(function () {
     // --- Settings ---
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    Route::get('/settings/backup', [SettingsController::class, 'backupPage'])->name('settings.backup-page');
+    Route::post('/settings/backup', [SettingsController::class, 'backup'])->name('settings.backup');
+    Route::get('/settings/backup/download', [SettingsController::class, 'backupDownload'])->name('settings.backup-download');
+    Route::post('/settings/cache-clear', [SettingsController::class, 'cacheClear'])->name('settings.cache-clear');
+    Route::post('/settings/optimize', [SettingsController::class, 'optimize'])->name('settings.optimize');
 
     // --- Jobcards (non-resource) ---
     Route::get('/jobcards', [JobcardController::class, 'index'])->name('jobcards.index');

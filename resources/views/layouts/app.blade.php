@@ -698,6 +698,7 @@
                     @can('custom-field.view')<li><a href="{{ route('custom-fields.index') }}" class="nav-link {{ request()->is('custom-fields*') ? 'active' : '' }}"><i class="fas fa-puzzle-piece me-1"></i> Custom Fields</a></li>@endcan
                     @can('payment-gateway.view')<li><a href="{{ route('payment-gateways.index') }}" class="nav-link {{ request()->routeIs('payment-gateways.*') ? 'active' : '' }}"><i class="fas fa-credit-card me-1"></i> Payment Gateway</a></li>@endcan
                     @can('two-factor.view')<li><a href="{{ route('2fa.enable.form') }}" class="nav-link {{ request()->routeIs('2fa.*') ? 'active' : '' }}"><i class="fas fa-fingerprint me-1"></i> Two-Factor Auth (2FA)</a></li>@endcan
+                    <li><a href="{{ route('settings.backup-page') }}" class="nav-link {{ request()->routeIs('settings.backup*') ? 'active' : '' }}"><i class="fas fa-database me-1"></i> Backup & Restore</a></li>
                 </ul>
             </li>
             @endcanany

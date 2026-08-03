@@ -30,4 +30,31 @@ class SettingsController extends Controller
         return redirect()->route('settings.index')
             ->with('success', 'Pengaturan berhasil disimpan.');
     }
+
+    public function backupPage(): View { return view('settings.backup'); }
+
+    public function backup()
+    {
+        $dir = storage_path('app/backups');
+        if (!is_dir($dir)) mkdir($dir, 0755, true);
+        $db = config('database.connections.mysql');
+        $filename = 'backup-' . now()->format('Ymd-His') . '.sql';
+        $path = $dir . '/' . $filename;
+        $cmd = sprintf('mysqldump --user=%s --password=%s --host=%s --port=%s %s > %s',
+            escapeshellarg($db['username']), escapeshellarg($db['password']),
+            escapeshellarg($db['host']), escapeshellarg($db['port']),
+            escapeshellarg($db['database']), escapeshellarg($path));
+        exec($cmd, output: $output, result_code: $exitCode);
+        if ($exitCode === 0) return response()->download($path)->deleteFileAfterSend();
+        return back()->with('error', 'Backup gagal.');
+    }
+
+    public function backupDownload(Request $request)
+    {
+        $file = storage_path('app/backups/' . basename($request->file));
+        return file_exists($file) ? response()->download($file) : back()->with('error', 'File tidak ditemukan.');
+    }
+
+    public function cacheClear() { \Illuminate\Support\Facades\Artisan::call('optimize:clear'); return back()->with('success', 'Cache cleared.'); }
+    public function optimize() { \Illuminate\Support\Facades\Artisan::call('optimize'); return back()->with('success', 'Optimized.'); }
 }
