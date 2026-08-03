@@ -124,26 +124,37 @@ class PermissionSeeder extends Seeder
         $this->command->info('  Created 5 roles: super_admin, admin, manager, kasir, mekanik.');
 
         // ── Assign roles ke users ──
-        $adminUser = \App\Models\User::where('email', 'admin@bengkelpaten.id')->first();
-        if ($adminUser) { $adminUser->assignRole('super_admin'); $this->command->info('  admin@bengkelpaten.id → super_admin'); }
+        $adminUser = \App\Models\User::where('email', 'admin@bengkel.test')->first();
+        if ($adminUser) { $adminUser->assignRole('super_admin'); $this->command->info('  admin@bengkel.test → super_admin'); }
 
-        $mekanikUser = \App\Models\User::where('email', 'mekanik@bengkelpaten.id')->first();
-        if ($mekanikUser) { $mekanikUser->assignRole('mekanik'); $this->command->info('  mekanik@bengkelpaten.id → mekanik'); }
+        $mekanikUser = \App\Models\User::where('email', 'teknisi@bengkel.test')->first();
+        if ($mekanikUser) { $mekanikUser->assignRole('mekanik'); $this->command->info('  teknisi@bengkel.test → mekanik'); }
 
         // ── Tambah 2 user demo ──
         $managerUser = \App\Models\User::firstOrCreate(
-            ['email' => 'manager@bengkelpaten.test'],
+            ['email' => 'manager@bengkel.test'],
             ['name' => 'Manager Cabang', 'password' => bcrypt('password'), 'is_active' => true]
         );
         $managerUser->assignRole('manager');
 
         $kasirUser = \App\Models\User::firstOrCreate(
-            ['email' => 'kasir@bengkelpaten.test'],
+            ['email' => 'kasir@bengkel.test'],
             ['name' => 'Kasir Counter', 'password' => bcrypt('password'), 'is_active' => true]
         );
         $kasirUser->assignRole('kasir');
 
-        $this->command->info('  Demo users: manager@bengkelpaten.test / kasir@bengkelpaten.test');
-        $this->command->info('Permissions & roles seeded successfully!');
+        $teknisiUser = \App\Models\User::firstOrCreate(
+            ['email' => 'teknisi@bengkel.test'],
+            ['name' => 'Teknisi 1', 'password' => bcrypt('password'), 'is_active' => true]
+        );
+        $teknisiUser->assignRole('mekanik');
+
+        $salesUser = \App\Models\User::firstOrCreate(
+            ['email' => 'sales@bengkel.test'],
+            ['name' => 'Sales Counter', 'password' => bcrypt('password'), 'is_active' => true]
+        );
+        $salesUser->assignRole('kasir');
+
+        $this->command->info('  Demo users: manager@bengkel.test / kasir@bengkel.test / teknisi@bengkel.test / sales@bengkel.test');
     }
 }

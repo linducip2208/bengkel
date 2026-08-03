@@ -62,16 +62,16 @@ class DatabaseSeeder extends Seeder
 
     private function seedUsers(): void
     {
-        User::firstOrCreate(['email' => 'admin@bengkelpaten.id'], [
+        User::firstOrCreate(['email' => 'admin@bengkel.test'], [
             'name' => 'Admin Bengkel',
-            'email' => 'admin@bengkelpaten.id',
+            'email' => 'admin@bengkel.test',
             'password' => bcrypt('password'),
             'is_active' => true,
         ]);
 
-        User::firstOrCreate(['email' => 'mekanik@bengkelpaten.id'], [
-            'name' => 'Mekanik 1',
-            'email' => 'mekanik@bengkelpaten.id',
+        User::firstOrCreate(['email' => 'teknisi@bengkel.test'], [
+            'name' => 'Teknisi 1',
+            'email' => 'teknisi@bengkel.test',
             'password' => bcrypt('password'),
             'is_active' => true,
         ]);
