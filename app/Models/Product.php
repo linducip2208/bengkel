@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'product_no', 'code', 'name', 'product_type_id', 'unit_id', 'supplier_id',
+    'product_no', 'code', 'barcode', 'name', 'product_type_id', 'unit_id', 'supplier_id',
     'price', 'cost_price', 'warranty', 'description', 'branch_id'
 ])]
 class Product extends Model

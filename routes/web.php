@@ -46,6 +46,7 @@ use App\Http\Controllers\Tenant\RepairCategoryController;
 use App\Http\Controllers\Tenant\ReportController;
 use App\Http\Controllers\Tenant\SaleController;
 use App\Http\Controllers\Tenant\ServiceController;
+use App\Http\Controllers\Tenant\ServicePackageController;
 use App\Http\Controllers\Tenant\SettingsController;
 use App\Http\Controllers\Tenant\StateController;
 use App\Http\Controllers\Tenant\StockHistoryController;
@@ -135,6 +136,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/sales', [ReportController::class, 'salesReport'])->name('reports.sales');
     Route::get('/reports/stock', [ReportController::class, 'stockReport'])->name('reports.stock');
     Route::get('/reports/financial', [ReportController::class, 'financialReport'])->name('reports.financial');
+    Route::get('/reports/technician', [ReportController::class, 'technicianPerformance'])->name('reports.technician');
+    Route::get('/reports/customer-lifetime', [ReportController::class, 'customerLifetime'])->name('reports.customer-lifetime');
     Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
     Route::get('/reports/export-excel', [ReportController::class, 'exportExcel'])->name('reports.export-excel');
 
@@ -347,6 +350,10 @@ Route::middleware(['auth'])->group(function () {
 
     // --- Subcontractors ---
     Route::resource('subcontractors', SubcontractorController::class);
+
+    // --- Service Packages ---
+    Route::resource('service-packages', ServicePackageController::class)->except(['show']);
+    Route::get('/service-packages/{servicePackage}/json', [ServicePackageController::class, 'getJson'])->name('service-packages.json');
 
     // --- Blog Admin ---
     Route::prefix('blog-admin')->name('blog.admin.')->group(function () {

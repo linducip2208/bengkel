@@ -72,7 +72,15 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Judul <span class="text-danger">*</span></label>
+                        <label class="form-label">Paket Service (Quick Fill)</label>
+                        <select class="form-select" id="packageSelect" onchange="fillPackage()">
+                            <option value="">-- Pilih Paket (opsional) --</option>
+                            @foreach(\App\Models\ServicePackage::where('is_active', true)->orderBy('name')->get() as $pkg)
+                                <option value="{{ $pkg->id }}" data-price="{{ $pkg->price }}" data-hours="{{ $pkg->estimated_hours }}" data-desc="{{ $pkg->description }}">{{ $pkg->name }} — @money($pkg->price)</option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">Pilih paket untuk auto-fill judul, biaya, dan estimasi</small>
+                    </div>
                         <input type="text" name="title" class="form-control @error('title') is-invalid @enderror"
                                value="{{ old('title') }}" placeholder="Masukkan judul servis..." required>
                         @error('title') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -122,6 +130,15 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+    function fillPackage() {
+        const sel = document.getElementById('packageSelect');
+        const opt = sel.options[sel.selectedIndex];
+        if (!opt.value) return;
+        document.querySelector('[name="title"]').value = opt.text.split(' — ')[0];
+        document.querySelector('[name="charge"]').value = opt.dataset.price;
+        document.querySelector('[name="estimated_hours"]').value = opt.dataset.hours || '';
+        document.querySelector('[name="description"]').value = opt.dataset.desc || '';
+    }
     $('#customerSelect').select2({
         theme: 'bootstrap-5',
         placeholder: 'Cari pelanggan...',

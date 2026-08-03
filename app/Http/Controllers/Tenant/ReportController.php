@@ -153,4 +153,47 @@ class ReportController extends Controller
 
         return response()->download($filename)->deleteFileAfterSend();
     }
+
+    public function technicianPerformance(Request $request, ReportService $reportService)
+    {
+        $filters = $request->only(['start_date', 'end_date']);
+        $start = $filters['start_date'] ?? now()->startOfMonth()->toDateString();
+        $end = $filters['end_date'] ?? now()->toDateString();
+
+        $technicians = \App\Models\ServiceTechnician::join('services', 'service_technicians.service_id', '=', 'services.id')
+            ->whereBetween('services.service_date', [$start, $end])
+            ->selectRaw('service_technicians.user_id, COUNT(*) as job_count, SUM(services.charge) as total_revenue, AVG(TIMESTAMPDIFF(MINUTE, services.started_at, services.completed_at)) as avg_minutes')
+            ->groupBy('service_technicians.user_id')
+            ->with('user')
+            ->get()
+            ->map(function ($t) {
+                $t->technician_name = $t->user->name ?? 'Unknown';
+                $t->avg_duration = $t->avg_minutes ? round($t->avg_minutes / 60, 1) : null;
+                return $t;
+            });
+
+        $topTechnician = $technicians->sortByDesc('total_revenue')->first();
+        $totalJobs = $technicians->sum('job_count');
+
+        return view('reports.technician', compact('technicians', 'topTechnician', 'totalJobs', 'start', 'end'));
+    }
+
+    public function customerLifetime(Request $request)
+    {
+        $topCustomers = \App\Models\Customer::withCount(['services'])
+            ->withSum('services', 'charge')
+            ->having('services_count', '>', 0)
+            ->orderByDesc('services_sum_charge')
+            ->limit(20)
+            ->get()
+            ->map(function ($c) {
+                $c->last_service = $c->services()->latest('service_date')->first()?->service_date;
+                $c->lifetime_value = $c->services_sum_charge ?? 0;
+                $c->avg_per_visit = $c->services_count > 0 ? $c->lifetime_value / $c->services_count : 0;
+                return $c;
+            });
+
+        return view('reports.customer-lifetime', compact('topCustomers'));
+    }
+}
 }

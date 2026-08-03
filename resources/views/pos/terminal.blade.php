@@ -43,7 +43,7 @@
         <div id="productList">
             @foreach($products as $p)
                 @php $stock = $p->stockRecord?->quantity ?? 0; @endphp
-                <div class="product-card {{ $stock <= 0 ? 'out' : '' }}" data-id="{{ $p->id }}" data-name="{{ e($p->name) }}" data-code="{{ e($p->code) }}" data-price="{{ $p->price }}" data-stock="{{ $stock }}">
+                <div class="product-card {{ $stock <= 0 ? 'out' : '' }}" data-id="{{ $p->id }}" data-name="{{ e($p->name) }}" data-code="{{ e($p->code) }}" data-barcode="{{ e($p->barcode) }}" data-price="{{ $p->price }}" data-stock="{{ $stock }}">
                     <div>
                         <div class="name">{{ $p->name }}</div>
                         <div class="meta"><code>{{ $p->code }}</code> • Stok: <strong>{{ $stock }}</strong></div>
@@ -209,7 +209,7 @@
     searchInput.addEventListener('input', () => {
         const q = searchInput.value.trim().toLowerCase();
         items.forEach(el => {
-            const match = !q || el.dataset.name.toLowerCase().includes(q) || el.dataset.code.toLowerCase().includes(q);
+            const match = !q || el.dataset.name.toLowerCase().includes(q) || el.dataset.code.toLowerCase().includes(q) || (el.dataset.barcode || '').toLowerCase().includes(q);
             el.style.display = match ? '' : 'none';
         });
     });

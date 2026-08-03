@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['invoice_number', 'customer_id', 'service_id', 'sale_id', 'payment_method_id', 'payment_status', 'total_amount', 'discount', 'tax_amount', 'grand_total', 'paid_amount', 'amount_received', 'invoice_date', 'invoice_type', 'created_by', 'notes', 'branch_id'])]
+#[Fillable(['invoice_number', 'customer_id', 'service_id', 'sale_id', 'payment_method_id', 'payment_status', 'total_amount', 'discount', 'tax_amount', 'grand_total', 'paid_amount', 'amount_received', 'dp_amount', 'dp_status', 'invoice_date', 'invoice_type', 'created_by', 'notes', 'branch_id', 'pos_session_id'])]
 class Invoice extends Model
 {
     use HasFactory, SoftDeletes, HasBranchScope;

@@ -124,12 +124,13 @@ class PosController extends Controller
         $products = Product::with('stockRecord')
             ->where(function ($qq) use ($q) {
                 $qq->where('code', $q)
+                    ->orWhere('barcode', $q)
                     ->orWhere('code', 'like', "%{$q}%")
                     ->orWhere('name', 'like', "%{$q}%")
                     ->orWhere('product_no', 'like', "%{$q}%");
             })
             ->limit(20)
-            ->get(['id', 'product_no', 'code', 'name', 'price'])
+            ->get(['id', 'product_no', 'code', 'barcode', 'name', 'price'])
             ->map(fn($p) => [
                 'id' => $p->id,
                 'code' => $p->code,

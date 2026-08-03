@@ -101,17 +101,22 @@
     </div>
 
     <div class="row g-3 mb-3">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label class="form-label">Diskon (Rp)</label>
             <input type="number" name="discount" class="form-control @error('discount') is-invalid @enderror" value="{{ old('discount', 0) }}" min="0" step="1000" oninput="calcGrand()">
             @error('discount') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label class="form-label">Pajak (Rp)</label>
             <input type="number" name="tax_amount" class="form-control @error('tax_amount') is-invalid @enderror" value="{{ old('tax_amount', 0) }}" min="0" step="1000" oninput="calcGrand()">
             @error('tax_amount') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
+            <label class="form-label">Down Payment (Rp)</label>
+            <input type="number" name="dp_amount" class="form-control @error('dp_amount') is-invalid @enderror" value="{{ old('dp_amount', 0) }}" min="0" step="5000" oninput="calcGrand()">
+            @error('dp_amount') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+        <div class="col-md-3">
             <label class="form-label">Grand Total</label>
             <input type="text" id="grandTotal" class="form-control fw-bold text-end" readonly value="Rp 0">
         </div>

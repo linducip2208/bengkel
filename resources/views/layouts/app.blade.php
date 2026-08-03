@@ -382,11 +382,11 @@
             {{-- Master Data --}}
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuMasterData"
-                    aria-expanded="{{ request()->is('vehicle-types*','vehicle-brands*','fuel-types*','colors*','product-types*','product-units*','payment-methods*','tax-rates*','repair-categories*','observation-types*','observation-points*','inspection-points*','checkout-categories*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->is('vehicle-types*','vehicle-brands*','fuel-types*','colors*','product-types*','product-units*','payment-methods*','tax-rates*','repair-categories*','observation-types*','observation-points*','inspection-points*','checkout-categories*','service-packages*') ? 'true' : 'false' }}">
                     <i class="fas fa-database"></i> Master Data
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->is('vehicle-types*','vehicle-brands*','fuel-types*','colors*','product-types*','product-units*','payment-methods*','tax-rates*','repair-categories*','observation-types*','observation-points*','inspection-points*','checkout-categories*') ? 'show' : '' }}" id="menuMasterData">
+                <ul class="collapse submenu {{ request()->is('vehicle-types*','vehicle-brands*','fuel-types*','colors*','product-types*','product-units*','payment-methods*','tax-rates*','repair-categories*','observation-types*','observation-points*','inspection-points*','checkout-categories*','service-packages*') ? 'show' : '' }}" id="menuMasterData">
                     <li><a href="{{ route('vehicle-types.index') }}" class="nav-link {{ request()->is('vehicle-types*') ? 'active' : '' }}"><i class="fas fa-truck-pickup me-1"></i> Vehicle Types</a></li>
                     <li><a href="{{ route('vehicle-brands.index') }}" class="nav-link {{ request()->is('vehicle-brands*') ? 'active' : '' }}"><i class="fas fa-trademark me-1"></i> Vehicle Brands</a></li>
                     <li><a href="{{ route('fuel-types.index') }}" class="nav-link {{ request()->is('fuel-types*') ? 'active' : '' }}"><i class="fas fa-gas-pump me-1"></i> Fuel Types</a></li>
@@ -400,6 +400,7 @@
                     <li><a href="{{ route('observation-points.index') }}" class="nav-link {{ request()->is('observation-points*') ? 'active' : '' }}"><i class="fas fa-list-ol me-1"></i> Observation Points</a></li>
                     <li><a href="{{ route('inspection-points.index') }}" class="nav-link {{ request()->is('inspection-points*') ? 'active' : '' }}"><i class="fas fa-search me-1"></i> Inspection Points</a></li>
                     <li><a href="{{ route('checkout-categories.index') }}" class="nav-link {{ request()->is('checkout-categories*') ? 'active' : '' }}"><i class="fas fa-check-double me-1"></i> Checkout Categories</a></li>
+                    <li><a href="{{ route('service-packages.index') }}" class="nav-link {{ request()->is('service-packages*') ? 'active' : '' }}"><i class="fas fa-cubes me-1"></i> Service Packages</a></li>
                 </ul>
             </li>
             @endcan
@@ -612,6 +613,8 @@
                     <li><a href="{{ route('reports.sales') }}" class="nav-link {{ request()->routeIs('reports.sales') ? 'active' : '' }}"><i class="fas fa-shopping-cart me-1"></i> Sales Report</a></li>
                     <li><a href="{{ route('reports.stock') }}" class="nav-link {{ request()->routeIs('reports.stock') ? 'active' : '' }}"><i class="fas fa-boxes me-1"></i> Stock Report</a></li>
                     <li><a href="{{ route('reports.financial') }}" class="nav-link {{ request()->routeIs('reports.financial') ? 'active' : '' }}"><i class="fas fa-chart-pie me-1"></i> Financial Report</a></li>
+                    <li><a href="{{ route('reports.technician') }}" class="nav-link {{ request()->routeIs('reports.technician') ? 'active' : '' }}"><i class="fas fa-user-gear me-1"></i> Produktivitas Teknisi</a></li>
+                    <li><a href="{{ route('reports.customer-lifetime') }}" class="nav-link {{ request()->routeIs('reports.customer-lifetime') ? 'active' : '' }}"><i class="fas fa-crown me-1"></i> Customer Lifetime</a></li>
                 </ul>
             </li>
             @endcan
