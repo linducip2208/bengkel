@@ -140,4 +140,23 @@
         </div>
     </div>
 </div>
+<div class="card mt-3"><div class="card-body">
+    <h6><i class="fas fa-tachometer-alt me-2"></i>Riwayat Odometer</h6>
+    @php
+        $odoData = $vehicle->services()->whereNotNull('jobcardDetail')->with('jobcardDetail')->latest()->limit(20)->get()->reverse();
+        $labels = $odoData->pluck('service_date')->map(fn($d)=>$d->format('d/m'));
+        $values = $odoData->pluck('jobcardDetail.odometer_out');
+    @endphp
+    @if($odoData->count() > 1)
+    <canvas id="odoChart" height="120"></canvas>
+    @else
+    <p class="text-muted">Butuh minimal 2 service untuk chart.</p>
+    @endif
+</div></div>
+@push('scripts')
+@if($odoData->count() > 1)
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>new Chart(document.getElementById('odoChart'),{type:'line',data:{labels:{!! json_encode($labels) !!},datasets:[{label:'Odometer (KM)',data:{!! json_encode($values) !!},borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.1)',fill:true,tension:0.3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});</script>
+@endif
+@endpush
 @endsection

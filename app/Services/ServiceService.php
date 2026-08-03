@@ -55,6 +55,19 @@ class ServiceService extends BaseService
     {
         $validated = app(ServiceRequest::class)->validated();
 
+        // Conflict detection: check technician availability
+        $warnings = [];
+        $techIds = $validated['assign_to'] ?? [];
+        if (!empty($techIds) && !empty($validated['service_date'])) {
+            $conflicts = \App\Models\ServiceTechnician::whereIn('user_id', $techIds)
+                ->whereHas('service', fn($q) => $q->whereDate('service_date', \Carbon\Carbon::parse($validated['service_date'])->toDateString())->where('done_status', '<', 2))
+                ->with('user')->get();
+            if ($conflicts->isNotEmpty()) {
+                $names = $conflicts->pluck('user.name')->unique()->implode(', ');
+                $warnings[] = "Teknisi {$names} sudah punya service di tanggal yang sama.";
+            }
+        }
+
         $service = DB::transaction(function () use ($validated, $request) {
             $validated['job_no'] = $this->generateJobNo();
             $validated['done_status'] = $validated['done_status'] ?? 1;
@@ -88,7 +101,8 @@ class ServiceService extends BaseService
 
         return redirect()
             ->route('services.show', $service)
-            ->with('success', 'Servis berhasil dibuat.');
+            ->with('success', 'Servis berhasil dibuat.')
+            ->with('warnings', $warnings);
     }
 
     public function show($id)

@@ -277,6 +277,9 @@ Route::middleware(['auth'])->group(function () {
     // --- Marketing: Voucher & Loyalty ---
     Route::resource('vouchers', VoucherController::class)->except(['show']);
     Route::get('/vouchers-validate', [VoucherController::class, 'validateCode'])->name('vouchers.validate');
+    Route::get('/marketing/campaign', [\App\Http\Controllers\Tenant\CampaignController::class, 'index'])->name('marketing.campaign');
+    Route::post('/marketing/campaign', [\App\Http\Controllers\Tenant\CampaignController::class, 'send'])->name('marketing.campaign.send');
+    Route::get('/marketing/campaign/search', [\App\Http\Controllers\Tenant\CampaignController::class, 'searchCustomers'])->name('marketing.campaign.search');
 
     Route::get('/loyalty', [LoyaltyController::class, 'index'])->name('loyalty.index');
     Route::get('/loyalty/{customer}', [LoyaltyController::class, 'show'])->name('loyalty.show');

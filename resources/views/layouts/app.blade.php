@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="manifest" href="/manifest.json">
+    <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}</script>
     <title>@yield('title', 'Dashboard') — Bengkel Paten</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -17,12 +19,34 @@
             --sidebar-hover: #334155;
             --sidebar-active: #3b82f6;
             --topbar-height: 56px;
+            --bg: #f1f5f9;
+            --card-bg: #fff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+        body.dark {
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: #334155;
         }
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background-color: #f1f5f9;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: background 0.3s, color 0.3s;
         }
+        .card { background: var(--card-bg); border-color: var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .card-header, .modal-content { background: var(--card-bg); border-color: var(--border); }
+        .table { color: var(--text); }
+        .table-light { background: rgba(0,0,0,0.03); }
+        .text-muted { color: var(--text-muted) !important; }
+        .form-control, .form-select { background: var(--card-bg); color: var(--text); border-color: var(--border); }
 
         .sidebar {
             position: fixed;
@@ -545,6 +569,7 @@
                     @can('loyalty.view')<li><a href="{{ route('loyalty.index') }}" class="nav-link {{ request()->routeIs('loyalty.*') ? 'active' : '' }}"><i class="fas fa-star me-1"></i> Loyalty & Membership</a></li>@endcan
                     @can('review.view')<li><a href="{{ route('reviews.index') }}" class="nav-link {{ request()->routeIs('reviews.*') ? 'active' : '' }}"><i class="fas fa-comment-dots me-1"></i> Review & Rating</a></li>@endcan
                     <li><a href="{{ route('blog.admin.index') }}" class="nav-link {{ request()->routeIs('blog.admin.*') ? 'active' : '' }}"><i class="fas fa-blog me-1"></i> Blog Artikel</a></li>
+                    <li><a href="{{ route('marketing.campaign') }}" class="nav-link {{ request()->routeIs('marketing.campaign*') ? 'active' : '' }}"><i class="fas fa-bullhorn me-1"></i> Campaign</a></li>
                 </ul>
             </li>
             @endcanany
@@ -711,6 +736,11 @@
         </button>
         <span class="tenant-name">Bengkel Paten</span>
 
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary" id="darkToggle" title="Dark Mode" onclick="toggleDark()">
+                <i class="fas fa-moon"></i>
+            </button>
+
         @php
             try {
                 $allBranches = \App\Models\Branch::where('is_active', true)->orderBy('name')->get();
@@ -797,6 +827,10 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Dark mode
+        if(localStorage.getItem('dark')==='1') document.body.classList.add('dark');
+        function toggleDark(){ document.body.classList.toggle('dark'); localStorage.setItem('dark',document.body.classList.contains('dark')?'1':'0');
+            document.getElementById('darkToggle').innerHTML=document.body.classList.contains('dark')?'<i class="fas fa-sun"></i>':'<i class="fas fa-moon"></i>'; }
         // Auto-show toasts
         document.querySelectorAll('.toast').forEach(t => new bootstrap.Toast(t).show());
     </script>
