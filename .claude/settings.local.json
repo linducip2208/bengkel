@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-Process *)",
+      "PowerShell(Remove-Item *)",
+      "PowerShell(Get-Command *)",
+      "PowerShell(Get-ChildItem \"D:\\\\project laravel\\\\bengkel\\\\shopee\\\\\" | Select-Object Name, @{N='Size';E={if\\($_.Length -gt 1MB\\){[math]::Round\\($_.Length/1MB,2\\).ToString\\(\\)+' MB'}else{[math]::Round\\($_.Length/1KB,1\\).ToString\\(\\)+' KB'}}} | Format-Table -AutoSize)"
+    ]
+  }
+}

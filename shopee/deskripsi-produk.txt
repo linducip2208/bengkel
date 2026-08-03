@@ -1,0 +1,157 @@
+APLIKASI MANAJEMEN BENGKEL PATEN — 44 MODUL LENGKAP, MULTI-CABANG, POS KASIR, BOOKING ONLINE, LOYALTY & LAPORAN OTOMATIS
+
+============================================================
+SOFTWARE BENGKEL PALING LENGKAP DI INDONESIA
+============================================================
+
+• Aplikasi web manajemen bengkel mobil, motor, truk, dan kendaraan campuran.
+• 44 modul terintegrasi dalam satu sistem — tidak perlu beli add-on terpisah.
+• Multi-cabang siap pakai — kelola semua cabang dari satu admin panel.
+• Tanpa biaya bulanan — beli sekali, akses seumur hidup.
+• Setup 5 menit, langsung bisa dipakai operator front-desk dan teknisi.
+
+============================================================
+SEMUA FITUR YANG ANDA DAPATKAN
+============================================================
+
+▌ INTI OPERASIONAL BENGKEL
+
+• DASHBOARD REALTIME — ringkasan service open, pendapatan hari ini, invoice belum dibayar, dan stok kritis dalam satu layar.
+• MANAJEMEN CUSTOMER — CRUD lengkap, import CSV massal, custom fields, histori service per pelanggan.
+• DATABASE KENDARAAN — plat nomor unik, foto multi-angle, tracking odometer, rekomendasi service berikutnya.
+• ALUR SERVICE — workflow Open → In Process → Done, assign teknisi, kategori repair, foto before/after.
+• JOBCARD & INSPECTION CHECKLIST — 6 kategori inspeksi, 30+ titik inspection points, print PDF untuk tanda tangan.
+• OBSERVATION POINTS — titik inspeksi yang bisa di-custom per tipe pemeriksaan.
+• CHECKOUT CATEGORIES — kategori pemeriksaan akhir sebelum kendaraan keluar.
+• GATE PASS — surat jalan keluar dengan stempel waktu masuk dan keluar.
+
+▌ INVENTORY & PENJUALAN
+
+• INVENTORY SPAREPART — stok realtime, otomatis berkurang saat dipakai service.
+• STOCK OPNAME — koreksi setelah hitung fisik dengan trail history lengkap.
+• STOCK ADJUSTMENT — penyesuaian stok per produk dengan alasan.
+• MANAJEMEN SUPPLIER — CRUD lengkap, history pembelian, kontak.
+• PURCHASE ORDER — buat PO ke supplier, tandai received → stok otomatis bertambah.
+• SALES POS PARTS — penjualan parts langsung tanpa service.
+• POS KASIR REALTIME — terminal kasir scan barcode untuk walk-in customer.
+
+▌ INVOICE & PEMBAYARAN
+
+• INVOICE 3 TIPE — service, sales kendaraan, dan parts.
+• PDF PROFESIONAL — bawa logo bengkel, NPWP, dan tanda tangan digital.
+• KIRIM VIA WHATSAPP — satu klik, customer langsung terima invoice di WA.
+• KIRIM VIA EMAIL — pakai SMTP yang Anda atur sendiri.
+• MULTI METODE BAYAR — Cash, Transfer, QRIS, GoPay, OVO, Dana, Debit, Kredit, Piutang.
+• PEMBAYARAN CICIL — status otomatis Unpaid → Half Paid → Full Paid.
+• HISTORI PEMBAYARAN — lengkap per invoice untuk rekonsiliasi.
+
+▌ KEUANGAN & LAPORAN
+
+• PEMASUKAN (INCOME) — catat pemasukan non-service.
+• PENGELUARAN (EXPENSE) — track gaji, listrik, sewa, dengan kategori.
+• PETTY CASH — kas kecil harian untuk pengeluaran cepat.
+• LAPORAN SERVICE — volume service per kategori dan per teknisi.
+• LAPORAN PENJUALAN — penjualan parts dan kendaraan per periode.
+• LAPORAN STOK — stok berjalan dan slow-moving items.
+• LAPORAN KEUANGAN — profit/loss otomatis dari semua sumber.
+• EKSPOR PDF & EXCEL — semua laporan bisa di-download.
+
+▌ MULTI-CABANG & OPERASIONAL
+
+• CABANG TIDAK TERBATAS — tambah cabang baru kapan saja.
+• SWITCH CABANG CEPAT — pindah cabang dari topbar dengan satu klik.
+• WASHBAY / SLOT SERVICE — visualisasi slot kosong, dipakai, atau maintenance.
+• JAM OPERASIONAL — atur buka-tutup per hari per cabang.
+• HARI LIBUR — sekali set, berlaku berulang setiap tahun.
+
+▌ MARKETING & LOYALTY
+
+• BOOKING ONLINE — customer pesan jadwal service dari handphone.
+• LOYALTY POINTS — poin per Rupiah pembelian, dapat di-redeem.
+• MEMBERSHIP TIER — Bronze, Silver, Gold, Platinum dengan benefit beda.
+• VOUCHER & PROMO — generate kode dengan masa berlaku dan max usage.
+• REVIEW CUSTOMER — kumpulkan rating untuk konten marketing.
+• KLAIM GARANSI — tracking klaim dari customer sampai diselesaikan.
+• REMINDER OTOMATIS — kirim batch reminder ganti oli, MOT, STNK, ulang tahun.
+• NOTIFICATION TEMPLATES — template WhatsApp & email dengan variabel dinamis.
+
+▌ HRM & TATA KELOLA
+
+• USER MANAGEMENT — daftarkan karyawan, aktifkan/nonaktifkan, assign cabang.
+• ROLES & PERMISSIONS — RBAC granular per modul untuk setiap role.
+• KOMISI TEKNISI & SALES — hitung komisi otomatis dari service atau parts.
+• PAYMENT GATEWAY DINAMIS — Midtrans, Xendit, atau yang lain. User input sendiri.
+• ACTIVITY LOG — jejak setiap aksi user untuk audit dan compliance.
+• EMAIL LOG — verifikasi keterkiriman email dengan status delivered.
+
+▌ MASTER DATA & EKSTENSIBILITAS
+
+• MASTER DATA LENGKAP — 13 jenis (vehicle types, brands, fuel, color, product types, units, payment methods, tax rates, repair categories, dst).
+• CUSTOM FIELDS — tambah field tambahan tanpa coding di customer, kendaraan, service.
+• NOTES POLYMORPHIC — catatan internal di semua entitas.
+• STOCK HISTORY — audit trail per produk siapa-kapan-berapa.
+• GEOGRAFI — negara, provinsi, kota untuk alamat terstandar.
+• CURRENCY — multi-mata uang dengan default IDR.
+
+============================================================
+KEUNGGULAN DIBANDING APLIKASI LAIN
+============================================================
+
+• HARGA SEKALI BAYAR — tidak ada langganan bulanan atau tahunan.
+• KODE SUMBER MILIK ANDA — bisa di-host sendiri di server pribadi.
+• MULTI-CABANG ASLI — bukan trial, langsung siap pakai untuk banyak lokasi.
+• BACKUP DATABASE HARIAN — data Anda aman dari kehilangan.
+• UPDATE GRATIS SEUMUR HIDUP — fitur baru otomatis untuk pelanggan.
+• SUPPORT TEKNIS 24/7 — chat WA langsung dengan tim developer.
+• TUTORIAL LENGKAP — dokumentasi online di domain.com/docs.
+• SETUP GRATIS — tim kami bantu install di server Anda.
+
+============================================================
+COCOK UNTUK
+============================================================
+
+• Bengkel mobil umum dan spesialis.
+• Bengkel motor dan workshop modifikasi.
+• Bengkel campuran (mobil + motor + truk).
+• Bengkel franchise multi-cabang.
+• Bengkel cuci dan detailing.
+• Bengkel body repair dan cat oven.
+• Toko sparepart yang juga melayani service.
+• Dealer kendaraan dengan after-sales service.
+
+============================================================
+SPESIFIKASI TEKNIS
+============================================================
+
+• Platform: Web-based (akses dari browser apa saja).
+• Bahasa: Indonesia (full).
+• Framework: Laravel 12 (PHP 8.2).
+• Database: MySQL.
+• Hosting: bisa di shared hosting, VPS, atau server pribadi.
+• Mobile-friendly: tampilan responsif untuk HP dan tablet.
+• Multi-user: tidak ada batasan jumlah pengguna.
+• Multi-cabang: tidak ada batasan jumlah cabang.
+
+============================================================
+PAKET YANG ANDA TERIMA
+============================================================
+
+• File source code aplikasi lengkap.
+• File database awal dengan data sample.
+• Panduan instalasi step by step.
+• Tutorial penggunaan dalam bahasa Indonesia.
+• Akun lisensi seumur hidup.
+• Bantuan instalasi via remote.
+• Garansi support teknis 1 tahun penuh.
+• Akses update fitur baru selamanya.
+
+============================================================
+PESAN SEKARANG SEBELUM PROMO BERAKHIR
+============================================================
+
+• Stock terbatas untuk slot instalasi minggu ini.
+• Klik tombol CHAT untuk konsultasi gratis dengan tim kami.
+• Kirim spesifikasi server Anda, kami cek kompatibilitasnya.
+• Garansi uang kembali jika aplikasi tidak bisa dipasang.
+
+#bengkel #aplikasibengkel #softwarebengkel #manajemenbengkel #posbengkel #bookingbengkel #bengkelmobil #bengkelmotor #bengkelonline #aplikasimanajemen #softwarelaravel #bengkelkasir #aplikasiservice #jobcard #invoicebengkel #stokparts #bengkelmulticabang #loyaltycustomer #bengkeldigital #ukmbengkel

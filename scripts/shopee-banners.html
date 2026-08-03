@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Shopee Marketing Banners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1920px; background: #050816; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #fff; }
+
+.slide {
+    width: 1920px;
+    height: 1080px;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+}
+
+/* ========== Style helpers ========== */
+.bg-grid {
+    position: absolute; inset: 0;
+    background-image:
+        linear-gradient(rgba(99,102,241,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,0.07) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(circle at center, #000 30%, transparent 75%);
+}
+.glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.5;
+    pointer-events: none;
+}
+.glow.blue   { background: #2563eb; }
+.glow.violet { background: #8b5cf6; }
+.glow.cyan   { background: #06b6d4; }
+.glow.pink   { background: #ec4899; }
+.glow.amber  { background: #f59e0b; }
+.glow.emerald{ background: #10b981; }
+
+.brand-bar {
+    position: absolute; top: 50px; left: 80px;
+    display: flex; align-items: center; gap: 16px;
+    z-index: 10;
+}
+.brand-bar .logo {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; color: #fff;
+    box-shadow: 0 12px 30px -8px rgba(37,99,235,0.5);
+}
+.brand-bar .name { font-weight: 800; font-size: 26px; letter-spacing: -0.02em; }
+.brand-bar .tag {
+    margin-left: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #cbd5e1;
+}
+
+.page-no {
+    position: absolute; top: 60px; right: 80px;
+    font-size: 18px; font-weight: 600;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.1em;
+    z-index: 10;
+}
+
+.bottom-bar {
+    position: absolute; bottom: 50px; left: 80px; right: 80px;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 10;
+}
+.bottom-bar .cta {
+    background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%);
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    display: inline-flex; align-items: center; gap: 10px;
+    box-shadow: 0 10px 30px -6px rgba(37,99,235,0.6);
+}
+.bottom-bar .url {
+    color: rgba(255,255,255,0.5);
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* ========== Slide 1: HERO ========== */
+.s1 {
+    background:
+        radial-gradient(ellipse at 80% 30%, rgba(37,99,235,0.4) 0%, transparent 60%),
+        radial-gradient(ellipse at 20% 70%, rgba(139,92,246,0.35) 0%, transparent 60%),
+        linear-gradient(135deg, #050816 0%, #0f0b29 100%);
+}
+.s1 .glow1 { top: -200px; right: -100px; width: 700px; height: 700px; }
+.s1 .glow2 { bottom: -200px; left: -100px; width: 700px; height: 700px; }
+.s1-content {
+    position: absolute; top: 220px; left: 80px; right: 80px; bottom: 200px;
+    display: grid; grid-template-columns: 1.1fr 1fr; gap: 60px; align-items: center;
+}
+.s1-left .pill {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 16px;
+    color: #c7d2fe;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+}
+.s1-left .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 12px #10b981; }
+.s1-left h1 {
+    font-size: 96px; line-height: 0.95;
+    font-weight: 900; letter-spacing: -0.03em;
+    margin-bottom: 30px;
+}
+.s1-left h1 .grad {
+    background: linear-gradient(135deg, #60a5fa 0%, #c084fc 50%, #f0abfc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.s1-left .lead {
+    font-size: 26px; line-height: 1.4;
+    color: rgba(255,255,255,0.75);
+    max-width: 720px;
+    margin-bottom: 40px;
+}
+.s1-left .badges { display: flex; gap: 12px; flex-wrap: wrap; }
+.s1-left .badge {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 12px 22px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    display: inline-flex; align-items: center; gap: 10px;
+}
+.s1-left .badge i { color: #60a5fa; }
+
+.s1-right { position: relative; }
+.s1-right .device {
+    position: relative;
+    border-radius: 22px;
+    background: #0a1130;
+    padding: 18px 18px 22px;
+    box-shadow:
+        0 60px 100px -30px rgba(37,99,235,0.5),
+        0 30px 60px -20px rgba(0,0,0,0.6),
+        0 0 0 1px rgba(255,255,255,0.08) inset;
+    transform: perspective(1500px) rotateY(-10deg) rotateX(3deg);
+}
+.s1-right .device::before {
+    content: '';
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 60px; height: 5px; border-radius: 99px;
+    background: rgba(255,255,255,0.12);
+}
+.s1-right .device img {
+    width: 100%; display: block;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ========== Generic feature slide ========== */
+.feat {
+    background:
+        radial-gradient(ellipse at var(--glow-x, 80%) var(--glow-y, 20%), var(--glow-c1, rgba(37,99,235,0.35)) 0%, transparent 55%),
+        radial-gradient(ellipse at var(--glow-x2, 10%) var(--glow-y2, 90%), var(--glow-c2, rgba(139,92,246,0.3)) 0%, transparent 55%),
+        linear-gradient(135deg, #050816 0%, #0a0f24 100%);
+}
+.feat-head {
+    position: absolute; top: 180px; left: 80px; right: 80px;
+    z-index: 5;
+}
+.feat-head .eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--accent-bg, rgba(37,99,235,0.15));
+    border: 1px solid var(--accent-border, rgba(99,102,241,0.4));
+    color: var(--accent-color, #a5b4fc);
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+}
+.feat-head .eyebrow i { font-size: 14px; }
+.feat-head h2 {
+    font-size: 80px;
+    line-height: 1.0;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    margin-bottom: 18px;
+    max-width: 1300px;
+}
+.feat-head h2 .grad {
+    background: var(--grad, linear-gradient(135deg, #60a5fa 0%, #c084fc 100%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.feat-head p {
+    font-size: 24px;
+    color: rgba(255,255,255,0.7);
+    max-width: 950px;
+    line-height: 1.4;
+}
+
+.feat-body {
+    position: absolute; top: 540px; left: 80px; right: 80px; bottom: 160px;
+    display: grid; grid-template-columns: 1fr 1.2fr; gap: 60px; align-items: center;
+}
+.feat-body.reverse { grid-template-columns: 1.2fr 1fr; }
+.feat-body.reverse .bullets { order: 2; }
+.feat-body.reverse .shot { order: 1; }
+
+.bullets ul { list-style: none; }
+.bullets li {
+    display: flex; gap: 18px;
+    margin-bottom: 22px;
+    align-items: flex-start;
+}
+.bullets li .ic {
+    flex-shrink: 0;
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    background: var(--accent-bg, rgba(37,99,235,0.18));
+    border: 1px solid var(--accent-border, rgba(99,102,241,0.4));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    color: var(--accent-color, #a5b4fc);
+}
+.bullets li .tx h4 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+.bullets li .tx p { font-size: 18px; color: rgba(255,255,255,0.65); line-height: 1.4; }
+
+.shot {
+    position: relative;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 18px;
+    box-shadow:
+        0 50px 80px -25px rgba(0,0,0,0.7),
+        0 0 0 1px rgba(255,255,255,0.04) inset;
+}
+.shot .toolbar {
+    display: flex; gap: 8px;
+    padding: 0 0 12px;
+    align-items: center;
+}
+.shot .toolbar .dot { width: 12px; height: 12px; border-radius: 50%; }
+.shot .toolbar .r { background: #f87171; }
+.shot .toolbar .y { background: #fbbf24; }
+.shot .toolbar .g { background: #34d399; }
+.shot .toolbar .url {
+    margin-left: 16px;
+    padding: 4px 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    font-family: monospace;
+}
+.shot img {
+    width: 100%; display: block;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Multi-shot collage */
+.collage {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 16px;
+    height: 100%;
+}
+.collage .shot {
+    padding: 12px;
+}
+.collage .shot:first-child {
+    grid-row: 1 / 3;
+}
+.collage .shot img { object-fit: cover; height: 100%; max-height: 360px; }
+.collage .shot:first-child img { max-height: 100%; }
+
+/* Slide-specific palettes */
+.s2 { --glow-c1: rgba(37,99,235,0.4); --glow-c2: rgba(6,182,212,0.3); --grad: linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%); --accent-bg: rgba(37,99,235,0.18); --accent-border: rgba(96,165,250,0.4); --accent-color: #93c5fd; }
+.s3 { --glow-c1: rgba(245,158,11,0.4); --glow-c2: rgba(239,68,68,0.3); --grad: linear-gradient(135deg, #fbbf24 0%, #f87171 100%); --accent-bg: rgba(245,158,11,0.18); --accent-border: rgba(245,158,11,0.4); --accent-color: #fde68a; }
+.s4 { --glow-c1: rgba(16,185,129,0.4); --glow-c2: rgba(6,182,212,0.3); --grad: linear-gradient(135deg, #34d399 0%, #22d3ee 100%); --accent-bg: rgba(16,185,129,0.18); --accent-border: rgba(16,185,129,0.4); --accent-color: #6ee7b7; }
+.s5 { --glow-c1: rgba(139,92,246,0.4); --glow-c2: rgba(236,72,153,0.3); --grad: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%); --accent-bg: rgba(139,92,246,0.18); --accent-border: rgba(139,92,246,0.4); --accent-color: #c4b5fd; }
+.s6 { --glow-c1: rgba(245,158,11,0.4); --glow-c2: rgba(37,99,235,0.3); --grad: linear-gradient(135deg, #fbbf24 0%, #60a5fa 100%); --accent-bg: rgba(245,158,11,0.18); --accent-border: rgba(245,158,11,0.4); --accent-color: #fcd34d; }
+.s7 { --glow-c1: rgba(236,72,153,0.4); --glow-c2: rgba(139,92,246,0.3); --grad: linear-gradient(135deg, #f472b6 0%, #a78bfa 100%); --accent-bg: rgba(236,72,153,0.18); --accent-border: rgba(236,72,153,0.4); --accent-color: #fbcfe8; }
+.s8 { --glow-c1: rgba(6,182,212,0.4); --glow-c2: rgba(16,185,129,0.3); --grad: linear-gradient(135deg, #22d3ee 0%, #34d399 100%); --accent-bg: rgba(6,182,212,0.18); --accent-border: rgba(6,182,212,0.4); --accent-color: #67e8f9; }
+
+/* ========== Slide 9: CTA Closer ========== */
+.s9 {
+    background:
+        radial-gradient(ellipse at 50% 50%, rgba(37,99,235,0.5) 0%, transparent 65%),
+        radial-gradient(ellipse at 20% 80%, rgba(139,92,246,0.45) 0%, transparent 55%),
+        linear-gradient(135deg, #050816 0%, #0f0b29 100%);
+}
+.s9 .glow1 { top: 200px; left: 30%; width: 800px; height: 800px; }
+.s9-content {
+    position: absolute; inset: 200px 80px 200px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+}
+.s9-content .pill {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-size: 18px;
+    color: #c7d2fe;
+    margin-bottom: 40px;
+}
+.s9-content h2 {
+    font-size: 130px;
+    line-height: 0.95;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    margin-bottom: 40px;
+    max-width: 1500px;
+}
+.s9-content h2 .grad {
+    background: linear-gradient(135deg, #60a5fa 0%, #c084fc 50%, #f0abfc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.s9-content .lead {
+    font-size: 28px;
+    color: rgba(255,255,255,0.8);
+    max-width: 1100px;
+    line-height: 1.4;
+    margin-bottom: 50px;
+}
+.s9-stats {
+    display: flex; gap: 60px;
+    margin-bottom: 60px;
+}
+.s9-stats .item {
+    text-align: center;
+}
+.s9-stats .item .v {
+    font-size: 80px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #60a5fa 0%, #c084fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+.s9-stats .item .l { font-size: 18px; color: rgba(255,255,255,0.6); font-weight: 600; }
+.s9-cta {
+    display: inline-flex; align-items: center; gap: 16px;
+    background: linear-gradient(135deg, #2563eb 0%, #6366f1 50%, #8b5cf6 100%);
+    padding: 24px 60px;
+    border-radius: 16px;
+    font-size: 28px;
+    font-weight: 800;
+    box-shadow:
+        0 30px 70px -10px rgba(99,102,241,0.6),
+        0 0 0 1px rgba(255,255,255,0.1) inset;
+}
+</style>
+</head>
+<body>
+
+<!-- ============= SLIDE 1: HERO ============= -->
+<div class="slide s1">
+    <div class="bg-grid"></div>
+    <div class="glow blue glow1"></div>
+    <div class="glow violet glow2"></div>
+
+    <div class="brand-bar">
+        <div class="logo"><i class="fas fa-wrench"></i></div>
+        <div class="name">Bengkel Paten</div>
+        <div class="tag"><i class="fas fa-bolt" style="font-size:11px;color:#fbbf24"></i> 44 Modul · Multi-Cabang</div>
+    </div>
+    <div class="page-no">01 / 09</div>
+
+    <div class="s1-content">
+        <div class="s1-left">
+            <div class="pill"><span class="dot"></span> Software bengkel #1 di Indonesia</div>
+            <h1>Aplikasi Bengkel<br><span class="grad">Paling Lengkap</span></h1>
+            <p class="lead">
+                Satu sistem untuk semua: customer, kendaraan, jobcard, POS kasir,
+                booking online, inventory, invoice, loyalty, sampai laporan keuangan.
+            </p>
+            <div class="badges">
+                <div class="badge"><i class="fas fa-store"></i> Multi-Cabang</div>
+                <div class="badge"><i class="fas fa-cash-register"></i> POS Kasir</div>
+                <div class="badge"><i class="fas fa-mobile-screen"></i> Booking Online</div>
+                <div class="badge"><i class="fas fa-medal"></i> Loyalty Program</div>
+            </div>
+        </div>
+        <div class="s1-right">
+            <div class="device">
+                <img src="../public/images/features/dashboard.png" alt="Dashboard">
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="cta"><i class="fas fa-rocket"></i> Pasang Sekarang — Akses Seumur Hidup</div>
+        <div class="url">bengkelpaten.id</div>
+    </div>
+</div>
+
+
+<!-- ============= SLIDE 2: PELANGGAN & KENDARAAN ============= -->
+<div class="slide feat s2">
+    <div class="bg-grid"></div>
+    <div class="glow blue" style="top:-150px;right:-150px;width:700px;height:700px;"></div>
+    <div class="glow cyan" style="bottom:-150px;left:-100px;width:600px;height:600px;"></div>
+
+    <div class="brand-bar">
+        <div class="logo"><i class="fas fa-wrench"></i></div>
+        <div class="name">Bengkel Paten</div>
+    </div>
+    <div class="page-no">02 / 09</div>
+
+    <div class="feat-head">
+        <div class="eyebrow"><i class="fas fa-users"></i> CRM & Database Kendaraan</div>
+        <h2>Setiap <span class="grad">Customer & Kendaraan</span><br>Tercatat Rapi Selamanya</h2>
+        <p>Tidak ada lagi customer "lupa namanya" atau "kendaraan apa ya servisnya kemarin". Semua histori bisa dilihat sekali klik.</p>
+    </div>
+
+    <div class="feat-body">
+        <div class="bullets">
+            <ul>
+                <li><div class="ic"><i class="fas fa-id-card"></i></div><div class="tx"><h4>Data Customer Lengkap</h4><p>Nama, kontak, perusahaan, NPWP, custom fields tambahan.</p></div></li>
+                <li><div class="ic"><i class="fas fa-car-side"></i></div><div class="tx"><h4>Plat Nomor Unik</h4><p>Otomatis tolak duplikat. 1 customer bisa punya banyak kendaraan.</p></div></li>
+                <li><div class="ic"><i class="fas fa-images"></i></div><div class="tx"><h4>Foto Multi-Angle</h4><p>Bukti kondisi awal anti-komplain customer.</p></div></li>
+                <li><div class="ic"><i class="fas fa-clock-rotate-left"></i></div><div class="tx"><h4>Histori Servis Lengkap</h4><p>Semua jobcard, invoice, pemakaian parts per kendaraan.</p></div></li>
+            </ul>
+        </div>
+        <div class="shot">
+            <div class="toolbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">bengkelpaten.id/customers</span></div>
+            <img src="../public/images/features/customers.png" alt="Customer">
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="cta"><i class="fas fa-rocket"></i> 44 Modul · Akses Seumur Hidup</div>
+        <div class="url">bengkelpaten.id</div>
+    </div>
+</div>
+
+
+<!-- ============= SLIDE 3: SERVICE & JOBCARD ============= -->
+<div class="slide feat s3">
+    <div class="bg-grid"></div>
+    <div class="glow amber" style="top:-150px;left:-100px;width:700px;height:700px;"></div>
+    <div class="glow pink" style="bottom:-200px;right:-100px;width:600px;height:600px;"></div>
+
+    <div class="brand-bar">
+        <div class="logo"><i class="fas fa-wrench"></i></div>
+        <div class="name">Bengkel Paten</div>
+    </div>
+    <div class="page-no">03 / 09</div>
+
+    <div class="feat-head">
+        <div class="eyebrow"><i class="fas fa-tools"></i> Service & Jobcard</div>
+        <h2>Jantung Aplikasi:<br><span class="grad">Workflow Service Tanpa Bingung</span></h2>
+        <p>Status jelas, teknisi terpasang, checklist inspeksi 6 kategori, foto before/after. Kendaraan keluar bengkel dengan tanda tangan customer.</p>
+    </div>
+
+    <div class="feat-body reverse">
+        <div class="bullets">
+            <ul>
+                <li><div class="ic"><i class="fas fa-traffic-light"></i></div><div class="tx"><h4>Status Transparan</h4><p>Open → In Process → Done. Customer bisa ditanya progressnya.</p></div></li>
+                <li><div class="ic"><i class="fas fa-user-gear"></i></div><div class="tx"><h4>Assign Teknisi</h4><p>Setiap jobcard punya teknisi penanggung jawab.</p></div></li>
+                <li><div class="ic"><i class="fas fa-list-check"></i></div><div class="tx"><h4>Checklist 6 Kategori</h4><p>Mesin, kaki-kaki, kelistrikan, body, interior, test drive.</p></div></li>
+                <li><div class="ic"><i class="fas fa-camera"></i></div><div class="tx"><h4>Foto Before / After</h4><p>Bukti pekerjaan + bahan marketing sosmed.</p></div></li>
+            </ul>
+        </div>
+        <div class="shot">
+            <div class="toolbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">bengkelpaten.id/services</span></div>
+            <img src="../public/images/features/services.png" alt="Services">
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="cta"><i class="fas fa-rocket"></i> Pasang Sekarang — Akses Seumur Hidup</div>
+        <div class="url">bengkelpaten.id</div>
+    </div>
+</div>
+
+
+<!-- ============= SLIDE 4: INVENTORY ============= -->
+<div class="slide feat s4">
+    <div class="bg-grid"></div>
+    <div class="glow emerald" style="top:-150px;right:-100px;width:700px;height:700px;"></div>
+    <div class="glow cyan" style="bottom:-200px;left:-100px;width:600px;height:600px;"></div>
+
+    <div class="brand-bar">
+        <div class="logo"><i class="fas fa-wrench"></i></div>
+        <div class="name">Bengkel Paten</div>
+    </div>
+    <div class="page-no">04 / 09</div>
+
+    <div class="feat-head">
+        <div class="eyebrow"><i class="fas fa-boxes-stacked"></i> Inventory & Sparepart</div>
+        <h2>Stok Realtime —<br><span class="grad">Tidak Ada Lagi Stok Hilang</span></h2>
+        <p>Setiap parts dipakai service otomatis kurangi stok. Setiap purchase order received otomatis tambah stok. Audit trail siapa-kapan-berapa.</p>
+    </div>
+
+    <div class="feat-body">
+        <div class="bullets">
+            <ul>
+                <li><div class="ic"><i class="fas fa-arrow-down-up-across-line"></i></div><div class="tx"><h4>Stok Auto Sync</h4><p>Service & PO sambung langsung ke kartu stok.</p></div></li>
+                <li><div class="ic"><i class="fas fa-clipboard-list"></i></div><div class="tx"><h4>Stock Opname</h4><p>Koreksi setelah hitung fisik dengan trail history.</p></div></li>
+                <li><div class="ic"><i class="fas fa-triangle-exclamation"></i></div><div class="tx"><h4>Indikator Stok Rendah</h4><p>Rekomendasi reorder berdasarkan rata-rata pemakaian.</p></div></li>
+                <li><div class="ic"><i class="fas fa-file-import"></i></div><div class="tx"><h4>Import CSV Massal</h4><p>Migrasi data lama tinggal upload sekali.</p></div></li>
+            </ul>
+        </div>
+        <div class="shot">
+            <div class="toolbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">bengkelpaten.id/products</span></div>
+            <img src="../public/images/features/products.png" alt="Inventory">
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="cta"><i class="fas fa-rocket"></i> Pasang Sekarang — Akses Seumur Hidup</div>
+        <div class="url">bengkelpaten.id</div>
+    </div>
+</div>
+
+
+<!-- ============= SLIDE 5: INVOICE & PAYMENT ============= -->
+<div class="slide feat s5">
+    <div class="bg-grid"></div>
+    <div class="glow violet" style="top:-150px;left:-100px;width:700px;height:700px;"></div>
+    <div class="glow pink" style="bottom:-200px;right:-100px;width:600px;height:600px;"></div>
+
+    <div class="brand-bar">
+        <div class="logo"><i class="fas fa-wrench"></i></div>
+        <div class="name">Bengkel Paten</div>
+    </div>
+    <div class="page-no">05 / 09</div>
+
+    <div class="feat-head">
+        <div class="eyebrow"><i class="fas fa-file-invoice-dollar"></i> Invoice & Pembayaran</div>
+        <h2>Invoice Cantik,<br><span class="grad">Kirim Langsung ke WhatsApp</span></h2>
+        <p>3 tipe invoice (service, sales, parts). PDF profesional dengan logo bengkel. Customer terima dari WA langsung tinggal bayar.</p>
+    </div>
+
+    <div class="feat-body reverse">
+        <div class="bullets">
+            <ul>
+                <li><div class="ic"><i class="fab fa-whatsapp"></i></div><div class="tx"><h4>Kirim via WhatsApp</h4><p>Satu klik, customer langsung terima invoice + link bayar.</p></div></li>
+                <li><div class="ic"><i class="fas fa-money-bill-wave"></i></div><div class="tx"><h4>Cash, Transfer, QRIS, EDC</h4><p>Semua metode bayar didukung. Cicil pun bisa.</p></div></li>
+                <li><div class="ic"><i class="fas fa-circle-check"></i></div><div class="tx"><h4>Status Auto-Update</h4><p>Unpaid → Half Paid → Full Paid. Tidak perlu update manual.</p></div></li>
+                <li><div class="ic"><i class="fas fa-file-pdf"></i></div><div class="tx"><h4>PDF Profesional</h4><p>Bawa logo, NPWP, dan tanda tangan digital bengkel.</p></div></li>
+            </ul>
+        </div>
+        <div class="shot">
+            <div class="toolbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">bengkelpaten.id/invoices</span></div>
+            <img src="../public/images/features/invoices.png" alt="Invoice">
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="cta"><i class="fas fa-rocket"></i> Pasang Sekarang — Akses Seumur Hidup</div>
+        <div class="url">bengkelpaten.id</div>
+    </div>
+</div>
+
+
+<!-- ============= SLIDE 6: MULTI-CABANG + WASHBAY ============= -->
+<div class="slide feat s6">
+    <div class="bg-grid"></div>
+    <div class="glow amber" style="top:-150px;right:-150px;width:700px;height:700px;"></div>
+    <div class="glow blue" style="bottom:-200px;left:-100px;width:700px;height:700px;"></div>
+
+    <div class="brand-bar">
+        <div class="logo"><i class="fas fa-wrench"></i></div>
+        <div class="name">Bengkel Paten</div>
+    </div>
+    <div class="page-no">06 / 09</div>
+
+    <div class="feat-head">
+        <div class="eyebrow"><i class="fas fa-building"></i> Multi-Cabang & Operasional</div>
+        <h2>Punya Banyak Cabang?<br><span class="grad">Kelola Semuanya Sekaligus</span></h2>
+        <p>Setiap cabang punya washbay (slot service), jam buka, hari libur sendiri. Operator switch cabang dengan 1 klik dari topbar.</p>
+    </div>
+
+    <div class="feat-body">
+        <div class="bullets">
+            <ul>
+                <li><div class="ic"><i class="fas fa-shop"></i></div><div class="tx"><h4>Unlimited Cabang</h4><p>Tambah cabang baru kapan saja. Data terisolasi per cabang.</p></div></li>
+                <li><div class="ic"><i class="fas fa-warehouse"></i></div><div class="tx"><h4>Washbay Real-Time</h4><p>Lihat slot kosong/dipakai sekali pandang. Visual card.</p></div></li>
+                <li><div class="ic"><i class="fas fa-business-time"></i></div><div class="tx"><h4>Jam Operasional</h4><p>Set buka-tutup per hari per cabang.</p></div></li>
+                <li><div class="ic"><i class="fas fa-calendar-xmark"></i></div><div class="tx"><h4>Hari Libur Otomatis</h4><p>Set sekali, berlaku setiap tahun untuk libur nasional.</p></div></li>
+            </ul>
+        </div>
+        <div class="shot">
+            <div class="toolbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">bengkelpaten.id/washbays</span></div>
+            <img src="../public/images/features/washbays.png" alt="Washbays">
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="cta"><i class="fas fa-rocket"></i> Pasang Sekarang — Akses Seumur Hidup</div>
+        <div class="url">bengkelpaten.id</div>
+    </div>
+</div>
+
+
+<!-- ============= SLIDE 7: POS + BOOKING ============= -->
+<div class="slide feat s7">
+    <div class="bg-grid"></div>
+    <div class="glow pink" style="top:-150px;left:-100px;width:700px;height:700px;"></div>
+    <div class="glow violet" style="bottom:-200px;right:-100px;width:600px;height:600px;"></div>
+
+    <div class="brand-bar">
+        <div class="logo"><i class="fas fa-wrench"></i></div>
+        <div class="name">Bengkel Paten</div>
+    </div>
+    <div class="page-no">07 / 09</div>
+
+    <div class="feat-head">
+        <div class="eyebrow"><i class="fas fa-cash-register"></i> POS Kasir & Booking Online</div>
+        <h2>Walk-In Cepat,<br><span class="grad">Booking Online 24 Jam</span></h2>
+        <p>Customer beli oli? Pakai POS scan barcode 5 detik. Customer mau servis besok? Booking dari HP, operator tinggal konfirmasi.</p>
+    </div>
+
+    <div class="feat-body reverse">
+        <div class="bullets">
+            <ul>
+                <li><div class="ic"><i class="fas fa-barcode"></i></div><div class="tx"><h4>POS Scan Barcode</h4><p>Terminal kasir cepat untuk parts eceran walk-in.</p></div></li>
+                <li><div class="ic"><i class="fas fa-mobile-screen"></i></div><div class="tx"><h4>Booking Online</h4><p>Customer pesan jadwal dari HP, konfirmasi 1 klik.</p></div></li>
+                <li><div class="ic"><i class="fas fa-money-bills"></i></div><div class="tx"><h4>Sesi Kasir</h4><p>Buka–tutup sesi dengan rekap omzet otomatis.</p></div></li>
+                <li><div class="ic"><i class="fas fa-receipt"></i></div><div class="tx"><h4>Cetak Struk</h4><p>Print thermal printer atau download PDF.</p></div></li>
+            </ul>
+        </div>
+        <div class="shot">
+            <div class="toolbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">bengkelpaten.id/pos</span></div>
+            <img src="../public/images/features/pos.png" alt="POS">
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="cta"><i class="fas fa-rocket"></i> Pasang Sekarang — Akses Seumur Hidup</div>
+        <div class="url">bengkelpaten.id</div>
+    </div>
+</div>
+
+
+<!-- ============= SLIDE 8: LOYALTY + REPORTING ============= -->
+<div class="slide feat s8">
+    <div class="bg-grid"></div>
+    <div class="glow cyan" style="top:-150px;right:-100px;width:700px;height:700px;"></div>
+    <div class="glow emerald" style="bottom:-200px;left:-100px;width:600px;height:600px;"></div>
+
+    <div class="brand-bar">
+        <div class="logo"><i class="fas fa-wrench"></i></div>
+        <div class="name">Bengkel Paten</div>
+    </div>
+    <div class="page-no">08 / 09</div>
+
+    <div class="feat-head">
+        <div class="eyebrow"><i class="fas fa-medal"></i> Loyalty, Voucher & Laporan</div>
+        <h2>Customer Balik Lagi,<br><span class="grad">Profit Terlihat Realtime</span></h2>
+        <p>Loyalty points 4 tier (Bronze → Platinum), voucher promo, klaim garansi, dan 4 jenis laporan otomatis dengan ekspor PDF/Excel.</p>
+    </div>
+
+    <div class="feat-body">
+        <div class="bullets">
+            <ul>
+                <li><div class="ic"><i class="fas fa-trophy"></i></div><div class="tx"><h4>Loyalty 4 Tier</h4><p>Bronze, Silver, Gold, Platinum dengan benefit beda.</p></div></li>
+                <li><div class="ic"><i class="fas fa-tags"></i></div><div class="tx"><h4>Voucher & Promo</h4><p>Generate kode dengan masa berlaku & max usage.</p></div></li>
+                <li><div class="ic"><i class="fas fa-shield-halved"></i></div><div class="tx"><h4>Klaim Garansi</h4><p>Tracking klaim dari customer sampai diselesaikan.</p></div></li>
+                <li><div class="ic"><i class="fas fa-chart-line"></i></div><div class="tx"><h4>4 Laporan Lengkap</h4><p>Service, Sales, Stok, Keuangan — PDF & Excel.</p></div></li>
+            </ul>
+        </div>
+        <div class="shot">
+            <div class="toolbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">bengkelpaten.id/loyalty</span></div>
+            <img src="../public/images/features/loyalty.png" alt="Loyalty">
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="cta"><i class="fas fa-rocket"></i> Pasang Sekarang — Akses Seumur Hidup</div>
+        <div class="url">bengkelpaten.id</div>
+    </div>
+</div>
+
+
+<!-- ============= SLIDE 9: CTA CLOSER ============= -->
+<div class="slide s9">
+    <div class="bg-grid"></div>
+    <div class="glow violet glow1"></div>
+
+    <div class="brand-bar">
+        <div class="logo"><i class="fas fa-wrench"></i></div>
+        <div class="name">Bengkel Paten</div>
+    </div>
+    <div class="page-no">09 / 09</div>
+
+    <div class="s9-content">
+        <div class="pill"><i class="fas fa-fire" style="color:#fbbf24"></i> Promo Pembukaan Toko Shopee</div>
+        <h2>Upgrade Bengkel Anda<br><span class="grad">Hari Ini Juga.</span></h2>
+        <p class="lead">
+            44 modul siap pakai. Setup 5 menit. Tanpa biaya bulanan tambahan.
+            Akses seumur hidup dengan satu kali pembelian.
+        </p>
+
+        <div class="s9-stats">
+            <div class="item"><div class="v">44</div><div class="l">MODUL TERINTEGRASI</div></div>
+            <div class="item"><div class="v">∞</div><div class="l">CABANG & PENGGUNA</div></div>
+            <div class="item"><div class="v">24/7</div><div class="l">SUPPORT TEKNIS</div></div>
+        </div>
+
+        <div class="s9-cta"><i class="fas fa-bag-shopping"></i> ORDER DI SHOPEE SEKARANG</div>
+    </div>
+</div>
+
+</body>
+</html>
