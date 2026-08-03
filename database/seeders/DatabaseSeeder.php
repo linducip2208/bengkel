@@ -39,8 +39,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call(PermissionSeeder::class);
         $this->seedUsers();
+        $this->call(PermissionSeeder::class);
         $this->seedSettings();
         $this->seedCurrency();
         $this->seedBranches();
