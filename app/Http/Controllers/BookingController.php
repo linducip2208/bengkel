@@ -77,9 +77,9 @@ class BookingController extends Controller
     {
         $start = request('start', now()->startOfMonth()->toDateString());
         $end = request('end', now()->endOfMonth()->toDateString());
-        $bookings = Booking::whereBetween('booking_date', [$start, $end])->get()->map(fn($b) => [
-            'id' => $b->id, 'title' => ($b->customer_name ?? 'Booking') . ' - ' . ($b->vehicle_plate ?? ''),
-            'start' => $b->booking_date->format('Y-m-d\TH:i'), 'backgroundColor' => $b->status === 'confirmed' ? '#10b981' : '#f59e0b', 'url' => route('bookings.index'),
+        $bookings = Booking::whereBetween('booking_at', [$start, $end])->get()->map(fn($b) => [
+            'id' => $b->id, 'title' => ($b->name ?? $b->customer->name ?? 'Booking') . ' - ' . ($b->vehicle_plate ?? ''),
+            'start' => $b->booking_at->format('Y-m-d\TH:i'), 'backgroundColor' => $b->status === 'confirmed' ? '#10b981' : '#f59e0b', 'url' => route('bookings.index'),
         ]);
         $services = Service::with('customer')->whereBetween('service_date', [$start, $end])->get()->map(fn($s) => [
             'id' => 'svc-'.$s->id, 'title' => '🔧 '.($s->customer->name ?? 'Service').' - '.$s->title,

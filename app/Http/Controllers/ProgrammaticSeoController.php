@@ -15,7 +15,7 @@ class ProgrammaticSeoController extends Controller
 
         $topServices = \App\Models\Service::where('repair_category_id', $repairCategory->id)
             ->whereYear('service_date', $year)
-            ->where('status', 2)
+            ->where('done_status', 2)
             ->with(['customer', 'vehicle'])
             ->orderBy('charge', 'desc')
             ->limit(10)
@@ -87,8 +87,8 @@ class ProgrammaticSeoController extends Controller
         $categoryA = RepairCategory::where('slug', $a)->firstOrFail();
         $categoryB = RepairCategory::where('slug', $b)->firstOrFail();
 
-        $servicesA = \App\Models\Service::where('repair_category_id', $categoryA->id)->where('status', 2)->count();
-        $servicesB = \App\Models\Service::where('repair_category_id', $categoryB->id)->where('status', 2)->count();
+        $servicesA = \App\Models\Service::where('repair_category_id', $categoryA->id)->where('done_status', 2)->count();
+        $servicesB = \App\Models\Service::where('repair_category_id', $categoryB->id)->where('done_status', 2)->count();
 
         $avgPriceA = \App\Models\Service::where('repair_category_id', $categoryA->id)->avg('charge') ?? 0;
         $avgPriceB = \App\Models\Service::where('repair_category_id', $categoryB->id)->avg('charge') ?? 0;
