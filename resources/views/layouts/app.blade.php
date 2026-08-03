@@ -409,13 +409,14 @@
             {{-- Customer --}}
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuCustomer"
-                    aria-expanded="{{ request()->is('customers*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->is('customers*','customer-groups*') ? 'true' : 'false' }}">
                     <i class="fas fa-users"></i> Customer
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->is('customers*') ? 'show' : '' }}" id="menuCustomer">
+                <ul class="collapse submenu {{ request()->is('customers*','customer-groups*') ? 'show' : '' }}" id="menuCustomer">
                     <li><a href="{{ route('customers.index') }}" class="nav-link {{ request()->is('customers') ? 'active' : '' }}"><i class="fas fa-list me-1"></i> All Customers</a></li>
                     @can('customer.create')<li><a href="{{ route('customers.create') }}" class="nav-link {{ request()->is('customers/create') ? 'active' : '' }}"><i class="fas fa-user-plus me-1"></i> Add Customer</a></li>@endcan
+                    <li><a href="{{ route('customer-groups.index') }}" class="nav-link {{ request()->is('customer-groups*') ? 'active' : '' }}"><i class="fas fa-layer-group me-1"></i> Customer Groups</a></li>
                 </ul>
             </li>
             @endcan

@@ -373,6 +373,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/journal', [\App\Http\Controllers\Tenant\JournalController::class, 'journalStore'])->name('journal.store');
     });
 
+    // --- Customer Groups ---
+    Route::resource('customer-groups', \App\Http\Controllers\Tenant\CustomerGroupController::class);
+
     // --- Blog Admin ---
     Route::prefix('blog-admin')->name('blog.admin.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Tenant\BlogController::class, 'index'])->name('index');

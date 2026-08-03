@@ -22,9 +22,14 @@
 </head>
 <body>
     <div class="header">
-        <h2>JOBCARD</h2>
-        <small>Bengkel Paten</small>
-        <h4>{{ $service->job_no }}</h4>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="text-align:left;">
+                <h2>JOBCARD</h2>
+                <small>Bengkel Paten</small>
+                <h4>{{ $service->job_no }}</h4>
+            </div>
+            <div id="qrcode" style="width:120px;height:120px;"></div>
+        </div>
     </div>
 
     <table class="detail">
@@ -115,5 +120,7 @@
             <p>(_______________)</p>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script>new QRCode(document.getElementById('qrcode'), {text:'{{ route('services.show', $service) }}',width:120,height:120});</script>
 </body>
 </html>

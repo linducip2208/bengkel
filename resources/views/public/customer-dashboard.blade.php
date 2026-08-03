@@ -58,13 +58,7 @@
                                 <td><strong>{{ $s->job_no }}</strong></td>
                                 <td>{{ $s->service_date->format('d/m/y') }}</td>
                                 <td>{{ $s->vehicle->number_plate ?? '-' }}</td>
-                                <td>
-                                    @switch((int) $s->done_status)
-                                        @case(0)<span class="badge bg-secondary">Open</span>@break
-                                        @case(1)<span class="badge bg-warning text-dark">In Process</span>@break
-                                        @case(2)<span class="badge bg-success">Selesai</span>@break
-                                    @endswitch
-                                </td>
+                                <td><span class="badge bg-{{ $s->status_color }}">{{ $s->status_label }}</span></td>
                             </tr>
                             @empty<tr><td colspan="4" class="text-center text-muted py-2">Belum ada service.</td></tr>@endforelse
                         </tbody>
