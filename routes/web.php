@@ -356,6 +356,23 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('service-packages', ServicePackageController::class)->except(['show']);
     Route::get('/service-packages/{servicePackage}/json', [ServicePackageController::class, 'getJson'])->name('service-packages.json');
 
+    // --- Warehouse ---
+    Route::resource('warehouses', \App\Http\Controllers\Tenant\WarehouseController::class);
+    Route::get('/stock-transfers', [\App\Http\Controllers\Tenant\WarehouseController::class, 'transferIndex'])->name('warehouses.transfers');
+    Route::get('/stock-transfers/create', [\App\Http\Controllers\Tenant\WarehouseController::class, 'transferCreate'])->name('warehouses.transfers.create');
+    Route::post('/stock-transfers', [\App\Http\Controllers\Tenant\WarehouseController::class, 'transferStore'])->name('warehouses.transfers.store');
+
+    // --- Finance / Accounting ---
+    Route::prefix('finance')->name('finance.')->group(function () {
+        Route::get('/coa', [\App\Http\Controllers\Tenant\JournalController::class, 'coaIndex'])->name('coa');
+        Route::get('/coa/create', [\App\Http\Controllers\Tenant\JournalController::class, 'coaCreate'])->name('coa.create');
+        Route::post('/coa', [\App\Http\Controllers\Tenant\JournalController::class, 'coaStore'])->name('coa.store');
+        Route::delete('/coa/{account}', [\App\Http\Controllers\Tenant\JournalController::class, 'coaDestroy'])->name('coa.destroy');
+        Route::get('/journal', [\App\Http\Controllers\Tenant\JournalController::class, 'journalIndex'])->name('journal');
+        Route::get('/journal/create', [\App\Http\Controllers\Tenant\JournalController::class, 'journalCreate'])->name('journal.create');
+        Route::post('/journal', [\App\Http\Controllers\Tenant\JournalController::class, 'journalStore'])->name('journal.store');
+    });
+
     // --- Blog Admin ---
     Route::prefix('blog-admin')->name('blog.admin.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Tenant\BlogController::class, 'index'])->name('index');

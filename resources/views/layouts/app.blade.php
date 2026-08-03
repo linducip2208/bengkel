@@ -486,16 +486,17 @@
             {{-- Inventory --}}
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuInventory"
-                    aria-expanded="{{ request()->routeIs('products.*','suppliers.*','purchases.*','equipment.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('products.*','suppliers.*','purchases.*','equipment.*','warehouses.*') ? 'true' : 'false' }}">
                     <i class="fas fa-boxes"></i> Inventory
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('products.*','suppliers.*','purchases.*','equipment.*') ? 'show' : '' }}" id="menuInventory">
+                <ul class="collapse submenu {{ request()->routeIs('products.*','suppliers.*','purchases.*','equipment.*','warehouses.*') ? 'show' : '' }}" id="menuInventory">
                     @can('product.view')<li><a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.index') ? 'active' : '' }}"><i class="fas fa-box me-1"></i> Products</a></li>@endcan
                     @can('product.stock-opname')<li><a href="{{ route('products.stock-opname') }}" class="nav-link {{ request()->routeIs('products.stock-opname') ? 'active' : '' }}"><i class="fas fa-clipboard me-1"></i> Stock</a></li>@endcan
                     @can('supplier.view')<li><a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"><i class="fas fa-truck me-1"></i> Suppliers</a></li>@endcan
                     @can('purchase.view')<li><a href="{{ route('purchases.index') }}" class="nav-link {{ request()->routeIs('purchases.*') ? 'active' : '' }}"><i class="fas fa-shopping-basket me-1"></i> Purchases</a></li>@endcan
                     <li><a href="{{ route('equipment.index') }}" class="nav-link {{ request()->routeIs('equipment.*') ? 'active' : '' }}"><i class="fas fa-toolbox me-1"></i> Peralatan Bengkel</a></li>
+                    <li><a href="{{ route('warehouses.index') }}" class="nav-link {{ request()->routeIs('warehouses.*') ? 'active' : '' }}"><i class="fas fa-warehouse me-1"></i> Gudang</a></li>
                 </ul>
             </li>
             @endcanany
@@ -589,13 +590,15 @@
             {{-- Financial --}}
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuFinancial"
-                    aria-expanded="{{ request()->routeIs('incomes.*','expenses.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('incomes.*','expenses.*','finance.*') ? 'true' : 'false' }}">
                     <i class="fas fa-chart-line"></i> Financial
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('incomes.*','expenses.*') ? 'show' : '' }}" id="menuFinancial">
+                <ul class="collapse submenu {{ request()->routeIs('incomes.*','expenses.*','finance.*') ? 'show' : '' }}" id="menuFinancial">
                     @can('income.view')<li><a href="{{ route('incomes.index') }}" class="nav-link {{ request()->routeIs('incomes.*') ? 'active' : '' }}"><i class="fas fa-arrow-up me-1 text-success"></i> Income</a></li>@endcan
                     @can('expense.view')<li><a href="{{ route('expenses.index') }}" class="nav-link {{ request()->routeIs('expenses.*') ? 'active' : '' }}"><i class="fas fa-arrow-down me-1 text-danger"></i> Expenses</a></li>@endcan
+                    <li><a href="{{ route('finance.coa') }}" class="nav-link {{ request()->routeIs('finance.coa*') ? 'active' : '' }}"><i class="fas fa-list-ol me-1"></i> Chart of Accounts</a></li>
+                    <li><a href="{{ route('finance.journal') }}" class="nav-link {{ request()->routeIs('finance.journal*') ? 'active' : '' }}"><i class="fas fa-book me-1"></i> Journal Entry</a></li>
                 </ul>
             </li>
             @endcanany

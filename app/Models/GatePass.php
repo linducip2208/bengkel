@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['gate_pass_no', 'vehicle_id', 'customer_id', 'service_id', 'entry_date', 'exit_date', 'status', 'driver_name', 'driver_phone', 'notes', 'created_by', 'branch_id'])]
+#[Fillable(['gate_pass_no', 'vehicle_id', 'customer_id', 'service_id', 'entry_date', 'exit_date', 'status', 'driver_name', 'driver_phone', 'notes', 'customer_signature', 'technician_signature', 'created_by', 'branch_id'])]
 class GatePass extends Model
 {
     use HasFactory, SoftDeletes, HasBranchScope;
