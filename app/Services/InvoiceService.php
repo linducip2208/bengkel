@@ -15,9 +15,13 @@ class InvoiceService extends BaseService
         $items = $data['items'] ?? [];
         unset($data['items']);
 
-        $data['grand_total'] = $data['total_amount'] ?? 0;
-        $data['grand_total'] += ($data['tax_amount'] ?? 0);
-        $data['grand_total'] -= ($data['discount'] ?? 0);
+        // Calculate total from items
+        $totalAmount = 0;
+        foreach ($items as $item) {
+            $totalAmount += ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0);
+        }
+        $data['total_amount'] = $totalAmount;
+        $data['grand_total'] = $totalAmount + ($data['tax_amount'] ?? 0) - ($data['discount'] ?? 0);
 
         $invoice = Invoice::create($data);
 
@@ -44,9 +48,12 @@ class InvoiceService extends BaseService
         $items = $data['items'] ?? [];
         unset($data['items']);
 
-        $data['grand_total'] = $data['total_amount'] ?? 0;
-        $data['grand_total'] += ($data['tax_amount'] ?? 0);
-        $data['grand_total'] -= ($data['discount'] ?? 0);
+        $totalAmount = 0;
+        foreach ($items as $item) {
+            $totalAmount += ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0);
+        }
+        $data['total_amount'] = $totalAmount;
+        $data['grand_total'] = $totalAmount + ($data['tax_amount'] ?? 0) - ($data['discount'] ?? 0);
 
         $invoice->update($data);
 
