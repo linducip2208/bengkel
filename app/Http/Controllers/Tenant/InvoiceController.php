@@ -89,7 +89,7 @@ class InvoiceController extends Controller
 
         $this->invoiceService->update($invoice, $request->validated());
 
-        return redirect()->route('invoices.show', $invoice)
+        return redirect()->route('invoices.index')
             ->with('success', 'Invoice berhasil diperbarui.');
     }
 
