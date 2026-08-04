@@ -38,7 +38,7 @@ class ServiceService extends BaseService
             ->withQueryString();
 
         $stats = $this->getStats();
-        $technicians = User::permission('technician')->get();
+        $technicians = User::role('mekanik')->get();
 
         return view('services.index', compact('services', 'stats', 'technicians'));
     }
@@ -46,7 +46,7 @@ class ServiceService extends BaseService
     public function create()
     {
         $repairCategories = RepairCategory::orderBy('repair_category_name')->get();
-        $technicians = User::permission('technician')->get();
+        $technicians = User::role('mekanik')->get();
 
         return view('services.create', compact('repairCategories', 'technicians'));
     }
@@ -125,7 +125,7 @@ class ServiceService extends BaseService
     {
         $service = Service::with(['technicians'])->findOrFail($id);
         $repairCategories = RepairCategory::orderBy('repair_category_name')->get();
-        $technicians = User::permission('technician')->get();
+        $technicians = User::role('mekanik')->get();
         $selectedCustomer = $service->customer;
         $selectedVehicle = $service->vehicle;
 

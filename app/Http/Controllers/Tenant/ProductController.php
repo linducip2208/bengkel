@@ -131,6 +131,7 @@ class ProductController extends Controller
             'adjustment_type' => ['required', 'in:add,reduce,set'],
             'quantity' => ['required', 'integer', 'min:1'],
             'reason' => ['required', 'string', 'max:500'],
+            'minimum_stock' => ['nullable', 'integer', 'min:0'],
         ]);
 
         $type = $request->adjustment_type;
@@ -143,6 +144,10 @@ class ProductController extends Controller
             $this->productService->adjustStock($product, -$quantity, $reason);
         } elseif ($type === 'set') {
             $this->productService->setStock($product, $quantity, $reason);
+        }
+
+        if ($request->filled('minimum_stock') && $product->stockRecord) {
+            $product->stockRecord->update(['minimum_stock' => (int) $request->minimum_stock]);
         }
 
         return redirect()->route('products.show', $product)

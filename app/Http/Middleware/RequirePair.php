@@ -75,6 +75,7 @@ class RequirePair
         return $host === 'localhost'
             || $host === '127.0.0.1'
             || str_ends_with($host, '.test')
-            || str_ends_with($host, '.localhost');
+            || str_ends_with($host, '.localhost')
+            || str_ends_with($host, '.local');
     }
 }

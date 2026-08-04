@@ -61,6 +61,13 @@
                     </div>
 
                     <div class="mb-3">
+                        <label for="minimum_stock" class="form-label">Batas Stok Rendah</label>
+                        <input type="number" name="minimum_stock" id="minimum_stock" class="form-control form-control-sm @error('minimum_stock') is-invalid @enderror" value="{{ old('minimum_stock', $product->minimum_stock) }}" min="0" placeholder="Peringatan jika stok di bawah ini">
+                        <small class="text-muted">Ubah batas stok rendah untuk produk ini.</small>
+                        @error('minimum_stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="mb-3">
                         <label for="reason" class="form-label">Alasan <span class="text-danger">*</span></label>
                         <textarea name="reason" id="reason" rows="3" class="form-control form-control-sm @error('reason') is-invalid @enderror" required maxlength="500" placeholder="Jelaskan alasan penyesuaian stok...">{{ old('reason') }}</textarea>
                         @error('reason') <div class="invalid-feedback">{{ $message }}</div> @enderror

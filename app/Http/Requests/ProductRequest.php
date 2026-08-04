@@ -10,6 +10,7 @@ class ProductRequest extends FormRequest
     public function rules(): array
     {
         $productId = $this->route('product')?->id;
+        $isCreate = !$productId;
 
         return [
             'code' => ['required', 'string', 'max:50', Rule::unique('products', 'code')->ignore($productId)],
@@ -21,6 +22,9 @@ class ProductRequest extends FormRequest
             'cost_price' => ['nullable', 'numeric', 'min:0'],
             'warranty' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'initial_stock' => $isCreate ? ['nullable', 'integer', 'min:0'] : [],
+            'minimum_stock' => ['nullable', 'integer', 'min:0'],
+            'rack_location' => ['nullable', 'string', 'max:100'],
         ];
     }
 
@@ -35,6 +39,9 @@ class ProductRequest extends FormRequest
             'price' => 'Harga Jual',
             'cost_price' => 'Harga Beli',
             'warranty' => 'Garansi',
+            'initial_stock' => 'Stok Awal',
+            'minimum_stock' => 'Stok Minimum',
+            'rack_location' => 'Lokasi Rak',
         ];
     }
 }
