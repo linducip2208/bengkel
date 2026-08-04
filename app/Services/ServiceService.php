@@ -265,8 +265,9 @@ class ServiceService extends BaseService
 
     public function searchCustomers(Request $request)
     {
-        $customers = Customer::where('name', 'like', '%' . $request->q . '%')
-            ->orWhere('phone', 'like', '%' . $request->q . '%')
+        $customers = Customer::withoutBranchScope()
+            ->where(fn($q) => $q->where('name', 'like', '%' . $request->q . '%')
+                ->orWhere('phone', 'like', '%' . $request->q . '%'))
             ->limit(20)
             ->get(['id', 'name', 'phone']);
 
@@ -277,6 +278,7 @@ class ServiceService extends BaseService
     {
         $customer = Customer::findOrFail($customer);
         $vehicles = $customer->vehicles()
+            ->withoutBranchScope()
             ->with('vehicleBrand:id,vehicle_brand', 'vehicleType:id,vehicle_type')
             ->get();
 
