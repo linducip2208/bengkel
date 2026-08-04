@@ -1,6 +1,6 @@
 ﻿@extends('layouts.app')
 
-@section('title', 'Reminders - Aplikasi Bengkel Terbaik')
+@section('title', 'Reminders - {{ config('app.name') }}')
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">

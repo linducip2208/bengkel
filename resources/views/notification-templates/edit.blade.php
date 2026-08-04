@@ -1,6 +1,6 @@
 ﻿@extends('layouts.app')
 
-@section('title', 'Edit Notification Template - Aplikasi Bengkel Terbaik')
+@section('title', 'Edit Notification Template - {{ config('app.name') }}')
 
 @section('content')
 <h4 class="mb-3">Edit Notification Template</h4>

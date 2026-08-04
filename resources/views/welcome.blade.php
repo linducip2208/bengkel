@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Bengkel Terbaik — Aplikasi Manajemen Bengkel Modern</title>
+    <title>{{ config('app.name') }} — Aplikasi Manajemen Bengkel Modern</title>
     <meta name="description" content="Aplikasi manajemen bengkel 44 modul: multi-cabang, POS, booking online, customer, kendaraan, jobcard, inspeksi, inventory parts, invoice, loyalty, klaim garansi, komisi, audit log, dan laporan keuangan dalam satu sistem.">
     <link rel="canonical" href="{{ url('/') }}">
-    <meta property="og:title" content="Aplikasi Bengkel Terbaik — Manajemen Bengkel Modern">
+    <meta property="og:title" content="{{ config('app.name') }} — Manajemen Bengkel Modern">
     <meta property="og:description" content="Catat customer, kendaraan, service, parts, invoice, dan keuangan bengkel dalam satu aplikasi.">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
@@ -382,7 +382,7 @@
 
 <nav class="nav">
     <div class="container nav-inner">
-        <a href="/" class="brand"><i class="fas fa-wrench"></i> Aplikasi Bengkel Terbaik</a>
+        <a href="/" class="brand"><i class="fas fa-wrench"></i> {{ config('app.name') }}</a>
         <div class="nav-links">
             <a href="#fitur" class="nav-link">Fitur Utama</a>
             <a href="#operasional" class="nav-link">Operasional</a>
@@ -425,7 +425,7 @@
                 </div>
             </div>
             <div class="hero-img">
-                <img src="{{ asset('images/features/dashboard.png') }}" alt="Dashboard Aplikasi Bengkel Terbaik">
+                <img src="{{ asset('images/features/dashboard.png') }}" alt="Dashboard {{ config('app.name') }}">
             </div>
         </div>
 
@@ -1036,7 +1036,7 @@
         <div class="sec-head">
             <div class="eyebrow">Akun Demo</div>
             <h2>Coba semua fitur dengan akun demo</h2>
-            <p>Gunakan kredensial di bawah untuk login dan eksplorasi semua 44 modul Aplikasi Bengkel Terbaik.</p>
+            <p>Gunakan kredensial di bawah untuk login dan eksplorasi semua 44 modul {{ config('app.name') }}.</p>
         </div>
 
         <div class="table-responsive" style="max-width:700px;margin:0 auto;">
@@ -1151,7 +1151,7 @@
 
 <section class="cta">
     <div class="container">
-        <h2>Siap mulai dengan Aplikasi Bengkel Terbaik?</h2>
+        <h2>Siap mulai dengan {{ config('app.name') }}?</h2>
         <p>Masuk dengan akun demo dan jelajahi semua 44 modul — data sample sudah disiapkan untuk dicoba.</p>
         <div style="display:flex;justify-content:center;gap:0.75rem;flex-wrap:wrap;">
             <a href="{{ route('login') }}" class="btn btn-primary">
@@ -1168,7 +1168,7 @@
     <div class="container">
         <div class="footer-grid">
             <div>
-                <h5><i class="fas fa-wrench" style="color:var(--c-primary)"></i> Aplikasi Bengkel Terbaik</h5>
+                <h5><i class="fas fa-wrench" style="color:var(--c-primary)"></i> {{ config('app.name') }}</h5>
                 <p style="color:#94a3b8;font-size:0.9rem;margin:0 0 1rem;max-width:320px;">
                     Aplikasi manajemen bengkel modern, ringan, multi-cabang, dan mudah dipakai operator front-desk maupun teknisi lapangan.
                 </p>
@@ -1200,7 +1200,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <div>© {{ date('Y') }} Aplikasi Bengkel Terbaik. Semua hak dilindungi.</div>
+            <div>© {{ date('Y') }} {{ config('app.name') }}. Semua hak dilindungi.</div>
             <div><a href="{{ route('docs.index') }}">Docs</a> · <a href="{{ route('login') }}">Login</a></div>
         </div>
     </div>
@@ -1210,7 +1210,7 @@
 {!! json_encode([
     '@context' => 'https://schema.org',
     '@type' => 'SoftwareApplication',
-    'name' => 'Aplikasi Bengkel Terbaik',
+    'name' => '{{ config('app.name') }}',
     'description' => 'Aplikasi manajemen bengkel multi-cabang: customer, kendaraan, jobcard, inspeksi, inventory parts, invoice, reminder otomatis, audit log, dan laporan keuangan.',
     'applicationCategory' => 'BusinessApplication',
     'operatingSystem' => 'Web',

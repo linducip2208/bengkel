@@ -10,7 +10,7 @@ class DocsController extends Controller
     {
         return view('docs.index', [
             'sections' => $this->sections(),
-            'appName'  => config('app.name', 'Aplikasi Bengkel Terbaik'),
+            'appName'  => config('app.name', config('app.name')),
         ]);
     }
 
@@ -21,7 +21,7 @@ class DocsController extends Controller
         $section = collect($sections)->firstWhere('slug', $slug);
         abort_unless($section, 404);
 
-        $appName = config('app.name', 'Aplikasi Bengkel Terbaik');
+        $appName = config('app.name', config('app.name'));
 
         $jsonLd = json_encode([
             '@context'   => 'https://schema.org',

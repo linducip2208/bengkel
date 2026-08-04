@@ -34,7 +34,7 @@
 </div>
 
 <div class="receipt">
-    <h5>{{ config('app.name', 'Aplikasi Bengkel Terbaik') }}</h5>
+    <h5>{{ config('app.name', '{{ config('app.name') }}') }}</h5>
     <div class="sub">Struk Penjualan POS</div>
     <hr>
     <div>No: <strong>{{ $invoice->invoice_number }}</strong></div>

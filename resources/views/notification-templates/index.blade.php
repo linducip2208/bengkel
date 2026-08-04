@@ -1,6 +1,6 @@
 ﻿@extends('layouts.app')
 
-@section('title', 'Notification Templates - Aplikasi Bengkel Terbaik')
+@section('title', 'Notification Templates - {{ config('app.name') }}')
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">

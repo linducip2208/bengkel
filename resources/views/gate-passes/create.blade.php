@@ -1,6 +1,6 @@
 ﻿@extends('layouts.app')
 
-@section('title', 'Create Gate Pass - Aplikasi Bengkel Terbaik')
+@section('title', 'Create Gate Pass - {{ config('app.name') }}')
 
 @section('content')
 <h4 class="mb-3">Create Gate Pass</h4>

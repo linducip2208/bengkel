@@ -38,7 +38,7 @@ class ProgrammaticSeoController extends Controller
                     '@type' => 'Service',
                     'name' => $s->title,
                     'description' => $s->description,
-                    'provider' => ['@type' => 'LocalBusiness', 'name' => 'Aplikasi Bengkel Terbaik'],
+                    'provider' => ['@type' => 'LocalBusiness', 'name' => config('app.name')],
                     'price' => $s->charge,
                     'date' => $s->service_date->toDateString(),
                 ],
@@ -102,8 +102,8 @@ class ProgrammaticSeoController extends Controller
             'name' => $metaTitle,
             'description' => $metaDescription,
             'mainEntity' => [
-                ['@type' => 'Service', 'name' => $categoryA->repair_category_name, 'provider' => ['@type' => 'LocalBusiness', 'name' => 'Aplikasi Bengkel Terbaik'], 'offers' => ['@type' => 'Offer', 'price' => round($avgPriceA, 2)]],
-                ['@type' => 'Service', 'name' => $categoryB->repair_category_name, 'provider' => ['@type' => 'LocalBusiness', 'name' => 'Aplikasi Bengkel Terbaik'], 'offers' => ['@type' => 'Offer', 'price' => round($avgPriceB, 2)]],
+                ['@type' => 'Service', 'name' => $categoryA->repair_category_name, 'provider' => ['@type' => 'LocalBusiness', 'name' => config('app.name')], 'offers' => ['@type' => 'Offer', 'price' => round($avgPriceA, 2)]],
+                ['@type' => 'Service', 'name' => $categoryB->repair_category_name, 'provider' => ['@type' => 'LocalBusiness', 'name' => config('app.name')], 'offers' => ['@type' => 'Offer', 'price' => round($avgPriceB, 2)]],
             ],
         ];
 
@@ -140,8 +140,8 @@ class ProgrammaticSeoController extends Controller
                     '@type' => 'Article',
                     'headline' => $dbPost->title,
                     'description' => $metaDescription,
-                    'author' => ['@type' => 'Organization', 'name' => 'Aplikasi Bengkel Terbaik'],
-                    'publisher' => ['@type' => 'Organization', 'name' => 'Aplikasi Bengkel Terbaik'],
+                    'author' => ['@type' => 'Organization', 'name' => config('app.name')],
+                    'publisher' => ['@type' => 'Organization', 'name' => config('app.name')],
                     'datePublished' => ($dbPost->published_at ?? $dbPost->created_at)->toIso8601String(),
                 ];
 
@@ -161,8 +161,8 @@ class ProgrammaticSeoController extends Controller
             '@type' => 'Article',
             'headline' => $article['title'],
             'description' => $article['excerpt'],
-            'author' => ['@type' => 'Organization', 'name' => 'Aplikasi Bengkel Terbaik'],
-            'publisher' => ['@type' => 'Organization', 'name' => 'Aplikasi Bengkel Terbaik'],
+            'author' => ['@type' => 'Organization', 'name' => config('app.name')],
+            'publisher' => ['@type' => 'Organization', 'name' => config('app.name')],
             'datePublished' => $article['date'],
         ];
 

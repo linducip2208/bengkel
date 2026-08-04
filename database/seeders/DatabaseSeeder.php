@@ -80,7 +80,7 @@ class DatabaseSeeder extends Seeder
     private function seedSettings(): void
     {
         $settings = [
-            ['key' => 'system_name', 'value' => 'Aplikasi Bengkel Terbaik', 'group' => 'general'],
+            ['key' => 'system_name', 'value' => config('app.name'), 'group' => 'general'],
             ['key' => 'address', 'value' => 'Jl. Siliwangi No. 88, Semarang', 'group' => 'general'],
             ['key' => 'phone', 'value' => '024-7612345', 'group' => 'general'],
             ['key' => 'email', 'value' => 'info@bengkelpaten.id', 'group' => 'general'],

@@ -16,7 +16,7 @@
 </head>
 <body>
     <div class="header">
-        <h2>Aplikasi Bengkel Terbaik</h2>
+        <h2>{{ config('app.name') }}</h2>
         <h1>GATE PASS</h1>
         <p><strong>{{ $gatePass->gate_pass_no }}</strong></p>
     </div>

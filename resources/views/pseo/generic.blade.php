@@ -3,7 +3,7 @@
 <section class="content">
     <h2>{{ $context ?? ucwords(str_replace('-', ' ', $slug)) }}</h2>
 
-    <p>Aplikasi Bengkel Terbaik adalah bengkel mobil profesional yang melayani berbagai kebutuhan perawatan dan perbaikan kendaraan di Indonesia.@if($cityName) Kami hadir di area <strong>{{ $cityName }}</strong> dan sekitarnya.@endif Dengan teknisi berpengalaman dan peralatan modern, kami siap memberikan layanan terbaik untuk kendaraan Anda.</p>
+    <p>{{ config('app.name') }} adalah bengkel mobil profesional yang melayani berbagai kebutuhan perawatan dan perbaikan kendaraan di Indonesia.@if($cityName) Kami hadir di area <strong>{{ $cityName }}</strong> dan sekitarnya.@endif Dengan teknisi berpengalaman dan peralatan modern, kami siap memberikan layanan terbaik untuk kendaraan Anda.</p>
 
     @if($serviceName || $brandName || $cityName)
     <h3>Layanan Kami</h3>
@@ -16,7 +16,7 @@
     </ul>
     @endif
 
-    <h3>Mengapa Memilih Aplikasi Bengkel Terbaik?</h3>
+    <h3>Mengapa Memilih {{ config('app.name') }}?</h3>
     <p>Kami mengutamakan kualitas, transparansi harga, dan kepuasan pelanggan. Setiap pekerjaan dikerjakan oleh teknisi bersertifikat menggunakan sparepart genuine atau OEM berkualitas. Kami memberikan garansi untuk setiap service yang kami lakukan.</p>
     <p>Dengan sistem manajemen bengkel modern, kami mencatat setiap riwayat service kendaraan Anda sehingga perawatan menjadi lebih terencana dan efisien. Booking online tersedia 24 jam melalui website kami.</p>
 </section>
@@ -33,12 +33,12 @@
 <section class="content">
     <h3>Frequently Asked Questions</h3>
     <div class="faq-item">
-        <strong>Apa layanan unggulan Aplikasi Bengkel Terbaik?</strong>
+        <strong>Apa layanan unggulan {{ config('app.name') }}?</strong>
         <p>Kami melayani {{ $serviceName ?? 'semua jenis perawatan dan perbaikan mobil' }}, dari servis berkala, ganti oli, tune-up, body repair, hingga overhaul mesin. Semua dikerjakan teknisi profesional.</p>
     </div>
     <div class="faq-item">
         <strong>@if($cityName)Apakah melayani area {{ $cityName }}?@else Apakah bisa booking online?@endif</strong>
-        <p>@if($cityName)Ya, Aplikasi Bengkel Terbaik melayani area {{ $cityName }} dan sekitarnya. @endifBooking online tersedia 24 jam. Hubungi WhatsApp kami atau kunjungi bengkel langsung untuk konsultasi gratis.</p>
+        <p>@if($cityName)Ya, {{ config('app.name') }} melayani area {{ $cityName }} dan sekitarnya. @endifBooking online tersedia 24 jam. Hubungi WhatsApp kami atau kunjungi bengkel langsung untuk konsultasi gratis.</p>
     </div>
     <div class="faq-item">
         <strong>Berapa biaya {{ $serviceName ?? 'service' }}?</strong>

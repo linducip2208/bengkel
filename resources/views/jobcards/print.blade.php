@@ -25,7 +25,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;">
             <div style="text-align:left;">
                 <h2>JOBCARD</h2>
-                <small>Aplikasi Bengkel Terbaik</small>
+                <small>{{ config('app.name') }}</small>
                 <h4>{{ $service->job_no }}</h4>
             </div>
             <div id="qrcode" style="width:120px;height:120px;"></div>

@@ -18,7 +18,7 @@
 </head>
 <body>
     <h2>SLIP GAJI</h2>
-    <div class="sub">{{ config('app.name', 'Aplikasi Bengkel Terbaik') }} — Periode {{ \Carbon\Carbon::create()->month($salary->period_month)->format('F') }} {{ $salary->period_year }}</div>
+    <div class="sub">{{ config('app.name', '{{ config('app.name') }}') }} — Periode {{ \Carbon\Carbon::create()->month($salary->period_month)->format('F') }} {{ $salary->period_year }}</div>
 
     <table class="info">
         <tr><td width="30%"><strong>Nama Karyawan</strong></td><td>: {{ $salary->user->name }}</td></tr>

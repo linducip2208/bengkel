@@ -26,7 +26,7 @@
         <section class="content">
             <h2>Looking for Alternatives to {{ $repairCategory->repair_category_name }}?</h2>
             <p>While {{ $repairCategory->repair_category_name }} is a popular service category, you might find that another type of service better matches your vehicle's specific needs. Sometimes, what appears to be a {{ strtolower($repairCategory->repair_category_name) }} issue could be related to a different automotive system.</p>
-            <p>Below are alternative service categories available at Aplikasi Bengkel Terbaik that might be relevant to your vehicle's condition:</p>
+            <p>Below are alternative service categories available at {{ config('app.name') }} that might be relevant to your vehicle's condition:</p>
 
             @foreach($alternatives as $alt)
             <div class="alternative-card">
@@ -42,12 +42,12 @@
             <p>First, pay attention to the symptoms your vehicle is showing. Different issues point to different systems. Strange noises when braking suggest brake service, while poor temperature control indicates AC service needs.</p>
             <p>Second, consider your vehicle's age and mileage. Older vehicles often need more comprehensive services, including engine repairs and transmission work, while newer vehicles might need routine maintenance.</p>
             <p>Third, consult with our expert technicians. They can perform a diagnostic check and recommend the most appropriate service category based on actual findings rather than guesswork.</p>
-            <p>At Aplikasi Bengkel Terbaik, we always start with a thorough inspection before recommending any service. This ensures you only pay for what your vehicle actually needs.</p>
+            <p>At {{ config('app.name') }}, we always start with a thorough inspection before recommending any service. This ensures you only pay for what your vehicle actually needs.</p>
         </section>
 
         <section class="cta content">
             <h2>Not Sure What You Need?</h2>
-            <p>Bring your vehicle to Aplikasi Bengkel Terbaik for a professional inspection. Our certified technicians will diagnose the issue and recommend the right service category for your needs.</p>
+            <p>Bring your vehicle to {{ config('app.name') }} for a professional inspection. Our certified technicians will diagnose the issue and recommend the right service category for your needs.</p>
             <p>Contact us today for a free consultation.</p>
         </section>
     </main>
@@ -62,7 +62,7 @@
     </aside>
 
     <footer>
-        <p>&copy; {{ date('Y') }} Aplikasi Bengkel Terbaik. All rights reserved.</p>
+        <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
     </footer>
 </body>
 </html>

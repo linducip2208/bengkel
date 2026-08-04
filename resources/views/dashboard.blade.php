@@ -1,6 +1,6 @@
 ﻿@extends('layouts.app')
 
-@section('title', 'Dashboard - Aplikasi Bengkel Terbaik')
+@section('title', 'Dashboard - {{ config('app.name') }}')
 
 @push('scripts')
 <script>

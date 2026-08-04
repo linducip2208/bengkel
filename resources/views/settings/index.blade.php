@@ -1,6 +1,6 @@
 ﻿@extends('layouts.app')
 
-@section('title', 'Settings - Aplikasi Bengkel Terbaik')
+@section('title', 'Settings - {{ config('app.name') }}')
 
 @section('content')
 <h4 class="mb-3">Settings</h4>

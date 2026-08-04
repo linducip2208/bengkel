@@ -50,8 +50,8 @@
 
         <section class="content">
             <h2>When to Choose {{ $categoryA->repair_category_name }}</h2>
-            <p>{{ $categoryA->repair_category_name }} is the right choice when your vehicle shows specific symptoms related to this category. Our certified technicians at Aplikasi Bengkel Terbaik can properly diagnose whether this service is what your vehicle needs.</p>
-            <p>With over {{ $servicesA }} completed services in this category, Aplikasi Bengkel Terbaik has the expertise to deliver quality {{ strtolower($categoryA->repair_category_name) }} results at an average price of @money($avgPriceA).</p>
+            <p>{{ $categoryA->repair_category_name }} is the right choice when your vehicle shows specific symptoms related to this category. Our certified technicians at {{ config('app.name') }} can properly diagnose whether this service is what your vehicle needs.</p>
+            <p>With over {{ $servicesA }} completed services in this category, {{ config('app.name') }} has the expertise to deliver quality {{ strtolower($categoryA->repair_category_name) }} results at an average price of @money($avgPriceA).</p>
         </section>
 
         <section class="content">
@@ -63,7 +63,7 @@
         <section class="content">
             <h2>Which Service Is Right for You?</h2>
             <p>Ultimately, the right service depends on your vehicle's specific condition and symptoms. A professional diagnosis is the most reliable way to determine what your vehicle needs.</p>
-            <p>At Aplikasi Bengkel Terbaik, we begin every visit with a comprehensive inspection. Our technicians check the relevant systems and provide you with a clear explanation of what needs attention, why it matters, and how we can help.</p>
+            <p>At {{ config('app.name') }}, we begin every visit with a comprehensive inspection. Our technicians check the relevant systems and provide you with a clear explanation of what needs attention, why it matters, and how we can help.</p>
             <p>Book an appointment today and let our experts guide you to the right service for your vehicle.</p>
         </section>
 
@@ -71,7 +71,7 @@
             <h2>Frequently Asked Questions</h2>
             <div class="faq-item">
                 <h3>Which service is more expensive: {{ $categoryA->repair_category_name }} or {{ $categoryB->repair_category_name }}?</h3>
-                <p>{{ $avgPriceA > $avgPriceB ? $categoryA->repair_category_name : $categoryB->repair_category_name }} tends to have a higher average price based on our service history, but every vehicle is different. Get a personalized quote at Aplikasi Bengkel Terbaik.</p>
+                <p>{{ $avgPriceA > $avgPriceB ? $categoryA->repair_category_name : $categoryB->repair_category_name }} tends to have a higher average price based on our service history, but every vehicle is different. Get a personalized quote at {{ config('app.name') }}.</p>
             </div>
             <div class="faq-item">
                 <h3>Can I get both services done at the same time?</h3>
@@ -84,8 +84,8 @@
         </section>
 
         <section class="cta content">
-            <h2>Get Expert Advice at Aplikasi Bengkel Terbaik</h2>
-            <p>Not sure which service your vehicle needs? Visit Aplikasi Bengkel Terbaik for a professional diagnostic check and personalized recommendations.</p>
+            <h2>Get Expert Advice at {{ config('app.name') }}</h2>
+            <p>Not sure which service your vehicle needs? Visit {{ config('app.name') }} for a professional diagnostic check and personalized recommendations.</p>
         </section>
     </main>
 
@@ -99,7 +99,7 @@
     </aside>
 
     <footer>
-        <p>&copy; {{ date('Y') }} Aplikasi Bengkel Terbaik. All rights reserved.</p>
+        <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
     </footer>
 </body>
 </html>

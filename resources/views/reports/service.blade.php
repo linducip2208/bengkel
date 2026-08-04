@@ -4,7 +4,7 @@
     $filters = $filters ?? [];
 @endphp
 
-@section('title', 'Service Report - Aplikasi Bengkel Terbaik')
+@section('title', 'Service Report - {{ config('app.name') }}')
 
 @section('content')
 <h4 class="mb-3">Service Report</h4>

@@ -49,8 +49,8 @@
         </section>
 
         <section class="content">
-            <h2>Why Choose Aplikasi Bengkel Terbaik for {{ $repairCategory->repair_category_name }}?</h2>
-            <p>At Aplikasi Bengkel Terbaik, we pride ourselves on delivering exceptional automotive care. Our {{ strtolower($repairCategory->repair_category_name) }} services stand out because of our commitment to quality, transparency, and customer satisfaction.</p>
+            <h2>Why Choose {{ config('app.name') }} for {{ $repairCategory->repair_category_name }}?</h2>
+            <p>At {{ config('app.name') }}, we pride ourselves on delivering exceptional automotive care. Our {{ strtolower($repairCategory->repair_category_name) }} services stand out because of our commitment to quality, transparency, and customer satisfaction.</p>
             <p>Our technicians undergo rigorous training and stay updated with the latest automotive technologies. We use diagnostic equipment that allows us to identify issues accurately and efficiently, reducing both repair time and costs for our customers.</p>
             <p>We believe in transparent pricing. Before any work begins, we provide a detailed estimate explaining every charge. No hidden fees, no surprises. Our customers appreciate knowing exactly what they are paying for and why each service is necessary.</p>
             <p>All our {{ strtolower($repairCategory->repair_category_name) }} services come with a warranty on parts and labor, giving you peace of mind long after you leave our workshop.</p>
@@ -68,7 +68,7 @@
 
         <section class="cta content">
             <h2>Book Your {{ $repairCategory->repair_category_name }} Service Today</h2>
-            <p>Don't wait until a minor issue becomes a major repair. Schedule your {{ strtolower($repairCategory->repair_category_name) }} service with Aplikasi Bengkel Terbaik and experience professional automotive care.</p>
+            <p>Don't wait until a minor issue becomes a major repair. Schedule your {{ strtolower($repairCategory->repair_category_name) }} service with {{ config('app.name') }} and experience professional automotive care.</p>
             <p>Contact us or visit our workshop for a free consultation and estimate.</p>
         </section>
     </main>
@@ -83,7 +83,7 @@
     </aside>
 
     <footer>
-        <p>&copy; {{ date('Y') }} Aplikasi Bengkel Terbaik. All rights reserved.</p>
+        <p>&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
     </footer>
 </body>
 </html>

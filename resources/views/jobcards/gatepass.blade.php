@@ -19,7 +19,7 @@
 <body>
     <div class="header">
         <h3>GATE PASS</h3>
-        <small>Aplikasi Bengkel Terbaik</small>
+        <small>{{ config('app.name') }}</small>
     </div>
 
     <div class="barcode">{{ $service->job_no }}</div>

@@ -90,7 +90,7 @@ class NotificationTemplateController extends Controller
             '{invoice_number}' => 'INV-2026-0001',
             '{total_amount}' => 'Rp 1.500.000',
             '{payment_method}' => 'Transfer Bank',
-            '{workshop_name}' => 'Aplikasi Bengkel Terbaik',
+            '{workshop_name}' => config('app.name'),
             '{workshop_phone}' => '0812-3456-7890',
         ];
 

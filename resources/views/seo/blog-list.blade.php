@@ -1,8 +1,8 @@
 ﻿@extends('pseo._layout')
 @section('content')
 <section class="content" style="text-align:center">
-    <h2>Blog Aplikasi Bengkel Terbaik</h2>
-    <p>Tips perawatan mobil, berita otomotif, dan panduan service kendaraan dari Aplikasi Bengkel Terbaik.</p>
+    <h2>Blog {{ config('app.name') }}</h2>
+    <p>Tips perawatan mobil, berita otomotif, dan panduan service kendaraan dari {{ config('app.name') }}.</p>
 </section>
 
 <section class="content">
