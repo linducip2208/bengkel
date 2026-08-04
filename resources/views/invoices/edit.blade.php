@@ -53,7 +53,11 @@
     <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center">
             <strong>Item Invoice</strong>
-            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addItem()"><i class="bi bi-plus"></i> Tambah Item</button>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-outline-info" onclick="openServicePicker()"><i class="bi bi-wrench"></i> Tambah Jasa</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addPart()"><i class="bi bi-box"></i> Tambah Sparepart</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addItem()"><i class="bi bi-plus"></i> Item Manual</button>
+            </div>
         </div>
         <div class="card-body p-0">
             <table class="table table-bordered mb-0" id="itemsTable">
@@ -111,9 +115,77 @@
 </form>
 @endsection
 
+{{-- Product Picker Modal --}}
+<div class="modal fade" id="productPickerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-box"></i> Pilih Sparepart</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="productSearchInput" class="form-control mb-2" placeholder="Cari produk...">
+                <table class="table table-hover table-sm"><thead><tr><th>Kode</th><th>Nama</th><th class="text-end">Stok</th><th class="text-end">Harga</th><th></th></tr></thead>
+                <tbody id="productTableBody"><tr><td colspan="5" class="text-center text-muted">Ketik untuk mencari...</td></tr></tbody></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Service Package Picker Modal --}}
+<div class="modal fade" id="servicePickerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-wrench"></i> Pilih Jasa Service</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                @php $packages = \App\Models\ServicePackage::where('is_active', true)->orderBy('name')->get(); @endphp
+                @if($packages->isEmpty())
+                <div class="text-center text-muted py-4"><p>Belum ada paket service.</p></div>
+                @else
+                <table class="table table-hover table-sm">
+                    <thead><tr><th>Nama Paket</th><th class="text-end">Harga</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach($packages as $pkg)
+                        <tr><td><strong>{{ $pkg->name }}</strong></td>
+                            <td class="text-end fw-bold">@money($pkg->price)</td>
+                            <td><button type="button" class="btn btn-sm btn-primary" onclick="selectService('{{ $pkg->name }}', {{ $pkg->price }})">Pilih</button></td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 let itemIndex = {{ count(old('items', $invoice->items)) }};
+let activeRow = null;
+
+function addPart() {
+    const tbody = document.querySelector('#itemsTable tbody');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><div class="d-flex gap-2"><input type="text" name="items[${itemIndex}][description]" class="form-control item-desc" required placeholder="Nama sparepart..."><input type="hidden" name="items[${itemIndex}][product_id]" class="product-id-input" value=""><button type="button" class="btn btn-sm btn-outline-secondary pick-product" onclick="openProductPicker(this)"><i class="bi bi-search"></i></button></div></td><td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="1" oninput="calcRow(this)" required></td><td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="0" min="0" step="100" oninput="calcRow(this)" required></td><td><input type="text" class="form-control row-total" readonly value="0"></td><td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>`;
+    tbody.appendChild(tr);
+    itemIndex++;
+}
+
+function openServicePicker() { new bootstrap.Modal(document.getElementById('servicePickerModal')).show(); }
+
+function selectService(name, price) {
+    const tbody = document.querySelector('#itemsTable tbody');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><input type="text" name="items[${itemIndex}][description]" class="form-control" value="${name}" required></td><td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="1" oninput="calcRow(this)" required></td><td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="${price}" min="0" step="100" oninput="calcRow(this)" required></td><td><input type="text" class="form-control row-total" readonly value="${Number(price).toLocaleString('id-ID')}"></td><td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>`;
+    tbody.appendChild(tr);
+    itemIndex++;
+    calcGrand();
+    bootstrap.Modal.getInstance(document.getElementById('servicePickerModal')).hide();
+}
 
 function addItem() {
     const tbody = document.querySelector('#itemsTable tbody');
@@ -154,5 +226,23 @@ function calcGrand() {
 }
 
 document.addEventListener('DOMContentLoaded', calcGrand);
+
+function openProductPicker(btn) { activeRow = btn.closest('tr'); document.getElementById('productSearchInput').value = ''; searchProducts(''); new bootstrap.Modal(document.getElementById('productPickerModal')).show(); }
+
+function searchProducts(q) {
+    fetch('{{ route("products.search-json") }}?q=' + encodeURIComponent(q))
+        .then(r => r.json()).then(data => {
+            const tbody = document.getElementById('productTableBody');
+            if (!data.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Produk tidak ditemukan.</td></tr>'; return; }
+            tbody.innerHTML = data.map(p => `<tr><td><small class="text-muted">${p.code||'-'}</small></td><td>${p.name}</td><td class="text-end"><span class="badge bg-${p.stock_status==='in_stock'?'success':(p.stock_status==='low'?'warning':'danger')}">${p.current_stock}</span></td><td class="text-end">${Number(p.price).toLocaleString('id-ID')}</td><td><button type="button" class="btn btn-sm btn-primary" onclick="selectProduct(this)" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">Pilih</button></td></tr>`).join('');
+        });
+}
+
+function selectProduct(btn) {
+    if (activeRow) { activeRow.querySelector('.item-desc').value = btn.dataset.name; activeRow.querySelector('.price').value = parseFloat(btn.dataset.price); const pid = activeRow.querySelector('.product-id-input'); if (pid) pid.value = btn.dataset.id; calcRow(activeRow.querySelector('.price')); }
+    bootstrap.Modal.getInstance(document.getElementById('productPickerModal')).hide(); activeRow = null;
+}
+
+document.getElementById('productSearchInput').addEventListener('input', function() { searchProducts(this.value.trim() || ''); });
 </script>
 @endpush
