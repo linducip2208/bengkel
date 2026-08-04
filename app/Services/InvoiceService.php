@@ -102,12 +102,11 @@ class InvoiceService extends BaseService
             'reference_type' => 'invoice',
             'reference_id' => $invoice->id,
             'type' => 'out',
-            'quantity' => $quantity,
-            'before' => $before,
-            'after' => $before - $quantity,
-            'note' => 'Invoice #' . $invoice->invoice_number,
+            'quantity_change' => -$quantity,
+            'previous_stock' => $before,
+            'new_stock' => $before - $quantity,
+            'reason' => 'Invoice #' . $invoice->invoice_number,
             'user_id' => auth()->id() ?? 1,
-            'branch_id' => session('current_branch_id'),
         ]);
     }
 
