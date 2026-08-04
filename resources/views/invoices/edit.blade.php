@@ -73,10 +73,16 @@
                 <tbody>
                     @foreach (old('items', $invoice->items) as $i => $item)
                     <tr>
-                        <td><input type="text" name="items[{{ $i }}][description]" class="form-control" value="{{ is_array($item) ? $item['description'] : $item->description }}" required></td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <input type="text" name="items[{{ $i }}][description]" class="form-control item-desc" value="{{ is_array($item) ? $item['description'] : $item->description }}" required>
+                                <input type="hidden" name="items[{{ $i }}][product_id]" class="product-id-input" value="{{ is_array($item) ? ($item['product_id'] ?? '') : ($item->product_id ?? '') }}">
+                                <button type="button" class="btn btn-sm btn-outline-secondary pick-product" onclick="openProductPicker(this)"><i class="bi bi-search"></i></button>
+                            </div>
+                        </td>
                         <td><input type="number" name="items[{{ $i }}][quantity]" class="form-control qty" value="{{ is_array($item) ? ($item['quantity'] ?? 1) : $item->quantity }}" min="1" oninput="calcRow(this)" required></td>
                         <td><input type="number" name="items[{{ $i }}][unit_price]" class="form-control price" value="{{ is_array($item) ? ($item['unit_price'] ?? 0) : $item->unit_price }}" min="0" step="100" oninput="calcRow(this)" required></td>
-                        <td><input type="text" class="form-control row-total" readonly value="{{ number_format((is_array($item) ? ($item['quantity'] * $item['unit_price'] ?? 0) : $item->total), 0, ',', '.') }}"></td>
+                        <td><input type="text" class="form-control row-total" readonly value="{{ number_format((is_array($item) ? (($item['quantity']??1) * ($item['unit_price']??0)) : $item->total), 0, ',', '.') }}"></td>
                         <td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
                     </tr>
                     @endforeach
