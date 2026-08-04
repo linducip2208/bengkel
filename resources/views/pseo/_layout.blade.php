@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $metaTitle ?? '{{ config('app.name') }}' }}</title>
+    <title>{{ $metaTitle ?? config('app.name') }}</title>
     <meta name="description" content="{{ $metaDescription ?? 'Aplikasi manajemen bengkel modern: service, inventory, POS, invoice, customer, keuangan.' }}">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="{{ request()->url() }}">
-    <meta property="og:title" content="{{ $metaTitle ?? '{{ config('app.name') }}' }}">
+    <meta property="og:title" content="{{ $metaTitle ?? config('app.name') }}">
     <meta property="og:description" content="{{ $metaDescription ?? '' }}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request()->url() }}">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ $metaTitle ?? '{{ config('app.name') }}' }}">
+    <meta name="twitter:title" content="{{ $metaTitle ?? config('app.name') }}">
     <meta name="twitter:description" content="{{ $metaDescription ?? '' }}">
     @if(isset($jsonLd))
     <script type="application/ld+json">{!! json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
@@ -53,7 +53,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>{{ $metaTitle ?? '{{ config('app.name') }}' }}</h1>
+        <h1>{{ $metaTitle ?? config('app.name') }}</h1>
         <p>{{ $metaDescription ?? '' }}</p>
     </div>
     <div class="container">

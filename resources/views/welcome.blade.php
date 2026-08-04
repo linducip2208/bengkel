@@ -1210,7 +1210,7 @@
 {!! json_encode([
     '@context' => 'https://schema.org',
     '@type' => 'SoftwareApplication',
-    'name' => '{{ config('app.name') }}',
+    'name' => config('app.name'),
     'description' => 'Aplikasi manajemen bengkel multi-cabang: customer, kendaraan, jobcard, inspeksi, inventory parts, invoice, reminder otomatis, audit log, dan laporan keuangan.',
     'applicationCategory' => 'BusinessApplication',
     'operatingSystem' => 'Web',

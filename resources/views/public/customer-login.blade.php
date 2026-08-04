@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Login Customer Portal — {{ config('app.name', '{{ config('app.name') }}') }}</title>
+    <title>Login Customer Portal — {{ config('app.name') }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>body{background:linear-gradient(135deg,#1e40af,#3b82f6);min-height:100vh;display:flex;align-items:center;padding:2rem;}</style>
@@ -12,7 +12,7 @@
         <div class="card mx-auto" style="max-width: 420px; border-radius: 18px;">
             <div class="card-body p-4">
                 <h4 class="text-center mb-1"><i class="bi bi-person-circle text-primary me-2"></i>Customer Portal</h4>
-                <p class="text-muted text-center small">{{ config('app.name', '{{ config('app.name') }}') }}</p>
+                <p class="text-muted text-center small">{{ config('app.name') }}</p>
 
                 @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
                 @if(session('error'))<div class="alert alert-danger">{{ session('error') }}</div>@endif
