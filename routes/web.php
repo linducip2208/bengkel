@@ -199,6 +199,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/invoices/{invoice}/send-wa', [InvoiceController::class, 'sendWA'])->name('invoices.sendWA');
     Route::post('/invoices/{invoice}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.sendEmail');
 
+    // --- Thermal Print ---
+    Route::post('/invoices/{invoice}/print', [\App\Http\Controllers\Tenant\PrintController::class, 'invoice'])->name('print.invoice');
+    Route::post('/services/{service}/print-jobcard', [\App\Http\Controllers\Tenant\PrintController::class, 'jobcard'])->name('print.jobcard');
+    Route::post('/pos/open-drawer', [\App\Http\Controllers\Tenant\PrintController::class, 'openDrawer'])->name('print.open-drawer');
+    Route::get('/print/invoice/{invoice}/raw', [\App\Http\Controllers\Tenant\PrintController::class, 'rawData'])->name('print.raw');
+
     // --- Products custom routes (before resource) ---
     Route::match(['get', 'post'], '/products/import', [ProductController::class, 'import'])->name('products.import');
     Route::match(['get', 'post'], '/products/stock-opname', [ProductController::class, 'stockOpname'])->name('products.stock-opname');
