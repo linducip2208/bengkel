@@ -1,10 +1,12 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @php
     $filters = $filters ?? [];
 @endphp
 
-@section('title', 'Service Report - {{ config('app.name') }}')
+@section('title')
+Service Report - {{ config('app.name') }}
+@endsection
 
 @section('content')
 <h4 class="mb-3">Service Report</h4>

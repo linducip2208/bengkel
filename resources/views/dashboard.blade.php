@@ -1,6 +1,8 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
-@section('title', 'Dashboard - {{ config('app.name') }}')
+@section('title')
+Dashboard - {{ config('app.name') }}
+@endsection
 
 @push('scripts')
 <script>

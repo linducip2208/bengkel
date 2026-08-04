@@ -1,6 +1,8 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
-@section('title', 'Edit Reminder - {{ config('app.name') }}')
+@section('title')
+Edit Reminder - {{ config('app.name') }}
+@endsection
 
 @section('content')
 <h4 class="mb-3">Edit Reminder</h4>

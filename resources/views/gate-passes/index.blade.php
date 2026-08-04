@@ -1,6 +1,8 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
-@section('title', 'Gate Passes - {{ config('app.name') }}')
+@section('title')
+Gate Passes - {{ config('app.name') }}
+@endsection
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">

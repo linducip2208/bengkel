@@ -1,6 +1,8 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
-@section('title', 'Create Notification Template - {{ config('app.name') }}')
+@section('title')
+Create Notification Template - {{ config('app.name') }}
+@endsection
 
 @section('content')
 <h4 class="mb-3">Create Notification Template</h4>

@@ -1,6 +1,8 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
-@section('title', 'Sales Report - {{ config('app.name') }}')
+@section('title')
+Sales Report - {{ config('app.name') }}
+@endsection
 
 @section('content')
 <h4 class="mb-3">Sales Report</h4>
