@@ -268,10 +268,6 @@
         .pagination {
             margin-bottom: 0;
         }
-        .pagination .page-link {
-            font-size: 0.875rem;
-            padding: 0.375rem 0.75rem;
-        }
 
         /* ===== Action button enhancements ===== */
         .table .btn-sm {
