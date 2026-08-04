@@ -24,7 +24,7 @@ class ReportController extends Controller
         $filters = $request->only(['start_date', 'end_date', 'technician_id', 'status']);
         $report = $reportService->serviceReport($filters);
 
-        $technicians = User::whereHas('roles', fn($q) => $q->where('name', 'technician'))->get();
+        $technicians = User::role('mekanik')->get();
 
         return view('reports.service', compact('report', 'technicians', 'filters'));
     }
@@ -192,8 +192,6 @@ class ReportController extends Controller
                 $c->avg_per_visit = $c->services_count > 0 ? $c->lifetime_value / $c->services_count : 0;
                 return $c;
             });
-
         return view('reports.customer-lifetime', compact('topCustomers'));
     }
-}
 }
