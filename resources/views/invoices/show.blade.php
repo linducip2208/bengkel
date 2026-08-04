@@ -6,10 +6,7 @@
     <h4>Invoice: {{ $invoice->invoice_number }}</h4>
     <div class="d-flex gap-2">
         <a href="{{ route('invoices.pdf', $invoice) }}" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
-        <form method="POST" action="{{ route('print.invoice', $invoice) }}" class="d-inline">
-            @csrf
-            <button type="submit" class="btn btn-outline-info"><i class="bi bi-printer"></i> Print Thermal</button>
-        </form>
+        <button type="button" class="btn btn-outline-dark" onclick="window.print()"><i class="bi bi-printer"></i> Print</button>
         <a href="{{ route('invoices.sendWA', $invoice) }}" class="btn btn-outline-success" target="_blank"><i class="bi bi-whatsapp"></i> Kirim WA</a>
         @if ($remaining > 0)
             <a href="{{ route('payments.create', $invoice) }}" class="btn btn-primary"><i class="bi bi-cash-coin"></i> Catat Pembayaran</a>
