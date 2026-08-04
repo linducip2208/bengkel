@@ -39,7 +39,7 @@
     <div class="row g-3 mb-3">
         <div class="col-md-6">
             <label class="form-label">Jumlah Pembayaran *</label>
-            <input type="number" name="amount" class="form-control @error('amount') is-invalid @enderror" value="{{ old('amount', $remaining) }}" min="1" step="1000" required>
+            <input type="number" name="amount" class="form-control @error('amount') is-invalid @enderror" value="{{ old('amount', $remaining) }}" min="1" step="1" required>
             @error('amount') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
         <div class="col-md-6">
