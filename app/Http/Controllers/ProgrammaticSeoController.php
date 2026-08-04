@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace App\Http\Controllers;
 
@@ -285,5 +285,207 @@ class ProgrammaticSeoController extends Controller
             'context', 'parts', 'isSourceCode', 'metaTitle', 'metaDescription', 'jsonLd',
             'relatedServices'
         ));
+    }
+
+    // ==================================================================
+    // MULTILINGUAL LANDING: /{lang}/bengkel-{city}[/{kelurahan}]
+    // ==================================================================
+
+    public function cityLanding(string $city): View
+    {
+        $cityName = ucwords(str_replace('-', ' ', $city));
+        $lang = request()->segment(1);
+
+        $t = $this->translations($lang);
+        $services = \App\Support\SeoData::services();
+        $brands = \App\Support\SeoData::brands();
+
+        $metaTitle = str_replace(['{city}'], [$cityName], $t['city_title']);
+        $metaDescription = str_replace(['{city}'], [$cityName], $t['city_desc']);
+
+        $jsonLd = [
+            '@context' => 'https://schema.org',
+            '@type' => 'LocalBusiness',
+            'name' => str_replace('{city}', $cityName, $t['city_biz']),
+            'description' => $metaDescription,
+            'address' => ['@type' => 'PostalAddress', 'addressLocality' => $cityName, 'addressCountry' => 'ID'],
+            'priceRange' => 'Rp 100rb - Rp 50jt',
+            'areaServed' => $cityName,
+        ];
+
+        $kelurahans = \App\Models\Kelurahan::active()
+            ->where('kabupaten', 'like', "%{$cityName}%")
+            ->limit(20)->get();
+
+        return view('pseo.city-landing', compact(
+            'city', 'cityName', 'lang', 't', 'services', 'brands',
+            'metaTitle', 'metaDescription', 'jsonLd', 'kelurahans'
+        ));
+    }
+
+    public function kelurahanLanding(string $city, string $kelurahan): View
+    {
+        $cityName = ucwords(str_replace('-', ' ', $city));
+        $kelurahanName = ucwords(str_replace('-', ' ', $kelurahan));
+        $lang = request()->segment(1);
+
+        $t = $this->translations($lang);
+        $services = \App\Support\SeoData::services();
+        $brands = \App\Support\SeoData::brands();
+        $kecamatan = '';
+
+        $k = \App\Models\Kelurahan::where('slug', $kelurahan)
+            ->where('kabupaten', 'like', "%{$cityName}%")
+            ->first();
+        if ($k) {
+            $kelurahanName = $k->name;
+            $kecamatan = $k->kecamatan;
+        }
+
+        $metaTitle = str_replace(['{kelurahan}','{city}'], [$kelurahanName, $cityName], $t['kel_title']);
+        $metaDescription = str_replace(['{kelurahan}','{city}'], [$kelurahanName, $cityName], $t['kel_desc']);
+
+        $jsonLd = [
+            '@context' => 'https://schema.org',
+            '@type' => 'LocalBusiness',
+            'name' => str_replace(['{kelurahan}','{city}'], [$kelurahanName, $cityName], $t['kel_biz']),
+            'description' => $metaDescription,
+            'address' => ['@type' => 'PostalAddress', 'addressLocality' => $kelurahanName, 'addressRegion' => $cityName, 'addressCountry' => 'ID'],
+        ];
+
+        return view('pseo.kelurahan-landing', compact(
+            'city', 'cityName', 'kelurahan', 'kelurahanName', 'kecamatan',
+            'lang', 't', 'services', 'brands',
+            'metaTitle', 'metaDescription', 'jsonLd'
+        ));
+    }
+
+    public function brandCityLanding(string $brand, string $city): View
+    {
+        $brandName = ucwords(str_replace('-', ' ', $brand));
+        $cityName = ucwords(str_replace('-', ' ', $city));
+        $lang = request()->segment(1);
+        $t = $this->translations($lang);
+
+        $metaTitle = str_replace(['{brand}','{city}'], [$brandName, $cityName], $t['brand_title']);
+        $metaDescription = str_replace(['{brand}','{city}'], [$brandName, $cityName], $t['brand_desc']);
+
+        return view('pseo.generic', [
+            'slug' => "bengkel-{$brand}-{$city}",
+            'cityName' => $cityName,
+            'brandName' => $brandName,
+            'serviceName' => "Servis {$brandName}",
+            'context' => "Bengkel {$brandName} {$cityName}",
+            'isSourceCode' => false,
+            'metaTitle' => $metaTitle,
+            'metaDescription' => $metaDescription,
+            'jsonLd' => ['@context'=>'https://schema.org','@type'=>'LocalBusiness','name'=>str_replace(['{brand}','{city}'],[$brandName,$cityName],$t['brand_biz']),'address'=>['@type'=>'PostalAddress','addressLocality'=>$cityName,'addressCountry'=>'ID']],
+            'relatedServices' => collect(\App\Support\SeoData::services())->map(fn($s) => ['slug'=>$s,'name'=>ucwords(str_replace('-',' ',$s))])->take(8)->toArray(),
+        ]);
+    }
+
+    public function serviceCityLanding(string $service, string $city): View
+    {
+        $serviceName = ucwords(str_replace('-', ' ', $service));
+        $cityName = ucwords(str_replace('-', ' ', $city));
+        $lang = request()->segment(1);
+        $t = $this->translations($lang);
+
+        $metaTitle = str_replace(['{service}','{city}'], [$serviceName, $cityName], $t['svc_title']);
+        $metaDescription = str_replace(['{service}','{city}'], [$serviceName, $cityName], $t['svc_desc']);
+
+        return view('pseo.generic', [
+            'slug' => "service-{$service}-{$city}",
+            'cityName' => $cityName,
+            'serviceName' => $serviceName,
+            'context' => "{$serviceName} {$cityName}",
+            'isSourceCode' => false,
+            'metaTitle' => $metaTitle,
+            'metaDescription' => $metaDescription,
+            'jsonLd' => ['@context'=>'https://schema.org','@type'=>'Service','name'=>str_replace(['{service}','{city}'],[$serviceName,$cityName],$t['svc_biz']),'provider'=>['@type'=>'LocalBusiness','name'=>config('app.name')],'areaServed'=>['@type'=>'City','name'=>$cityName]],
+            'relatedServices' => collect(\App\Support\SeoData::services())->filter(fn($s) => $s !== $service)->map(fn($s) => ['slug'=>$s,'name'=>ucwords(str_replace('-',' ',$s))])->take(8)->toArray(),
+        ]);
+    }
+
+    public function bestCityLanding(string $city): View
+    {
+        $cityName = ucwords(str_replace('-', ' ', $city));
+        $lang = request()->segment(1);
+        $t = $this->translations($lang);
+
+        $metaTitle = str_replace('{city}', $cityName, $t['best_title']);
+        $metaDescription = str_replace('{city}', $cityName, $t['best_desc']);
+
+        return view('pseo.generic', [
+            'slug' => "bengkel-terbaik-{$city}",
+            'cityName' => $cityName,
+            'context' => "Bengkel Terbaik {$cityName}",
+            'isSourceCode' => false,
+            'metaTitle' => $metaTitle,
+            'metaDescription' => $metaDescription,
+            'jsonLd' => ['@context'=>'https://schema.org','@type'=>'ItemList','name'=>str_replace('{city}',$cityName,$t['best_biz'])],
+            'relatedServices' => collect(\App\Support\SeoData::services())->map(fn($s) => ['slug'=>$s,'name'=>ucwords(str_replace('-',' ',$s))])->take(8)->toArray(),
+        ]);
+    }
+
+    // ==================================================================
+    // TRANSLATIONS
+    // ==================================================================
+
+    private function translations(string $lang): array
+    {
+        return match ($lang) {
+            'en' => [
+                'city_title' => 'Best Car Workshop in {city} — Professional Auto Service',
+                'city_desc' => 'Looking for trusted car repair in {city}? Expert mechanics, genuine parts, transparent pricing. Servis berkala, AC, engine, brakes & more.',
+                'city_biz' => 'Best Car Workshop {city}',
+                'kel_title' => 'Car Workshop in {kelurahan}, {city} — Nearby Auto Repair',
+                'kel_desc' => 'Need car service near {kelurahan}, {city}? We provide professional auto repair with fast turnaround, affordable pricing, and warranty on all work.',
+                'kel_biz' => 'Car Workshop {kelurahan} {city}',
+                'brand_title' => '{brand} Car Service in {city} — Specialist Workshop',
+                'brand_desc' => '{brand} specialist workshop in {city}. Expert technicians, genuine OEM parts, routine maintenance and major repairs for all {brand} models.',
+                'brand_biz' => '{brand} Specialist Workshop {city}',
+                'svc_title' => '{service} in {city} — Professional Car Care',
+                'svc_desc' => 'Professional {service} in {city}. Fast, reliable service with warranty. Book online or visit our workshop today.',
+                'svc_biz' => '{service} {city}',
+                'best_title' => 'Top 10 Best Car Workshops in {city} — Expert Reviews',
+                'best_desc' => 'Discover the best car workshops in {city}. Compare prices, read reviews, and find trusted mechanics for your vehicle.',
+                'best_biz' => 'Top 10 Workshops {city}',
+            ],
+            'de' => [
+                'city_title' => 'Beste Autowerkstatt in {city} — Professioneller Auto Service',
+                'city_desc' => 'Suchen Sie eine zuverlassige Autoreparatur in {city}? Erfahrene Mechaniker, Originalteile, transparente Preise.',
+                'city_biz' => 'Beste Autowerkstatt {city}',
+                'kel_title' => 'Autowerkstatt in {kelurahan}, {city} — Reparatur in der Nahe',
+                'kel_desc' => 'Autoservice in der Nahe von {kelurahan}, {city} benotigt? Professionelle Reparatur mit schneller Abwicklung und Garantie.',
+                'kel_biz' => 'Autowerkstatt {kelurahan} {city}',
+                'brand_title' => '{brand} Autoservice in {city} — Spezialwerkstatt',
+                'brand_desc' => '{brand} Spezialwerkstatt in {city}. Erfahrene Techniker, OEM-Originalteile fur alle {brand} Modelle.',
+                'brand_biz' => '{brand} Spezialwerkstatt {city}',
+                'svc_title' => '{service} in {city} — Professionelle Autopflege',
+                'svc_desc' => 'Professioneller {service} in {city}. Schneller, zuverlassiger Service mit Garantie.',
+                'svc_biz' => '{service} {city}',
+                'best_title' => 'Top 10 Beste Autowerkstatten in {city} — Expertenbewertungen',
+                'best_desc' => 'Entdecken Sie die besten Autowerkstatten in {city}. Vergleichen Sie Preise und finden Sie vertrauenswurdige Mechaniker.',
+                'best_biz' => 'Top 10 Werkstatten {city}',
+            ],
+            default => [
+                'city_title' => 'Bengkel Mobil Terbaik di {city} — Servis Profesional',
+                'city_desc' => 'Cari bengkel mobil terpercaya di {city}? Teknisi berpengalaman, sparepart original, harga transparan. Servis berkala, AC, mesin, rem & lainnya.',
+                'city_biz' => 'Bengkel Mobil Terbaik {city}',
+                'kel_title' => 'Bengkel Mobil di {kelurahan}, {city} — Servis Terdekat',
+                'kel_desc' => 'Butuh servis mobil di area {kelurahan}, {city}? Bengkel profesional dengan pengerjaan cepat, harga terjangkau, dan garansi semua pekerjaan.',
+                'kel_biz' => 'Bengkel {kelurahan} {city}',
+                'brand_title' => 'Bengkel {brand} {city} — Spesialis Servis {brand}',
+                'brand_desc' => 'Bengkel spesialis {brand} di {city}. Teknisi ahli, sparepart original OEM, perawatan rutin dan perbaikan besar semua tipe {brand}.',
+                'brand_biz' => 'Bengkel Spesialis {brand} {city}',
+                'svc_title' => '{service} di {city} — Jasa Profesional',
+                'svc_desc' => 'Jasa {service} profesional di {city}. Pengerjaan cepat, bergaransi. Booking online atau kunjungi bengkel kami sekarang.',
+                'svc_biz' => '{service} {city}',
+                'best_title' => '10 Bengkel Mobil Terbaik di {city} — Rekomendasi Ahli',
+                'best_desc' => 'Temukan bengkel mobil terbaik di {city}. Bandingkan harga, baca review, dan pilih mekanik terpercaya untuk kendaraan Anda.',
+                'best_biz' => '10 Bengkel Terbaik {city}',
+            ],
+        };
     }
 }

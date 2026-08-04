@@ -1,4 +1,4 @@
-﻿{{-- Floating WhatsApp button + delayed purchase popup — vanilla JS --}}
+{{-- Floating WhatsApp button + delayed purchase popup — vanilla JS --}}
 @php
     $waNumber = '6281296052010';
     $waMessage = urlencode("Halo, saya tertarik dengan {{ config('app.name') }} — source code / custom");

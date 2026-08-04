@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
@@ -90,6 +90,17 @@ Route::get('/best/{category}', [ProgrammaticSeoController::class, 'bestService']
 Route::get('/best/{category}/{year}', [ProgrammaticSeoController::class, 'bestService'])->name('seo.best.year');
 Route::get('/alternatives-to/{slug}', [ProgrammaticSeoController::class, 'serviceAlternatives'])->name('seo.alternatives');
 Route::get('/compare/{a}-vs-{b}', [ProgrammaticSeoController::class, 'compareServices'])->name('seo.compare');
+
+// Multilingual PSEO routes (ID / EN / DE)
+foreach (['id', 'en', 'de'] as $lang) {
+    Route::prefix($lang)->group(function () use ($lang) {
+        Route::get('/bengkel-{city}', [\App\Http\Controllers\ProgrammaticSeoController::class, 'cityLanding'])->name("seo.{$lang}.city");
+        Route::get('/bengkel-{city}/{kelurahan}', [\App\Http\Controllers\ProgrammaticSeoController::class, 'kelurahanLanding'])->name("seo.{$lang}.kelurahan");
+        Route::get('/bengkel-{brand}-{city}', [\App\Http\Controllers\ProgrammaticSeoController::class, 'brandCityLanding'])->name("seo.{$lang}.brand-city");
+        Route::get('/service-{service}-{city}', [\App\Http\Controllers\ProgrammaticSeoController::class, 'serviceCityLanding'])->name("seo.{$lang}.service-city");
+        Route::get('/bengkel-terbaik-{city}', [\App\Http\Controllers\ProgrammaticSeoController::class, 'bestCityLanding'])->name("seo.{$lang}.best-city");
+    });
+}
 
 // Blog public
 Route::get('/blog', function () {

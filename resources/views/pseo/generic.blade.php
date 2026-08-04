@@ -1,4 +1,4 @@
-﻿@extends('pseo._layout')
+@extends('pseo._layout')
 @section('content')
 <section class="content">
     <h2>{{ $context ?? ucwords(str_replace('-', ' ', $slug)) }}</h2>

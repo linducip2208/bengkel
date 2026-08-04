@@ -1,4 +1,4 @@
-﻿@extends('pseo._layout')
+@extends('pseo._layout')
 @section('content')
 <section class="content" style="text-align:center">
     <h2>Blog {{ config('app.name') }}</h2>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -60,7 +60,11 @@
         @yield('content')
     </div>
     <footer>
-        <p>&copy; {{ date('Y') }} {{ config('app.name') }} &middot; <a href="{{ url('/') }}">Home</a> &middot; <a href="{{ url('/docs') }}">Docs</a> &middot; <a href="https://wa.me/6281234567890">WhatsApp</a></p>
+        <p>&copy; {{ date('Y') }} {{ config('app.name') }} &middot; <a href="{{ url('/') }}">Home</a> &middot; <a href="{{ url('/docs') }}">Docs</a> &middot; <a href="https://wa.me/6281296052010">WhatsApp</a></p>
     </footer>
+
+<x-whatsapp-cta
+    message="Halo {{ config('app.name') }}, saya butuh informasi bengkel."
+    label="Chat WhatsApp" />
 </body>
 </html>
