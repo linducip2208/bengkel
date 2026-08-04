@@ -114,6 +114,34 @@
     </div>
 
     <div class="col-md-4">
+        <div class="card mb-3 border-0 shadow-sm">
+            <div class="card-body text-center">
+                <h1 class="fw-bold mb-0 {{ $remaining > 0 ? 'text-danger' : 'text-success' }}">
+                    @money($remaining)
+                </h1>
+                <small class="text-muted">Total Harus Dibayar</small>
+            </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+            <div class="col-6">
+                <div class="card border-0 bg-light">
+                    <div class="card-body text-center py-2">
+                        <div class="fw-bold text-success">@money($totalPaid)</div>
+                        <small class="text-muted">Total Dibayar</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card border-0 bg-light">
+                    <div class="card-body text-center py-2">
+                        <div class="fw-bold">@money($invoice->dp_amount ?? 0)</div>
+                        <small class="text-muted">Down Payment</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="card mb-4">
             <div class="card-header"><strong>Riwayat Pembayaran</strong></div>
             <div class="card-body p-0">
