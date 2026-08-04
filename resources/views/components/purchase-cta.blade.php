@@ -1,7 +1,7 @@
-{{-- Floating WhatsApp button + delayed purchase popup — vanilla JS --}}
+﻿{{-- Floating WhatsApp button + delayed purchase popup — vanilla JS --}}
 @php
     $waNumber = '6281296052010';
-    $waMessage = urlencode("Halo, saya tertarik dengan Bengkel Paten — source code / custom");
+    $waMessage = urlencode("Halo, saya tertarik dengan Aplikasi Bengkel Terbaik — source code / custom");
     $waLink = "https://wa.me/{$waNumber}?text={$waMessage}";
 @endphp
 

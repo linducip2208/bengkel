@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Console\Commands;
 
@@ -22,7 +22,7 @@ class ProcessNotificationQueue extends Command
                     $result = $wa->send($item->recipient, $item->message);
                 } elseif ($item->channel === 'email') {
                     \Illuminate\Support\Facades\Mail::raw($item->message, function ($msg) use ($item) {
-                        $msg->to($item->recipient)->subject('Bengkel Paten Notification');
+                        $msg->to($item->recipient)->subject('Aplikasi Bengkel Terbaik Notification');
                     });
                     $result = ['success' => true];
                 } else {

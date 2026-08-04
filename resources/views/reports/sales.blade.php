@@ -1,6 +1,6 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
-@section('title', 'Sales Report - Bengkel Paten')
+@section('title', 'Sales Report - Aplikasi Bengkel Terbaik')
 
 @section('content')
 <h4 class="mb-3">Sales Report</h4>

@@ -1,10 +1,10 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @php
     $filters = $filters ?? [];
 @endphp
 
-@section('title', 'Service Report - Bengkel Paten')
+@section('title', 'Service Report - Aplikasi Bengkel Terbaik')
 
 @section('content')
 <h4 class="mb-3">Service Report</h4>

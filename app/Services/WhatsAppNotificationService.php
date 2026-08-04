@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Services;
 
@@ -37,7 +37,7 @@ class WhatsAppNotificationService
     public function sendEstimation($service, string $phone): array
     {
         $url = url('/track/' . ($service->job_no ?? $service->id));
-        $message = "Bengkel Paten\n\nEstimasi Servis:\n{$service->title}\nBiaya: Rp " . number_format($service->charge, 0, ',', '.') . "\n\nLihat & Approve: {$url}\n\nBalas YA untuk menyetujui.";
+        $message = "Aplikasi Bengkel Terbaik\n\nEstimasi Servis:\n{$service->title}\nBiaya: Rp " . number_format($service->charge, 0, ',', '.') . "\n\nLihat & Approve: {$url}\n\nBalas YA untuk menyetujui.";
 
         return $this->send($phone, $message);
     }
@@ -45,7 +45,7 @@ class WhatsAppNotificationService
     /** Send service completion notification */
     public function sendServiceComplete($service, string $phone): array
     {
-        $message = "Bengkel Paten\n\nServis {$service->title} TELAH SELESAI.\nKendaraan siap diambil.\n\nTotal: Rp " . number_format($service->charge, 0, ',', '.') . "\n\nTerima kasih!";
+        $message = "Aplikasi Bengkel Terbaik\n\nServis {$service->title} TELAH SELESAI.\nKendaraan siap diambil.\n\nTotal: Rp " . number_format($service->charge, 0, ',', '.') . "\n\nTerima kasih!";
 
         return $this->send($phone, $message);
     }

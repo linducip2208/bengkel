@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers\Tenant;
 
@@ -159,9 +159,9 @@ class BlogController extends Controller
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml .= '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">';
         $xml .= '<channel>';
-        $xml .= '<title>Blog Bengkel Paten</title>';
+        $xml .= '<title>Blog Aplikasi Bengkel Terbaik</title>';
         $xml .= '<link>' . config('app.url') . '/blog</link>';
-        $xml .= '<description>Tips perawatan mobil, berita otomotif, dan panduan service dari Bengkel Paten.</description>';
+        $xml .= '<description>Tips perawatan mobil, berita otomotif, dan panduan service dari Aplikasi Bengkel Terbaik.</description>';
         $xml .= '<language>id</language>';
         $xml .= '<atom:link href="' . url('/blog/feed.xml') . '" rel="self" type="application/rss+xml"/>';
 

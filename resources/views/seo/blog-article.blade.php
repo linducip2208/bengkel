@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -20,7 +20,7 @@
 <body>
     <header>
         <h1>{{ $article['title'] }}</h1>
-        <p class="article-meta">Published: {{ $article['date'] }} | By Bengkel Paten</p>
+        <p class="article-meta">Published: {{ $article['date'] }} | By Aplikasi Bengkel Terbaik</p>
     </header>
 
     <main>
@@ -35,7 +35,7 @@
                 <p>Most manufacturers recommend servicing every 5,000-10,000 km or every 6 months, whichever comes first. Following this schedule helps prevent unexpected breakdowns and extends your vehicle's lifespan.</p>
             </div>
             <div class="faq-item">
-                <h3>What warranty does Bengkel Paten offer?</h3>
+                <h3>What warranty does Aplikasi Bengkel Terbaik offer?</h3>
                 <p>We provide warranty on both parts and labor for all services performed at our workshop. The specific warranty period depends on the service type and will be clearly stated on your invoice.</p>
             </div>
             <div class="faq-item">
@@ -46,7 +46,7 @@
 
         <section class="cta content">
             <h2>Book Your Service Today</h2>
-            <p>Experience professional automotive care at Bengkel Paten. Our certified technicians are ready to help with any vehicle issue.</p>
+            <p>Experience professional automotive care at Aplikasi Bengkel Terbaik. Our certified technicians are ready to help with any vehicle issue.</p>
             <p>Visit our workshop or book online for your next service appointment.</p>
         </section>
     </main>
@@ -68,7 +68,7 @@
     </aside>
 
     <footer>
-        <p>&copy; {{ date('Y') }} Bengkel Paten. All rights reserved.</p>
+        <p>&copy; {{ date('Y') }} Aplikasi Bengkel Terbaik. All rights reserved.</p>
     </footer>
 </body>
 </html>

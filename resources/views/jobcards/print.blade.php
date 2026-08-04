@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
@@ -25,7 +25,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;">
             <div style="text-align:left;">
                 <h2>JOBCARD</h2>
-                <small>Bengkel Paten</small>
+                <small>Aplikasi Bengkel Terbaik</small>
                 <h4>{{ $service->job_no }}</h4>
             </div>
             <div id="qrcode" style="width:120px;height:120px;"></div>

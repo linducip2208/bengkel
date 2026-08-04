@@ -1,18 +1,18 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $metaTitle ?? 'Bengkel Paten' }}</title>
+    <title>{{ $metaTitle ?? 'Aplikasi Bengkel Terbaik' }}</title>
     <meta name="description" content="{{ $metaDescription ?? 'Aplikasi manajemen bengkel modern: service, inventory, POS, invoice, customer, keuangan.' }}">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="{{ request()->url() }}">
-    <meta property="og:title" content="{{ $metaTitle ?? 'Bengkel Paten' }}">
+    <meta property="og:title" content="{{ $metaTitle ?? 'Aplikasi Bengkel Terbaik' }}">
     <meta property="og:description" content="{{ $metaDescription ?? '' }}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request()->url() }}">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ $metaTitle ?? 'Bengkel Paten' }}">
+    <meta name="twitter:title" content="{{ $metaTitle ?? 'Aplikasi Bengkel Terbaik' }}">
     <meta name="twitter:description" content="{{ $metaDescription ?? '' }}">
     @if(isset($jsonLd))
     <script type="application/ld+json">{!! json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
@@ -53,14 +53,14 @@
 </head>
 <body>
     <div class="header">
-        <h1>{{ $metaTitle ?? 'Bengkel Paten' }}</h1>
+        <h1>{{ $metaTitle ?? 'Aplikasi Bengkel Terbaik' }}</h1>
         <p>{{ $metaDescription ?? '' }}</p>
     </div>
     <div class="container">
         @yield('content')
     </div>
     <footer>
-        <p>&copy; {{ date('Y') }} Bengkel Paten &middot; <a href="{{ url('/') }}">Home</a> &middot; <a href="{{ url('/docs') }}">Docs</a> &middot; <a href="https://wa.me/6281234567890">WhatsApp</a></p>
+        <p>&copy; {{ date('Y') }} Aplikasi Bengkel Terbaik &middot; <a href="{{ url('/') }}">Home</a> &middot; <a href="{{ url('/docs') }}">Docs</a> &middot; <a href="https://wa.me/6281234567890">WhatsApp</a></p>
     </footer>
 </body>
 </html>

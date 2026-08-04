@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
@@ -98,9 +98,9 @@ Route::get('/blog', function () {
         $articles = \App\Models\BlogPost::published()->orderBy('published_at', 'desc')->limit(12)->get();
     }
     return view('seo.blog-list', [
-        'metaTitle' => 'Blog Bengkel Paten — Tips & Berita Otomotif',
-        'metaDescription' => 'Baca tips perawatan mobil, berita otomotif, dan panduan service dari Bengkel Paten.',
-        'jsonLd' => ['@context'=>'https://schema.org','@type'=>'Blog','name'=>'Blog Bengkel Paten'],
+        'metaTitle' => 'Blog Aplikasi Bengkel Terbaik — Tips & Berita Otomotif',
+        'metaDescription' => 'Baca tips perawatan mobil, berita otomotif, dan panduan service dari Aplikasi Bengkel Terbaik.',
+        'jsonLd' => ['@context'=>'https://schema.org','@type'=>'Blog','name'=>'Blog Aplikasi Bengkel Terbaik'],
         'articles' => $articles,
     ]);
 })->name('blog.index');

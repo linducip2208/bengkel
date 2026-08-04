@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Services;
 
@@ -33,7 +33,7 @@ class SmsNotificationService
 
     public function sendReminder(string $phone, string $type, string $detail): array
     {
-        $message = "Bengkel Paten Reminder\n{$type}: {$detail}\nHubungi kami untuk booking.";
+        $message = "Aplikasi Bengkel Terbaik Reminder\n{$type}: {$detail}\nHubungi kami untuk booking.";
         return $this->send($phone, $message);
     }
 

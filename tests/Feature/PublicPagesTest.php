@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Tests\Feature;
 
@@ -16,7 +16,7 @@ class CustomerTest extends TestCase
     {
         $response = $this->get('/login');
         $response->assertStatus(200);
-        $response->assertSee('Bengkel Paten');
+        $response->assertSee('Aplikasi Bengkel Terbaik');
         $response->assertSee('Masuk');
     }
 

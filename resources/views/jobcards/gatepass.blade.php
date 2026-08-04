@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
@@ -19,7 +19,7 @@
 <body>
     <div class="header">
         <h3>GATE PASS</h3>
-        <small>Bengkel Paten</small>
+        <small>Aplikasi Bengkel Terbaik</small>
     </div>
 
     <div class="barcode">{{ $service->job_no }}</div>

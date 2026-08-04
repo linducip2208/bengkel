@@ -1,6 +1,6 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
-@section('title', 'Edit Notification Template - Bengkel Paten')
+@section('title', 'Edit Notification Template - Aplikasi Bengkel Terbaik')
 
 @section('content')
 <h4 class="mb-3">Edit Notification Template</h4>

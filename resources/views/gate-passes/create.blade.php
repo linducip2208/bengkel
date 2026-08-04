@@ -1,6 +1,6 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
-@section('title', 'Create Gate Pass - Bengkel Paten')
+@section('title', 'Create Gate Pass - Aplikasi Bengkel Terbaik')
 
 @section('content')
 <h4 class="mb-3">Create Gate Pass</h4>

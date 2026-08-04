@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 @section('title', 'Struk POS')
 @push('styles')
 <style>
@@ -34,7 +34,7 @@
 </div>
 
 <div class="receipt">
-    <h5>{{ config('app.name', 'Bengkel Paten') }}</h5>
+    <h5>{{ config('app.name', 'Aplikasi Bengkel Terbaik') }}</h5>
     <div class="sub">Struk Penjualan POS</div>
     <hr>
     <div>No: <strong>{{ $invoice->invoice_number }}</strong></div>

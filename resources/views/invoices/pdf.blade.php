@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
@@ -32,7 +32,7 @@
 <body>
 
 <div class="header">
-    <h2>BENGKEL PATEN</h2>
+    <h2>Aplikasi Bengkel Terbaik</h2>
     <p>Jl. Otomotif No. 123, Jakarta | Telp: (021) 1234-5678 | Email: info@bengkelpaten.com</p>
     <h3>INVOICE</h3>
 </div>
@@ -133,7 +133,7 @@
 @endif
 
 <div class="footer">
-    Terima kasih telah mempercayakan perawatan kendaraan Anda di Bengkel Paten.<br>
+    Terima kasih telah mempercayakan perawatan kendaraan Anda di Aplikasi Bengkel Terbaik.<br>
     Jl. Otomotif No. 123, Jakarta | Telp: (021) 1234-5678
 </div>
 

@@ -1,10 +1,10 @@
-<?php
+﻿<?php
 
 return [
 
     /*
     |--------------------------------------------------------------------------
-    | Bengkel Paten API Documentation
+    | Aplikasi Bengkel Terbaik API Documentation
     |--------------------------------------------------------------------------
     |
     | All API endpoints are prefixed with /api and use Laravel Sanctum for

@@ -1,6 +1,6 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
-@section('title', 'Dashboard - Bengkel Paten')
+@section('title', 'Dashboard - Aplikasi Bengkel Terbaik')
 
 @push('scripts')
 <script>

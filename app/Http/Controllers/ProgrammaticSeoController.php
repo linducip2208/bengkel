@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -23,8 +23,8 @@ class ProgrammaticSeoController extends Controller
 
         $faqs = $this->generateFaqs($repairCategory->repair_category_name);
 
-        $metaTitle = "Best {$repairCategory->repair_category_name} Services {$year} | Bengkel Paten";
-        $metaDescription = "Discover top {$repairCategory->repair_category_name} services for {$year} at Bengkel Paten. Expert technicians, affordable pricing, and guaranteed quality for your vehicle.";
+        $metaTitle = "Best {$repairCategory->repair_category_name} Services {$year} | Aplikasi Bengkel Terbaik";
+        $metaDescription = "Discover top {$repairCategory->repair_category_name} services for {$year} at Aplikasi Bengkel Terbaik. Expert technicians, affordable pricing, and guaranteed quality for your vehicle.";
 
         $jsonLd = [
             '@context' => 'https://schema.org',
@@ -38,7 +38,7 @@ class ProgrammaticSeoController extends Controller
                     '@type' => 'Service',
                     'name' => $s->title,
                     'description' => $s->description,
-                    'provider' => ['@type' => 'LocalBusiness', 'name' => 'Bengkel Paten'],
+                    'provider' => ['@type' => 'LocalBusiness', 'name' => 'Aplikasi Bengkel Terbaik'],
                     'price' => $s->charge,
                     'date' => $s->service_date->toDateString(),
                 ],
@@ -60,8 +60,8 @@ class ProgrammaticSeoController extends Controller
             ->limit(6)
             ->get();
 
-        $metaTitle = "Alternatives to {$repairCategory->repair_category_name} | Bengkel Paten";
-        $metaDescription = "Looking for alternatives to {$repairCategory->repair_category_name}? Explore similar services at Bengkel Paten with expert mechanics and competitive pricing.";
+        $metaTitle = "Alternatives to {$repairCategory->repair_category_name} | Aplikasi Bengkel Terbaik";
+        $metaDescription = "Looking for alternatives to {$repairCategory->repair_category_name}? Explore similar services at Aplikasi Bengkel Terbaik with expert mechanics and competitive pricing.";
 
         $jsonLd = [
             '@context' => 'https://schema.org',
@@ -93,8 +93,8 @@ class ProgrammaticSeoController extends Controller
         $avgPriceA = \App\Models\Service::where('repair_category_id', $categoryA->id)->avg('charge') ?? 0;
         $avgPriceB = \App\Models\Service::where('repair_category_id', $categoryB->id)->avg('charge') ?? 0;
 
-        $metaTitle = "{$categoryA->repair_category_name} vs {$categoryB->repair_category_name} | Bengkel Paten";
-        $metaDescription = "Compare {$categoryA->repair_category_name} vs {$categoryB->repair_category_name}. See differences in cost, service count, and choose the right repair for your vehicle at Bengkel Paten.";
+        $metaTitle = "{$categoryA->repair_category_name} vs {$categoryB->repair_category_name} | Aplikasi Bengkel Terbaik";
+        $metaDescription = "Compare {$categoryA->repair_category_name} vs {$categoryB->repair_category_name}. See differences in cost, service count, and choose the right repair for your vehicle at Aplikasi Bengkel Terbaik.";
 
         $jsonLd = [
             '@context' => 'https://schema.org',
@@ -102,8 +102,8 @@ class ProgrammaticSeoController extends Controller
             'name' => $metaTitle,
             'description' => $metaDescription,
             'mainEntity' => [
-                ['@type' => 'Service', 'name' => $categoryA->repair_category_name, 'provider' => ['@type' => 'LocalBusiness', 'name' => 'Bengkel Paten'], 'offers' => ['@type' => 'Offer', 'price' => round($avgPriceA, 2)]],
-                ['@type' => 'Service', 'name' => $categoryB->repair_category_name, 'provider' => ['@type' => 'LocalBusiness', 'name' => 'Bengkel Paten'], 'offers' => ['@type' => 'Offer', 'price' => round($avgPriceB, 2)]],
+                ['@type' => 'Service', 'name' => $categoryA->repair_category_name, 'provider' => ['@type' => 'LocalBusiness', 'name' => 'Aplikasi Bengkel Terbaik'], 'offers' => ['@type' => 'Offer', 'price' => round($avgPriceA, 2)]],
+                ['@type' => 'Service', 'name' => $categoryB->repair_category_name, 'provider' => ['@type' => 'LocalBusiness', 'name' => 'Aplikasi Bengkel Terbaik'], 'offers' => ['@type' => 'Offer', 'price' => round($avgPriceB, 2)]],
             ],
         ];
 
@@ -132,7 +132,7 @@ class ProgrammaticSeoController extends Controller
                 ];
                 $relatedCategories = RepairCategory::inRandomOrder()->limit(4)->get();
 
-                $metaTitle = ($dbPost->meta_title ?: $dbPost->title) . ' | Bengkel Paten Blog';
+                $metaTitle = ($dbPost->meta_title ?: $dbPost->title) . ' | Aplikasi Bengkel Terbaik Blog';
                 $metaDescription = $dbPost->meta_description ?: $dbPost->excerpt;
 
                 $jsonLd = [
@@ -140,8 +140,8 @@ class ProgrammaticSeoController extends Controller
                     '@type' => 'Article',
                     'headline' => $dbPost->title,
                     'description' => $metaDescription,
-                    'author' => ['@type' => 'Organization', 'name' => 'Bengkel Paten'],
-                    'publisher' => ['@type' => 'Organization', 'name' => 'Bengkel Paten'],
+                    'author' => ['@type' => 'Organization', 'name' => 'Aplikasi Bengkel Terbaik'],
+                    'publisher' => ['@type' => 'Organization', 'name' => 'Aplikasi Bengkel Terbaik'],
                     'datePublished' => ($dbPost->published_at ?? $dbPost->created_at)->toIso8601String(),
                 ];
 
@@ -153,7 +153,7 @@ class ProgrammaticSeoController extends Controller
         $article = $this->getStaticArticle($slug);
         $relatedCategories = RepairCategory::inRandomOrder()->limit(4)->get();
 
-        $metaTitle = $article['title'] . ' | Bengkel Paten Blog';
+        $metaTitle = $article['title'] . ' | Aplikasi Bengkel Terbaik Blog';
         $metaDescription = $article['excerpt'];
 
         $jsonLd = [
@@ -161,8 +161,8 @@ class ProgrammaticSeoController extends Controller
             '@type' => 'Article',
             'headline' => $article['title'],
             'description' => $article['excerpt'],
-            'author' => ['@type' => 'Organization', 'name' => 'Bengkel Paten'],
-            'publisher' => ['@type' => 'Organization', 'name' => 'Bengkel Paten'],
+            'author' => ['@type' => 'Organization', 'name' => 'Aplikasi Bengkel Terbaik'],
+            'publisher' => ['@type' => 'Organization', 'name' => 'Aplikasi Bengkel Terbaik'],
             'datePublished' => $article['date'],
         ];
 
@@ -187,19 +187,19 @@ class ProgrammaticSeoController extends Controller
                 'title' => 'Essential Car Maintenance Tips for Indonesian Roads',
                 'excerpt' => 'Keep your vehicle in top condition with these proven maintenance tips tailored for Indonesian driving conditions.',
                 'date' => '2025-01-15',
-                'content' => '<p>Regular car maintenance is essential for ensuring your vehicle runs smoothly and safely on Indonesian roads. From the heat and humidity to stop-and-go traffic, your car faces unique challenges that require attention.</p><p>Stick to your vehicle\'s service schedule. Most manufacturers recommend service every 5,000-10,000 km or every 6 months. Skipping these can lead to bigger, costlier problems down the road.</p><p>Engine oil changes are perhaps the most critical maintenance task. In Indonesia\'s tropical climate, engine oil degrades faster due to heat and humidity. Always use the oil grade recommended by your manufacturer and change it regularly.</p><p>Your cooling system deserves extra attention. The combination of high ambient temperatures and traffic jams means your radiator works overtime. Check coolant levels monthly and flush the system per schedule.</p><p>Air conditioning maintenance is not just about comfort - it affects fuel efficiency too. A poorly maintained AC can reduce fuel economy by up to 10%. Service your AC at least once a year.</p><p>At Bengkel Paten, our certified technicians use genuine parts and follow manufacturer specifications. Book your next service appointment today.</p>',
+                'content' => '<p>Regular car maintenance is essential for ensuring your vehicle runs smoothly and safely on Indonesian roads. From the heat and humidity to stop-and-go traffic, your car faces unique challenges that require attention.</p><p>Stick to your vehicle\'s service schedule. Most manufacturers recommend service every 5,000-10,000 km or every 6 months. Skipping these can lead to bigger, costlier problems down the road.</p><p>Engine oil changes are perhaps the most critical maintenance task. In Indonesia\'s tropical climate, engine oil degrades faster due to heat and humidity. Always use the oil grade recommended by your manufacturer and change it regularly.</p><p>Your cooling system deserves extra attention. The combination of high ambient temperatures and traffic jams means your radiator works overtime. Check coolant levels monthly and flush the system per schedule.</p><p>Air conditioning maintenance is not just about comfort - it affects fuel efficiency too. A poorly maintained AC can reduce fuel economy by up to 10%. Service your AC at least once a year.</p><p>At Aplikasi Bengkel Terbaik, our certified technicians use genuine parts and follow manufacturer specifications. Book your next service appointment today.</p>',
             ],
             'signs-your-car-needs-repair' => [
                 'title' => '10 Signs Your Car Needs Immediate Repair',
                 'excerpt' => 'Don\'t ignore these warning signs from your vehicle. Learn when to bring your car in for professional inspection and repair.',
                 'date' => '2025-02-20',
-                'content' => '<p>Your car communicates with you through various signs. Recognizing these warnings early can save you from expensive repairs and dangerous situations.</p><p>Warning lights on dashboard, unusual noises, fluid leaks, vibrations during driving, reduced fuel efficiency, difficulty starting, smoke from exhaust, pulling to one side, burning smells, and poor acceleration all point to problems needing professional diagnosis.</p><p>At Bengkel Paten, our diagnostic equipment can quickly identify issues before they become major problems. Call us today or book online for a comprehensive inspection.</p>',
+                'content' => '<p>Your car communicates with you through various signs. Recognizing these warnings early can save you from expensive repairs and dangerous situations.</p><p>Warning lights on dashboard, unusual noises, fluid leaks, vibrations during driving, reduced fuel efficiency, difficulty starting, smoke from exhaust, pulling to one side, burning smells, and poor acceleration all point to problems needing professional diagnosis.</p><p>At Aplikasi Bengkel Terbaik, our diagnostic equipment can quickly identify issues before they become major problems. Call us today or book online for a comprehensive inspection.</p>',
             ],
             'choose-right-workshop' => [
                 'title' => 'How to Choose the Right Workshop for Your Vehicle',
                 'excerpt' => 'Finding a trustworthy auto repair shop is crucial. Here\'s what to look for when choosing a workshop for your car.',
                 'date' => '2025-03-10',
-                'content' => '<p>Choosing the right workshop is one of the most important decisions a vehicle owner can make. A reliable workshop saves you money and ensures your safety and vehicle longevity.</p><p>Check certifications, read reviews, visit the facility, ask about warranties, consider specialization, and compare pricing. Quality workshops stand behind their work with clear warranty terms on parts and labor.</p><p>At Bengkel Paten, we combine certified expertise, modern equipment, genuine parts, and transparent pricing to deliver the best automotive care experience.</p>',
+                'content' => '<p>Choosing the right workshop is one of the most important decisions a vehicle owner can make. A reliable workshop saves you money and ensures your safety and vehicle longevity.</p><p>Check certifications, read reviews, visit the facility, ask about warranties, consider specialization, and compare pricing. Quality workshops stand behind their work with clear warranty terms on parts and labor.</p><p>At Aplikasi Bengkel Terbaik, we combine certified expertise, modern equipment, genuine parts, and transparent pricing to deliver the best automotive care experience.</p>',
             ],
         ];
 
@@ -255,20 +255,20 @@ class ProgrammaticSeoController extends Controller
             || str_contains($slug, 'download-') || str_contains($slug, 'paket-');
 
         if ($isSourceCode) {
-            $metaTitle = "Source Code {$context} — Bengkel Paten";
+            $metaTitle = "Source Code {$context} — Aplikasi Bengkel Terbaik";
             $metaDescription = "Beli source code aplikasi bengkel {$context}. Full source code Laravel, siap pakai, bisa custom. Dapatkan sekarang dengan harga terjangkau.";
         } elseif ($serviceName || $cityName) {
-            $metaTitle = "{$context} — Bengkel Paten";
-            $metaDescription = "Butuh {$context}? Bengkel Paten melayani {$serviceName} profesional dengan teknisi berpengalaman dan harga bersaing. Hubungi kami sekarang.";
+            $metaTitle = "{$context} — Aplikasi Bengkel Terbaik";
+            $metaDescription = "Butuh {$context}? Aplikasi Bengkel Terbaik melayani {$serviceName} profesional dengan teknisi berpengalaman dan harga bersaing. Hubungi kami sekarang.";
         } else {
-            $metaTitle = "Bengkel Paten — {$slug}";
-            $metaDescription = "Bengkel Paten: layanan bengkel mobil profesional, service, perawatan, dan perbaikan kendaraan. Terpercaya dan berpengalaman.";
+            $metaTitle = "Aplikasi Bengkel Terbaik — {$slug}";
+            $metaDescription = "Aplikasi Bengkel Terbaik: layanan bengkel mobil profesional, service, perawatan, dan perbaikan kendaraan. Terpercaya dan berpengalaman.";
         }
 
         $jsonLd = [
             '@context' => 'https://schema.org',
             '@type' => 'LocalBusiness',
-            'name' => "Bengkel Paten " . ($cityName ? "- {$cityName}" : ''),
+            'name' => "Aplikasi Bengkel Terbaik " . ($cityName ? "- {$cityName}" : ''),
             'description' => $metaDescription,
             'address' => $cityName ? ['@type' => 'PostalAddress', 'addressLocality' => $cityName, 'addressCountry' => 'ID'] : null,
             'priceRange' => $priceLabel ?? 'Rp 100rb - Rp 50jt',

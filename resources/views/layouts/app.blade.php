@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="manifest" href="/manifest.json">
     <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}</script>
-    <title>@yield('title', 'Dashboard') — Bengkel Paten</title>
+    <title>@yield('title', 'Dashboard') — Aplikasi Bengkel Terbaik</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
@@ -366,7 +366,7 @@
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="document.getElementById('sidebar').classList.remove('show'); this.classList.remove('show')"></div>
     <aside class="sidebar" id="sidebar">
         <div class="brand">
-            <i class="fas fa-wrench"></i> Bengkel Paten
+            <i class="fas fa-wrench"></i> Aplikasi Bengkel Terbaik
             <button class="btn btn-sm btn-link text-white-50 ms-auto d-md-none" style="text-decoration:none;" onclick="document.getElementById('sidebar').classList.remove('show'); document.getElementById('sidebarOverlay').classList.remove('show')">
                 <i class="fas fa-times"></i>
             </button>
@@ -734,7 +734,7 @@
         <button class="btn btn-sm btn-outline-secondary d-md-none sidebar-toggle" onclick="var s=document.getElementById('sidebar');var o=document.getElementById('sidebarOverlay');s.classList.toggle('show');o.classList.toggle('show')">
             <i class="fas fa-bars"></i>
         </button>
-        <span class="tenant-name">Bengkel Paten</span>
+        <span class="tenant-name">Aplikasi Bengkel Terbaik</span>
 
         <div class="d-flex align-items-center gap-2">
             <button class="btn btn-sm btn-outline-secondary" id="darkToggle" title="Dark Mode" onclick="toggleDark()">
@@ -782,7 +782,7 @@
     </nav>
 @else
     <nav class="topbar" style="left: 0 !important;">
-        <span class="tenant-name"><i class="fas fa-wrench me-2"></i>Bengkel Paten</span>
+        <span class="tenant-name"><i class="fas fa-wrench me-2"></i>Aplikasi Bengkel Terbaik</span>
         <a href="{{ route('login') }}" class="btn btn-primary btn-sm">
             <i class="fas fa-sign-in-alt me-1"></i>Login
         </a>

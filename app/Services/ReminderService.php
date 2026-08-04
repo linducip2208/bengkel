@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Services;
 
@@ -52,7 +52,7 @@ class ReminderService
             'vehicle_plate' => $vehicle->number_plate ?? '',
             'reminder_date' => $reminder->reminder_date->format('d/m/Y'),
             'reminder_type' => $reminder->reminder_type,
-            'workshop_name' => config('app.name', 'Bengkel Paten'),
+            'workshop_name' => config('app.name', 'Aplikasi Bengkel Terbaik'),
             'workshop_phone' => app(SettingsService::class)->get('company_phone', ''),
         ];
 

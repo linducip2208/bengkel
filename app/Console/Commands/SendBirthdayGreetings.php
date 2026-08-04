@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Console\Commands;
 
@@ -27,7 +27,7 @@ class SendBirthdayGreetings extends Command
             return self::SUCCESS;
         }
 
-        $appName = config('app.name', 'Bengkel Paten');
+        $appName = config('app.name', 'Aplikasi Bengkel Terbaik');
         foreach ($customers as $c) {
             $msg = "Halo {$c->name}, selamat ulang tahun! 🎂\n\nKhusus untukmu hari ini & 7 hari ke depan, dapatkan DISKON 10% untuk service apa saja di {$appName}. Tunjukkan pesan ini saat datang.\n\nSemoga sehat selalu!\n\n— Tim {$appName}";
             $this->line("→ {$c->name} ({$c->phone})");

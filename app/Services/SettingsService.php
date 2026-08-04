@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Services;
 
@@ -29,7 +29,7 @@ class SettingsService
     public function getCompanyInfo(): array
     {
         return [
-            'name' => $this->get('company_name', config('app.name', 'Bengkel Paten')),
+            'name' => $this->get('company_name', config('app.name', 'Aplikasi Bengkel Terbaik')),
             'address' => $this->get('company_address', ''),
             'phone' => $this->get('company_phone', ''),
             'email' => $this->get('company_email', ''),

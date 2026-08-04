@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -16,7 +16,7 @@
 </head>
 <body>
     <div class="header">
-        <h2>Bengkel Paten</h2>
+        <h2>Aplikasi Bengkel Terbaik</h2>
         <h1>GATE PASS</h1>
         <p><strong>{{ $gatePass->gate_pass_no }}</strong></p>
     </div>

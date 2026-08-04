@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Preview Template - ' . $notificationTemplate->name)
 
@@ -37,7 +37,7 @@
             <tr><td><code>{invoice_number}</code></td><td>INV-2026-0001</td></tr>
             <tr><td><code>{total_amount}</code></td><td>Rp 1.500.000</td></tr>
             <tr><td><code>{payment_method}</code></td><td>Transfer Bank</td></tr>
-            <tr><td><code>{workshop_name}</code></td><td>Bengkel Paten</td></tr>
+            <tr><td><code>{workshop_name}</code></td><td>Aplikasi Bengkel Terbaik</td></tr>
             <tr><td><code>{workshop_phone}</code></td><td>0812-3456-7890</td></tr>
         </table>
     </div>

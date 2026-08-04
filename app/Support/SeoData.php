@@ -1,9 +1,9 @@
-<?php
+﻿<?php
 
 namespace App\Support;
 
 /**
- * Programmatic SEO data definitions for Bengkel Paten.
+ * Programmatic SEO data definitions for Aplikasi Bengkel Terbaik.
  *
  * Target: 1.000.000+ halaman PSEO.
  * -  300.000 halaman: source code / jualan aplikasi bengkel

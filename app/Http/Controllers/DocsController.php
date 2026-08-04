@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -10,7 +10,7 @@ class DocsController extends Controller
     {
         return view('docs.index', [
             'sections' => $this->sections(),
-            'appName'  => config('app.name', 'Bengkel Paten'),
+            'appName'  => config('app.name', 'Aplikasi Bengkel Terbaik'),
         ]);
     }
 
@@ -21,7 +21,7 @@ class DocsController extends Controller
         $section = collect($sections)->firstWhere('slug', $slug);
         abort_unless($section, 404);
 
-        $appName = config('app.name', 'Bengkel Paten');
+        $appName = config('app.name', 'Aplikasi Bengkel Terbaik');
 
         $jsonLd = json_encode([
             '@context'   => 'https://schema.org',
@@ -55,9 +55,9 @@ class DocsController extends Controller
                 'slug'  => 'pengantar',
                 'icon'  => 'fa-book-open',
                 'title' => 'Pengantar Aplikasi',
-                'lead'  => 'Sekilas tentang Bengkel Paten dan bagaimana alur kerja harian dipetakan ke menu aplikasi.',
+                'lead'  => 'Sekilas tentang Aplikasi Bengkel Terbaik dan bagaimana alur kerja harian dipetakan ke menu aplikasi.',
                 'body'  => [
-                    ['type' => 'p', 'text' => 'Bengkel Paten adalah aplikasi manajemen bengkel berbasis web dengan 60+ modul terintegrasi. Cakupannya menutup seluruh siklus harian: mulai dari kendaraan masuk, jobcard & inspeksi, pemakaian sparepart, sampai invoice, pembayaran, akuntansi, dan laporan keuangan.'],
+                    ['type' => 'p', 'text' => 'Aplikasi Bengkel Terbaik adalah aplikasi manajemen bengkel berbasis web dengan 60+ modul terintegrasi. Cakupannya menutup seluruh siklus harian: mulai dari kendaraan masuk, jobcard & inspeksi, pemakaian sparepart, sampai invoice, pembayaran, akuntansi, dan laporan keuangan.'],
                     ['type' => 'p', 'text' => 'Tutorial ini menjelaskan urut-urutan pemakaian aplikasi seperti operator bekerja di hari pertama: setup data referensi → daftar pelanggan & kendaraan → proses service → tutup invoice → tinjau laporan.'],
                     ['type' => 'h', 'text' => 'Alur ringkas (end-to-end)'],
                     ['type' => 'ol', 'items' => [

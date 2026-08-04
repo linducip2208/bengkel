@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Track Service #{{ $service->job_no }} — {{ config('app.name', 'Bengkel Paten') }}</title>
+    <title>Track Service #{{ $service->job_no }} — {{ config('app.name', 'Aplikasi Bengkel Terbaik') }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="canonical" href="{{ url()->current() }}">
     <meta name="robots" content="noindex">
