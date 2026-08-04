@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 #[Fillable(['code', 'name', 'phone_code'])]
 class Country extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     public function states(): HasMany
     {
