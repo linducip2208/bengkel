@@ -61,7 +61,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <strong>Item Invoice</strong>
             <div class="d-flex gap-2">
-                <button type="button" class="btn btn-sm btn-outline-success" onclick="addJasa()"><i class="bi bi-wrench"></i> Tambah Jasa Service</button>
+                <button type="button" class="btn btn-sm btn-outline-info" onclick="openServicePicker()"><i class="bi bi-wrench"></i> Tambah Jasa Service</button>
                 <button type="button" class="btn btn-sm btn-outline-primary" onclick="addPart()"><i class="bi bi-box"></i> Tambah Sparepart</button>
             </div>
         </div>
@@ -156,6 +156,54 @@
         </div>
     </div>
 </div>
+
+{{-- Service Package Picker Modal --}}
+<div class="modal fade" id="servicePickerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-wrench"></i> Pilih Jasa Service</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                @php $packages = \App\Models\ServicePackage::where('is_active', true)->orderBy('name')->get(); @endphp
+                @if($packages->isEmpty())
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-inbox" style="font-size:2rem;"></i>
+                        <p class="mt-2">Belum ada paket service. <br><a href="{{ route('service-packages.index') }}" target="_blank">Tambah paket service di sini</a></p>
+                    </div>
+                @else
+                <table class="table table-hover table-sm">
+                    <thead><tr><th>Nama Paket</th><th class="text-end">Estimasi</th><th class="text-end">Harga</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach($packages as $pkg)
+                        <tr>
+                            <td>
+                                <strong>{{ $pkg->name }}</strong>
+                                @if($pkg->description)<br><small class="text-muted">{{ $pkg->description }}</small>@endif
+                            </td>
+                            <td class="text-end">{{ $pkg->estimated_hours ? $pkg->estimated_hours . ' jam' : '-' }}</td>
+                            <td class="text-end fw-bold">@money($pkg->price)</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-primary"
+                                    onclick="selectService('{{ $pkg->name }}', {{ $pkg->price }})">
+                                    Pilih
+                                </button>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                @endif
+                <div class="mt-2 text-center">
+                    <a href="{{ route('service-packages.index') }}" target="_blank" class="text-decoration-none">
+                        <small><i class="bi bi-plus-circle"></i> Kelola Paket Service</small>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -182,6 +230,32 @@ function addPart() {
     `;
     tbody.appendChild(tr);
     itemIndex++;
+}
+
+function openServicePicker() {
+    new bootstrap.Modal(document.getElementById('servicePickerModal')).show();
+}
+
+function selectService(name, price) {
+    const tbody = document.querySelector('#itemsTable tbody');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td>
+            <div class="d-flex gap-2">
+                <input type="text" name="items[${itemIndex}][description]" class="form-control item-desc" value="${name}" required>
+                <input type="hidden" name="items[${itemIndex}][product_id]" class="product-id-input" value="">
+                <button type="button" class="btn btn-sm btn-outline-secondary pick-product opacity-0" style="pointer-events:none;"><i class="bi bi-search"></i></button>
+            </div>
+        </td>
+        <td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="1" oninput="calcRow(this)" required></td>
+        <td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="${price}" min="0" step="5000" oninput="calcRow(this)" required></td>
+        <td><input type="text" class="form-control row-total" readonly value="${Number(price).toLocaleString('id-ID')}"></td>
+        <td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
+    `;
+    tbody.appendChild(tr);
+    itemIndex++;
+    calcGrand();
+    bootstrap.Modal.getInstance(document.getElementById('servicePickerModal')).hide();
 }
 
 function addJasa() {
