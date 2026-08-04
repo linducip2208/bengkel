@@ -8,9 +8,11 @@
 @endpush
 
 @section('content')
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="fas fa-plus-circle text-danger me-2"></i>Servis Baru</span>
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-plus-circle text-danger me-2"></i>Servis Baru</span>
                 <a href="{{ route('services.index') }}" class="btn btn-sm btn-outline-secondary">
                     <i class="fas fa-arrow-left me-1"></i> Kembali
                 </a>
@@ -125,6 +127,8 @@
                 </form>
             </div>
         </div>
+    </div>
+</div>
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
