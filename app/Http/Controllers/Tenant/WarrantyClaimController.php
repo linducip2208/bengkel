@@ -21,7 +21,7 @@ class WarrantyClaimController extends Controller
     public function create()
     {
         $items = InvoiceItem::with(['product', 'invoice.customer'])
-            ->whereHas('product', fn($q) => $q->where('warranty_months', '>', 0))
+            ->whereHas('product', fn($q) => $q->whereNotNull('warranty')->where('warranty', '!=', ''))
             ->latest()
             ->limit(200)
             ->get();

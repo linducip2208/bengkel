@@ -34,7 +34,7 @@ class JobcardService extends BaseService
     {
         $serviceId = $request->route('service');
         $service = Service::findOrFail($serviceId);
-        $validated = app(JobcardRequest::class)->validated();
+        $validated = \App\Http\Requests\JobcardRequest::createFrom($request)->validated();
 
         DB::transaction(function () use ($service, $validated) {
             $validated['jobcard_no'] = $service->job_no;
@@ -66,7 +66,7 @@ class JobcardService extends BaseService
     public function update(Request $request, $id)
     {
         $service = Service::findOrFail($id);
-        $validated = app(JobcardRequest::class)->validated();
+        $validated = \App\Http\Requests\JobcardRequest::createFrom($request)->validated();
 
         DB::transaction(function () use ($service, $validated) {
             $validated['jobcard_no'] = $service->job_no;

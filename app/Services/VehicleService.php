@@ -15,7 +15,7 @@ class VehicleService extends BaseService
             $term = $filters['search'];
             $query->where(function ($q) use ($term) {
                 $q->where('number_plate', 'like', "%{$term}%")
-                    ->orWhere('vin', 'like', "%{$term}%")
+                    ->orWhere('chassis_number', 'like', "%{$term}%")
                     ->orWhere('engine_number', 'like', "%{$term}%")
                     ->orWhereHas('customer', fn($c) => $c->where('name', 'like', "%{$term}%"));
             });

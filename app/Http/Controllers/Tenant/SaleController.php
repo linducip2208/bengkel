@@ -63,7 +63,12 @@ class SaleController extends Controller
 
     public function update(SaleRequest $request, Sale $sale): RedirectResponse
     {
-        $sale->update($request->validated());
+        $data = $request->validated();
+        $data['grand_total'] = ($data['total_amount'] ?? $sale->total_amount)
+            + ($data['tax_amount'] ?? $sale->tax_amount ?? 0)
+            - ($data['discount'] ?? $sale->discount ?? 0);
+
+        $sale->update($data);
 
         return redirect()->route('sales.show', $sale)
             ->with('success', 'Penjualan berhasil diperbarui.');

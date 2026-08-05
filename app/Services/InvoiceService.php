@@ -67,10 +67,6 @@ class InvoiceService extends BaseService
                     'unit_price' => $item['unit_price'] ?? 0,
                     'total_price' => ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0),
                 ]);
-
-                if (!empty($item['product_id'])) {
-                    $this->reduceStock((int) $item['product_id'], (float) ($item['quantity'] ?? 1), $invoice);
-                }
             }
         }
 

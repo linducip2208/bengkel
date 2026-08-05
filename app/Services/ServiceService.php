@@ -53,7 +53,7 @@ class ServiceService extends BaseService
 
     public function store(Request $request)
     {
-        $validated = app(ServiceRequest::class)->validated();
+        $validated = \App\Http\Requests\ServiceRequest::createFrom($request)->validated();
 
         // Conflict detection: check technician availability
         $warnings = [];
@@ -135,7 +135,7 @@ class ServiceService extends BaseService
     public function update(Request $request, $id)
     {
         $service = Service::findOrFail($id);
-        $validated = app(ServiceRequest::class)->validated();
+        $validated = \App\Http\Requests\ServiceRequest::createFrom($request)->validated();
 
         DB::transaction(function () use ($service, $validated) {
             $technicianIds = $validated['assign_to'] ?? [];
