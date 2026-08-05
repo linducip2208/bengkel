@@ -11,7 +11,8 @@ class PaymentMethodRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('payment_method')?->id;
+        $route = $this->route('payment_method');
+        $id = is_object($route) ? $route->id : $route;
         return [
             'payment' => ['required', 'string', 'max:255', Rule::unique('payment_methods', 'payment')->ignore($id)],
             'description' => ['nullable', 'string', 'max:500'],

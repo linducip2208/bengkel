@@ -11,7 +11,8 @@ class ProductTypeRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('product_type')?->id;
+        $route = $this->route('product_type');
+        $id = is_object($route) ? $route->id : $route;
         return [
             'type' => ['required', 'string', 'max:255', Rule::unique('product_types', 'type')->ignore($id)],
             'description' => ['nullable', 'string', 'max:500'],

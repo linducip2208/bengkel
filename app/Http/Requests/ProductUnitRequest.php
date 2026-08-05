@@ -11,7 +11,8 @@ class ProductUnitRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('product_unit')?->id;
+        $route = $this->route('product_unit');
+        $id = is_object($route) ? $route->id : $route;
         return [
             'name' => ['required', 'string', 'max:255', Rule::unique('product_units')->ignore($id)],
             'abbreviation' => ['nullable', 'string', 'max:10'],

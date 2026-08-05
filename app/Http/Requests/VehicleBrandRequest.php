@@ -11,7 +11,8 @@ class VehicleBrandRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('vehicle_brand')?->id;
+        $route = $this->route('vehicle_brand');
+        $id = is_object($route) ? $route->id : $route;
         return [
             'vehicle_type_id' => ['required', 'exists:vehicle_types,id'],
             'vehicle_brand' => ['required', 'string', 'max:255', Rule::unique('vehicle_brands', 'vehicle_brand')->ignore($id)],

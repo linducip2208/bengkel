@@ -11,7 +11,8 @@ class ColorRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('color')?->id;
+        $route = $this->route('color');
+        $id = is_object($route) ? $route->id : $route;
         return [
             'color' => ['required', 'string', 'max:255', Rule::unique('colors', 'color')->ignore($id)],
             'hex_code' => ['nullable', 'string', 'max:7'],

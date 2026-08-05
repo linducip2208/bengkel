@@ -11,7 +11,8 @@ class VehicleRequest extends FormRequest
 
     public function rules(): array
     {
-        $vehicleId = $this->route('vehicle')?->id;
+        $routeVehicle = $this->route('vehicle');
+        $vehicleId = is_object($routeVehicle) ? $routeVehicle->id : $routeVehicle;
 
         return [
             'customer_id' => ['required', 'exists:customers,id'],

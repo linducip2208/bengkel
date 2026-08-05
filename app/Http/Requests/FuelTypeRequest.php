@@ -11,7 +11,8 @@ class FuelTypeRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('fuel_type')?->id;
+        $route = $this->route('fuel_type');
+        $id = is_object($route) ? $route->id : $route;
         return [
             'fuel_type' => ['required', 'string', 'max:255', Rule::unique('fuel_types', 'fuel_type')->ignore($id)],
             'description' => ['nullable', 'string', 'max:500'],

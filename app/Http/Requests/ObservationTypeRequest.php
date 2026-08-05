@@ -14,7 +14,8 @@ class ObservationTypeRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('observation_type')?->id;
+        $route = $this->route('observation_type');
+        $id = is_object($route) ? $route->id : $route;
 
         return [
             'observation_type' => ['required', 'string', 'max:255', Rule::unique('observation_types')->ignore($id)],

@@ -9,7 +9,8 @@ class ProductRequest extends FormRequest
 {
     public function rules(): array
     {
-        $productId = $this->route('product')?->id;
+        $route = $this->route('product');
+        $productId = is_object($route) ? $route->id : $route;
         $isCreate = !$productId;
 
         return [
