@@ -51,7 +51,7 @@ Settings - {{ config('app.name') }}
                         <input type="file" name="logo" class="form-control" accept="image/*">
                         @if(!empty($settings['company_logo']))
                             <div class="mt-2">
-                                <img src="{{ asset('storage/' . $settings['company_logo']) }}" style="max-height:60px;border:1px solid #ddd;border-radius:6px;padding:4px;">
+                                <img src="{{ asset('storage/' . $settings['company_logo']) }}" style="max-height:100px;border:1px solid #ddd;border-radius:8px;padding:6px;">
                                 <small class="text-muted ms-2">{{ $settings['company_logo'] }}</small>
                             </div>
                         @endif
