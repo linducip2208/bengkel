@@ -15,6 +15,7 @@ class InvoiceRequest extends FormRequest
             'payment_method_id' => ['nullable', 'exists:payment_methods,id'],
             'invoice_type' => ['required', 'in:service,sales,sales_part'],
             'invoice_date' => ['required', 'date'],
+            'due_date' => ['nullable', 'date'],
             'discount' => ['numeric', 'min:0'],
             'tax_amount' => ['numeric', 'min:0'],
             'notes' => ['nullable', 'string'],

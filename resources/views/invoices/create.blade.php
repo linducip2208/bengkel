@@ -41,6 +41,10 @@
             @error('invoice_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
         <div class="col-md-2">
+            <label class="form-label">Berlaku Sampai</label>
+            <input type="date" name="due_date" class="form-control" value="{{ old('due_date', date('Y-m-d', strtotime('+14 days'))) }}">
+        </div>
+        <div class="col-md-2">
             <label class="form-label">Metode Bayar</label>
             <select name="payment_method_id" class="form-select @error('payment_method_id') is-invalid @enderror">
                 <option value="">Pilih</option>

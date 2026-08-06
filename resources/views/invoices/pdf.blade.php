@@ -60,6 +60,7 @@
         <td width="45%">
             <table style="width:100%">
                 <tr><td class="section-title" width="35%">Tgl Invoice</td><td class="value">{{ $invoice->invoice_date->format('d M Y') }}</td></tr>
+                @if($invoice->due_date)<tr><td class="section-title">Berlaku Sampai</td><td class="value"><strong>{{ \Carbon\Carbon::parse($invoice->due_date)->format('d M Y') }}</strong></td></tr>@endif
                 <tr><td class="section-title">Tipe</td><td class="value">{{ ucfirst($invoice->invoice_type) }}</td></tr>
                 <tr><td class="section-title">Status</td><td class="value">
                     @if ($invoice->status === 'full_paid') <span class="status-badge status-lunas">LUNAS</span>
@@ -142,7 +143,9 @@
     <strong>Terima kasih atas kepercayaan Anda!</strong><br>
     @if($invoice->notes){{ $invoice->notes }}<br>@endif
     Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.<br>
-    {{ $settings['name'] ?? config('app.name') }} &mdash; {{ $settings['phone'] ?? '' }}
+    {{ $settings['name'] ?? config('app.name') }} &mdash; {{ $settings['phone'] ?? '' }} &mdash; {{ $settings['address'] ?? '' }}
+    @if(!empty($settings['bank_account']))<br>Rekening: {{ $settings['bank_account'] }}@endif
+    @if(($settings['qris_available'] ?? '0') == '1') | QRIS Tersedia @endif
 </div>
 
 </body>

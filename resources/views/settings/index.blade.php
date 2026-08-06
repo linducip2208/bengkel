@@ -183,6 +183,21 @@ Settings - {{ config('app.name') }}
                         <label class="form-label">Terms & Conditions</label>
                         <textarea name="settings[invoice_terms]" class="form-control" rows="4">{{ $invoiceSettings['invoice_terms'] ?? '' }}</textarea>
                     </div>
+                    <hr>
+                    <h6>Info Pembayaran</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nama Bank / Rekening</label>
+                            <input type="text" name="settings[bank_account]" class="form-control" value="{{ $settings['bank_account'] ?? '' }}" placeholder="BTN 19501300000955 a.n. ...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">QRIS</label>
+                            <select name="settings[qris_available]" class="form-select">
+                                <option value="0" {{ ($settings['qris_available'] ?? '0') == '0' ? 'selected' : '' }}>Tidak</option>
+                                <option value="1" {{ ($settings['qris_available'] ?? '0') == '1' ? 'selected' : '' }}>Tersedia</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\RepairCategory;
+use App\Models\Service;
 use App\Models\User;
 use App\Services\ReportService;
+use App\Services\SettingsService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -193,5 +195,22 @@ class ReportController extends Controller
                 return $c;
             });
         return view('reports.customer-lifetime', compact('topCustomers'));
+    }
+
+    public function serviceReportPdf(Service $service)
+    {
+        $service->load([
+            'vehicle.vehicleBrand', 'vehicle.vehicleType',
+            'customer', 'repairCategory',
+            'technicians', 'jobcardDetail',
+            'invoice.items', 'serviceObservationPoints.observationPoint.observationType',
+        ]);
+
+        $settings = app(SettingsService::class)->getCompanyInfo();
+
+        $pdf = Pdf::loadView('reports.service-pdf', compact('service', 'settings'));
+        $pdf->setPaper('a4');
+
+        return $pdf->download('laporan-service-' . $service->job_no . '.pdf');
     }
 }

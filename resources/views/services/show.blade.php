@@ -26,6 +26,9 @@
         <a href="{{ route('services.edit', $service) }}" class="btn btn-warning btn-sm">
             <i class="fas fa-edit me-1"></i> Edit
         </a>
+        <a href="{{ route('reports.service-pdf', $service) }}" class="btn btn-outline-danger btn-sm">
+            <i class="fas fa-file-pdf me-1"></i> Laporan
+        </a>
         <a href="{{ route('services.index') }}" class="btn btn-outline-secondary btn-sm">
             <i class="fas fa-arrow-left me-1"></i> Kembali
         </a>

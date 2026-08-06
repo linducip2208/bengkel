@@ -151,6 +151,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/customer-lifetime', [ReportController::class, 'customerLifetime'])->name('reports.customer-lifetime');
     Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
     Route::get('/reports/export-excel', [ReportController::class, 'exportExcel'])->name('reports.export-excel');
+    Route::get('/reports/service/{service}/pdf', [ReportController::class, 'serviceReportPdf'])->name('reports.service-pdf');
 
     // --- Settings ---
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
