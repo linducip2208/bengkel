@@ -15,13 +15,30 @@ class SettingsController extends Controller
 
     public function index(): View
     {
-        $settings = Setting::all()->groupBy('group');
+        $settings = Setting::all()->pluck('value', 'key')->toArray();
         return view('settings.index', compact('settings'));
     }
 
     public function update(Request $request): RedirectResponse
     {
-        foreach ($request->all() as $key => $value) {
+        $data = $request->except(['_token', '_method']);
+
+        // Handle nested settings[xxx] array
+        if (isset($data['settings']) && is_array($data['settings'])) {
+            foreach ($data['settings'] as $key => $value) {
+                $this->service->set($key, $value);
+            }
+            unset($data['settings']);
+        }
+
+        // Handle logo upload
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('settings', 'public');
+            $this->service->set('company_logo', $path);
+        }
+
+        // Handle remaining flat fields
+        foreach ($data as $key => $value) {
             if (!in_array($key, ['_token', '_method'])) {
                 $this->service->set($key, $value);
             }
