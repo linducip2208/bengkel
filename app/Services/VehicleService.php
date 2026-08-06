@@ -34,13 +34,28 @@ class VehicleService extends BaseService
 
     public function create(array $data): Vehicle
     {
+        $data = $this->handleBrand($data);
         return Vehicle::create($data);
     }
 
     public function update(Vehicle $vehicle, array $data): Vehicle
     {
+        $data = $this->handleBrand($data);
         $vehicle->update($data);
         return $vehicle;
+    }
+
+    private function handleBrand(array $data): array
+    {
+        if (!empty($data['other_brand']) && empty($data['vehicle_brand_id'])) {
+            $brand = \App\Models\VehicleBrand::firstOrCreate(
+                ['vehicle_brand' => $data['other_brand']],
+                ['vehicle_type_id' => $data['vehicle_type_id'] ?? null]
+            );
+            $data['vehicle_brand_id'] = $brand->id;
+        }
+        unset($data['other_brand']);
+        return $data;
     }
 
     public function delete(Vehicle $vehicle): void

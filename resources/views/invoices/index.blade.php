@@ -48,6 +48,8 @@
             <tr>
                 <th>No. Invoice</th>
                 <th>Pelanggan</th>
+                <th>Kendaraan</th>
+                <th>No. Plat</th>
                 <th>Tipe</th>
                 <th>Tanggal</th>
                 <th>Total</th>
@@ -66,6 +68,8 @@
                 <tr>
                     <td><strong>{{ $invoice->invoice_number }}</strong></td>
                     <td>{{ $invoice->customer->name ?? '-' }}</td>
+                    <td><small>{{ $invoice->service->vehicle->model_name ?? $invoice->sale->vehicle->model_name ?? '-' }}</small></td>
+                    <td><small class="fw-bold">{{ $invoice->service->vehicle->number_plate ?? $invoice->sale->vehicle->number_plate ?? '-' }}</small></td>
                     <td><span class="badge bg-secondary">{{ $invoice->invoice_type }}</span></td>
                     <td>{{ $invoice->invoice_date->format('d/m/Y') }}</td>
                     <td>@money($invoice->grand_total)</td>
@@ -92,7 +96,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="9" class="text-center py-4 text-muted">Tidak ada invoice.</td></tr>
+                <tr><td colspan="11" class="text-center py-4 text-muted">Tidak ada invoice.</td></tr>
             @endforelse
         </tbody>
     </table>

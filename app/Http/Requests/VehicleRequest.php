@@ -18,6 +18,7 @@ class VehicleRequest extends FormRequest
             'customer_id' => ['required', 'exists:customers,id'],
             'vehicle_type_id' => ['nullable', 'exists:vehicle_types,id'],
             'vehicle_brand_id' => ['nullable', 'exists:vehicle_brands,id'],
+            'other_brand' => ['nullable', 'string', 'max:100'],
             'fuel_type_id' => ['nullable', 'exists:fuel_types,id'],
             'number_plate' => ['nullable', 'string', 'max:20', Rule::unique('vehicles', 'number_plate')->ignore($vehicleId)],
             'chassis_number' => ['nullable', 'string', 'max:50'],

@@ -12,11 +12,11 @@ Settings - {{ config('app.name') }}
     @method('PUT')
 
     <ul class="nav nav-tabs mb-3" id="settingsTabs" role="tablist">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#general">General</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#email">Email</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#whatsapp">WhatsApp</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#invoice">Invoice</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#notification">Notification</button></li>
+        <li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#general">General</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#email">Email</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#whatsapp">WhatsApp</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#invoice">Invoice</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#notification">Notification</button></li>
     </ul>
 
     <div class="tab-content">

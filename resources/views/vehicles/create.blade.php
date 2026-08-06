@@ -46,8 +46,8 @@
                     @error('vehicle_type_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Merek <span class="text-danger">*</span></label>
-                    <select name="vehicle_brand_id" id="vehicle_brand_id" class="form-select @error('vehicle_brand_id') is-invalid @enderror" required>
+                    <label class="form-label">Merek</label>
+                    <select name="vehicle_brand_id" id="vehicle_brand_id" class="form-select @error('vehicle_brand_id') is-invalid @enderror" onchange="document.getElementById('other_brand').style.display=this.value?'none':''">
                         <option value="">-- Pilih Merek --</option>
                         @foreach($vehicleBrands as $vb)
                             <option value="{{ $vb->id }}" data-type="{{ $vb->vehicle_type_id }}"
@@ -56,6 +56,7 @@
                             </option>
                         @endforeach
                     </select>
+                    <input type="text" name="other_brand" id="other_brand" class="form-control form-control-sm mt-1" style="display:none" value="{{ old('other_brand') }}" placeholder="Atau ketik merek baru...">
                     @error('vehicle_brand_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-4">
