@@ -9,7 +9,6 @@ Settings - {{ config('app.name') }}
 
 <form action="{{ route('settings.update') }}" method="POST" enctype="multipart/form-data">
     @csrf
-    @method('PUT')
 
     <ul class="nav nav-tabs mb-3" id="settingsTabs" role="tablist">
         <li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#general">General</button></li>
@@ -49,9 +48,12 @@ Settings - {{ config('app.name') }}
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Logo</label>
-                        <input type="file" name="logo" class="form-control">
+                        <input type="file" name="logo" class="form-control" accept="image/*">
                         @if(!empty($settings['company_logo']))
-                            <small class="text-muted">Current: {{ $settings['company_logo'] }}</small>
+                            <div class="mt-2">
+                                <img src="{{ asset('storage/' . $settings['company_logo']) }}" style="max-height:60px;border:1px solid #ddd;border-radius:6px;padding:4px;">
+                                <small class="text-muted ms-2">{{ $settings['company_logo'] }}</small>
+                            </div>
                         @endif
                     </div>
                     <div class="row mb-3">
