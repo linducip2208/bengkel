@@ -2,7 +2,7 @@
 @section('title', 'Detail Invoice')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-print-none d-flex justify-content-between align-items-center mb-3">
     <h4>Invoice: {{ $invoice->invoice_number }}</h4>
     <div class="d-flex gap-2">
         <a href="{{ route('invoices.pdf', $invoice) }}" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
@@ -16,6 +16,26 @@
         @endif
         <a href="{{ route('invoices.index') }}" class="btn btn-secondary">Kembali</a>
     </div>
+</div>
+
+{{-- Print-only header --}}
+<div class="d-none d-print-block" style="border-bottom:2px solid #000;padding-bottom:10px;margin-bottom:15px;">
+    <table style="width:100%"><tr>
+        <td width="80" style="vertical-align:top;">
+            @if(!empty($settings['logo']))
+                <img src="{{ public_path('storage/' . $settings['logo']) }}" style="max-width:70px;max-height:70px;">
+            @endif
+        </td>
+        <td style="vertical-align:top;">
+            <h2 style="margin:0;font-size:20px;">{{ $settings['name'] ?? config('app.name') }}</h2>
+            <div style="font-size:11px;color:#555;">{{ $settings['address'] ?? '' }} | Telp: {{ $settings['phone'] ?? '-' }}</div>
+            <div style="font-size:11px;color:#555;">Email: {{ $settings['email'] ?? '-' }}</div>
+        </td>
+        <td style="text-align:right;vertical-align:top;">
+            <h3 style="margin:0;font-size:22px;color:#1a56db;">INVOICE</h3>
+            <div style="font-size:14px;font-weight:bold;">{{ $invoice->invoice_number }}</div>
+        </td>
+    </tr></table>
 </div>
 
 <div class="row">

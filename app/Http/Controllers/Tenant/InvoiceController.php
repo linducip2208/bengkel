@@ -68,8 +68,9 @@ class InvoiceController extends Controller
         $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod', 'paymentMethod']);
         $totalPaid = $invoice->paymentRecords->sum('amount');
         $remaining = max($invoice->grand_total - $totalPaid, 0);
+        $settings = app(\App\Services\SettingsService::class)->getCompanyInfo();
 
-        return view('invoices.show', compact('invoice', 'totalPaid', 'remaining'));
+        return view('invoices.show', compact('invoice', 'totalPaid', 'remaining', 'settings'));
     }
 
     public function edit(Invoice $invoice): View
