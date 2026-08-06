@@ -106,11 +106,12 @@ class InvoiceController extends Controller
 
     public function pdf(Invoice $invoice)
     {
-        $invoice->load(['items', 'customer', 'service.vehicle', 'paymentRecords.paymentMethod']);
+        $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
         $totalPaid = $invoice->paymentRecords->sum('amount');
         $remaining = max($invoice->grand_total - $totalPaid, 0);
+        $settings = app(\App\Services\SettingsService::class)->getCompanyInfo();
 
-        $pdf = Pdf::loadView('invoices.pdf', compact('invoice', 'totalPaid', 'remaining'));
+        $pdf = Pdf::loadView('invoices.pdf', compact('invoice', 'totalPaid', 'remaining', 'settings'));
         $pdf->setPaper('a4');
 
         return $pdf->download("invoice-{$invoice->invoice_number}.pdf");
@@ -118,7 +119,7 @@ class InvoiceController extends Controller
 
     public function sendEmail(Invoice $invoice): RedirectResponse
     {
-        $invoice->load(['items', 'customer', 'service.vehicle', 'paymentRecords.paymentMethod']);
+            $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
 
         $email = $invoice->customer?->email;
         if (!$email) {
@@ -130,7 +131,8 @@ class InvoiceController extends Controller
         $remaining = max($invoice->grand_total - $totalPaid, 0);
 
         try {
-            $pdf = Pdf::loadView('invoices.pdf', compact('invoice', 'totalPaid', 'remaining'));
+            $settings = app(\App\Services\SettingsService::class)->getCompanyInfo();
+            $pdf = Pdf::loadView('invoices.pdf', compact('invoice', 'totalPaid', 'remaining', 'settings'));
             $pdf->setPaper('a4');
             $pdfBinary = $pdf->output();
 
