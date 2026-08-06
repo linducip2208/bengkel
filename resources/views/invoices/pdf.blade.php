@@ -37,7 +37,13 @@
 <body>
 
 <div class="header">
-    <div class="logo">&#x1F527;</div>
+    <div class="logo">
+        @if(!empty($settings['logo']) && file_exists(public_path('storage/' . $settings['logo'])))
+            <img src="{{ public_path('storage/' . $settings['logo']) }}" style="max-width:70px;max-height:70px;">
+        @else
+            &#x1F527;
+        @endif
+    </div>
     <div class="info">
         <h2>{{ config('app.name') }}</h2>
         <p>{{ $settings['address'] ?? 'Jl. Bengkel No. 1' }} | Telp: {{ $settings['phone'] ?? '-' }}</p>
