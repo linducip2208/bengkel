@@ -79,8 +79,8 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Tahun</label>
-                    <input type="number" name="year" class="form-control @error('year') is-invalid @enderror"
-                        value="{{ old('year') }}" placeholder="2024">
+                    <input type="number" name="model_year" class="form-control @error('model_year') is-invalid @enderror"
+                        value="{{ old('model_year') }}" placeholder="2024">
                     @error('year') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-3">
@@ -97,8 +97,8 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">No. Rangka (VIN)</label>
-                    <input type="text" name="vin" class="form-control @error('vin') is-invalid @enderror"
-                        value="{{ old('vin') }}">
+                    <input type="text" name="chassis_number" class="form-control @error('chassis_number') is-invalid @enderror"
+                        value="{{ old('chassis_number') }}">
                     @error('vin') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-6">
