@@ -65,7 +65,7 @@ class InvoiceController extends Controller
 
     public function show(Invoice $invoice): View
     {
-        $invoice->load(['items', 'customer', 'service.vehicle', 'paymentRecords.paymentMethod', 'paymentMethod']);
+        $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod', 'paymentMethod']);
         $totalPaid = $invoice->paymentRecords->sum('amount');
         $remaining = max($invoice->grand_total - $totalPaid, 0);
 

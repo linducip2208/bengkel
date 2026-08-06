@@ -62,6 +62,7 @@
             <strong>Item Invoice</strong>
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-sm btn-outline-info" onclick="openServicePicker()"><i class="bi bi-wrench"></i> Tambah Jasa Service</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addJasa()"><i class="bi bi-pencil"></i> Jasa Manual</button>
                 <button type="button" class="btn btn-sm btn-outline-primary" onclick="addPart()"><i class="bi bi-box"></i> Tambah Sparepart</button>
             </div>
         </div>

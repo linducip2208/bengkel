@@ -49,8 +49,16 @@
                 </div>
                 @if ($invoice->service)
                 <div class="row mb-3">
-                    <div class="col-6"><small class="text-muted">No. Service</small><div>{{ $invoice->service->job_no }}</div></div>
-                    <div class="col-6"><small class="text-muted">Kendaraan</small><div>{{ $invoice->service->vehicle?->number_plate }}</div></div>
+                    <div class="col-3"><small class="text-muted">No. Service</small><div>{{ $invoice->service->job_no }}</div></div>
+                    <div class="col-3"><small class="text-muted">Jenis Kendaraan</small><div>{{ $invoice->service->vehicle?->model_name ?? '-' }}</div></div>
+                    <div class="col-3"><small class="text-muted">No. Plat</small><div><strong>{{ $invoice->service->vehicle?->number_plate ?? '-' }}</strong></div></div>
+                    <div class="col-3"><small class="text-muted">KM</small><div>{{ number_format($invoice->service->jobcardDetail?->odometer_in ?? 0, 0, ',', '.') }}</div></div>
+                </div>
+                @elseif ($invoice->sale)
+                <div class="row mb-3">
+                    <div class="col-4"><small class="text-muted">No. Sales</small><div>{{ $invoice->sale->sales_no ?? '-' }}</div></div>
+                    <div class="col-4"><small class="text-muted">Jenis Kendaraan</small><div>{{ $invoice->sale->vehicle?->model_name ?? '-' }}</div></div>
+                    <div class="col-4"><small class="text-muted">No. Plat</small><div><strong>{{ $invoice->sale->vehicle?->number_plate ?? '-' }}</strong></div></div>
                 </div>
                 @endif
 
