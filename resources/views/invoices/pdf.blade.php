@@ -45,7 +45,7 @@
         @endif
     </div>
     <div class="info">
-        <h2>{{ config('app.name') }}</h2>
+        <h2>{{ $settings['name'] ?? config('app.name') }}</h2>
         <p>{{ $settings['address'] ?? 'Jl. Bengkel No. 1' }} | Telp: {{ $settings['phone'] ?? '-' }}</p>
         <p>Email: {{ $settings['email'] ?? '-' }} | NPWP: {{ $settings['tax_id'] ?? '-' }}</p>
     </div>
