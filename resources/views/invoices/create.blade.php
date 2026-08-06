@@ -242,6 +242,15 @@ function openServicePicker() {
 }
 
 function selectService(name, price) {
+    if (activeRow) {
+        activeRow.querySelector('.item-desc').value = name;
+        activeRow.querySelector('.price').value = price;
+        activeRow.querySelector('.row-total').value = Number(price).toLocaleString('id-ID');
+        calcRow(activeRow.querySelector('.price'));
+        bootstrap.Modal.getInstance(document.getElementById('servicePickerModal')).hide();
+        activeRow = null;
+        return;
+    }
     const tbody = document.querySelector('#itemsTable tbody');
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -263,6 +272,11 @@ function selectService(name, price) {
     bootstrap.Modal.getInstance(document.getElementById('servicePickerModal')).hide();
 }
 
+function openServicePickerForRow(btn) {
+    activeRow = btn.closest('tr');
+    new bootstrap.Modal(document.getElementById('servicePickerModal')).show();
+}
+
 function addJasa() {
     const tbody = document.querySelector('#itemsTable tbody');
     const tr = document.createElement('tr');
@@ -271,7 +285,7 @@ function addJasa() {
             <div class="d-flex gap-2">
                 <input type="text" name="items[${itemIndex}][description]" class="form-control item-desc" required placeholder="Nama jasa service...">
                 <input type="hidden" name="items[${itemIndex}][product_id]" class="product-id-input" value="">
-                <button type="button" class="btn btn-sm btn-outline-secondary pick-product opacity-0" style="pointer-events:none;"><i class="bi bi-search"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-secondary pick-product" onclick="openServicePickerForRow(this)"><i class="bi bi-search"></i></button>
             </div>
         </td>
         <td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="1" oninput="calcRow(this)" required></td>
