@@ -23,7 +23,7 @@
     <table style="width:100%"><tr>
         <td width="80" style="vertical-align:top;">
             @if(!empty($settings['logo']))
-                <img src="{{ public_path('storage/' . $settings['logo']) }}" style="max-width:70px;max-height:70px;">
+                <img src="{{ asset('storage/' . $settings['logo']) }}" style="max-width:70px;max-height:70px;">
             @endif
         </td>
         <td style="vertical-align:top;">
