@@ -29,8 +29,8 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Nomor Plat</label>
-                    <input type="text" name="license_plate" class="form-control @error('license_plate') is-invalid @enderror"
-                        value="{{ old('license_plate', $vehicle->license_plate) }}">
+                    <input type="text" name="number_plate" class="form-control @error('number_plate') is-invalid @enderror"
+                        value="{{ old('number_plate', $vehicle->number_plate) }}">
                     @error('license_plate') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-4">
@@ -79,8 +79,8 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Tahun</label>
-                    <input type="number" name="year" class="form-control @error('year') is-invalid @enderror"
-                        value="{{ old('year', $vehicle->year) }}">
+                    <input type="number" name="model_year" class="form-control @error('model_year') is-invalid @enderror"
+                        value="{{ old('model_year', $vehicle->model_year) }}">
                     @error('year') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-3">
@@ -97,8 +97,8 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">No. Rangka (VIN)</label>
-                    <input type="text" name="vin" class="form-control @error('vin') is-invalid @enderror"
-                        value="{{ old('vin', $vehicle->vin) }}">
+                    <input type="text" name="chassis_number" class="form-control @error('chassis_number') is-invalid @enderror"
+                        value="{{ old('chassis_number', $vehicle->chassis_number) }}">
                     @error('vin') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-6">

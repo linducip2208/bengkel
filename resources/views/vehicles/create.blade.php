@@ -29,8 +29,8 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Nomor Plat</label>
-                    <input type="text" name="license_plate" class="form-control @error('license_plate') is-invalid @enderror"
-                        value="{{ old('license_plate') }}" placeholder="B 1234 XYZ">
+                    <input type="text" name="number_plate" class="form-control @error('number_plate') is-invalid @enderror"
+                        value="{{ old('number_plate') }}" placeholder="B 1234 XYZ">
                     @error('license_plate') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-4">
