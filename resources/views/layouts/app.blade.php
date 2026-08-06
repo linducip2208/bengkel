@@ -357,6 +357,11 @@
         }
         /* Button group spacing */
         .table .d-flex.gap-1 { gap: 0.35rem !important; }
+
+        @media print {
+            .sidebar, .topbar, .sidebar-overlay, .btn, form, footer, nav, .no-print { display: none !important; }
+            .main-content { margin: 0 !important; padding: 0 !important; }
+        }
     </style>
     @stack('styles')
 </head>
