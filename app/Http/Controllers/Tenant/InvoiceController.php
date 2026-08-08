@@ -105,17 +105,56 @@ class InvoiceController extends Controller
             ->with('success', 'Invoice berhasil dihapus.');
     }
 
-    public function pdf(Invoice $invoice)
+    private function resolveTemplateView(?string $template = null): array
     {
+        $template = $template ?: app(\App\Services\SettingsService::class)->get('invoice_template', 'modern');
+        $templates = [
+            'modern'  => 'invoices.pdf-modern',
+            'classic' => 'invoices.pdf-classic',
+            'minimal' => 'invoices.pdf-minimal',
+            'thermal' => 'invoices.pdf-thermal',
+        ];
+        $view = $templates[$template] ?? $templates['modern'];
+        $paperSize = $template === 'thermal' ? [0, 0, 226.77, 841.89] : 'a4';
+        return [$view, $paperSize, $template];
+    }
+
+    public function pdf(Invoice $invoice, Request $request)
+    {
+        [$view, $paperSize, $template] = $this->resolveTemplateView($request->get('template'));
+
         $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
         $totalPaid = $invoice->paymentRecords->sum('amount');
         $remaining = max($invoice->grand_total - $totalPaid, 0);
         $settings = app(\App\Services\SettingsService::class)->getCompanyInfo();
 
-        $pdf = Pdf::loadView('invoices.pdf', compact('invoice', 'totalPaid', 'remaining', 'settings'));
-        $pdf->setPaper('a4');
+        $pdf = Pdf::loadView($view, compact('invoice', 'totalPaid', 'remaining', 'settings'));
+        if (is_array($paperSize)) {
+            $pdf->setPaper($paperSize);
+        } else {
+            $pdf->setPaper($paperSize);
+        }
 
         return $pdf->download("invoice-{$invoice->invoice_number}.pdf");
+    }
+
+    public function preview(Invoice $invoice, Request $request): View
+    {
+        $template = $request->get('template', 'modern');
+        $previews = [
+            'modern'  => 'invoices.preview-modern',
+            'classic' => 'invoices.preview-classic',
+            'minimal' => 'invoices.preview-minimal',
+            'thermal' => 'invoices.preview-thermal',
+        ];
+        $view = $previews[$template] ?? $previews['modern'];
+
+        $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
+        $totalPaid = $invoice->paymentRecords->sum('amount');
+        $remaining = max($invoice->grand_total - $totalPaid, 0);
+        $settings = app(\App\Services\SettingsService::class)->getCompanyInfo();
+
+        return view($view, compact('invoice', 'totalPaid', 'remaining', 'settings', 'template'));
     }
 
     public function sendEmail(Invoice $invoice): RedirectResponse

@@ -185,6 +185,18 @@ Settings - {{ config('app.name') }}
                         <label class="form-label">Terms & Conditions</label>
                         <textarea name="settings[invoice_terms]" class="form-control" rows="4">{{ $invoiceSettings['invoice_terms'] ?? '' }}</textarea>
                     </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Default Template PDF</label>
+                            <select name="settings[invoice_template]" class="form-select">
+                                <option value="modern" {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'modern' ? 'selected' : '' }}>Modern (Biru)</option>
+                                <option value="classic" {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'classic' ? 'selected' : '' }}>Classic Formal</option>
+                                <option value="minimal" {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'minimal' ? 'selected' : '' }}>Minimal Clean</option>
+                                <option value="thermal" {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'thermal' ? 'selected' : '' }}>Thermal / Struk</option>
+                            </select>
+                            <small class="text-muted">Template default untuk download PDF & kirim email.</small>
+                        </div>
+                    </div>
                     <hr>
                     <h6>Info Pembayaran</h6>
                     <div class="row mb-3">

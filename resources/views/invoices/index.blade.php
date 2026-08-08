@@ -87,7 +87,7 @@
                     <td>
                         <div class="d-flex gap-1">
                             <a href="{{ route('invoices.show', $invoice) }}" class="btn btn-sm btn-info" title="Lihat"><i class="bi bi-eye"></i></a>
-                            <a href="{{ route('invoices.pdf', $invoice) }}" class="btn btn-sm btn-secondary" title="PDF"><i class="bi bi-file-earmark-pdf"></i></a>
+                            <a href="{{ route('invoices.pdf', ['invoice' => $invoice, 'template' => 'modern']) }}" class="btn btn-sm btn-secondary" title="PDF"><i class="bi bi-file-earmark-pdf"></i></a>
                             @if ($remaining > 0)
                                 <a href="{{ route('payments.create', $invoice) }}" class="btn btn-sm btn-success" title="Bayar"><i class="bi bi-cash-coin"></i></a>
                             @endif

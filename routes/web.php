@@ -198,6 +198,7 @@ Route::middleware(['auth'])->group(function () {
 
     // --- Invoices custom routes (before resource) ---
     Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
+    Route::get('/invoices/{invoice}/preview', [InvoiceController::class, 'preview'])->name('invoices.preview');
     Route::get('/invoices/{invoice}/send-wa', [InvoiceController::class, 'sendWA'])->name('invoices.sendWA');
     Route::post('/invoices/{invoice}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.sendEmail');
 

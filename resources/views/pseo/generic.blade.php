@@ -38,7 +38,7 @@
     </div>
     <div class="faq-item">
         <strong>@if($cityName)Apakah melayani area {{ $cityName }}?@else Apakah bisa booking online?@endif</strong>
-        <p>@if($cityName)Ya, {{ config('app.name') }} melayani area {{ $cityName }} dan sekitarnya. @endifBooking online tersedia 24 jam. Hubungi WhatsApp kami atau kunjungi bengkel langsung untuk konsultasi gratis.</p>
+        <p>@if($cityName)Ya, {{ config('app.name') }} melayani area {{ $cityName }} dan sekitarnya. @endif Booking online tersedia 24 jam. Hubungi WhatsApp kami atau kunjungi bengkel langsung untuk konsultasi gratis.</p>
     </div>
     <div class="faq-item">
         <strong>Berapa biaya {{ $serviceName ?? 'service' }}?</strong>

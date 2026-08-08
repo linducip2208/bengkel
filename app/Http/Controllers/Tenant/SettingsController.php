@@ -16,7 +16,11 @@ class SettingsController extends Controller
     public function index(): View
     {
         $settings = Setting::all()->pluck('value', 'key')->toArray();
-        return view('settings.index', compact('settings'));
+        $emailSettings = $settings;
+        $invoiceSettings = $settings;
+        $whatsappSettings = $settings;
+        $notificationSettings = $settings;
+        return view('settings.index', compact('settings', 'emailSettings', 'invoiceSettings', 'whatsappSettings', 'notificationSettings'));
     }
 
     public function update(Request $request): RedirectResponse

@@ -5,7 +5,65 @@
 <div class="d-print-none d-flex justify-content-between align-items-center mb-3">
     <h4>Invoice: {{ $invoice->invoice_number }}</h4>
     <div class="d-flex gap-2">
-        <a href="{{ route('invoices.pdf', $invoice) }}" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" style="min-width:280px;">
+                <li><h6 class="dropdown-header">Pilih Template Invoice</h6></li>
+                <li>
+                    <div class="d-flex align-items-center px-3 py-2">
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold" style="font-size:13px;">Modern (Default)</div>
+                            <small class="text-muted">Biru, berwarna, modern</small>
+                        </div>
+                        <div class="d-flex gap-1 ms-2">
+                            <a href="{{ route('invoices.preview', ['invoice' => $invoice, 'template' => 'modern']) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Preview"><i class="bi bi-eye"></i></a>
+                            <a href="{{ route('invoices.pdf', ['invoice' => $invoice, 'template' => 'modern']) }}" class="btn btn-sm btn-outline-secondary" title="Download PDF"><i class="bi bi-download"></i></a>
+                        </div>
+                    </div>
+                </li>
+                <li><hr class="dropdown-divider my-0"></li>
+                <li>
+                    <div class="d-flex align-items-center px-3 py-2">
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold" style="font-size:13px;">Classic Formal</div>
+                            <small class="text-muted">Hitam-putih, formal, stempel</small>
+                        </div>
+                        <div class="d-flex gap-1 ms-2">
+                            <a href="{{ route('invoices.preview', ['invoice' => $invoice, 'template' => 'classic']) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Preview"><i class="bi bi-eye"></i></a>
+                            <a href="{{ route('invoices.pdf', ['invoice' => $invoice, 'template' => 'classic']) }}" class="btn btn-sm btn-outline-secondary" title="Download PDF"><i class="bi bi-download"></i></a>
+                        </div>
+                    </div>
+                </li>
+                <li><hr class="dropdown-divider my-0"></li>
+                <li>
+                    <div class="d-flex align-items-center px-3 py-2">
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold" style="font-size:13px;">Minimal Clean</div>
+                            <small class="text-muted">Bersih, banyak whitespace</small>
+                        </div>
+                        <div class="d-flex gap-1 ms-2">
+                            <a href="{{ route('invoices.preview', ['invoice' => $invoice, 'template' => 'minimal']) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Preview"><i class="bi bi-eye"></i></a>
+                            <a href="{{ route('invoices.pdf', ['invoice' => $invoice, 'template' => 'minimal']) }}" class="btn btn-sm btn-outline-secondary" title="Download PDF"><i class="bi bi-download"></i></a>
+                        </div>
+                    </div>
+                </li>
+                <li><hr class="dropdown-divider my-0"></li>
+                <li>
+                    <div class="d-flex align-items-center px-3 py-2">
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold" style="font-size:13px;">Thermal / Struk</div>
+                            <small class="text-muted">Ukuran kecil, monospace</small>
+                        </div>
+                        <div class="d-flex gap-1 ms-2">
+                            <a href="{{ route('invoices.preview', ['invoice' => $invoice, 'template' => 'thermal']) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Preview"><i class="bi bi-eye"></i></a>
+                            <a href="{{ route('invoices.pdf', ['invoice' => $invoice, 'template' => 'thermal']) }}" class="btn btn-sm btn-outline-secondary" title="Download PDF"><i class="bi bi-download"></i></a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
         <button type="button" class="btn btn-outline-dark" onclick="window.print()"><i class="bi bi-printer"></i> Print</button>
         <a href="{{ route('invoices.sendWA', $invoice) }}" class="btn btn-outline-success" target="_blank"><i class="bi bi-whatsapp"></i> Kirim WA</a>
         @if ($remaining > 0)
