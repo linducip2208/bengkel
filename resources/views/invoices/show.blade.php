@@ -5,6 +5,7 @@
 <div class="d-print-none d-flex justify-content-between align-items-center mb-3">
     <h4>Invoice: {{ $invoice->invoice_number }}</h4>
     <div class="d-flex gap-2">
+        @can('invoice.pdf')
         <div class="dropdown">
             <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                 <i class="bi bi-file-earmark-pdf"></i> PDF
@@ -64,13 +65,20 @@
                 </li>
             </ul>
         </div>
+        @endcan
         <button type="button" class="btn btn-outline-dark" onclick="window.print()"><i class="bi bi-printer"></i> Print</button>
+        @can('invoice.send-wa')
         <a href="{{ route('invoices.sendWA', $invoice) }}" class="btn btn-outline-success" target="_blank"><i class="bi bi-whatsapp"></i> Kirim WA</a>
+        @endcan
         @if ($remaining > 0)
+            @can('invoice.edit')
             <a href="{{ route('payments.create', $invoice) }}" class="btn btn-primary"><i class="bi bi-cash-coin"></i> Catat Pembayaran</a>
+            @endcan
         @endif
         @if ($invoice->status !== 'full_paid')
+            @can('invoice.edit')
             <a href="{{ route('invoices.edit', $invoice) }}" class="btn btn-warning"><i class="bi bi-pencil"></i> Edit</a>
+            @endcan
         @endif
         <a href="{{ route('invoices.index') }}" class="btn btn-secondary">Kembali</a>
     </div>

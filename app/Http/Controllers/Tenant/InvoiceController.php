@@ -102,8 +102,8 @@ class InvoiceController extends Controller
     {
         abort_if($invoice->paymentRecords()->exists(), 403, 'Invoice yang sudah memiliki pembayaran tidak dapat dihapus.');
 
-        $invoice->items()->delete();
-        $invoice->delete();
+        $invoice->load('items');
+        $this->invoiceService->deleteWithStockRestore($invoice);
 
         return redirect()->route('invoices.index')
             ->with('success', 'Invoice berhasil dihapus.');

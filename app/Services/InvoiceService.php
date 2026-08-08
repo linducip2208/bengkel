@@ -66,6 +66,13 @@ class InvoiceService extends BaseService
         $invoice->update($data);
 
         if (!empty($items)) {
+            // Restore stock from old items before deleting
+            foreach ($invoice->items as $oldItem) {
+                if (!empty($oldItem->product_id)) {
+                    $this->restoreStock($oldItem->product_id, (float) $oldItem->quantity, $invoice);
+                }
+            }
+
             $invoice->items()->delete();
             foreach ($items as $item) {
                 $invoice->items()->create([
@@ -75,6 +82,10 @@ class InvoiceService extends BaseService
                     'unit_price' => $item['unit_price'] ?? 0,
                     'total_price' => ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0),
                 ]);
+
+                if (!empty($item['product_id'])) {
+                    $this->reduceStock((int) $item['product_id'], (float) ($item['quantity'] ?? 1), $invoice);
+                }
             }
         }
 
@@ -121,5 +132,35 @@ class InvoiceService extends BaseService
         ]);
     }
 
-    public function pdf($id) { abort(501); }
+    protected function restoreStock(int $productId, float $quantity, Invoice $invoice): void
+    {
+        $stockRecord = \App\Models\StockRecord::where('product_id', $productId)->first();
+        if (!$stockRecord) return;
+
+        $before = $stockRecord->quantity;
+        $stockRecord->increment('quantity', $quantity);
+
+        StockHistory::create([
+            'product_id' => $productId,
+            'reference_type' => 'invoice',
+            'reference_id' => $invoice->id,
+            'type' => 'in',
+            'quantity_change' => $quantity,
+            'previous_stock' => $before,
+            'new_stock' => $before + $quantity,
+            'reason' => 'Invoice #' . $invoice->invoice_number . ' (restore)',
+            'user_id' => auth()->id() ?? 1,
+        ]);
+    }
+
+    public function deleteWithStockRestore(Invoice $invoice): void
+    {
+        foreach ($invoice->items as $item) {
+            if (!empty($item->product_id)) {
+                $this->restoreStock($item->product_id, (float) $item->quantity, $invoice);
+            }
+        }
+        $invoice->items()->delete();
+        $invoice->delete();
+    }
 }

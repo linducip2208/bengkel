@@ -87,17 +87,25 @@
                     <td>
                         <div class="d-flex gap-1">
                             <a href="{{ route('invoices.show', $invoice) }}" class="btn btn-sm btn-info" title="Lihat"><i class="bi bi-eye"></i></a>
+                            @can('invoice.pdf')
                             <a href="{{ route('invoices.pdf', ['invoice' => $invoice, 'template' => 'modern']) }}" class="btn btn-sm btn-secondary" title="PDF"><i class="bi bi-file-earmark-pdf"></i></a>
+                            @endcan
                             @if ($remaining > 0)
+                                @can('invoice.edit')
                                 <a href="{{ route('payments.create', $invoice) }}" class="btn btn-sm btn-success" title="Bayar"><i class="bi bi-cash-coin"></i></a>
+                                @endcan
                             @endif
+                            @can('invoice.send-wa')
                             <a href="{{ route('invoices.sendWA', $invoice) }}" class="btn btn-sm btn-success" title="Kirim WA" target="_blank"><i class="bi bi-whatsapp"></i></a>
+                            @endcan
                             @if ($invoice->status !== 'full_paid')
+                                @can('invoice.delete')
                                 <form action="{{ route('invoices.destroy', $invoice) }}" method="POST" onsubmit="return confirm('Hapus invoice {{ $invoice->invoice_number }}?')" class="d-inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus"><i class="bi bi-trash"></i></button>
                                 </form>
+                                @endcan
                             @endif
                         </div>
                     </td>

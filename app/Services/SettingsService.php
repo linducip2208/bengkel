@@ -29,7 +29,7 @@ class SettingsService
     public function getCompanyInfo(): array
     {
         return [
-            'name' => $this->get('company_name', config('app.name', config('app.name'))),
+            'name' => $this->get('company_name', config('app.name')),
             'address' => $this->get('company_address', ''),
             'phone' => $this->get('company_phone', ''),
             'email' => $this->get('company_email', ''),
