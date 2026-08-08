@@ -120,7 +120,8 @@ Settings - {{ config('app.name') }}
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Password</label>
-                            <input type="password" name="settings[smtp_password]" class="form-control" value="{{ $emailSettings['smtp_password'] ?? '' }}">
+                            <input type="password" name="settings[smtp_password]" class="form-control" placeholder="{{ !empty($emailSettings['smtp_password']) ? '(tersimpan)' : '' }}" autocomplete="new-password">
+                            @if(!empty($emailSettings['smtp_password']))<small class="text-muted">Password tersimpan. Kosongkan jika tidak ingin diubah.</small>@endif
                         </div>
                     </div>
                     <div class="row mb-3">
