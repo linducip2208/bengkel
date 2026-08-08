@@ -60,7 +60,7 @@ use App\Http\Controllers\Tenant\WashbayController;
 
 // Auth routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Public tracking service (token-based, no auth)
@@ -293,6 +293,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/bookings', [\App\Http\Controllers\BookingController::class, 'adminIndex'])->name('bookings.index');
     Route::put('/bookings/{booking}', [\App\Http\Controllers\BookingController::class, 'adminUpdate'])->name('bookings.update');
     Route::delete('/bookings/{booking}', [\App\Http\Controllers\BookingController::class, 'adminDestroy'])->name('bookings.destroy');
+    Route::post('/bookings/{booking}/convert', [\App\Http\Controllers\BookingController::class, 'convertToService'])->name('bookings.convert');
 
     // --- Marketing: Voucher & Loyalty ---
     Route::resource('vouchers', VoucherController::class)->except(['show']);
@@ -319,6 +320,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/hrm/salary/generate', [\App\Http\Controllers\Tenant\HrmController::class, 'salaryGenerate'])->name('hrm.salary.generate');
     Route::get('/hrm/salary/{salary}/slip', [\App\Http\Controllers\Tenant\HrmController::class, 'salarySlip'])->name('hrm.salary.slip');
     Route::put('/hrm/salary/{salary}/mark-paid', [\App\Http\Controllers\Tenant\HrmController::class, 'salaryMarkPaid'])->name('hrm.salary.mark-paid');
+
+    // --- HRM: Leaves / Cuti ---
+    Route::get('/hrm/leaves', [\App\Http\Controllers\Tenant\LeaveController::class, 'index'])->name('hrm.leaves.index');
+    Route::post('/hrm/leaves', [\App\Http\Controllers\Tenant\LeaveController::class, 'store'])->name('hrm.leaves.store');
+    Route::post('/hrm/leaves/{leave}/approve', [\App\Http\Controllers\Tenant\LeaveController::class, 'approve'])->name('hrm.leaves.approve');
+    Route::post('/hrm/leaves/{leave}/reject', [\App\Http\Controllers\Tenant\LeaveController::class, 'reject'])->name('hrm.leaves.reject');
+    Route::delete('/hrm/leaves/{leave}', [\App\Http\Controllers\Tenant\LeaveController::class, 'destroy'])->name('hrm.leaves.destroy');
 
     // --- POS Kasir (Retail Module) ---
     Route::prefix('pos')->name('pos.')->group(function () {

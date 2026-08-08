@@ -71,6 +71,57 @@ class BookingController extends Controller
         return back()->with('success', 'Booking dihapus.');
     }
 
+    public function convertToService(Booking $booking)
+    {
+        if ($booking->status !== 'pending' && $booking->status !== 'confirmed') {
+            return back()->with('error', 'Hanya booking dengan status pending/confirmed yang bisa dikonversi.');
+        }
+        if ($booking->service_id) {
+            return back()->with('error', 'Booking ini sudah dikonversi ke service.');
+        }
+
+        // Find or create customer by phone
+        $customer = \App\Models\Customer::withoutGlobalScopes()->firstOrCreate(
+            ['phone' => $booking->phone],
+            ['name' => $booking->name, 'email' => $booking->email]
+        );
+
+        // Create vehicle if plate is provided
+        $vehicle = null;
+        if ($booking->vehicle_plate) {
+            $vehicle = \App\Models\Vehicle::withoutGlobalScopes()->firstOrCreate(
+                ['number_plate' => $booking->vehicle_plate, 'customer_id' => $customer->id],
+                [
+                    'customer_id' => $customer->id,
+                    'number_plate' => $booking->vehicle_plate,
+                    'model_name' => ($booking->vehicle_brand ?: '') . ' ' . ($booking->vehicle_model ?: ''),
+                ]
+            );
+        }
+
+        // Create service
+        $jobNo = 'JOB-' . date('Ym') . '-' . str_pad(\App\Models\Service::max('id') + 1, 4, '0', STR_PAD_LEFT);
+        $service = \App\Models\Service::create([
+            'job_no' => $jobNo,
+            'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle?->id,
+            'service_date' => $booking->booking_at,
+            'description' => $booking->complaint,
+            'done_status' => 0,
+            'created_by' => auth()->id() ?? 1,
+            'branch_id' => $booking->branch_id,
+        ]);
+
+        $booking->update([
+            'customer_id' => $customer->id,
+            'service_id' => $service->id,
+            'status' => 'confirmed',
+        ]);
+
+        return redirect()->route('services.show', $service)
+            ->with('success', 'Booking berhasil dikonversi ke Service #' . $jobNo);
+    }
+
     public function calendar() { return view('bookings.calendar'); }
 
     public function calendarEvents()

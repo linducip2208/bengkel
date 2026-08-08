@@ -68,42 +68,51 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
 </div>
 @endif
 
-{{-- Stats Cards --}}
+{{-- Stats Cards — clickable drill-down --}}
 <div class="row mb-4">
     <div class="col-md-2 mb-3">
-        <div class="card border-primary">
+        <a href="{{ route('services.index', ['status' => 'open']) }}" class="text-decoration-none">
+        <div class="card border-primary h-100" style="transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
             <div class="card-body text-center">
                 <h5 class="card-title text-primary">{{ $stats['open_services'] }}</h5>
                 <p class="card-text small">Open Services</p>
             </div>
         </div>
+        </a>
     </div>
     <div class="col-md-2 mb-3">
-        <div class="card border-success">
+        <a href="{{ route('services.index', ['status' => 'completed']) }}" class="text-decoration-none">
+        <div class="card border-success h-100" style="transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
             <div class="card-body text-center">
                 <h5 class="card-title text-success">{{ $stats['completed_today'] }}</h5>
                 <p class="card-text small">Completed Today</p>
             </div>
         </div>
+        </a>
     </div>
     <div class="col-md-2 mb-3">
-        <div class="card border-info">
+        <a href="{{ route('reports.financial') }}" class="text-decoration-none">
+        <div class="card border-info h-100" style="transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
             <div class="card-body text-center">
                 <h5 class="card-title text-info">@money($stats['revenue_today'])</h5>
                 <p class="card-text small">Today's Revenue</p>
             </div>
         </div>
+        </a>
     </div>
     <div class="col-md-2 mb-3">
-        <div class="card border-secondary">
+        <a href="{{ route('reports.financial') }}" class="text-decoration-none">
+        <div class="card border-secondary h-100" style="transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
             <div class="card-body text-center">
                 <h5 class="card-title">@money($stats['revenue_this_month'])</h5>
                 <p class="card-text small">Monthly Revenue</p>
             </div>
         </div>
+        </a>
     </div>
     <div class="col-md-2 mb-3">
-        <div class="card border-warning">
+        <a href="{{ route('invoices.index', ['status' => 'unpaid']) }}" class="text-decoration-none">
+        <div class="card border-warning h-100" style="transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
             <div class="card-body text-center">
                 <h5 class="card-title text-warning">{{ $stats['outstanding_invoices'] }}</h5>
                 <p class="card-text small">Outstanding Invoices</p>
@@ -111,7 +120,8 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
         </div>
     </div>
     <div class="col-md-2 mb-3">
-        <div class="card border-danger">
+        <a href="{{ route('reports.stock') }}" class="text-decoration-none">
+        <div class="card border-danger h-100" style="transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
             <div class="card-body text-center">
                 <h5 class="card-title text-danger">{{ $stats['low_stock_count'] }}</h5>
                 <p class="card-text small">Low Stock Items</p>

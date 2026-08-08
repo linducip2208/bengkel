@@ -51,3 +51,12 @@ Schedule::command('seo:indexnow --new')
 Schedule::command('notifications:process --limit=100')
     ->everyFiveMinutes()
     ->withoutOverlapping();
+
+// Overdue invoice escalation — every hour
+Schedule::command('invoices:escalate-overdue')
+    ->hourly()
+    ->withoutOverlapping();
+
+// Service reminder — H-1 notification, daily 08:00
+Schedule::command('services:send-reminders')
+    ->dailyAt('08:00');

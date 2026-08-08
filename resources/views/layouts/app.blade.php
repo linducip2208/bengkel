@@ -592,13 +592,14 @@
             {{-- HRM Teknisi --}}
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuHrm"
-                    aria-expanded="{{ request()->routeIs('commissions.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('commissions.*','hrm.*') ? 'true' : 'false' }}">
                     <i class="fas fa-user-tie"></i> HRM Teknisi
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('commissions.*') ? 'show' : '' }}" id="menuHrm">
+                <ul class="collapse submenu {{ request()->routeIs('commissions.*','hrm.*') ? 'show' : '' }}" id="menuHrm">
                     @can('commission.view')<li><a href="{{ route('commissions.index') }}" class="nav-link {{ request()->routeIs('commissions.index','commissions.markPaid*') ? 'active' : '' }}"><i class="fas fa-hand-holding-usd me-1"></i> Komisi Teknisi</a></li>@endcan
                     @can('commission.report')<li><a href="{{ route('commissions.report') }}" class="nav-link {{ request()->routeIs('commissions.report') ? 'active' : '' }}"><i class="fas fa-file-invoice me-1"></i> Laporan Komisi</a></li>@endcan
+                    <li><a href="{{ route('hrm.leaves.index') }}" class="nav-link {{ request()->routeIs('hrm.leaves.*') ? 'active' : '' }}"><i class="fas fa-calendar-alt me-1"></i> Cuti / Izin</a></li>
                 </ul>
             </li>
             @endcan

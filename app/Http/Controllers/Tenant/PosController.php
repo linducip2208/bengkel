@@ -155,8 +155,11 @@ class PosController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
-            'amount_paid' => 'required|numeric|min:0',
-            'payment_method_id' => 'required|exists:payment_methods,id',
+            'amount_paid' => 'nullable|numeric|min:0',
+            'payment_method_id' => 'nullable|exists:payment_methods,id',
+            'payments' => 'nullable|array|min:1',
+            'payments.*.method_id' => 'required_with:payments|exists:payment_methods,id',
+            'payments.*.amount' => 'required_with:payments|numeric|min:1',
         ]);
 
         $session = PosSession::findOrFail($validated['session_id']);
@@ -171,8 +174,17 @@ class PosController extends Controller
         $discount = (float) ($validated['discount'] ?? 0);
         $grandTotal = max($subtotal - $discount, 0);
 
-        if ($validated['amount_paid'] < $grandTotal) {
-            return back()->withInput()->with('error', 'Uang bayar kurang dari total belanja.');
+        // Support split payment (multi metode) or single payment
+        $payments = [];
+        if (!empty($validated['payments'])) {
+            $payments = $validated['payments'];
+        } elseif (!empty($validated['payment_method_id'])) {
+            $payments = [['method_id' => $validated['payment_method_id'], 'amount' => $validated['amount_paid']]];
+        }
+
+        $totalPaid = array_sum(array_column($payments, 'amount'));
+        if ($totalPaid < $grandTotal) {
+            return back()->withInput()->with('error', 'Total bayar kurang dari total belanja (kurang Rp ' . number_format($grandTotal - $totalPaid, 0, ',', '.') . ').');
         }
 
         $invoice = DB::transaction(function () use ($validated, $session, $subtotal, $discount, $grandTotal) {
@@ -194,14 +206,14 @@ class PosController extends Controller
                 'service_id' => null,
                 'sale_id' => null,
                 'pos_session_id' => $session->id,
-                'payment_method_id' => $validated['payment_method_id'],
+                'payment_method_id' => $payments[0]['method_id'] ?? null,
                 'payment_status' => 2,
                 'total_amount' => $subtotal,
                 'discount' => $discount,
                 'tax_amount' => 0,
                 'grand_total' => $grandTotal,
                 'paid_amount' => $grandTotal,
-                'amount_received' => $validated['amount_paid'],
+                'amount_received' => $totalPaid,
                 'invoice_date' => now()->toDateString(),
                 'invoice_type' => 'pos',
                 'created_by' => auth()->id(),
@@ -239,14 +251,16 @@ class PosController extends Controller
                 }
             }
 
-            PaymentRecord::create([
-                'invoice_id' => $invoice->id,
-                'payment_method_id' => $validated['payment_method_id'],
-                'amount' => $grandTotal,
-                'payment_date' => now(),
-                'reference_number' => $invoice->invoice_number,
-                'notes' => 'POS payment',
-            ]);
+            foreach ($payments as $pmt) {
+                PaymentRecord::create([
+                    'invoice_id' => $invoice->id,
+                    'payment_method_id' => $pmt['method_id'],
+                    'amount' => $pmt['amount'],
+                    'payment_date' => now(),
+                    'reference_number' => $invoice->invoice_number,
+                    'notes' => 'POS payment',
+                ]);
+            }
 
             return $invoice;
         });
