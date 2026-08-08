@@ -26,7 +26,7 @@ class InvoiceController extends Controller
     public function index(Request $request): View
     {
         $invoices = Invoice::query()
-            ->with(['customer', 'paymentRecords', 'service.vehicle', 'sale.vehicle'])
+            ->with(['customer', 'vehicle', 'paymentRecords', 'service.vehicle', 'sale.vehicle'])
             ->when($request->status, fn($q) => $q->where('payment_status', $request->status))
             ->when($request->invoice_type, fn($q) => $q->where('invoice_type', $request->invoice_type))
             ->when($request->date_from, fn($q) => $q->whereDate('invoice_date', '>=', $request->date_from))

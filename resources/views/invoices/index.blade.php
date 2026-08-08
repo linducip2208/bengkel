@@ -68,8 +68,8 @@
                 <tr>
                     <td><strong>{{ $invoice->invoice_number }}</strong></td>
                     <td>{{ $invoice->customer->name ?? '-' }}</td>
-                    <td><small>{{ $invoice->service->vehicle->model_name ?? $invoice->sale->vehicle->model_name ?? '-' }}</small></td>
-                    <td><small class="fw-bold">{{ $invoice->service->vehicle->number_plate ?? $invoice->sale->vehicle->number_plate ?? '-' }}</small></td>
+                    <td><small>{{ $invoice->vehicle->model_name ?? $invoice->service->vehicle->model_name ?? $invoice->sale->vehicle->model_name ?? '-' }}</small></td>
+                    <td><small class="fw-bold">{{ $invoice->vehicle->number_plate ?? $invoice->service->vehicle->number_plate ?? $invoice->sale->vehicle->number_plate ?? '-' }}</small></td>
                     <td><span class="badge bg-secondary">{{ $invoice->invoice_type }}</span></td>
                     <td>{{ $invoice->invoice_date->format('d/m/Y') }}</td>
                     <td>@money($invoice->grand_total)</td>
