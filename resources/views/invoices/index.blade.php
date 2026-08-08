@@ -92,6 +92,13 @@
                                 <a href="{{ route('payments.create', $invoice) }}" class="btn btn-sm btn-success" title="Bayar"><i class="bi bi-cash-coin"></i></a>
                             @endif
                             <a href="{{ route('invoices.sendWA', $invoice) }}" class="btn btn-sm btn-success" title="Kirim WA" target="_blank"><i class="bi bi-whatsapp"></i></a>
+                            @if ($invoice->status !== 'full_paid')
+                                <form action="{{ route('invoices.destroy', $invoice) }}" method="POST" onsubmit="return confirm('Hapus invoice {{ $invoice->invoice_number }}?')" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus"><i class="bi bi-trash"></i></button>
+                                </form>
+                            @endif
                         </div>
                     </td>
                 </tr>
