@@ -185,16 +185,128 @@ Settings - {{ config('app.name') }}
                         <label class="form-label">Terms & Conditions</label>
                         <textarea name="settings[invoice_terms]" class="form-control" rows="4">{{ $invoiceSettings['invoice_terms'] ?? '' }}</textarea>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Default Template PDF</label>
-                            <select name="settings[invoice_template]" class="form-select">
-                                <option value="modern" {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'modern' ? 'selected' : '' }}>Modern (Biru)</option>
-                                <option value="classic" {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'classic' ? 'selected' : '' }}>Classic Formal</option>
-                                <option value="minimal" {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'minimal' ? 'selected' : '' }}>Minimal Clean</option>
-                                <option value="thermal" {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'thermal' ? 'selected' : '' }}>Thermal / Struk</option>
-                            </select>
-                            <small class="text-muted">Template default untuk download PDF & kirim email.</small>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Default Template PDF</label>
+                        <input type="hidden" name="settings[invoice_template]" id="invoiceTemplateInput" value="{{ $invoiceSettings['invoice_template'] ?? 'modern' }}">
+                        <p class="text-muted small mb-3">Klik template untuk memilih. Template ini digunakan untuk download PDF & kirim email.</p>
+
+                        <div class="row g-3">
+                            {{-- Modern --}}
+                            <div class="col-md-3">
+                                <div class="card template-card {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'modern' ? 'border-primary shadow' : 'border' }}" data-template="modern" style="cursor:pointer;transition:all 0.2s;">
+                                    <div class="card-body p-0">
+                                        <div style="background:linear-gradient(135deg,#1a56db,#2563eb);border-radius:4px 4px 0 0;padding:8px 10px;">
+                                            <div style="width:50px;height:46px;background:rgba(255,255,255,.15);border-radius:4px;display:inline-block;vertical-align:middle;"></div>
+                                            <div style="display:inline-block;margin-left:6px;vertical-align:middle;">
+                                                <div style="width:70px;height:6px;background:rgba(255,255,255,.5);border-radius:2px;margin-bottom:4px;"></div>
+                                                <div style="width:90px;height:5px;background:rgba(255,255,255,.25);border-radius:2px;"></div>
+                                            </div>
+                                            <div style="float:right;text-align:right;">
+                                                <div style="width:45px;height:7px;background:#fff;border-radius:2px;margin-bottom:3px;"></div>
+                                                <div style="width:35px;height:5px;background:rgba(255,255,255,.7);border-radius:2px;"></div>
+                                            </div>
+                                        </div>
+                                        <div style="padding:8px 10px;">
+                                            <div style="display:flex;gap:8px;">
+                                                <div style="flex:1"><div style="width:100%;height:4px;background:#e2e8f0;border-radius:2px;margin-bottom:3px;"></div><div style="width:70%;height:3px;background:#f1f5f9;border-radius:2px;"></div></div>
+                                                <div style="flex:1;text-align:right;"><div style="width:60%;height:4px;background:#e2e8f0;border-radius:2px;margin-bottom:3px;margin-left:auto;"></div><div style="width:40%;height:3px;background:#f1f5f9;border-radius:2px;margin-left:auto;"></div></div>
+                                            </div>
+                                            <div style="margin:6px 0;display:flex;gap:6px;">
+                                                <div style="flex:1;"><div style="background:#1a56db;border-radius:2px;height:3px;margin-bottom:2px;"></div><div style="background:#f1f5f9;border-radius:1px;height:2px;margin-bottom:2px;"></div><div style="background:#f1f5f9;border-radius:1px;height:2px;"></div></div>
+                                                <div style="width:18px;"><div style="background:#1a56db;border-radius:2px;height:3px;margin-bottom:2px;"></div><div style="background:#f1f5f9;border-radius:1px;height:2px;margin-bottom:2px;"></div><div style="background:#f1f5f9;border-radius:1px;height:2px;"></div></div>
+                                                <div style="width:22px;"><div style="background:#1a56db;border-radius:2px;height:3px;margin-bottom:2px;"></div><div style="background:#f1f5f9;border-radius:1px;height:2px;margin-bottom:2px;"></div><div style="background:#f1f5f9;border-radius:1px;height:2px;"></div></div>
+                                            </div>
+                                            <div style="border-top:1px solid #e2e8f0;padding-top:4px;margin-top:4px;font-size:9px;color:#1a56db;font-weight:600;">Grand Total &mdash; Rp 0</div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent text-center py-1 small fw-semibold {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'modern' ? 'text-primary' : '' }}">Modern</div>
+                                </div>
+                            </div>
+
+                            {{-- Classic --}}
+                            <div class="col-md-3">
+                                <div class="card template-card {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'classic' ? 'border-primary shadow' : 'border' }}" data-template="classic" style="cursor:pointer;transition:all 0.2s;">
+                                    <div class="card-body p-0">
+                                        <div style="border-bottom:2px solid #000;padding:8px 10px;">
+                                            <div style="float:left;width:50px;height:46px;border:1px solid #ccc;display:flex;align-items:center;justify-content:center;font-size:18px;">&#x1F527;</div>
+                                            <div style="margin-left:58px;">
+                                                <div style="width:80px;height:6px;background:#000;border-radius:0;margin-bottom:4px;"></div>
+                                                <div style="width:60px;height:4px;background:#666;border-radius:0;"></div>
+                                            </div>
+                                        </div>
+                                        <div style="padding:8px 10px;">
+                                            <div style="display:flex;font-size:8px;font-family:serif;">
+                                                <div style="flex:1"><strong>Kepada:</strong><br><div style="width:60px;height:3px;background:#ccc;margin:2px 0;"></div><div style="width:45px;height:2px;background:#eee;"></div></div>
+                                                <div style="flex:1;text-align:right"><strong>No:</strong> INV-001<br><strong>Tgl:</strong> 01/08/26</div>
+                                            </div>
+                                            <div style="margin:5px 0;border-bottom:1px solid #000;font-size:8px;display:flex;justify-content:space-between;padding-bottom:2px;">
+                                                <span>Deskripsi</span><span>Qty</span><span>Total</span>
+                                            </div>
+                                            <div style="font-size:8px;display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:2px 0;"><span>Service</span><span>1</span><span>Rp 0</span></div>
+                                            <div style="text-align:right;font-size:9px;font-weight:bold;border-top:1px solid #000;padding-top:3px;margin-top:3px;">TOTAL: Rp 0</div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent text-center py-1 small fw-semibold {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'classic' ? 'text-primary' : '' }}">Classic</div>
+                                </div>
+                            </div>
+
+                            {{-- Minimal --}}
+                            <div class="col-md-3">
+                                <div class="card template-card {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'minimal' ? 'border-primary shadow' : 'border' }}" data-template="minimal" style="cursor:pointer;transition:all 0.2s;">
+                                    <div class="card-body p-0" style="font-family:Inter,sans-serif;">
+                                        <div style="padding:10px 10px 6px;display:flex;justify-content:space-between;align-items:flex-start;">
+                                            <div>
+                                                <div style="width:70px;height:7px;background:#111;border-radius:2px;margin-bottom:3px;"></div>
+                                                <div style="width:50px;height:4px;background:#aaa;border-radius:1px;"></div>
+                                            </div>
+                                            <div style="text-align:right;">
+                                                <span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:7px;background:#e8f5e9;color:#2e7d32;font-weight:600;">LUNAS</span>
+                                                <div style="font-size:8px;color:#999;margin-top:2px;">#INV-001</div>
+                                            </div>
+                                        </div>
+                                        <div style="padding:0 10px;">
+                                            <div style="margin:5px 0;display:flex;font-size:8px;gap:5px;">
+                                                <div style="flex:1"><div style="color:#aaa;font-size:7px;text-transform:uppercase;">Kepada</div><div style="width:55px;height:4px;background:#333;margin:2px 0;"></div><div style="width:40px;height:3px;background:#ccc;"></div></div>
+                                                <div style="flex:1"><div style="color:#aaa;font-size:7px;text-transform:uppercase;">Tanggal</div><div style="width:45px;height:4px;background:#333;margin:2px 0;"></div></div>
+                                            </div>
+                                            <div style="border-bottom:1px solid #e0e0e0;font-size:7px;color:#999;text-transform:uppercase;display:flex;justify-content:space-between;padding-bottom:2px;margin-top:4px;">
+                                                <span>#</span><span>Deskripsi</span><span>Qty</span><span>Jumlah</span>
+                                            </div>
+                                            <div style="font-size:8px;display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f5f5f5;"><span style="color:#bbb;">1</span><span>Service</span><span>1</span><span>Rp 0</span></div>
+                                            <div style="display:flex;justify-content:flex-end;margin-top:3px;border-top:1px solid #1a1a1a;padding-top:3px;font-size:10px;font-weight:700;">Rp 0</div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent text-center py-1 small fw-semibold {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'minimal' ? 'text-primary' : '' }}">Minimal</div>
+                                </div>
+                            </div>
+
+                            {{-- Thermal --}}
+                            <div class="col-md-3">
+                                <div class="card template-card {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'thermal' ? 'border-primary shadow' : 'border' }}" data-template="thermal" style="cursor:pointer;transition:all 0.2s;">
+                                    <div class="card-body p-0" style="font-family:'Courier New',monospace;background:#fffef7;">
+                                        <div style="padding:8px 10px;text-align:center;font-size:10px;font-weight:bold;border-bottom:1px dashed #000;">
+                                            Bengkel<br><span style="font-size:7px;">Jl. Raya No.1</span>
+                                        </div>
+                                        <div style="padding:6px 10px;text-align:center;font-weight:bold;font-size:9px;">
+                                            INVOICE<br>INV-001
+                                        </div>
+                                        <div style="padding:0 10px;font-size:7px;border-top:1px dashed #000;">
+                                            <div style="display:flex;justify-content:space-between;"><span>Tgl</span><span>01/08/26</span></div>
+                                            <div style="display:flex;justify-content:space-between;"><span>Pelanggan</span><span>Customer</span></div>
+                                        </div>
+                                        <div style="padding:0 10px;border-top:1px dashed #000;font-size:7px;">
+                                            <div style="display:flex;justify-content:space-between;"><span>Service</span><span>1x Rp 0</span></div>
+                                        </div>
+                                        <div style="padding:4px 10px;border-top:1px solid #000;text-align:right;font-size:9px;font-weight:bold;">
+                                            TOTAL: Rp 0
+                                        </div>
+                                        <div style="padding:4px 10px;text-align:center;border-top:1px solid #000;">
+                                            <span style="border:1px solid #000;padding:1px 10px;font-size:7px;font-weight:bold;">LUNAS</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent text-center py-1 small fw-semibold {{ ($invoiceSettings['invoice_template'] ?? 'modern') === 'thermal' ? 'text-primary' : '' }}">Thermal</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <hr>
@@ -235,4 +347,40 @@ Settings - {{ config('app.name') }}
         <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save Settings</button>
     </div>
 </form>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const cards = document.querySelectorAll('.template-card');
+    const input = document.getElementById('invoiceTemplateInput');
+
+    cards.forEach(card => {
+        card.addEventListener('click', function () {
+            const template = this.dataset.template;
+            input.value = template;
+
+            cards.forEach(c => {
+                c.classList.remove('border-primary', 'shadow');
+                c.querySelector('.card-footer').classList.remove('text-primary');
+            });
+            this.classList.add('border-primary', 'shadow');
+            this.querySelector('.card-footer').classList.add('text-primary');
+        });
+
+        card.addEventListener('mouseenter', function () {
+            if (!this.classList.contains('border-primary')) {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 4px 12px rgba(0,0,0,.08)';
+            }
+        });
+        card.addEventListener('mouseleave', function () {
+            if (!this.classList.contains('border-primary')) {
+                this.style.transform = '';
+                this.style.boxShadow = '';
+            }
+        });
+    });
+});
+</script>
+@endpush
 @endsection
