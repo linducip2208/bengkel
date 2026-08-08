@@ -53,7 +53,7 @@
             <select name="vehicle_id" class="form-select @error('vehicle_id') is-invalid @enderror">
                 <option value="">Pilih Kendaraan</option>
                 @foreach ($vehicles as $v)
-                    <option value="{{ $v->id }}" {{ old('vehicle_id', $invoice->vehicle_id) == $v->id ? 'selected' : '' }}>
+                    <option value="{{ $v->id }}" data-customer="{{ $v->customer_id }}" {{ old('vehicle_id', $invoice->vehicle_id) == $v->id ? 'selected' : '' }}>
                         {{ $v->number_plate }} — {{ $v->model_name }} ({{ $v->customer?->name ?? '-' }})
                     </option>
                 @endforeach
@@ -262,5 +262,26 @@ function selectProduct(btn) {
 }
 
 document.getElementById('productSearchInput').addEventListener('input', function() { searchProducts(this.value.trim() || ''); });
+
+// Filter vehicle by customer
+const customerSelect = document.querySelector('[name="customer_id"]');
+const vehicleSelect = document.querySelector('[name="vehicle_id"]');
+const allVehicleOptions = Array.from(vehicleSelect.querySelectorAll('option'));
+
+function filterVehicles() {
+    const customerId = customerSelect.value;
+    vehicleSelect.innerHTML = '<option value="">Pilih Kendaraan</option>';
+    allVehicleOptions.forEach(opt => {
+        if (opt.value === '') return;
+        if (!customerId || opt.dataset.customer === customerId) {
+            vehicleSelect.appendChild(opt.cloneNode(true));
+        }
+    });
+}
+
+if (customerSelect) {
+    customerSelect.addEventListener('change', filterVehicles);
+    if (customerSelect.value) filterVehicles();
+}
 </script>
 @endpush

@@ -393,5 +393,27 @@ function calcGrand() {
 }
 
 document.addEventListener('DOMContentLoaded', calcGrand);
+
+// Filter vehicle by customer
+const customerSelect = document.querySelector('[name="customer_id"]');
+const vehicleSelect = document.querySelector('[name="vehicle_id"]');
+const allVehicleOptions = Array.from(vehicleSelect.querySelectorAll('option'));
+
+function filterVehicles() {
+    const customerId = customerSelect.value;
+    vehicleSelect.innerHTML = '<option value="">Pilih Kendaraan</option>';
+    allVehicleOptions.forEach(opt => {
+        if (opt.value === '') return;
+        if (!customerId || opt.dataset.customer === customerId) {
+            vehicleSelect.appendChild(opt.cloneNode(true));
+        }
+    });
+}
+
+if (customerSelect) {
+    customerSelect.addEventListener('change', filterVehicles);
+    // Run on load if customer already selected
+    if (customerSelect.value) filterVehicles();
+}
 </script>
 @endpush
