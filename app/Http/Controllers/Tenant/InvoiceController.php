@@ -25,9 +25,11 @@ class InvoiceController extends Controller
 
     public function index(Request $request): View
     {
+        $statusMap = ['unpaid' => 0, 'half_paid' => 1, 'full_paid' => 2];
+
         $invoices = Invoice::query()
             ->with(['customer', 'vehicle', 'paymentRecords', 'service.vehicle', 'sale.vehicle'])
-            ->when($request->status, fn($q) => $q->where('payment_status', $request->status))
+            ->when($request->status && isset($statusMap[$request->status]), fn($q) => $q->where('payment_status', $statusMap[$request->status]))
             ->when($request->invoice_type, fn($q) => $q->where('invoice_type', $request->invoice_type))
             ->when($request->date_from, fn($q) => $q->whereDate('invoice_date', '>=', $request->date_from))
             ->when($request->date_to, fn($q) => $q->whereDate('invoice_date', '<=', $request->date_to))

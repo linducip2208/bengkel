@@ -19,6 +19,7 @@ class InvoiceRequest extends FormRequest
             'due_date' => ['nullable', 'date'],
             'discount' => ['nullable', 'numeric', 'min:0'],
             'tax_amount' => ['nullable', 'numeric', 'min:0'],
+            'dp_amount' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string'],
             'items' => ['array', 'required'],
             'items.*.description' => ['required', 'string'],

@@ -34,6 +34,10 @@
             @error('invoice_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
         <div class="col-md-2">
+            <label class="form-label">Berlaku Sampai</label>
+            <input type="date" name="due_date" class="form-control" value="{{ old('due_date', $invoice->due_date ? \Carbon\Carbon::parse($invoice->due_date)->format('Y-m-d') : '') }}">
+        </div>
+        <div class="col-md-2">
             <label class="form-label">Metode Bayar</label>
             <select name="payment_method_id" class="form-select @error('payment_method_id') is-invalid @enderror">
                 <option value="">Pilih</option>
@@ -94,7 +98,7 @@
                         </td>
                         <td><input type="number" name="items[{{ $i }}][quantity]" class="form-control qty" value="{{ is_array($item) ? ($item['quantity'] ?? 1) : $item->quantity }}" min="1" oninput="calcRow(this)" required></td>
                         <td><input type="number" name="items[{{ $i }}][unit_price]" class="form-control price" value="{{ is_array($item) ? ($item['unit_price'] ?? 0) : $item->unit_price }}" min="0" step="100" oninput="calcRow(this)" required></td>
-                        <td><input type="text" class="form-control row-total" readonly value="{{ number_format((is_array($item) ? (($item['quantity']??1) * ($item['unit_price']??0)) : $item->total), 0, ',', '.') }}"></td>
+                        <td><input type="text" class="form-control row-total" readonly value="{{ number_format((is_array($item) ? (($item['quantity']??1) * ($item['unit_price']??0)) : (($item->quantity ?? 1) * ($item->unit_price ?? 0))), 0, ',', '.') }}"></td>
                         <td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
                     </tr>
                     @endforeach
@@ -117,6 +121,13 @@
         <div class="col-md-4">
             <label class="form-label">Grand Total</label>
             <input type="text" id="grandTotal" class="form-control fw-bold text-end" readonly value="Rp {{ number_format($invoice->grand_total, 0, ',', '.') }}">
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <label class="form-label">Down Payment (Rp)</label>
+            <input type="number" name="dp_amount" class="form-control" value="{{ old('dp_amount', $invoice->dp_amount) }}" min="0" step="1000">
         </div>
     </div>
 

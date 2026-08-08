@@ -19,6 +19,7 @@ class Invoice extends Model
     {
         return [
             'invoice_date' => 'date',
+            'due_date' => 'date',
             'total_amount' => 'decimal:2',
             'discount' => 'decimal:2',
             'tax_amount' => 'decimal:2',

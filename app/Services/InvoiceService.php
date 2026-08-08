@@ -23,6 +23,10 @@ class InvoiceService extends BaseService
         $data['total_amount'] = $totalAmount;
         $data['grand_total'] = $totalAmount + ($data['tax_amount'] ?? 0) - ($data['discount'] ?? 0);
 
+        // Set dp_status based on dp_amount
+        $dpAmount = (float) ($data['dp_amount'] ?? 0);
+        $data['dp_status'] = $dpAmount > 0 ? 'dp_paid' : 'none';
+
         $invoice = Invoice::create($data);
 
         foreach ($items as $item) {
@@ -54,6 +58,10 @@ class InvoiceService extends BaseService
         }
         $data['total_amount'] = $totalAmount;
         $data['grand_total'] = $totalAmount + ($data['tax_amount'] ?? 0) - ($data['discount'] ?? 0);
+
+        // Update dp_status if dp_amount changed
+        $dpAmount = (float) ($data['dp_amount'] ?? $invoice->dp_amount ?? 0);
+        $data['dp_status'] = $dpAmount > 0 ? 'dp_paid' : 'none';
 
         $invoice->update($data);
 
