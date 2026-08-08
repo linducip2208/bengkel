@@ -27,18 +27,20 @@ class DashboardController extends Controller
             ->orderBy('service_date')
             ->get();
 
-        // Chart data: revenue per day (last 14 days)
         $chartData = $this->getRevenueChartData();
-
-        // Chart data: service status pie
         $statusChart = $this->getStatusChartData();
-
-        // Role-specific data
         $roleWidgets = $this->getRoleWidgets($user);
+
+        // Low stock alert — show once per session
+        $lowStockAlert = false;
+        if ($stats['low_stock_count'] > 0 && !session('low_stock_shown')) {
+            $lowStockAlert = true;
+            session(['low_stock_shown' => true]);
+        }
 
         return view('dashboard', compact(
             'stats', 'recentServices', 'upcomingServices',
-            'chartData', 'statusChart', 'roleWidgets'
+            'chartData', 'statusChart', 'roleWidgets', 'lowStockAlert'
         ));
     }
 

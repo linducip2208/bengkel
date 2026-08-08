@@ -16,6 +16,18 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
 @endpush
 
 @section('content')
+{{-- Low Stock Alert — sekali per session --}}
+@if($lowStockAlert)
+<div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-3" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+    <div>
+        <strong>Perhatian!</strong> Ada <strong>{{ $stats['low_stock_count'] }}</strong> produk dengan stok menipis.
+        <a href="{{ route('reports.stock') }}" class="alert-link">Lihat laporan stok</a>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
 {{-- Role Widgets --}}
 @if(!empty($roleWidgets))
 <div class="row mb-3">
