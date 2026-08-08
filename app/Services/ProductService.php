@@ -127,6 +127,11 @@ class ProductService
     {
         DB::transaction(function () use ($product, $quantity) {
             $stockRecord = $this->getOrCreateStockRecord($product);
+
+            if ($stockRecord->quantity < $quantity) {
+                throw new \RuntimeException("Stok \"{$product->name}\" tidak cukup: tersedia {$stockRecord->quantity}, dibutuhkan {$quantity}.");
+            }
+
             $previousStock = $stockRecord->quantity;
             $newStock = $previousStock - $quantity;
 

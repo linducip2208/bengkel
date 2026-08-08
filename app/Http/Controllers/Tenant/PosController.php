@@ -182,8 +182,8 @@ class PosController extends Controller
             $customerId = $validated['customer_id'] ?? null;
             if (!$customerId) {
                 $walkIn = \App\Models\Customer::withoutGlobalScopes()->firstOrCreate(
-                    ['phone' => '000000000'],
-                    ['name' => 'Walk-in Customer', 'phone' => '000000000', 'address' => 'POS Counter']
+                    ['name' => 'Walk-in Customer', 'phone' => null],
+                    ['address' => 'POS Counter']
                 );
                 $customerId = $walkIn->id;
             }

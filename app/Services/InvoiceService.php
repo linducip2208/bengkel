@@ -15,6 +15,9 @@ class InvoiceService extends BaseService
         $items = $data['items'] ?? [];
         unset($data['items']);
 
+        // Validate stock before any DB writes
+        $this->validateStockAvailability($items);
+
         // Calculate total from items
         $totalAmount = 0;
         foreach ($items as $item) {
@@ -51,6 +54,9 @@ class InvoiceService extends BaseService
     {
         $items = $data['items'] ?? [];
         unset($data['items']);
+
+        // Validate stock for new items before any DB writes
+        $this->validateStockAvailability($items);
 
         $totalAmount = 0;
         foreach ($items as $item) {
@@ -116,6 +122,12 @@ class InvoiceService extends BaseService
         $stockRecord = \App\Models\StockRecord::where('product_id', $productId)->first();
         if (!$stockRecord) return;
 
+        if ($stockRecord->quantity < $quantity) {
+            $product = \App\Models\Product::find($productId);
+            $name = $product?->name ?? "ID {$productId}";
+            throw new \RuntimeException("Stok tidak cukup untuk \"{$name}\": tersedia {$stockRecord->quantity}, dibutuhkan {$quantity}.");
+        }
+
         $before = $stockRecord->quantity;
         $stockRecord->decrement('quantity', $quantity);
 
@@ -162,5 +174,28 @@ class InvoiceService extends BaseService
         }
         $invoice->items()->delete();
         $invoice->delete();
+    }
+
+    protected function validateStockAvailability(array $items): void
+    {
+        $productIds = array_filter(array_column($items, 'product_id'));
+        if (empty($productIds)) return;
+
+        $stockRecords = \App\Models\StockRecord::whereIn('product_id', $productIds)
+            ->get()->keyBy('product_id');
+
+        $products = \App\Models\Product::whereIn('id', $productIds)
+            ->get()->keyBy('id');
+
+        foreach ($items as $item) {
+            if (empty($item['product_id'])) continue;
+            $pid = (int) $item['product_id'];
+            $qty = (float) ($item['quantity'] ?? 1);
+            $stock = $stockRecords[$pid] ?? null;
+            if ($stock && $stock->quantity < $qty) {
+                $name = $products[$pid]?->name ?? "ID {$pid}";
+                throw new \RuntimeException("Stok \"{$name}\" tidak cukup: tersedia {$stock->quantity}, dibutuhkan {$qty}.");
+            }
+        }
     }
 }
