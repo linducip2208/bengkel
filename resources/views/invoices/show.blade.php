@@ -125,20 +125,13 @@
                     <div class="col-4"><small class="text-muted">Tanggal</small><div>{{ $invoice->invoice_date->format('d M Y') }}</div></div>
                     <div class="col-4"><small class="text-muted">Tipe</small><div><span class="badge bg-secondary">{{ $invoice->invoice_type }}</span></div></div>
                 </div>
-                @if ($invoice->service)
+                @php $vehicle = $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
                 <div class="row mb-3">
-                    <div class="col-3"><small class="text-muted">No. Service</small><div>{{ $invoice->service->job_no }}</div></div>
-                    <div class="col-3"><small class="text-muted">Jenis Kendaraan</small><div>{{ $invoice->service->vehicle?->model_name ?? '-' }}</div></div>
-                    <div class="col-3"><small class="text-muted">No. Plat</small><div><strong>{{ $invoice->service->vehicle?->number_plate ?? '-' }}</strong></div></div>
-                    <div class="col-3"><small class="text-muted">KM</small><div>{{ number_format($invoice->service->jobcardDetail?->odometer_in ?? 0, 0, ',', '.') }}</div></div>
+                    <div class="col-3"><small class="text-muted">Jenis Kendaraan</small><div><strong>{{ $vehicle->model_name ?? '-' }}</strong></div></div>
+                    <div class="col-3"><small class="text-muted">No. Plat</small><div><strong>{{ $vehicle->number_plate ?? '-' }}</strong></div></div>
+                    <div class="col-3"><small class="text-muted">KM</small><div>{{ number_format($invoice->service?->jobcardDetail?->odometer_in ?? $vehicle->odometer ?? 0, 0, ',', '.') }}</div></div>
+                    <div class="col-3"><small class="text-muted">No. Service</small><div>{{ $invoice->service?->job_no ?? '-' }}</div></div>
                 </div>
-                @elseif ($invoice->sale)
-                <div class="row mb-3">
-                    <div class="col-4"><small class="text-muted">No. Sales</small><div>{{ $invoice->sale->sales_no ?? '-' }}</div></div>
-                    <div class="col-4"><small class="text-muted">Jenis Kendaraan</small><div>{{ $invoice->sale->vehicle?->model_name ?? '-' }}</div></div>
-                    <div class="col-4"><small class="text-muted">No. Plat</small><div><strong>{{ $invoice->sale->vehicle?->number_plate ?? '-' }}</strong></div></div>
-                </div>
-                @endif
 
                 <table class="table table-bordered mt-3">
                     <thead class="table-light">

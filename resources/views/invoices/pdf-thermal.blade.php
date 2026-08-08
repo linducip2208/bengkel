@@ -54,12 +54,10 @@
 <div class="small">{{ $invoice->customer->phone ?? '' }}</div>
 
 @php $vehicle = $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
-@if($vehicle || $invoice->service)
 <div class="dash"></div>
 <div class="bold">Kendaraan:</div>
 <div>{{ $vehicle->model_name ?? '-' }}</div>
 <div>{{ $vehicle->number_plate ?? '-' }} &nbsp;KM: {{ number_format($invoice->service?->jobcardDetail?->odometer_in ?? $vehicle->odometer ?? 0, 0, ',', '.') }}</div>
-@endif
 
 <div class="dash"></div>
 

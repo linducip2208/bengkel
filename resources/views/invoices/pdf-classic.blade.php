@@ -107,7 +107,6 @@
 </div>
 
 @php $vehicle = $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
-@if($vehicle || $invoice->service)
 <div class="info-table">
     <table style="width:100%">
         <tr>
@@ -122,7 +121,6 @@
         </tr>
     </table>
 </div>
-@endif
 
 <div class="divider"></div>
 

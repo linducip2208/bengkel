@@ -80,7 +80,6 @@
 </table>
 
 @php $vehicle = $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
-@if($vehicle || $invoice->service)
 <table class="vehicle-info" style="width:100%">
     <tr>
         <td class="section-title">Jenis Kendaraan</td>
@@ -97,7 +96,6 @@
         <td class="value">{{ $invoice->service?->job_no ?? '-' }}</td>
     </tr>
 </table>
-@endif
 
 <table class="items">
     <thead>

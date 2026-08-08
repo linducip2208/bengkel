@@ -71,11 +71,9 @@
         @if($invoice->due_date)<div class="value-sm">Jatuh Tempo: <strong>{{ \Carbon\Carbon::parse($invoice->due_date)->format('d M Y') }}</strong></div>@endif
         <div class="value-sm">Tipe: {{ ucfirst($invoice->invoice_type) }}</div>
         @php $vehicle = $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
-        @if($vehicle)
-        <div class="value-sm">{{ $vehicle->model_name ?? '' }} · {{ $vehicle->number_plate ?? '' }}
-            @if($invoice->service) · KM {{ number_format($invoice->service?->jobcardDetail?->odometer_in ?? 0, 0, ',', '.') }}@endif
+        <div class="value-sm"><strong>Kendaraan:</strong> {{ $vehicle->model_name ?? '-' }} · {{ $vehicle->number_plate ?? '-' }}
+            · KM {{ number_format($invoice->service?->jobcardDetail?->odometer_in ?? $vehicle->odometer ?? 0, 0, ',', '.') }}
         </div>
-        @endif
     </div>
 </div>
 
