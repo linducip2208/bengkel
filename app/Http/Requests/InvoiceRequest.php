@@ -17,8 +17,8 @@ class InvoiceRequest extends FormRequest
             'invoice_type' => ['required', 'in:service,sales,sales_part'],
             'invoice_date' => ['required', 'date'],
             'due_date' => ['nullable', 'date'],
-            'discount' => ['numeric', 'min:0'],
-            'tax_amount' => ['numeric', 'min:0'],
+            'discount' => ['nullable', 'numeric', 'min:0'],
+            'tax_amount' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string'],
             'items' => ['array', 'required'],
             'items.*.description' => ['required', 'string'],
@@ -26,5 +26,15 @@ class InvoiceRequest extends FormRequest
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
             'items.*.product_id' => ['nullable', 'exists:products,id'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->discount === '') {
+            $this->merge(['discount' => null]);
+        }
+        if ($this->tax_amount === '') {
+            $this->merge(['tax_amount' => null]);
+        }
     }
 }
