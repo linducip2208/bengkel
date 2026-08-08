@@ -131,7 +131,7 @@
         </div>
         <div class="col-md-3">
             <label class="form-label">Down Payment (Rp)</label>
-            <input type="number" name="dp_amount" class="form-control @error('dp_amount') is-invalid @enderror" value="{{ old('dp_amount', 0) }}" min="0" step="5000" oninput="calcGrand()">
+            <input type="number" name="dp_amount" class="form-control @error('dp_amount') is-invalid @enderror" value="{{ old('dp_amount', 0) }}" min="0" step="5000">
             @error('dp_amount') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
         <div class="col-md-3">
@@ -401,6 +401,7 @@ const allVehicleOptions = Array.from(vehicleSelect.querySelectorAll('option'));
 
 function filterVehicles() {
     const customerId = customerSelect.value;
+    vehicleSelect.value = '';
     vehicleSelect.innerHTML = '<option value="">Pilih Kendaraan</option>';
     allVehicleOptions.forEach(opt => {
         if (opt.value === '') return;

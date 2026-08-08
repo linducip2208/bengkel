@@ -281,6 +281,7 @@ const allVehicleOptions = Array.from(vehicleSelect.querySelectorAll('option'));
 
 function filterVehicles() {
     const customerId = customerSelect.value;
+    vehicleSelect.value = '';
     vehicleSelect.innerHTML = '<option value="">Pilih Kendaraan</option>';
     allVehicleOptions.forEach(opt => {
         if (opt.value === '') return;

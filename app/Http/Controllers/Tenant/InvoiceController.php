@@ -176,8 +176,11 @@ class InvoiceController extends Controller
 
         try {
             $settings = app(\App\Services\SettingsService::class)->getCompanyInfo();
-            $pdf = Pdf::loadView('invoices.pdf', compact('invoice', 'totalPaid', 'remaining', 'settings'));
-            $pdf->setPaper('a4');
+            [$view, $paperSize, $template] = $this->resolveTemplateView();
+            $pdf = Pdf::loadView($view, compact('invoice', 'totalPaid', 'remaining', 'settings'));
+            if (!is_array($paperSize)) {
+                $pdf->setPaper($paperSize);
+            }
             $pdfBinary = $pdf->output();
 
             $appName = config('app.name', 'Bengkel');
