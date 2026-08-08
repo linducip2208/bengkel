@@ -44,15 +44,23 @@ class DashboardController extends Controller
 
     protected function getRevenueChartData(): array
     {
-        $days = [];
-        $revenue = [];
-        $expenses = [];
+        $start = now()->subDays(13)->toDateString();
+        $end = now()->toDateString();
 
+        $revenueData = Income::whereBetween('income_date', [$start, $end])
+            ->selectRaw('income_date, SUM(amount) as total')
+            ->groupBy('income_date')->pluck('total', 'income_date');
+
+        $expenseData = Expense::whereBetween('expense_date', [$start, $end])
+            ->selectRaw('expense_date, SUM(amount) as total')
+            ->groupBy('expense_date')->pluck('total', 'expense_date');
+
+        $days = []; $revenue = []; $expenses = [];
         for ($i = 13; $i >= 0; $i--) {
             $date = now()->subDays($i)->toDateString();
             $days[] = now()->subDays($i)->format('d/m');
-            $revenue[] = Income::whereDate('income_date', $date)->sum('amount');
-            $expenses[] = Expense::whereDate('expense_date', $date)->sum('amount');
+            $revenue[] = $revenueData[$date] ?? 0;
+            $expenses[] = $expenseData[$date] ?? 0;
         }
 
         return ['days' => $days, 'revenue' => $revenue, 'expenses' => $expenses];

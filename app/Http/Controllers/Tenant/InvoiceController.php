@@ -78,7 +78,7 @@ class InvoiceController extends Controller
 
     public function edit(Invoice $invoice): View
     {
-        abort_if(in_array($invoice->payment_status, ['full_paid']), 403, 'Invoice yang sudah lunas tidak dapat diedit.');
+        abort_if((int) $invoice->payment_status >= 2, 403, 'Invoice yang sudah lunas tidak dapat diedit.');
 
         $invoice->load('items');
         $customers = Customer::orderBy('name')->get();
@@ -90,7 +90,7 @@ class InvoiceController extends Controller
 
     public function update(InvoiceRequest $request, Invoice $invoice): RedirectResponse
     {
-        abort_if(in_array($invoice->payment_status, ['full_paid']), 403);
+        abort_if((int) $invoice->payment_status >= 2, 403);
 
         $this->invoiceService->update($invoice, $request->validated());
 

@@ -40,6 +40,4 @@ class PaymentService extends BaseService
     {
         return PaymentRecord::whereBetween('created_at', [$start, $end])->sum('amount');
     }
-
-    public function store(Request $request) { abort(501); }
 }

@@ -90,22 +90,40 @@ class ReportService
 
     public function stockReport(array $filters): array
     {
-        $query = Product::with(['productType', 'unit']);
+        $query = Product::with(['productType', 'unit', 'stockRecord']);
 
         if (!empty($filters['category_id'])) {
             $query->where('product_type_id', $filters['category_id']);
         }
 
-        $products = $query->get()->map(function ($product) {
-            $totalIn = StockHistory::where('product_id', $product->id)->where('quantity_change', '>', 0)->sum('quantity_change');
-            $totalOut = StockHistory::where('product_id', $product->id)->where('quantity_change', '<', 0)->sum(DB::raw('ABS(quantity_change)'));
-            $lastPurchase = Purchase::whereHas('items', fn($q) => $q->where('product_id', $product->id))
-                ->latest('purchase_date')->first();
-            $lastUsage = StockHistory::where('product_id', $product->id)->where('quantity_change', '<', 0)->latest()->first();
+        $products = $query->get();
+
+        $productIds = $products->pluck('id')->toArray();
+        $stockIn = StockHistory::whereIn('product_id', $productIds)
+            ->where('quantity_change', '>', 0)
+            ->selectRaw('product_id, SUM(quantity_change) as total_in')
+            ->groupBy('product_id')->pluck('total_in', 'product_id');
+        $stockOut = StockHistory::whereIn('product_id', $productIds)
+            ->where('quantity_change', '<', 0)
+            ->selectRaw('product_id, SUM(ABS(quantity_change)) as total_out')
+            ->groupBy('product_id')->pluck('total_out', 'product_id');
+        $purchases = Purchase::whereHas('items', fn($q) => $q->whereIn('product_id', $productIds))
+            ->with(['items' => fn($q) => $q->whereIn('product_id', $productIds)])
+            ->latest('purchase_date')->get()
+            ->flatMap(fn($p) => $p->items->map(fn($i) => [$i->product_id => $p->purchase_date]))
+            ->collapse();
+        $lastUsages = StockHistory::whereIn('product_id', $productIds)
+            ->where('quantity_change', '<', 0)
+            ->selectRaw('product_id, MAX(created_at) as last_used')
+            ->groupBy('product_id')->pluck('last_used', 'product_id');
+
+        $products = $products->map(function ($product) use ($stockIn, $stockOut, $purchases, $lastUsages) {
+            $totalIn = $stockIn[$product->id] ?? 0;
+            $totalOut = $stockOut[$product->id] ?? 0;
 
             $product->current_stock = $totalIn - $totalOut;
-            $product->last_purchase_date = $lastPurchase?->purchase_date;
-            $product->last_usage_date = $lastUsage?->created_at;
+            $product->last_purchase_date = $purchases[$product->id] ?? null;
+            $product->last_usage_date = $lastUsages[$product->id] ?? null;
             $product->total_value = $product->current_stock * ($product->cost_price ?? $product->price ?? 0);
 
             return $product;
@@ -173,11 +191,7 @@ class ReportService
 
         $outstandingInvoices = Invoice::where('payment_status', '!=', 2)->count();
 
-        $lowStockCount = Product::get()->filter(function ($product) {
-            $totalIn = StockHistory::where('product_id', $product->id)->where('quantity_change', '>', 0)->sum('quantity_change');
-            $totalOut = StockHistory::where('product_id', $product->id)->where('quantity_change', '<', 0)->sum(DB::raw('ABS(quantity_change)'));
-            return ($totalIn - $totalOut) <= 5;
-        })->count();
+        $lowStockCount = \App\Models\StockRecord::where('quantity', '<=', \Illuminate\Support\Facades\DB::raw('COALESCE(minimum_stock, 5)'))->count();
 
         return [
             'open_services' => $openServices,

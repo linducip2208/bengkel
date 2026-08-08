@@ -189,16 +189,26 @@ class ServiceService extends BaseService
                 $service->vehicle->update(['odometer' => $service->jobcardDetail->odometer_out]);
             }
 
-            Invoice::create([
-                'invoice_number' => 'INV-' . date('Ym') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT),
+            $invoiceNumber = app(InvoiceService::class)->generateInvoiceNumber();
+
+            $invoice = Invoice::create([
+                'invoice_number' => $invoiceNumber,
                 'customer_id' => $service->customer_id,
                 'service_id' => $service->id,
+                'vehicle_id' => $service->vehicle_id,
                 'payment_status' => 0,
                 'total_amount' => $service->charge,
                 'grand_total' => $service->charge,
                 'invoice_date' => now(),
                 'invoice_type' => 'service',
                 'created_by' => auth()->id() ?? 1,
+            ]);
+
+            $invoice->items()->create([
+                'description' => 'Servis: ' . ($service->repairCategory?->repair_category_name ?? 'Perbaikan'),
+                'quantity' => 1,
+                'unit_price' => $service->charge,
+                'total_price' => $service->charge,
             ]);
         });
 

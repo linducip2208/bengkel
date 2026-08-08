@@ -21,6 +21,7 @@ class ServiceRequest extends FormRequest
             'assign_to' => 'nullable|array',
             'assign_to.*' => 'exists:users,id',
             'products' => 'nullable|array',
+            'products.*.product_id' => 'required_with:products|exists:products,id',
             'products.*.product_name' => 'required|string|max:255',
             'products.*.quantity' => 'required|integer|min:1',
             'products.*.price' => 'required|numeric|min:0',
