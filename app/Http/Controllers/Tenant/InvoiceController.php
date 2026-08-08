@@ -46,13 +46,14 @@ class InvoiceController extends Controller
     {
         $customers = Customer::orderBy('name')->get();
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
+        $vehicles = \App\Models\Vehicle::with('customer')->orderBy('number_plate')->get();
         $selectedService = null;
 
         if ($request->service_id) {
             $selectedService = Service::with('customer', 'vehicle')->find($request->service_id);
         }
 
-        return view('invoices.create', compact('customers', 'paymentMethods', 'selectedService'));
+        return view('invoices.create', compact('customers', 'paymentMethods', 'vehicles', 'selectedService'));
     }
 
     public function store(InvoiceRequest $request): RedirectResponse
@@ -65,7 +66,7 @@ class InvoiceController extends Controller
 
     public function show(Invoice $invoice): View
     {
-        $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod', 'paymentMethod']);
+        $invoice->load(['items', 'customer', 'vehicle', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod', 'paymentMethod']);
         $totalPaid = $invoice->paymentRecords->sum('amount');
         $remaining = max($invoice->grand_total - $totalPaid, 0);
         $settings = app(\App\Services\SettingsService::class)->getCompanyInfo();
@@ -80,8 +81,9 @@ class InvoiceController extends Controller
         $invoice->load('items');
         $customers = Customer::orderBy('name')->get();
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
+        $vehicles = \App\Models\Vehicle::with('customer')->orderBy('number_plate')->get();
 
-        return view('invoices.edit', compact('invoice', 'customers', 'paymentMethods'));
+        return view('invoices.edit', compact('invoice', 'customers', 'paymentMethods', 'vehicles'));
     }
 
     public function update(InvoiceRequest $request, Invoice $invoice): RedirectResponse
@@ -159,7 +161,7 @@ class InvoiceController extends Controller
 
     public function sendEmail(Invoice $invoice): RedirectResponse
     {
-            $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
+        $invoice->load(['items', 'customer', 'vehicle', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
 
         $email = $invoice->customer?->email;
         if (!$email) {

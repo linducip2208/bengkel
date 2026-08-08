@@ -79,7 +79,7 @@
     </tr>
 </table>
 
-@php $vehicle = $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
+@php $vehicle = $invoice->vehicle ?? $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
 <table class="vehicle-info" style="width:100%">
     <tr>
         <td class="section-title">Jenis Kendaraan</td>

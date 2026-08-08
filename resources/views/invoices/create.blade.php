@@ -59,6 +59,19 @@
             <input type="text" class="form-control" value="{{ $selectedService?->service_number }}" readonly>
             <input type="hidden" name="service_id" value="{{ old('service_id', $selectedService?->id) }}">
         </div>
+        <div class="col-md-3">
+            <label class="form-label">Kendaraan</label>
+            <select name="vehicle_id" class="form-select vehicle-select @error('vehicle_id') is-invalid @enderror">
+                <option value="">Pilih Kendaraan</option>
+                @foreach ($vehicles as $v)
+                    <option value="{{ $v->id }}" data-model="{{ $v->model_name }}" data-plate="{{ $v->number_plate }}" data-odometer="{{ $v->odometer }}" data-customer="{{ $v->customer_id }}"
+                        {{ old('vehicle_id', $selectedService?->vehicle_id) == $v->id ? 'selected' : '' }}>
+                        {{ $v->number_plate }} — {{ $v->model_name }} ({{ $v->customer?->name ?? '-' }})
+                    </option>
+                @endforeach
+            </select>
+            @error('vehicle_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
     </div>
 
     <div class="card mb-3">

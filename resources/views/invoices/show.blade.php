@@ -125,7 +125,7 @@
                     <div class="col-4"><small class="text-muted">Tanggal</small><div>{{ $invoice->invoice_date->format('d M Y') }}</div></div>
                     <div class="col-4"><small class="text-muted">Tipe</small><div><span class="badge bg-secondary">{{ $invoice->invoice_type }}</span></div></div>
                 </div>
-                @php $vehicle = $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
+                @php $vehicle = $invoice->vehicle ?? $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
                 <div class="row mb-3">
                     <div class="col-3"><small class="text-muted">Jenis Kendaraan</small><div><strong>{{ $vehicle->model_name ?? '-' }}</strong></div></div>
                     <div class="col-3"><small class="text-muted">No. Plat</small><div><strong>{{ $vehicle->number_plate ?? '-' }}</strong></div></div>

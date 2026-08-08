@@ -12,6 +12,7 @@ class InvoiceRequest extends FormRequest
             'customer_id' => ['required', 'exists:customers,id'],
             'service_id' => ['nullable', 'exists:services,id'],
             'sale_id' => ['nullable', 'exists:sales,id'],
+            'vehicle_id' => ['nullable', 'exists:vehicles,id'],
             'payment_method_id' => ['nullable', 'exists:payment_methods,id'],
             'invoice_type' => ['required', 'in:service,sales,sales_part'],
             'invoice_date' => ['required', 'date'],

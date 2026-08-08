@@ -48,6 +48,18 @@
             <input type="text" class="form-control" value="{{ $invoice->service?->service_number }}" readonly>
             <input type="hidden" name="service_id" value="{{ old('service_id', $invoice->service_id) }}">
         </div>
+        <div class="col-md-3">
+            <label class="form-label">Kendaraan</label>
+            <select name="vehicle_id" class="form-select @error('vehicle_id') is-invalid @enderror">
+                <option value="">Pilih Kendaraan</option>
+                @foreach ($vehicles as $v)
+                    <option value="{{ $v->id }}" {{ old('vehicle_id', $invoice->vehicle_id) == $v->id ? 'selected' : '' }}>
+                        {{ $v->number_plate }} — {{ $v->model_name }} ({{ $v->customer?->name ?? '-' }})
+                    </option>
+                @endforeach
+            </select>
+            @error('vehicle_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
     </div>
 
     <div class="card mb-3">

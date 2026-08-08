@@ -68,7 +68,7 @@
     <div>{{ $invoice->customer->name ?? '-' }}</div>
     <div class="small">{{ $invoice->customer->phone ?? '' }}</div>
 
-    @php $vehicle = $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
+    @php $vehicle = $invoice->vehicle ?? $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
     <div class="dash"></div>
     <div class="bold">Kendaraan:</div>
     <div>{{ $vehicle->model_name ?? '-' }}</div>

@@ -70,7 +70,7 @@
         <div class="value">Tanggal: <strong>{{ $invoice->invoice_date->format('d M Y') }}</strong></div>
         @if($invoice->due_date)<div class="value-sm">Jatuh Tempo: <strong>{{ \Carbon\Carbon::parse($invoice->due_date)->format('d M Y') }}</strong></div>@endif
         <div class="value-sm">Tipe: {{ ucfirst($invoice->invoice_type) }}</div>
-        @php $vehicle = $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
+        @php $vehicle = $invoice->vehicle ?? $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
         <div class="value-sm"><strong>Kendaraan:</strong> {{ $vehicle->model_name ?? '-' }} · {{ $vehicle->number_plate ?? '-' }}
             · KM {{ number_format($invoice->service?->jobcardDetail?->odometer_in ?? $vehicle->odometer ?? 0, 0, ',', '.') }}
         </div>

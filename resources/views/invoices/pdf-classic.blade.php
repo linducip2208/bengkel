@@ -106,7 +106,7 @@
     </table>
 </div>
 
-@php $vehicle = $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
+@php $vehicle = $invoice->vehicle ?? $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
 <div class="info-table">
     <table style="width:100%">
         <tr>
