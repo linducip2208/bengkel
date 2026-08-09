@@ -18,6 +18,8 @@ class InvoiceRequest extends FormRequest
             'invoice_date' => ['required', 'date'],
             'due_date' => ['nullable', 'date'],
             'discount' => ['nullable', 'numeric', 'min:0'],
+            'discount_type' => ['nullable', 'in:fixed,percent'],
+            'discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'tax_amount' => ['nullable', 'numeric', 'min:0'],
             'dp_amount' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string'],
@@ -36,6 +38,9 @@ class InvoiceRequest extends FormRequest
         }
         if ($this->tax_amount === '') {
             $this->merge(['tax_amount' => null]);
+        }
+        if ($this->discount_percent === '') {
+            $this->merge(['discount_percent' => null]);
         }
     }
 }

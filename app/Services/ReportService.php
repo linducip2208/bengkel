@@ -149,6 +149,14 @@ class ReportService
         $totalExpense = Expense::whereBetween('expense_date', [$startDate, $endDate])->sum('amount');
         $profit = $totalIncome - $totalExpense;
 
+        // Paid invoices
+        $paidInvoices = Invoice::where('payment_status', 2)
+            ->whereBetween('invoice_date', [$startDate, $endDate])
+            ->sum('grand_total');
+        $paidCount = Invoice::where('payment_status', 2)
+            ->whereBetween('invoice_date', [$startDate, $endDate])
+            ->count();
+
         $monthlyBreakdown = collect([]);
 
         $months = \Carbon\CarbonPeriod::create($startDate, '1 month', $endDate);
@@ -158,12 +166,15 @@ class ReportService
 
             $income = Income::whereBetween('income_date', [$monthStart, $monthEnd])->sum('amount');
             $expense = Expense::whereBetween('expense_date', [$monthStart, $monthEnd])->sum('amount');
+            $paidInv = Invoice::where('payment_status', 2)
+                ->whereBetween('invoice_date', [$monthStart, $monthEnd])->sum('grand_total');
 
             $monthlyBreakdown->push([
                 'month' => $month->format('M Y'),
                 'income' => $income,
                 'expense' => $expense,
                 'profit' => $income - $expense,
+                'paid_invoices' => $paidInv,
             ]);
         }
 
@@ -171,6 +182,8 @@ class ReportService
             'total_income' => $totalIncome,
             'total_expense' => $totalExpense,
             'profit' => $profit,
+            'paid_invoices' => $paidInvoices,
+            'paid_count' => $paidCount,
             'monthly_breakdown' => $monthlyBreakdown,
         ];
     }

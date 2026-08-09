@@ -109,8 +109,15 @@
 
     <div class="row g-3 mb-3">
         <div class="col-md-4">
-            <label class="form-label">Diskon (Rp)</label>
-            <input type="number" name="discount" class="form-control @error('discount') is-invalid @enderror" value="{{ old('discount', $invoice->discount) }}" min="0" step="1000" oninput="calcGrand()">
+            <label class="form-label">Diskon</label>
+            <div class="input-group">
+                <input type="number" name="discount" id="discountNominal" class="form-control @error('discount') is-invalid @enderror" value="{{ old('discount', $invoice->discount) }}" min="0" step="1000" oninput="calcGrand()" placeholder="Nominal">
+                <input type="number" name="discount_percent" id="discountPercent" class="form-control @error('discount_percent') is-invalid @enderror {{ ($invoice->discount_type ?? 'fixed') === 'fixed' ? 'd-none' : '' }}" value="{{ old('discount_percent', $invoice->discount_percent) }}" min="0" max="100" step="0.5" oninput="calcGrandPercent()" placeholder="Persen">
+                <select class="form-select" id="discountType" name="discount_type" style="max-width:90px;" onchange="toggleDiscountType()">
+                    <option value="fixed" {{ old('discount_type', $invoice->discount_type ?? 'fixed') === 'fixed' ? 'selected' : '' }}>Rp</option>
+                    <option value="percent" {{ old('discount_type', $invoice->discount_type) === 'percent' ? 'selected' : '' }}>%</option>
+                </select>
+            </div>
             @error('discount') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
         <div class="col-md-4">
@@ -254,7 +261,32 @@ function calcGrand() {
     document.getElementById('grandTotal').value = 'Rp ' + Math.max(subtotal - discount + tax, 0).toLocaleString('id-ID');
 }
 
-document.addEventListener('DOMContentLoaded', calcGrand);
+function calcGrandPercent() {
+    let subtotal = 0;
+    document.querySelectorAll('#itemsTable tbody tr').forEach(row => {
+        subtotal += (parseFloat(row.querySelector('.qty').value) || 0) * (parseFloat(row.querySelector('.price').value) || 0);
+    });
+    const pct = parseFloat(document.getElementById('discountPercent').value) || 0;
+    const tax = parseFloat(document.querySelector('[name="tax_amount"]').value) || 0;
+    const discount = Math.round(subtotal * pct / 100);
+    document.querySelector('[name="discount"]').value = discount;
+    document.getElementById('grandTotal').value = 'Rp ' + Math.max(subtotal - discount + tax, 0).toLocaleString('id-ID');
+}
+
+function toggleDiscountType() {
+    const type = document.getElementById('discountType').value;
+    document.getElementById('discountNominal').classList.toggle('d-none', type === 'percent');
+    document.getElementById('discountPercent').classList.toggle('d-none', type === 'fixed');
+    if (type === 'percent') calcGrandPercent(); else calcGrand();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    calcGrand();
+    if (document.getElementById('discountType').value === 'percent') {
+        document.getElementById('discountNominal').classList.add('d-none');
+        document.getElementById('discountPercent').classList.remove('d-none');
+    }
+});
 
 function openProductPicker(btn) { activeRow = btn.closest('tr'); document.getElementById('productSearchInput').value = ''; searchProducts(''); new bootstrap.Modal(document.getElementById('productPickerModal')).show(); }
 

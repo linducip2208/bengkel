@@ -87,7 +87,7 @@
 
     <table>
         <tr><td>Subtotal</td><td class="right">@money($invoice->subtotal)</td></tr>
-        @if($invoice->discount > 0)<tr><td>Diskon</td><td class="right">- @money($invoice->discount)</td></tr>@endif
+        @if($invoice->discount > 0)<tr><td>Diskon{{ $invoice->discount_type === 'percent' ? ' ' . $invoice->discount_percent . '%' : '' }}</td><td class="right">- @money($invoice->discount)</td></tr>@endif
         @if($invoice->tax_amount > 0)<tr><td>Pajak</td><td class="right">@money($invoice->tax_amount)</td></tr>@endif
     </table>
 

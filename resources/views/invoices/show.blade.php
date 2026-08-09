@@ -168,7 +168,7 @@
                             <td class="text-end">@money($invoice->subtotal)</td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="text-end">Diskon</td>
+                            <td colspan="4" class="text-end">Diskon{{ $invoice->discount_type === 'percent' ? ' ' . $invoice->discount_percent . '%' : '' }}</td>
                             <td class="text-end text-danger">- @money($invoice->discount)</td>
                         </tr>
                         <tr>

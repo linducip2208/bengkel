@@ -27,7 +27,7 @@ Financial Report - {{ config('app.name') }}
 </div>
 
 <div class="row mb-4">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card border-success">
             <div class="card-body text-center">
                 <h4 class="text-success">@money($report['total_income'] ?? 0)</h4>
@@ -35,7 +35,7 @@ Financial Report - {{ config('app.name') }}
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card border-danger">
             <div class="card-body text-center">
                 <h4 class="text-danger">@money($report['total_expense'] ?? 0)</h4>
@@ -43,11 +43,19 @@ Financial Report - {{ config('app.name') }}
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card border-{{ ($report['profit'] ?? 0) >= 0 ? 'success' : 'danger' }}">
+    <div class="col-md-3">
+        <div class="card border-{{ ($report['profit'] ?? 0) >= 0 ? 'primary' : 'danger' }}">
             <div class="card-body text-center">
-                <h4 class="text-{{ ($report['profit'] ?? 0) >= 0 ? 'success' : 'danger' }}">@money($report['profit'] ?? 0)</h4>
+                <h4 class="text-{{ ($report['profit'] ?? 0) >= 0 ? 'primary' : 'danger' }}">@money($report['profit'] ?? 0)</h4>
                 <p class="text-muted">{{ ($report['profit'] ?? 0) >= 0 ? 'Profit' : 'Loss' }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-info">
+            <div class="card-body text-center">
+                <h4 class="text-info">@money($report['paid_invoices'] ?? 0)</h4>
+                <p class="text-muted">Paid Invoices ({{ $report['paid_count'] ?? 0 }})</p>
             </div>
         </div>
     </div>
@@ -69,7 +77,7 @@ Financial Report - {{ config('app.name') }}
     <div class="card-body p-0">
         <table class="table table-striped mb-0">
             <thead>
-                <tr><th>Month</th><th>Income</th><th>Expense</th><th>Profit/Loss</th></tr>
+                <tr><th>Month</th><th>Income</th><th>Expense</th><th>Paid Invoices</th><th>Profit/Loss</th></tr>
             </thead>
             <tbody>
                 @forelse($report['monthly_breakdown'] ?? [] as $month)
@@ -77,6 +85,7 @@ Financial Report - {{ config('app.name') }}
                     <td>{{ $month['month'] }}</td>
                     <td>@money($month['income'])</td>
                     <td>@money($month['expense'])</td>
+                    <td>@money($month['paid_invoices'] ?? 0)</td>
                     <td class="{{ $month['profit'] >= 0 ? 'text-success' : 'text-danger' }}">
                         @money($month['profit'])
                     </td>

@@ -102,7 +102,7 @@
 
 <div class="totals">
     <div class="row"><span style="color:#888;">Subtotal</span><span>@money($invoice->subtotal)</span></div>
-    @if($invoice->discount > 0)<div class="row"><span style="color:#888;">Diskon</span><span>- @money($invoice->discount)</span></div>@endif
+    @if($invoice->discount > 0)<div class="row"><span style="color:#888;">Diskon{{ $invoice->discount_type === 'percent' ? ' ' . $invoice->discount_percent . '%' : '' }}</span><span>- @money($invoice->discount)</span></div>@endif
     @if($invoice->tax_amount > 0)<div class="row"><span style="color:#888;">Pajak</span><span>@money($invoice->tax_amount)</span></div>@endif
     <div class="row total"><span>Total</span><span>@money($invoice->grand_total)</span></div>
     @if($totalPaid > 0)<div class="row paid"><span>Dibayar</span><span>- @money($totalPaid)</span></div>@endif

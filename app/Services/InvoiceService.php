@@ -23,6 +23,12 @@ class InvoiceService extends BaseService
         foreach ($items as $item) {
             $totalAmount += ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0);
         }
+        // Calculate discount from percent if needed
+        $data['discount_type'] = $data['discount_type'] ?? 'fixed';
+        if ($data['discount_type'] === 'percent' && !empty($data['discount_percent'])) {
+            $data['discount'] = round($totalAmount * ((float) $data['discount_percent'] / 100), 2);
+        }
+
         $data['total_amount'] = $totalAmount;
         $data['grand_total'] = $totalAmount + ($data['tax_amount'] ?? 0) - ($data['discount'] ?? 0);
 
@@ -62,6 +68,12 @@ class InvoiceService extends BaseService
         foreach ($items as $item) {
             $totalAmount += ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0);
         }
+        // Calculate discount from percent if needed
+        $data['discount_type'] = $data['discount_type'] ?? ($invoice->discount_type ?? 'fixed');
+        if ($data['discount_type'] === 'percent' && !empty($data['discount_percent'])) {
+            $data['discount'] = round($totalAmount * ((float) $data['discount_percent'] / 100), 2);
+        }
+
         $data['total_amount'] = $totalAmount;
         $data['grand_total'] = $totalAmount + ($data['tax_amount'] ?? 0) - ($data['discount'] ?? 0);
 

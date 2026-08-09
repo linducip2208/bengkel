@@ -128,7 +128,7 @@
     <div class="totals">
         <table>
             <tr><td width="65%" class="text-end">Subtotal</td><td width="35%" class="text-end">@money($invoice->subtotal)</td></tr>
-            @if($invoice->discount > 0)<tr><td class="text-end">Diskon</td><td class="text-end">- @money($invoice->discount)</td></tr>@endif
+            @if($invoice->discount > 0)<tr><td class="text-end">Diskon{{ $invoice->discount_type === 'percent' ? ' ' . $invoice->discount_percent . '%' : '' }}</td><td class="text-end">- @money($invoice->discount)</td></tr>@endif
             @if($invoice->tax_amount > 0)<tr><td class="text-end">Pajak</td><td class="text-end">@money($invoice->tax_amount)</td></tr>@endif
             <tr class="total-row"><td class="text-end">Grand Total</td><td class="text-end">@money($invoice->grand_total)</td></tr>
             @if($totalPaid > 0)<tr><td class="text-end">Total Dibayar</td><td class="text-end">@money($totalPaid)</td></tr>@endif
