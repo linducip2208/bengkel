@@ -94,8 +94,8 @@ class InvoiceController extends Controller
 
         $this->invoiceService->update($invoice, $request->validated());
 
-        return redirect()->route('invoices.edit', $invoice)
-            ->with('success', 'Invoice berhasil diperbarui.');
+        return redirect()->route('invoices.index')
+            ->with('success', 'Invoice ' . $invoice->invoice_number . ' berhasil diperbarui.');
     }
 
     public function destroy(Invoice $invoice): RedirectResponse

@@ -4,6 +4,17 @@
 @section('content')
 <h4 class="mb-3">Edit Invoice: {{ $invoice->invoice_number }}</h4>
 
+@if($errors->any())
+<div class="alert alert-danger">
+    <strong>Gagal menyimpan:</strong>
+    <ul class="mb-0 mt-1">
+        @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+</div>
+@endif
+
 <form method="POST" action="{{ route('invoices.update', $invoice) }}" id="invoiceForm">
     @csrf
     @method('PUT')
