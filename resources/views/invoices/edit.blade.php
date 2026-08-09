@@ -107,8 +107,8 @@
                                 <button type="button" class="btn btn-sm btn-outline-secondary pick-product" onclick="openProductPicker(this)"><i class="bi bi-search"></i></button>
                             </div>
                         </td>
-                        <td><input type="number" name="items[{{ $i }}][quantity]" class="form-control qty" value="{{ is_array($item) ? ($item['quantity'] ?? 1) : $item->quantity }}" min="1" oninput="calcRow(this)" required></td>
-                        <td><input type="number" name="items[{{ $i }}][unit_price]" class="form-control price" value="{{ is_array($item) ? ($item['unit_price'] ?? 0) : $item->unit_price }}" min="0" step="100" oninput="calcRow(this)" required></td>
+                        <td><input type="number" name="items[{{ $i }}][quantity]" class="form-control qty" value="{{ is_array($item) ? ($item['quantity'] ?? 1) : floatval($item->quantity) }}" min="0.01" step="0.01" oninput="calcRow(this)" required></td>
+                        <td><input type="number" name="items[{{ $i }}][unit_price]" class="form-control price" value="{{ is_array($item) ? ($item['unit_price'] ?? 0) : floatval($item->unit_price) }}" min="0" step="100" oninput="calcRow(this)" required></td>
                         <td><input type="text" class="form-control row-total" readonly value="{{ number_format((is_array($item) ? (($item['quantity']??1) * ($item['unit_price']??0)) : (($item->quantity ?? 1) * ($item->unit_price ?? 0))), 0, ',', '.') }}"></td>
                         <td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
                     </tr>
@@ -217,7 +217,7 @@ let activeRow = null;
 function addPart() {
     const tbody = document.querySelector('#itemsTable tbody');
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td><div class="d-flex gap-2"><input type="text" name="items[${itemIndex}][description]" class="form-control item-desc" required placeholder="Nama sparepart..."><input type="hidden" name="items[${itemIndex}][product_id]" class="product-id-input" value=""><button type="button" class="btn btn-sm btn-outline-secondary pick-product" onclick="openProductPicker(this)"><i class="bi bi-search"></i></button></div></td><td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="1" oninput="calcRow(this)" required></td><td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="0" min="0" step="100" oninput="calcRow(this)" required></td><td><input type="text" class="form-control row-total" readonly value="0"></td><td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>`;
+    tr.innerHTML = `<td><div class="d-flex gap-2"><input type="text" name="items[${itemIndex}][description]" class="form-control item-desc" required placeholder="Nama sparepart..."><input type="hidden" name="items[${itemIndex}][product_id]" class="product-id-input" value=""><button type="button" class="btn btn-sm btn-outline-secondary pick-product" onclick="openProductPicker(this)"><i class="bi bi-search"></i></button></div></td><td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="0.01" step="0.01" oninput="calcRow(this)" required></td><td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="0" min="0" step="100" oninput="calcRow(this)" required></td><td><input type="text" class="form-control row-total" readonly value="0"></td><td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>`;
     tbody.appendChild(tr);
     itemIndex++;
 }
@@ -227,7 +227,7 @@ function openServicePicker() { new bootstrap.Modal(document.getElementById('serv
 function selectService(name, price) {
     const tbody = document.querySelector('#itemsTable tbody');
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td><input type="text" name="items[${itemIndex}][description]" class="form-control" value="${name}" required></td><td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="1" oninput="calcRow(this)" required></td><td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="${price}" min="0" step="100" oninput="calcRow(this)" required></td><td><input type="text" class="form-control row-total" readonly value="${Number(price).toLocaleString('id-ID')}"></td><td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>`;
+    tr.innerHTML = `<td><input type="text" name="items[${itemIndex}][description]" class="form-control" value="${name}" required></td><td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="0.01" step="0.01" oninput="calcRow(this)" required></td><td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="${price}" min="0" step="100" oninput="calcRow(this)" required></td><td><input type="text" class="form-control row-total" readonly value="${Number(price).toLocaleString('id-ID')}"></td><td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>`;
     tbody.appendChild(tr);
     itemIndex++;
     calcGrand();
@@ -239,7 +239,7 @@ function addItem() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
         <td><input type="text" name="items[${itemIndex}][description]" class="form-control" required></td>
-        <td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="1" oninput="calcRow(this)" required></td>
+         <td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="0.01" step="0.01" oninput="calcRow(this)" required></td>
         <td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="0" min="0" step="100" oninput="calcRow(this)" required></td>
         <td><input type="text" class="form-control row-total" readonly value="0"></td>
         <td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>

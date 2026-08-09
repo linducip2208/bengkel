@@ -104,7 +104,7 @@
                 <button type="button" class="btn btn-sm btn-outline-secondary pick-product" title="Cari dari Inventory" onclick="openProductPicker(this)"><i class="bi bi-search"></i></button>
             </div>
         </td>
-                        <td><input type="number" name="items[{{ $i }}][quantity]" class="form-control qty" value="{{ $item['quantity'] ?? 1 }}" min="1" oninput="calcRow(this)" required></td>
+                        <td><input type="number" name="items[{{ $i }}][quantity]" class="form-control qty" value="{{ $item['quantity'] ?? 1 }}" min="0.01" step="0.01" oninput="calcRow(this)" required></td>
                         <td><input type="number" name="items[{{ $i }}][unit_price]" class="form-control price" value="{{ $item['unit_price'] ?? 0 }}" min="0" step="100" oninput="calcRow(this)" required></td>
                         <td><input type="text" class="form-control row-total" readonly value="{{ number_format(($item['unit_price'] ?? 0) * ($item['quantity'] ?? 1), 0, ',', '.') }}"></td>
                         <td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
@@ -248,7 +248,7 @@ function addPart() {
                 <button type="button" class="btn btn-sm btn-outline-secondary pick-product" title="Cari dari Inventory" onclick="openProductPicker(this)"><i class="bi bi-search"></i></button>
             </div>
         </td>
-        <td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="1" oninput="calcRow(this)" required></td>
+        <td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="0.01" step="0.01" oninput="calcRow(this)" required></td>
         <td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="0" min="0" step="100" oninput="calcRow(this)" required></td>
         <td><input type="text" class="form-control row-total" readonly value="0"></td>
         <td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
@@ -281,7 +281,7 @@ function selectService(name, price) {
                 <button type="button" class="btn btn-sm btn-outline-secondary pick-product opacity-0" style="pointer-events:none;"><i class="bi bi-search"></i></button>
             </div>
         </td>
-        <td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="1" oninput="calcRow(this)" required></td>
+        <td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="0.01" step="0.01" oninput="calcRow(this)" required></td>
         <td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="${price}" min="0" step="5000" oninput="calcRow(this)" required></td>
         <td><input type="text" class="form-control row-total" readonly value="${Number(price).toLocaleString('id-ID')}"></td>
         <td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
@@ -308,7 +308,7 @@ function addJasa() {
                 <button type="button" class="btn btn-sm btn-outline-secondary pick-product" onclick="openServicePickerForRow(this)"><i class="bi bi-search"></i></button>
             </div>
         </td>
-        <td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="1" oninput="calcRow(this)" required></td>
+        <td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="0.01" step="0.01" oninput="calcRow(this)" required></td>
         <td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="0" min="0" step="5000" oninput="calcRow(this)" required placeholder="Harga jasa..."></td>
         <td><input type="text" class="form-control row-total" readonly value="0"></td>
         <td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>

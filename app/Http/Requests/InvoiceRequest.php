@@ -25,7 +25,7 @@ class InvoiceRequest extends FormRequest
             'notes' => ['nullable', 'string'],
             'items' => ['array', 'required'],
             'items.*.description' => ['required', 'string'],
-            'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'items.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
             'items.*.product_id' => ['nullable', 'exists:products,id'],
         ];
