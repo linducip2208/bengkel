@@ -7,7 +7,7 @@
 </div>
 <div class="card">
     <div class="card-body">
-        <form method="GET" class="row g-2 mb-3">
+        <form method="GET" class="row g-2 mb-3 no-print">
             <div class="col-md-3"><input type="date" name="date_from" value="{{ $from }}" class="form-control"></div>
             <div class="col-md-3"><input type="date" name="date_to" value="{{ $to }}" class="form-control"></div>
             <div class="col-md-2"><button class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i>Filter</button></div>

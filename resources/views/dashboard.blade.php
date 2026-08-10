@@ -151,7 +151,7 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
 </div>
 
 {{-- Quick Actions --}}
-<div class="row mb-4">
+<div class="row mb-4 no-print">
     <div class="col-12">
         <div class="d-flex gap-2">
             <a href="{{ route('services.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> New Service</a>

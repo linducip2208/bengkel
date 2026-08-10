@@ -7,7 +7,7 @@ Sales Report - {{ config('app.name') }}
 @section('content')
 <h4 class="mb-3">Sales Report</h4>
 
-<div class="card mb-3">
+<div class="card mb-3 no-print">
     <div class="card-body">
         <form method="GET" class="row g-3">
             <div class="col-md-3">
@@ -45,7 +45,7 @@ Sales Report - {{ config('app.name') }}
     </div>
 </div>
 
-<div class="d-flex justify-content-end mb-3 gap-2">
+<div class="d-flex justify-content-end mb-3 gap-2 no-print">
     <a href="{{ route('reports.export-pdf', ['type' => 'sales'] + request()->all()) }}" class="btn btn-danger btn-sm"><i class="bi bi-file-pdf"></i> Export PDF</a>
     <a href="{{ route('reports.export-excel', ['type' => 'sales'] + request()->all()) }}" class="btn btn-success btn-sm"><i class="bi bi-file-excel"></i> Export Excel</a>
 </div>

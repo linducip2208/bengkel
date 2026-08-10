@@ -14,7 +14,7 @@
             <span class="badge bg-info">{{ ucfirst($customer->membership_tier) }}</span>
         </div></div>
     </div>
-    <div class="col-md-8">
+    <div class="col-md-8 no-print">
         <div class="card"><div class="card-body">
             <h6>Adjust Poin Manual</h6>
             <form action="{{ route('loyalty.adjust', $customer) }}" method="POST" class="row g-2">
@@ -51,6 +51,6 @@
             @empty<tr><td colspan="5" class="text-center text-muted py-3">Belum ada transaksi poin.</td></tr>@endforelse
         </tbody>
     </table>
-    {{ $transactions->links() }}
+    <div class="no-print">{{ $transactions->links() }}</div>
 </div></div>
 @endsection

@@ -359,8 +359,49 @@
         .table .d-flex.gap-1 { gap: 0.35rem !important; }
 
         @media print {
-            .sidebar, .topbar, .sidebar-overlay, .btn, form, footer, nav, .no-print { display: none !important; }
-            .main-content { margin: 0 !important; padding: 0 !important; }
+            .sidebar, .topbar, .sidebar-overlay, .btn, footer, nav, .no-print,
+            .nav-tabs, .nav-pills, .alert, canvas, .dropdown-menu, .chart-container,
+            .pagination, .input-group, .d-print-none { display: none !important; }
+
+            .d-print-block { display: block !important; }
+
+            body { background: #fff !important; font-size: 13px !important; }
+            @page { margin: 10mm; size: A4 portrait; }
+
+            .main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+
+            .row { display: block !important; margin-left: 0 !important; margin-right: 0 !important; }
+            .col,.col-auto,.col-sm,.col-sm-auto,.col-md,.col-md-auto,.col-lg,.col-lg-auto,
+            [class^="col-"], [class*=" col-"] {
+                width: 100% !important; max-width: 100% !important; flex: 0 0 100% !important;
+                padding-left: 0 !important; padding-right: 0 !important;
+            }
+
+            .card { box-shadow: none !important; border: 1px solid #ccc !important; margin-bottom: 6px !important; }
+            .card-body { padding: 8px 12px !important; }
+            .card-header { padding: 6px 12px !important; }
+
+            .table { font-size: 12px !important; margin-bottom: 4px !important; }
+            .table td, .table th { padding: 4px 8px !important; }
+            .table-light { background: #f5f5f5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .table-responsive { overflow-x: visible !important; }
+            thead { display: table-header-group !important; }
+            tr { page-break-inside: avoid; }
+
+            h1 { font-size: 20px !important; } h2 { font-size: 18px !important; }
+            h3 { font-size: 16px !important; } h4 { font-size: 15px !important; }
+            h5 { font-size: 14px !important; } h6 { font-size: 13px !important; }
+            small, .text-muted { font-size: 10px !important; }
+
+            .tab-content > .tab-pane { display: block !important; opacity: 1 !important; visibility: visible !important; }
+
+            .text-success, .text-danger, .text-warning, .text-primary, .text-info, .text-secondary { color: #000 !important; }
+            .badge { border: 1px solid #666 !important; color: #000 !important; background: none !important; }
+
+            .mb-1, .mb-2, .mb-3, .mb-4, .mb-5 { margin-bottom: 4px !important; }
+            .mt-1, .mt-2, .mt-3, .mt-4, .mt-5 { margin-top: 4px !important; }
+            .my-1, .my-2, .my-3, .my-4, .my-5 { margin-top: 4px !important; margin-bottom: 4px !important; }
+            .g-1, .g-2, .g-3, .g-4, .g-5 { gap: 0 !important; --bs-gutter-x: 0 !important; --bs-gutter-y: 0 !important; }
         }
     </style>
     @stack('styles')

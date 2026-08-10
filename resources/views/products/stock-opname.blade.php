@@ -79,9 +79,11 @@
 </form>
 @endsection
 
-@push('head')
+@push('styles')
 <style>
     @media print {
+        form { display: block !important; }
+
         body { background: #fff !important; }
         .sidebar, .topbar, .no-print { display: none !important; }
         .main-content { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }

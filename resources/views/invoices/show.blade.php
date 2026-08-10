@@ -255,4 +255,41 @@
         </div>
     </div>
 </div>
+@push('styles')
+<style>
+    @media print {
+        body { font-size: 12px !important; }
+        h4 { font-size: 14px !important; margin-bottom: 4px !important; }
+        h2 { font-size: 16px !important; margin: 0 !important; }
+        h3 { font-size: 14px !important; margin: 0 !important; }
+        small, .text-muted { font-size: 9px !important; }
+        .badge { font-size: 9px !important; padding: 1px 5px !important; }
+        .badge.fs-6 { font-size: 10px !important; }
+
+        .row { display: block !important; margin: 0 !important; }
+        .col-md-4 { display: none !important; }
+        .col-md-8 { width: 100% !important; max-width: 100% !important; flex: 0 0 100% !important; padding: 0 !important; }
+        .col-3, .col-4, .col-6, .col-8 { padding-left: 4px !important; padding-right: 4px !important; }
+
+        .card-body { padding: 6px 10px !important; }
+        .card.mb-4 { margin-bottom: 8px !important; }
+        .card-header { padding: 4px 10px !important; font-size: 12px !important; }
+        .card-header strong { font-size: 12px !important; }
+
+        .table td, .table th { padding: 2px 6px !important; font-size: 10px !important; }
+        .table-bordered td, .table-bordered th { border-color: #555 !important; }
+        .table-light { background: #f5f5f5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+        .d-print-block { display: block !important; }
+        .d-print-none { display: none !important; }
+
+        .mb-3 { margin-bottom: 4px !important; }
+        .mb-4 { margin-bottom: 6px !important; }
+        .mt-3 { margin-top: 4px !important; }
+        .mt-2 { margin-top: 2px !important; }
+
+        .status-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; border: 1px solid #000; }
+    }
+</style>
+@endpush
 @endsection
