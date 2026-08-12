@@ -151,17 +151,17 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
 {{-- Stats Cards — clickable drill-down --}}
 <div class="row mb-4">
     <div class="col-md-2 mb-3">
-        <a href="{{ route('services.index', ['status' => 'open']) }}" class="text-decoration-none">
+        <a href="{{ route('services.index', ['status' => 'active']) }}" class="text-decoration-none">
         <div class="card border-primary h-100" style="transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
             <div class="card-body text-center">
                 <h5 class="card-title text-primary">{{ $stats['open_services'] }}</h5>
-                <p class="card-text small">Open Services</p>
+                <p class="card-text small">Active Services</p>
             </div>
         </div>
         </a>
     </div>
     <div class="col-md-2 mb-3">
-        <a href="{{ route('services.index', ['status' => 'completed']) }}" class="text-decoration-none">
+        <a href="{{ route('services.index', ['status' => '12']) }}" class="text-decoration-none">
         <div class="card border-success h-100" style="transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
             <div class="card-body text-center">
                 <h5 class="card-title text-success">{{ $stats['completed_today'] }}</h5>
@@ -339,10 +339,18 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(ctx2, {
         type: 'doughnut',
         data: {
-            labels: ['Pending', 'In Progress', 'Done Today'],
+            labels: ['Booked','Checked In','Inspection','Waiting Appr','Approved','In Progress','Waiting Parts','QC','Ready','Invoiced','Paid','Released','Completed'],
             datasets: [{
-                data: [{{ $statusChart['pending'] }}, {{ $statusChart['in_progress'] }}, {{ $statusChart['done'] }}],
-                backgroundColor: ['#94a3b8', '#f59e0b', '#10b981'],
+                data: [
+                    {{ $statusChart['booked'] }}, {{ $statusChart['checked_in'] }},
+                    {{ $statusChart['inspection'] }}, {{ $statusChart['waiting_approval'] }},
+                    {{ $statusChart['approved'] }}, {{ $statusChart['in_progress'] }},
+                    {{ $statusChart['waiting_parts'] }}, {{ $statusChart['qc'] }},
+                    {{ $statusChart['ready'] }}, {{ $statusChart['invoiced'] }},
+                    {{ $statusChart['paid'] }}, {{ $statusChart['released'] }},
+                    {{ $statusChart['completed'] }}
+                ],
+                backgroundColor: ['#94a3b8','#0ea5e9','#6366f1','#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#14b8a6','#a855f7','#22c55e','#1e293b','#059669'],
                 borderWidth: 2,
                 borderColor: '#fff',
             }]

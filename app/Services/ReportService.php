@@ -195,8 +195,8 @@ class ReportService
         $monthStart = now()->startOfMonth()->toDateString();
         $monthEnd = now()->endOfMonth()->toDateString();
 
-        $openServices = Service::where('done_status', '!=', 2)->count();
-        $completedToday = Service::where('done_status', 2)
+        $openServices = Service::where('workflow_status', '<', 12)->count();
+        $completedToday = Service::where('workflow_status', 12)
             ->whereDate('updated_at', $today)->count();
 
         $revenueToday = Income::whereDate('income_date', $today)->sum('amount');

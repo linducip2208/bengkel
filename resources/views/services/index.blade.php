@@ -43,9 +43,20 @@
             <div class="col-md-2">
                 <select name="status" class="form-select form-select-sm">
                     <option value="all">Semua Status</option>
-                    <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Pending</option>
-                    <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>In Progress</option>
-                    <option value="2" {{ request('status') === '2' ? 'selected' : '' }}>Done</option>
+                    <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active (Belum Selesai)</option>
+                    <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>0 — Booked</option>
+                    <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>1 — Checked In</option>
+                    <option value="2" {{ request('status') === '2' ? 'selected' : '' }}>2 — Inspection</option>
+                    <option value="3" {{ request('status') === '3' ? 'selected' : '' }}>3 — Waiting Approval</option>
+                    <option value="4" {{ request('status') === '4' ? 'selected' : '' }}>4 — Approved</option>
+                    <option value="5" {{ request('status') === '5' ? 'selected' : '' }}>5 — In Progress</option>
+                    <option value="6" {{ request('status') === '6' ? 'selected' : '' }}>6 — Waiting Parts</option>
+                    <option value="7" {{ request('status') === '7' ? 'selected' : '' }}>7 — QC</option>
+                    <option value="8" {{ request('status') === '8' ? 'selected' : '' }}>8 — Ready</option>
+                    <option value="9" {{ request('status') === '9' ? 'selected' : '' }}>9 — Invoiced</option>
+                    <option value="10" {{ request('status') === '10' ? 'selected' : '' }}>10 — Paid</option>
+                    <option value="11" {{ request('status') === '11' ? 'selected' : '' }}>11 — Released</option>
+                    <option value="12" {{ request('status') === '12' ? 'selected' : '' }}>12 — Completed</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -103,12 +114,8 @@
                             </small>
                         </td>
                         <td>
-                            @php
-                                $statusLabels = [0 => 'Pending', 1 => 'In Progress', 2 => 'Done'];
-                                $statusColors = [0 => 'secondary', 1 => 'warning', 2 => 'success'];
-                            @endphp
-                            <span class="badge bg-{{ $statusColors[$service->done_status] }} bg-opacity-10 text-{{ $statusColors[$service->done_status] }} rounded-pill px-3">
-                                {{ $statusLabels[$service->done_status] }}
+                            <span class="badge bg-{{ $service->status_color }} bg-opacity-10 text-{{ $service->status_color }} rounded-pill px-3">
+                                {{ $service->status_label }}
                             </span>
                         </td>
                         <td>

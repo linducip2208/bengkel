@@ -71,9 +71,19 @@ class DashboardController extends Controller
     protected function getStatusChartData(): array
     {
         return [
-            'pending' => Service::where('done_status', 0)->count(),
-            'in_progress' => Service::where('done_status', 1)->count(),
-            'done' => Service::where('done_status', 2)->whereDate('updated_at', today())->count(),
+            'booked' => Service::where('workflow_status', 0)->count(),
+            'checked_in' => Service::where('workflow_status', 1)->count(),
+            'inspection' => Service::where('workflow_status', 2)->count(),
+            'waiting_approval' => Service::where('workflow_status', 3)->count(),
+            'approved' => Service::where('workflow_status', 4)->count(),
+            'in_progress' => Service::where('workflow_status', 5)->count(),
+            'waiting_parts' => Service::where('workflow_status', 6)->count(),
+            'qc' => Service::where('workflow_status', 7)->count(),
+            'ready' => Service::where('workflow_status', 8)->count(),
+            'invoiced' => Service::where('workflow_status', 9)->count(),
+            'paid' => Service::where('workflow_status', 10)->count(),
+            'released' => Service::where('workflow_status', 11)->count(),
+            'completed' => Service::where('workflow_status', 12)->count(),
         ];
     }
 

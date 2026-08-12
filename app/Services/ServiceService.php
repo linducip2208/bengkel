@@ -19,7 +19,11 @@ class ServiceService extends BaseService
     {
         $services = Service::with(['customer', 'vehicle', 'repairCategory', 'technicians'])
             ->when($request->filled('status') && $request->status !== 'all', function ($q) use ($request) {
-                $q->where('done_status', $request->status);
+                if ($request->status === 'active') {
+                    $q->where('workflow_status', '<', 12);
+                } else {
+                    $q->where('workflow_status', $request->status);
+                }
             })
             ->when($request->filled('date_from'), function ($q) use ($request) {
                 $q->whereDate('service_date', '>=', $request->date_from);

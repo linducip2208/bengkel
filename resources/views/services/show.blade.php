@@ -7,19 +7,22 @@
     <h5 class="mb-0"><i class="fas fa-clipboard-list text-warning me-2"></i>{{ $service->job_no }}</h5>
     <div>
         @php $ws = $service->workflow_status ?? 0; @endphp
-        @if($ws < 5)
+        @if($ws < 12)
         <form action="{{ route('services.advance', $service) }}" method="POST" class="d-inline">
             @csrf
-            <button class="btn btn-{{ $ws==0 ? 'secondary' : ($ws==1 ? 'info' : ($ws==2 ? 'warning' : ($ws==3 ? 'primary' : 'teal'))) }} btn-sm" onclick="return confirm('Lanjut ke step berikutnya?')">
-                <i class="fas fa-arrow-right me-1"></i> {{ ['Mulai','Check In','Kerjakan','QC','Ready'][$ws] ?? 'Next' }}
+            @php $steps = ['Start','Check In','Inspect','Wait Approval','Approve','In Progress','Wait Parts','QC','Ready','Invoice','Paid','Release']; @endphp
+            <button class="btn btn-primary btn-sm" onclick="return confirm('Lanjut ke step berikutnya?')">
+                <i class="fas fa-arrow-right me-1"></i> {{ $steps[$ws] ?? 'Advance' }}
             </button>
         </form>
+        @else
+        <span class="badge bg-success fs-6">Completed</span>
         @endif
-        @if($service->done_status < 2)
-        <form action="{{ route('services.complete', $service) }}" method="POST" class="d-inline">
+        @if($ws < 12)
+        <form action="{{ route('services.complete', $service) }}" method="POST" class="d-inline ms-1">
             @csrf
             <button class="btn btn-success btn-sm" onclick="return confirm('Tandai selesai?')">
-                <i class="fas fa-check me-1"></i> Selesai
+                <i class="fas fa-check me-1"></i> Force Complete
             </button>
         </form>
         @endif
@@ -62,12 +65,8 @@
                     <tr><td class="text-muted">Judul</td><td>{{ $service->title }}</td></tr>
                     <tr><td class="text-muted">Tanggal</td><td>{{ $service->service_date->format('d M Y H:i') }}</td></tr>
                     <tr><td class="text-muted">Status</td><td>
-                        @php
-                            $labels = [0 => 'Pending', 1 => 'In Progress', 2 => 'Done'];
-                            $colors = [0 => 'secondary', 1 => 'warning', 2 => 'success'];
-                        @endphp
-                        <span class="badge bg-{{ $colors[$service->done_status] }} bg-opacity-10 text-{{ $colors[$service->done_status] }} rounded-pill px-3">
-                            {{ $labels[$service->done_status] }}
+                        <span class="badge bg-{{ $service->status_color }} bg-opacity-10 text-{{ $service->status_color }} rounded-pill px-3">
+                            {{ $service->status_label }}
                         </span>
                     </td></tr>
                     <tr><td class="text-muted">Durasi</td><td>
@@ -93,6 +92,44 @@
                 <h6 class="border-bottom pb-2 mt-3">Deskripsi</h6>
                 <p>{{ nl2br(e($service->description)) }}</p>
                 @endif
+
+                <h6 class="border-bottom pb-2 mt-3">Workflow Timeline</h6>
+                <div class="table-responsive">
+                <table class="table table-sm table-borderless small">
+                    @php
+                    $timeline = [
+                        ['s'=>0,'l'=>'Booked','t'=>null],
+                        ['s'=>1,'l'=>'Checked In','t'=>$service->checked_in_at],
+                        ['s'=>2,'l'=>'Inspection','t'=>$service->inspected_at],
+                        ['s'=>3,'l'=>'Waiting Approval','t'=>null],
+                        ['s'=>4,'l'=>'Approved','t'=>$service->approved_at],
+                        ['s'=>5,'l'=>'In Progress','t'=>$service->started_at],
+                        ['s'=>6,'l'=>'Waiting Parts','t'=>null],
+                        ['s'=>7,'l'=>'QC','t'=>$service->qc_passed_at],
+                        ['s'=>8,'l'=>'Ready','t'=>null],
+                        ['s'=>9,'l'=>'Invoiced','t'=>$service->invoiced_at],
+                        ['s'=>10,'l'=>'Paid','t'=>$service->paid_at],
+                        ['s'=>11,'l'=>'Released','t'=>$service->released_at],
+                        ['s'=>12,'l'=>'Completed','t'=>$service->completed_at],
+                    ];
+                    @endphp
+                    @foreach($timeline as $step)
+                    <tr>
+                        <td width="24">
+                            @if($ws >= $step['s'])
+                                <i class="fas fa-check-circle text-success"></i>
+                            @elseif($ws == $step['s']-1)
+                                <i class="fas fa-spinner text-warning"></i>
+                            @else
+                                <i class="far fa-circle text-muted"></i>
+                            @endif
+                        </td>
+                        <td width="140" class="{{ $ws == $step['s'] ? 'fw-bold' : '' }}">{{ $step['l'] }}</td>
+                        <td class="text-muted">{{ $step['t'] ? $step['t']->format('d/m/Y H:i') : '-' }}</td>
+                    </tr>
+                    @endforeach
+                </table>
+                </div>
             </div>
         </div>
     </div>
