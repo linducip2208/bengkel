@@ -37,3 +37,5 @@ Thumbs.db
 # Docs & archives
 *.md
 *.zip
+
+bootstrap/cache/*.php
