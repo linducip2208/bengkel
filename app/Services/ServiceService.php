@@ -124,7 +124,27 @@ class ServiceService extends BaseService
             ? app(JobcardService::class)->calculateNextService($service)
             : null;
 
-        return view('services.show', compact('service', 'nextService'));
+        $partsUsed = \App\Models\StockHistory::with('product')
+            ->where('reference_type', \App\Models\Service::class)
+            ->where('reference_id', $service->id)
+            ->where('type', 'usage')
+            ->get()
+            ->map(function ($sh) use ($service) {
+                $product = $sh->product;
+                $serviceDate = $service->service_date?->toDateString();
+
+                return [
+                    'product_id' => $sh->product_id,
+                    'product_name' => $product?->name ?? 'Unknown',
+                    'sku' => $product?->product_no ?? '-',
+                    'warranty' => $product?->warranty ?? null,
+                    'qty' => abs($sh->quantity_change),
+                    'is_under_warranty' => $product?->isUnderWarranty($serviceDate) ?? false,
+                    'warranty_expiry' => $product?->getWarrantyExpiryDate($serviceDate),
+                ];
+            });
+
+        return view('services.show', compact('service', 'nextService', 'partsUsed'));
     }
 
     public function edit($id)

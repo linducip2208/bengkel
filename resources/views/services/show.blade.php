@@ -198,6 +198,58 @@
                         <i class="fas fa-save me-1"></i> Simpan Jobcard
                     </button>
                 </form>
+
+                {{-- Parts Used with Warranty Status --}}
+                @if(!empty($partsUsed) && count($partsUsed) > 0)
+                <h6 class="border-bottom pb-2 mt-4"><i class="fas fa-shield-alt me-2"></i>Pemakaian Sparepart & Garansi</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sparepart</th>
+                                <th class="text-center">Qty</th>
+                                <th>Garansi Produk</th>
+                                <th class="text-center">Status Garansi</th>
+                                <th>Expired</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($partsUsed as $part)
+                            <tr>
+                                <td>
+                                    <small class="text-muted">{{ $part['sku'] }}</small><br>
+                                    <strong>{{ $part['product_name'] }}</strong>
+                                </td>
+                                <td class="text-center">{{ $part['qty'] }}</td>
+                                <td>{{ $part['warranty'] ?? '-' }}</td>
+                                <td class="text-center">
+                                    @if($part['warranty'])
+                                        @if($part['is_under_warranty'])
+                                            <span class="badge bg-success">Under Warranty</span>
+                                        @else
+                                            <span class="badge bg-secondary">Expired</span>
+                                        @endif
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($part['warranty'])
+                                        @if($part['is_under_warranty'])
+                                            <small class="text-success">{{ $part['warranty_expiry'] }}</small>
+                                        @else
+                                            <small class="text-muted">{{ $part['warranty_expiry'] }}</small>
+                                        @endif
+                                    @else
+                                        <small class="text-muted">-</small>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @endif
             </div>
         </div>
     </div>

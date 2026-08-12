@@ -60,3 +60,20 @@ Schedule::command('invoices:escalate-overdue')
 // Service reminder — H-1 notification, daily 08:00
 Schedule::command('services:send-reminders')
     ->dailyAt('08:00');
+
+// Overdue service SLA escalation — every hour
+Schedule::command('services:escalate-overdue')
+    ->hourly()
+    ->withoutOverlapping();
+
+// Birthday voucher — daily 08:00
+Schedule::command('loyalty:birthday-vouchers')
+    ->dailyAt('08:00');
+
+// Reactivation campaign for dormant customers — Monday 09:00
+Schedule::command('marketing:reactivation')
+    ->weekly()->mondays()->at('09:00');
+
+// Weekly report email to owner — Monday 07:00
+Schedule::command('reports:weekly-email')
+    ->weekly()->mondays()->at('07:00');

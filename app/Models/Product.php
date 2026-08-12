@@ -93,4 +93,71 @@ class Product extends Model
             default => '<span class="badge bg-success">Tersedia</span>',
         };
     }
+
+    public function isUnderWarranty(?string $soldDate = null): bool
+    {
+        $warranty = $this->warranty;
+
+        if (empty($warranty)) {
+            return false;
+        }
+
+        $referenceDate = $soldDate ?? $this->created_at?->toDateString();
+
+        if (empty($referenceDate)) {
+            return false;
+        }
+
+        $months = $this->parseWarrantyMonths($warranty);
+
+        if ($months <= 0) {
+            return false;
+        }
+
+        $expiryDate = \Carbon\Carbon::parse($referenceDate)->addMonths($months);
+
+        return now()->lte($expiryDate);
+    }
+
+    public function getWarrantyExpiryDate(?string $soldDate = null): ?string
+    {
+        $warranty = $this->warranty;
+
+        if (empty($warranty)) {
+            return null;
+        }
+
+        $referenceDate = $soldDate ?? $this->created_at?->toDateString();
+
+        if (empty($referenceDate)) {
+            return null;
+        }
+
+        $months = $this->parseWarrantyMonths($warranty);
+
+        if ($months <= 0) {
+            return null;
+        }
+
+        return \Carbon\Carbon::parse($referenceDate)->addMonths($months)->format('d/m/Y');
+    }
+
+    protected function parseWarrantyMonths(string $warranty): int
+    {
+        $warranty = mb_strtolower(trim($warranty));
+
+        if (preg_match('/(\d+)\s*(?:bulan|month)/', $warranty, $m)) {
+            return (int) $m[1];
+        }
+
+        if (preg_match('/(\d+)\s*(?:tahun|year)/', $warranty, $m)) {
+            return (int) $m[1] * 12;
+        }
+
+        if (is_numeric($warranty)) {
+            return (int) $warranty;
+        }
+
+        return 0;
+    }
 }

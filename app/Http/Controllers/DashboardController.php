@@ -38,9 +38,12 @@ class DashboardController extends Controller
             session(['low_stock_shown' => true]);
         }
 
+        $lowStockReorder = $reportService->getLowStockReorder();
+
         return view('dashboard', compact(
             'stats', 'recentServices', 'upcomingServices',
-            'chartData', 'statusChart', 'roleWidgets', 'lowStockAlert'
+            'chartData', 'statusChart', 'roleWidgets', 'lowStockAlert',
+            'lowStockReorder'
         ));
     }
 

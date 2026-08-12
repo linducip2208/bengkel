@@ -189,6 +189,30 @@ class ReportService
         ];
     }
 
+    public function getLowStockReorder(): array
+    {
+        return StockRecord::with('product')
+            ->where('quantity', '<=', DB::raw('COALESCE(minimum_stock, 5)'))
+            ->where('quantity', '>=', 0)
+            ->get()
+            ->map(function ($record) {
+                $minStock = $record->minimum_stock ?? 5;
+                $suggestedReorder = max(($minStock * 2) - $record->quantity, 0);
+
+                return [
+                    'product_name' => $record->product?->name ?? 'Unknown',
+                    'sku' => $record->product?->product_no ?? '-',
+                    'current_stock' => $record->quantity,
+                    'minimum_stock' => $minStock,
+                    'suggested_reorder' => $suggestedReorder,
+                    'last_purchase_price' => $record->product?->cost_price ?? 0,
+                ];
+            })
+            ->sortByDesc('suggested_reorder')
+            ->values()
+            ->toArray();
+    }
+
     public function getDashboardStats(): array
     {
         $today = now()->toDateString();

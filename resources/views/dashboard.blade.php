@@ -210,6 +210,54 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
     </div>
 </div>
 
+{{-- Auto PO Suggestion: Low Stock Reorder Table --}}
+@if($lowStockAlert && !empty($lowStockReorder))
+<div class="card mb-4 border-danger">
+    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+        <h6 class="mb-0"><i class="fas fa-boxes me-2"></i>Rekomendasi Reorder Produk (Auto PO)</h6>
+        <span class="badge bg-light text-danger">{{ count($lowStockReorder) }} item</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Produk</th>
+                        <th class="text-center">Stok</th>
+                        <th class="text-center">Min</th>
+                        <th class="text-center">Saran Reorder</th>
+                        <th class="text-end">Harga Beli Terakhir</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($lowStockReorder as $item)
+                    <tr>
+                        <td>
+                            <small>{{ $item['sku'] }}</small><br>
+                            <strong>{{ $item['product_name'] }}</strong>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-{{ $item['current_stock'] <= 0 ? 'danger' : 'warning' }}">{{ $item['current_stock'] }}</span>
+                        </td>
+                        <td class="text-center">{{ $item['minimum_stock'] }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-info">{{ $item['suggested_reorder'] }}</span>
+                        </td>
+                        <td class="text-end">@include('partials.rupiah', ['amount' => $item['last_purchase_price']])</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer bg-light d-flex justify-content-end gap-2">
+        <a href="{{ route('reports.stock') }}" class="btn btn-sm btn-outline-danger">
+            <i class="fas fa-chart-bar me-1"></i> Laporan Stok
+        </a>
+    </div>
+</div>
+@endif
+
 {{-- Charts Row --}}
 <div class="row mb-4">
     <div class="col-md-8 mb-3">
