@@ -338,7 +338,8 @@ class DocsController extends Controller
                         'Auto: stok berkurang + invoice + payment record + stock history.',
                         'Akhir shift: <b>Tutup Sesi</b> — input saldo akhir, sistem hitung selisih.',
                     ]],
-                    ['type' => 'screenshot', 'file' => 'product-list.png', 'label' => 'POS Product Grid', 'url' => '/admin/pos', 'caption' => 'Terminal POS kasir — grid produk, barcode scan, pilih customer, payment method, checkout cepat.'],
+                    ['type' => 'screenshot', 'file' => 'pos-terminal.png', 'label' => 'POS Terminal', 'url' => '/admin/pos', 'caption' => 'Terminal POS kasir — grid produk, barcode scan, pilih customer, payment method, checkout cepat.'],
+                    ['type' => 'screenshot', 'file' => 'pos-sessions.png', 'label' => 'POS Sessions', 'url' => '/admin/pos/sessions', 'caption' => 'Daftar sesi POS — tracking shift buka/tutup, saldo awal/akhir, selisih, riwayat transaksi per sesi.'],
                 ],
             ],
             [
@@ -386,6 +387,8 @@ class DocsController extends Controller
                     ['type' => 'screenshot', 'file' => 'product-stock-opname.png', 'label' => 'Stock Opname', 'url' => '/admin/stock-adjustments', 'caption' => 'Stock opname & adjustment — koreksi stok dengan workflow approval, history trail lengkap.'],
                     ['type' => 'screenshot', 'file' => 'purchase-list.png', 'label' => 'Purchase Orders', 'url' => '/admin/purchases', 'caption' => 'Daftar purchase order ke supplier — status order, receiving, dan auto-update stok.'],
                     ['type' => 'screenshot', 'file' => 'supplier-list.png', 'label' => 'Supplier List', 'url' => '/admin/suppliers', 'caption' => 'Daftar supplier sparepart — kontak, alamat, history pembelian, dan perbandingan harga.'],
+                    ['type' => 'screenshot', 'file' => 'equipment-list.png', 'label' => 'Equipment List', 'url' => '/admin/equipment', 'caption' => 'Daftar peralatan bengkel — lift, scanner, kompresor, tracking status dan maintenance log.'],
+                    ['type' => 'screenshot', 'file' => 'warehouse-list.png', 'label' => 'Warehouse List', 'url' => '/admin/warehouses', 'caption' => 'Daftar gudang multi-cabang — stok per gudang, rak, transfer stok antar gudang.'],
                 ],
             ],
             [
@@ -410,6 +413,7 @@ class DocsController extends Controller
                         '<b>Profit margin</b>: sistem hitung margin dari selisih harga beli (inventory) vs harga jual (invoice).',
                         '<b>Audit trail</b>: setiap sparepart bisa ditelusuri — dari purchase → stok gudang → dipakai di service X → invoice Y.',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'service-list.png', 'label' => 'Product Picker in Service', 'url' => '/admin/services/create', 'caption' => 'Product picker di form service — klik kaca pembesar untuk cari sparepart dari inventory, auto-fill nama, kode, dan harga jual.'],
                 ],
             ],
             [
@@ -436,6 +440,7 @@ class DocsController extends Controller
                     ]],
                     ['type' => 'tip', 'text' => 'Stock Adjustment wajib approval untuk mencegah manipulasi stok. Semua perubahan stok (baik dari service usage, purchase, transfer, maupun adjustment) tercatat di Stock History — tidak ada yang bisa dihapus.'],
                     ['type' => 'screenshot', 'file' => 'product-stock-opname.png', 'label' => 'Stock Adjustment', 'url' => '/admin/stock-adjustments', 'caption' => 'Form stock adjustment — pilih tipe (opname/rusak/hilang/expired), input quantity fisik, sistem hitung selisih, submit untuk approval.'],
+                    ['type' => 'screenshot', 'file' => 'stock-adjustments.png', 'label' => 'Stock Adjustments List', 'url' => '/admin/stock-adjustments', 'caption' => 'Daftar semua stock adjustment — status pending/approved/rejected, filter tipe, history audit trail lengkap.'],
                 ],
             ],
             [
@@ -462,6 +467,9 @@ class DocsController extends Controller
                     ['type' => 'tip', 'text' => 'COA + Journal Entry adalah fondasi untuk laporan keuangan otomatis: General Ledger, Laba Rugi, Neraca.'],
                     ['type' => 'screenshot', 'file' => 'income-list.png', 'label' => 'Income List', 'url' => '/admin/incomes', 'caption' => 'Daftar pemasukan non-operasional — kategori, jumlah, tanggal, dan total amount badge.'],
                     ['type' => 'screenshot', 'file' => 'expense-list.png', 'label' => 'Expense List', 'url' => '/admin/expenses', 'caption' => 'Daftar pengeluaran operasional — kuitansi, kategori, COA link, dan ringkasan total.'],
+                    ['type' => 'screenshot', 'file' => 'petty-cash.png', 'label' => 'Petty Cash', 'url' => '/admin/petty-cash', 'caption' => 'Kas kecil harian — catat kas masuk & keluar, saldo otomatis terhitung, link ke COA.'],
+                    ['type' => 'screenshot', 'file' => 'coa-list.png', 'label' => 'Chart of Accounts', 'url' => '/admin/chart-of-accounts', 'caption' => 'Daftar COA — kode akun unik, tipe (Aset/Liabilitas/Ekuitas/Pendapatan/Beban), saldo debit/kredit.'],
+                    ['type' => 'screenshot', 'file' => 'journal-list.png', 'label' => 'Journal Entries', 'url' => '/admin/journal-entries', 'caption' => 'Daftar journal entry double-entry — debit = kredit, attach bukti transaksi, filter per akun & tanggal.'],
                 ],
             ],
             [
@@ -489,6 +497,9 @@ class DocsController extends Controller
                     ['type' => 'p', 'text' => 'Buka <b>Finance & Accounting → Balance Sheet</b>. Laporan posisi keuangan: Aset = Liabilitas + Ekuitas. Auto-generate dari saldo akhir General Ledger. Cocok untuk tutup buku akhir bulan/tahun.'],
                     ['type' => 'tip', 'text' => 'AutoJournalService menghilangkan human error dalam pencatatan akuntansi. Setiap transaksi operasional (service, POS, purchase, payment) langsung tercatat ke buku besar — tidak perlu input jurnal manual. Akuntan hanya perlu review dan tutup buku periodik.'],
                     ['type' => 'screenshot', 'file' => 'report-financial.png', 'label' => 'Financial Reports', 'url' => '/admin/reports/financial', 'caption' => 'Laporan keuangan — General Ledger, Profit & Loss, Balance Sheet auto-generate dari journal entry.'],
+                    ['type' => 'screenshot', 'file' => 'report-general-ledger.png', 'label' => 'General Ledger', 'url' => '/admin/reports/general-ledger', 'caption' => 'Buku Besar — semua mutasi debit/kredit per akun, saldo awal & akhir, filter tanggal, export PDF/Excel.'],
+                    ['type' => 'screenshot', 'file' => 'report-profit-loss.png', 'label' => 'Profit & Loss', 'url' => '/admin/reports/profit-loss', 'caption' => 'Laporan Laba Rugi — total pendapatan dikurangi beban = laba/rugi bersih, bandingkan periode, export PDF.'],
+                    ['type' => 'screenshot', 'file' => 'report-balance-sheet.png', 'label' => 'Balance Sheet', 'url' => '/admin/reports/balance-sheet', 'caption' => 'Neraca — Aset = Liabilitas + Ekuitas, auto-generate dari saldo akhir General Ledger, cocok untuk tutup buku.'],
                 ],
             ],
             [
@@ -509,6 +520,12 @@ class DocsController extends Controller
                     ['type' => 'screenshot', 'file' => 'report-service.png', 'label' => 'Service Report', 'url' => '/admin/reports/service', 'caption' => 'Laporan service — volume per kategori & teknisi, filter tanggal & cabang, chart batang, export PDF/Excel.'],
                     ['type' => 'screenshot', 'file' => 'report-sales.png', 'label' => 'Sales Report', 'url' => '/admin/reports/sales', 'caption' => 'Laporan penjualan — parts & jasa per periode, breakdown per produk/kategori, chart interaktif.'],
                     ['type' => 'screenshot', 'file' => 'report-stock.png', 'label' => 'Stock Report', 'url' => '/admin/reports/stock', 'caption' => 'Laporan stok — stok berjalan, slow-moving items, reorder alert, stock valuation.'],
+                    ['type' => 'screenshot', 'file' => 'report-technician.png', 'label' => 'Technician Performance', 'url' => '/admin/reports/technician', 'caption' => 'Laporan performa teknisi — job count, revenue generated, avg durasi pengerjaan, chart perbandingan antar teknisi.'],
+                    ['type' => 'screenshot', 'file' => 'report-customer-lifetime.png', 'label' => 'Customer Lifetime Value', 'url' => '/admin/reports/customer-ltv', 'caption' => 'Laporan Customer LTV — top 20 customer dengan total spending, jumlah kunjungan, avg per visit, kendaraan terdaftar.'],
+                    ['type' => 'screenshot', 'file' => 'report-ar-aging.png', 'label' => 'AR Aging Report', 'url' => '/admin/reports/ar-aging', 'caption' => 'Laporan piutang usaha (AR Aging) — breakdown overdue 30/60/90+ hari, total outstanding per customer.'],
+                    ['type' => 'screenshot', 'file' => 'report-parts-usage.png', 'label' => 'Parts Usage Report', 'url' => '/admin/reports/parts-usage', 'caption' => 'Laporan pemakaian sparepart — top moving items, usage per service, inventory movement (in/out) per periode.'],
+                    ['type' => 'screenshot', 'file' => 'report-branch-comparison.png', 'label' => 'Branch Comparison', 'url' => '/admin/reports/branch-comparison', 'caption' => 'Laporan perbandingan cabang — revenue, service count, profit margin per cabang dalam satu dashboard.'],
+                    ['type' => 'screenshot', 'file' => 'report-cash-flow.png', 'label' => 'Cash Flow Report', 'url' => '/admin/reports/cash-flow', 'caption' => 'Laporan arus kas — kas masuk (service, POS, lain-lain) vs kas keluar (purchase, beban), net cash flow per bulan.'],
                     ['type' => 'screenshot', 'file' => 'report-financial.png', 'label' => 'Financial Report', 'url' => '/admin/reports/financial', 'caption' => 'Laporan keuangan — Profit/Loss bulanan, income vs expense, cash flow summary.'],
                 ],
             ],
@@ -529,6 +546,7 @@ class DocsController extends Controller
                     ]],
                     ['type' => 'screenshot', 'file' => 'voucher-list.png', 'label' => 'Voucher / Promo', 'url' => '/admin/vouchers', 'caption' => 'Daftar voucher & promo — kode diskon nominal/persen, minimal transaksi, masa berlaku, kuota pemakaian.'],
                     ['type' => 'screenshot', 'file' => 'review-list.png', 'label' => 'Review & Rating', 'url' => '/admin/reviews', 'caption' => 'Daftar review customer — rating bintang, feedback, publish/hide toggle, admin reply.'],
+                    ['type' => 'screenshot', 'file' => 'loyalty-list.png', 'label' => 'Loyalty & Membership', 'url' => '/admin/loyalty', 'caption' => 'Daftar loyalty — poin per transaksi, tier Bronze/Silver/Gold/Platinum, leaderboard, reward redemption.'],
                 ],
             ],
             [
@@ -556,6 +574,8 @@ class DocsController extends Controller
                     ['type' => 'h', 'text' => 'Notification Queue'],
                     ['type' => 'p', 'text' => 'Semua notifikasi masuk antrian (whatsapp/email/sms), diproses scheduler tiap 5 menit. Buka <b>Notifications → Antrian</b> untuk lihat status pending/sent/failed. Email log mencatat setiap notifikasi yang terkirim beserta timestamp.'],
                     ['type' => 'screenshot', 'file' => 'activity-logs.png', 'label' => 'Notification Logs', 'url' => '/admin/activity-logs', 'caption' => 'Log notifikasi & aktivitas — semua notifikasi terkirim, timestamp, status pending/sent/failed.'],
+                    ['type' => 'screenshot', 'file' => 'notification-templates.png', 'label' => 'Notification Templates', 'url' => '/admin/notification-templates', 'caption' => 'Template notifikasi — buat template WA/Email/SMS dengan variabel {customer_name}, {plate}, {next_service_date}.'],
+                    ['type' => 'screenshot', 'file' => 'reminder-list.png', 'label' => 'Service Reminders', 'url' => '/admin/reminders', 'caption' => 'Daftar reminder service otomatis — H-7, H-3, H-1 sebelum jatuh tempo, kirim via WA/Email ke customer.'],
                 ],
             ],
             [
@@ -570,6 +590,7 @@ class DocsController extends Controller
                         '<b>Salary</b>: Generate slip gaji bulanan berdasarkan komisi + gaji pokok, mark paid.',
                     ]],
                     ['type' => 'screenshot', 'file' => 'commission-list.png', 'label' => 'Commission List', 'url' => '/admin/commissions', 'caption' => 'Daftar komisi teknisi — filter periode, hitung otomatis per service, mark paid batch, laporan per teknisi.'],
+                    ['type' => 'screenshot', 'file' => 'leave-list.png', 'label' => 'Leave & Attendance', 'url' => '/admin/leaves', 'caption' => 'Daftar cuti & absensi teknisi — clock-in/out, QR scan, pengajuan cuti, approval manager, slip gaji bulanan.'],
                 ],
             ],
             [
@@ -585,6 +606,8 @@ class DocsController extends Controller
                         'History klaim garansi per customer & per produk.',
                     ]],
                     ['type' => 'screenshot', 'file' => 'service-list.png', 'label' => 'Warranty Claims', 'url' => '/admin/services?status=warranty', 'caption' => 'Service dengan flag garansi — biaya parts Rp 0, tracking klaim garansi customer sampai selesai.'],
+                    ['type' => 'screenshot', 'file' => 'warranty-list.png', 'label' => 'Warranty List', 'url' => '/admin/warranties', 'caption' => 'Daftar garansi sparepart — setup periode garansi per produk/kategori, auto-flag service dalam masa garansi.'],
+                    ['type' => 'screenshot', 'file' => 'recall-list.png', 'label' => 'Recall CRM', 'url' => '/admin/recalls', 'caption' => 'Recall CRM — deteksi customer lama tidak service (3-6 bulan), segmentasi, kirim reminder/promosi otomatis.'],
                 ],
             ],
             [
@@ -602,7 +625,7 @@ class DocsController extends Controller
                         '<b>Tracking</b>: <code>/track/{job_no}</code> — lihat progress service real-time + kasih star rating.',
                         '<b>Service History</b>: seluruh riwayat service kendaraan lengkap dengan detail parts, biaya, teknisi.',
                     ]],
-                    ['type' => 'screenshot', 'file' => 'docs-index.png', 'label' => 'Customer Portal Dashboard', 'url' => '/customer/dashboard', 'caption' => 'Dashboard customer portal — lihat invoice, service status real-time, booking online, tracking, dan service history.'],
+                    ['type' => 'screenshot', 'file' => 'customer-list.png', 'label' => 'Customer Portal Dashboard', 'url' => '/customer/dashboard', 'caption' => 'Dashboard customer portal — lihat invoice, service status real-time, booking online, tracking, dan service history.'],
                 ],
             ],
             [
