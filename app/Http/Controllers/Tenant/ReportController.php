@@ -443,12 +443,13 @@ class ReportController extends Controller
     {
         $topCustomers = \App\Models\Customer::withCount(['services'])
             ->withSum('services', 'charge')
+            ->with(['services' => fn($q) => $q->latest('service_date')])
             ->having('services_count', '>', 0)
             ->orderByDesc('services_sum_charge')
             ->limit(20)
             ->get()
             ->map(function ($c) {
-                $c->last_service = $c->services()->latest('service_date')->first()?->service_date;
+                $c->last_service = $c->services->first()?->service_date;
                 $c->lifetime_value = $c->services_sum_charge ?? 0;
                 $c->avg_per_visit = $c->services_count > 0 ? $c->lifetime_value / $c->services_count : 0;
                 return $c;

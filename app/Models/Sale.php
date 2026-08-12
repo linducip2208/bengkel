@@ -46,4 +46,9 @@ class Sale extends Model
     {
         return $this->hasMany(Invoice::class);
     }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(SaleItem::class);
+    }
 }

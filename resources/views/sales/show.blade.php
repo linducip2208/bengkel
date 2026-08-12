@@ -1,9 +1,9 @@
 @extends('layouts.app')
-@section('title', 'Detail Penjualan')
+@section('title', 'Detail Penjualan Sparepart')
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4>Detail Penjualan</h4>
+    <h4>Detail Penjualan Sparepart</h4>
     <div class="d-flex gap-2">
         <a href="{{ route('sales.edit', $sale) }}" class="btn btn-warning"><i class="bi bi-pencil"></i> Edit</a>
         <a href="{{ route('sales.index') }}" class="btn btn-secondary">Kembali</a>
@@ -33,19 +33,50 @@
                         <div>{{ $sale->sale_date->format('d M Y') }}</div>
                     </div>
                 </div>
-                <table class="table table-borderless">
-                    <tr><td width="150"><strong>Pelanggan</strong></td><td>{{ $sale->customer->name ?? '-' }}</td></tr>
-                    <tr><td><strong>Kendaraan</strong></td><td>{{ $sale->vehicle?->vehicleBrand?->name }} {{ $sale->vehicle?->model_name }} ({{ $sale->vehicle?->license_plate }})</td></tr>
-                    <tr><td><strong>Tahun</strong></td><td>{{ $sale->vehicle?->year }}</td></tr>
-                    <tr><td><strong>Harga Jual</strong></td><td><strong>@money($sale->price)</strong></td></tr>
-                    <tr><td><strong>Uang Muka</strong></td><td>@money($sale->down_payment)</td></tr>
-                    <tr><td><strong>Sisa Pembayaran</strong></td><td><strong class="text-danger">@money(max($sale->price - $sale->down_payment, 0))</strong></td></tr>
+                <table class="table table-borderless mb-0">
+                    <tr><td width="150"><strong>No. Penjualan</strong></td><td>{{ $sale->sales_no }}</td></tr>
+                    <tr><td><strong>Pelanggan</strong></td><td>{{ $sale->customer->name ?? 'Walk-in' }}</td></tr>
+                    <tr><td><strong>Total</strong></td><td><strong>@money($sale->grand_total)</strong></td></tr>
                 </table>
-                @if ($sale->description)
+                @if ($sale->notes)
                     <hr>
-                    <small class="text-muted">Deskripsi:</small>
-                    <p>{{ $sale->description }}</p>
+                    <small class="text-muted">Catatan:</small>
+                    <p>{{ $sale->notes }}</p>
                 @endif
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><strong>Item Sparepart</strong></div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Produk</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-end">Harga Satuan</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($sale->items as $item)
+                            <tr>
+                                <td>{{ $item->product?->name ?? '—' }}</td>
+                                <td class="text-center">{{ $item->quantity }}</td>
+                                <td class="text-end">@money($item->unit_price)</td>
+                                <td class="text-end">@money($item->total_price)</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="4" class="text-center py-4 text-muted">Tidak ada item.</td></tr>
+                        @endforelse
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th colspan="3" class="text-end">Grand Total</th>
+                            <th class="text-end">@money($sale->grand_total)</th>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
         </div>
     </div>

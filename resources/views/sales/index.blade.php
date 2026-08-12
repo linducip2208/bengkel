@@ -1,9 +1,9 @@
 @extends('layouts.app')
-@section('title', 'Daftar Penjualan')
+@section('title', 'Daftar Penjualan Sparepart')
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4>Penjualan Kendaraan</h4>
+    <h4>Penjualan Sparepart</h4>
     <a href="{{ route('sales.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Catat Penjualan</a>
 </div>
 
@@ -19,7 +19,7 @@
                 </select>
             </div>
             <div class="col-md-5">
-                <input type="text" name="search" class="form-control" value="{{ request('search') }}" placeholder="Cari pelanggan...">
+                <input type="text" name="search" class="form-control" value="{{ request('search') }}" placeholder="Cari pelanggan atau no. penjualan...">
             </div>
             <div class="col-md-2">
                 <button type="submit" class="btn btn-secondary w-100">Filter</button>
@@ -31,11 +31,11 @@
 <table class="table table-hover align-middle">
     <thead class="table-light">
         <tr>
-            <th>Tanggal</th>
+            <th>No. Penjualan</th>
             <th>Pelanggan</th>
-            <th>Kendaraan</th>
-            <th>No. Polisi</th>
-            <th class="text-end">Harga</th>
+            <th>Tanggal</th>
+            <th class="text-center">Jumlah Item</th>
+            <th class="text-end">Total</th>
             <th>Status</th>
             <th>Aksi</th>
         </tr>
@@ -43,11 +43,11 @@
     <tbody>
         @forelse ($sales as $sale)
             <tr>
+                <td><a href="{{ route('sales.show', $sale) }}" class="fw-semibold">{{ $sale->sales_no }}</a></td>
+                <td>{{ $sale->customer->name ?? 'Walk-in' }}</td>
                 <td>{{ $sale->sale_date->format('d/m/Y') }}</td>
-                <td>{{ $sale->customer->name ?? '-' }}</td>
-                <td>{{ $sale->vehicle?->vehicleBrand?->name }} {{ $sale->vehicle?->model_name }}</td>
-                <td>{{ $sale->vehicle?->number_plate }}</td>
-                <td class="text-end">@money($sale->price)</td>
+                <td class="text-center">{{ $sale->items_count }}</td>
+                <td class="text-end">@money($sale->grand_total)</td>
                 <td>
                     @if ($sale->status === 'completed')
                         <span class="badge bg-success">Selesai</span>

@@ -230,8 +230,12 @@ class ServiceService extends BaseService
             $invoiceItems = [];
 
             if ($productCosts->isNotEmpty()) {
+                $products = Product::whereIn('id', $productCosts->pluck('product_id')->unique())
+                    ->get()
+                    ->keyBy('id');
+
                 foreach ($productCosts as $sh) {
-                    $product = \App\Models\Product::find($sh->product_id);
+                    $product = $products[$sh->product_id] ?? null;
                     if ($product) {
                         $qty = abs($sh->quantity_change);
                         $price = $product->price ?? 0;

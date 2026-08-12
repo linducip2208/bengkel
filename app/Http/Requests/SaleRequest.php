@@ -9,25 +9,26 @@ class SaleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id' => ['required', 'exists:customers,id'],
-            'vehicle_id' => ['required', 'exists:vehicles,id'],
+            'customer_id' => ['nullable', 'exists:customers,id'],
             'sale_date' => ['required', 'date'],
-            'price' => ['required', 'numeric', 'min:1'],
-            'down_payment' => ['nullable', 'numeric', 'min:0'],
             'status' => ['nullable', 'in:pending,completed,cancelled'],
-            'description' => ['nullable', 'string'],
-            'total_amount' => ['nullable', 'numeric'],
             'notes' => ['nullable', 'string'],
+            'description' => ['nullable', 'string'],
+            'tax_amount' => ['nullable', 'numeric', 'min:0'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.product_id' => ['required', 'exists:products,id'],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'items.*.unit_price' => ['required', 'numeric', 'min:0'],
         ];
     }
 
     protected function prepareForValidation(): void
     {
-        // Form uses `price` and `description`; mirror to `total_amount` and `notes`
-        // so downstream code reading those columns still works.
-        $this->merge([
-            'total_amount' => $this->input('price'),
-            'notes' => $this->input('description') ?? $this->input('notes'),
-        ]);
+        $items = collect($this->input('items', []))
+            ->filter(fn($item) => !empty($item['product_id']))
+            ->values()
+            ->all();
+
+        $this->merge(['items' => $items]);
     }
 }

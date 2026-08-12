@@ -137,20 +137,24 @@ class DashboardController extends Controller
 
     protected function getStatusChartData(): array
     {
+        $counts = Service::selectRaw('workflow_status, COUNT(*) as total')
+            ->groupBy('workflow_status')
+            ->pluck('total', 'workflow_status');
+
         return [
-            'booked' => Service::where('workflow_status', 0)->count(),
-            'checked_in' => Service::where('workflow_status', 1)->count(),
-            'inspection' => Service::where('workflow_status', 2)->count(),
-            'waiting_approval' => Service::where('workflow_status', 3)->count(),
-            'approved' => Service::where('workflow_status', 4)->count(),
-            'in_progress' => Service::where('workflow_status', 5)->count(),
-            'waiting_parts' => Service::where('workflow_status', 6)->count(),
-            'qc' => Service::where('workflow_status', 7)->count(),
-            'ready' => Service::where('workflow_status', 8)->count(),
-            'invoiced' => Service::where('workflow_status', 9)->count(),
-            'paid' => Service::where('workflow_status', 10)->count(),
-            'released' => Service::where('workflow_status', 11)->count(),
-            'completed' => Service::where('workflow_status', 12)->count(),
+            'booked' => $counts[0] ?? 0,
+            'checked_in' => $counts[1] ?? 0,
+            'inspection' => $counts[2] ?? 0,
+            'waiting_approval' => $counts[3] ?? 0,
+            'approved' => $counts[4] ?? 0,
+            'in_progress' => $counts[5] ?? 0,
+            'waiting_parts' => $counts[6] ?? 0,
+            'qc' => $counts[7] ?? 0,
+            'ready' => $counts[8] ?? 0,
+            'invoiced' => $counts[9] ?? 0,
+            'paid' => $counts[10] ?? 0,
+            'released' => $counts[11] ?? 0,
+            'completed' => $counts[12] ?? 0,
         ];
     }
 
