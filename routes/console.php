@@ -77,3 +77,8 @@ Schedule::command('marketing:reactivation')
 // Weekly report email to owner — Monday 07:00
 Schedule::command('reports:weekly-email')
     ->weekly()->mondays()->at('07:00');
+
+// Auto-close stale POS sessions (kasir lupa tutup) — every hour
+Schedule::command('pos:close-stale-sessions --hours=12')
+    ->hourly()
+    ->withoutOverlapping();
