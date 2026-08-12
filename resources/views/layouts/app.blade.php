@@ -459,7 +459,7 @@
                     @can('service.view')<li><a href="{{ route('services.index') }}" class="nav-link {{ request()->routeIs('services.index') ? 'active' : '' }}"><i class="fas fa-clipboard-check me-1"></i> Job Cards / Services</a></li>@endcan
                     @can('service.view')<li><a href="{{ route('services.history') }}" class="nav-link {{ request()->routeIs('services.history') ? 'active' : '' }}"><i class="fas fa-history me-1"></i> Service History</a></li>@endcan
                     @can('gate-pass.view')<li><a href="{{ route('gate-passes.index') }}" class="nav-link {{ request()->routeIs('gate-passes.*') ? 'active' : '' }}"><i class="fas fa-ticket-alt me-1"></i> Gate Passes</a></li>@endcan
-                    @can('vehicle.view')<li><a href="{{ route('vehicles.index') }}" class="nav-link {{ request()->routeIs('vehicles.show') ? 'active' : request()->routeIs('vehicles.index') ? 'active' : '' }}"><i class="fas fa-car me-1"></i> Vehicles</a></li>@endcan
+                    @can('vehicle.view')<li><a href="{{ route('vehicles.index') }}" class="nav-link {{ request()->routeIs('vehicles.*') ? 'active' : '' }}"><i class="fas fa-car me-1"></i> Vehicles</a></li>@endcan
                     @can('customer.view')<li><a href="{{ route('customers.index') }}" class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}"><i class="fas fa-users me-1"></i> Customers</a></li>@endcan
                     @can('customer-group.view')<li><a href="{{ route('customer-groups.index') }}" class="nav-link {{ request()->is('customer-groups*') ? 'active' : '' }}"><i class="fas fa-layer-group me-1"></i> Customer Groups</a></li>@endcan
                 </ul>
