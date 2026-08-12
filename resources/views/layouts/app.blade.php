@@ -432,6 +432,12 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
+        <div class="sidebar-search px-3 py-2">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-transparent border-secondary text-white-50"><i class="fas fa-search"></i></span>
+                <input type="text" id="menuSearch" class="form-control bg-transparent border-secondary text-white" placeholder="Cari menu..." autocomplete="off" style="font-size:0.82rem;">
+            </div>
+        </div>
         <ul class="sidebar-nav">
             {{-- 1. DASHBOARD --}}
             @can('dashboard.view')
@@ -917,6 +923,38 @@
                     }
                 }).catch(function(){});
         },60000);
+
+        // ── Sidebar menu search ──
+        var menuSearch = document.getElementById('menuSearch');
+        if (menuSearch) {
+            menuSearch.addEventListener('input', function() {
+                var q = this.value.trim().toLowerCase();
+                var items = document.querySelectorAll('.sidebar-nav .nav-item');
+                items.forEach(function(item) {
+                    var text = (item.textContent || '').toLowerCase();
+                    if (!q || text.indexOf(q) > -1) {
+                        item.style.display = '';
+                        // Expand parent if match found
+                        var submenu = item.querySelector('.collapse.submenu');
+                        if (submenu && q) {
+                            submenu.classList.add('show');
+                            var btn = item.querySelector('button.nav-link');
+                            if (btn) btn.setAttribute('aria-expanded', 'true');
+                        }
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+                // Hide section headers in Master Data when searching
+                document.querySelectorAll('.submenu-header').forEach(function(h) {
+                    h.parentElement.style.display = q ? 'none' : '';
+                });
+            });
+            // Clear search on Escape
+            menuSearch.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') { this.value = ''; this.dispatchEvent(new Event('input')); this.blur(); }
+            });
+        }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     @stack('scripts')
