@@ -258,9 +258,9 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
                         @forelse($recentServices as $service)
                         <tr>
                             <td><a href="{{ route('services.show', $service) }}">{{ $service->job_no }}</a></td>
-                            <td>{{ $service->customer->name ?? '-' }}</td>
-                            <td>{{ $service->vehicle->number_plate ?? '-' }}</td>
-                            <td>@if($service->done_status == 0)<span class="badge bg-warning">Pending</span>@elseif($service->done_status == 1)<span class="badge bg-info">In Progress</span>@else<span class="badge bg-success">Done</span>@endif</td>
+                            <td>{{ $service->customer?->name ?? '-' }}</td>
+                            <td>{{ $service->vehicle?->number_plate ?? '-' }}</td>
+                            <td><span class="badge bg-{{ $service->status_color }} bg-opacity-10 text-{{ $service->status_color }} rounded-pill">{{ $service->status_label }}</span></td>
                         </tr>
                         @empty
                         <tr><td colspan="4" class="text-center">No recent services</td></tr>
@@ -282,8 +282,8 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
                         @forelse($upcomingServices as $service)
                         <tr>
                             <td><a href="{{ route('services.show', $service) }}">{{ $service->job_no }}</a></td>
-                            <td>{{ $service->customer->name ?? '-' }}</td>
-                            <td>{{ $service->vehicle->number_plate ?? '-' }}</td>
+<td>{{ $service->customer?->name ?? '-' }}</td>
+<td>{{ $service->vehicle?->number_plate ?? '-' }}</td>
                             <td>{{ $service->service_date ? $service->service_date->format('d/m/Y') : '-' }}</td>
                         </tr>
                         @empty

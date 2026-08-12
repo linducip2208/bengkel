@@ -55,13 +55,13 @@
                 <h6 class="card-title border-bottom pb-2">Informasi Servis</h6>
                 <table class="table table-borderless table-sm">
                     <tr><td class="text-muted" width="180">Job No</td><td><strong>{{ $service->job_no }}</strong></td></tr>
-                    <tr><td class="text-muted">Pelanggan</td><td>{{ $service->customer->name ?? '-' }}</td></tr>
-                    <tr><td class="text-muted">No. HP</td><td>{{ $service->customer->phone ?? '-' }}</td></tr>
+                    <tr><td class="text-muted">Pelanggan</td><td>{{ $service->customer?->name ?? '-' }}</td></tr>
+                    <tr><td class="text-muted">No. HP</td><td>{{ $service->customer?->phone ?? '-' }}</td></tr>
                     <tr><td class="text-muted">Kendaraan</td><td>
-                        {{ $service->vehicle->number_plate ?? '-' }}
-                        - {{ $service->vehicle->vehicleBrand->vehicle_brand ?? '' }} {{ $service->vehicle->model_name ?? '' }}
+                        {{ $service->vehicle?->number_plate ?? '-' }}
+                        - {{ $service->vehicle?->vehicleBrand?->vehicle_brand ?? '' }} {{ $service->vehicle?->model_name ?? '' }}
                     </td></tr>
-                    <tr><td class="text-muted">Kategori</td><td>{{ $service->repairCategory->repair_category_name ?? '-' }}</td></tr>
+                    <tr><td class="text-muted">Kategori</td><td>{{ $service->repairCategory?->repair_category_name ?? '-' }}</td></tr>
                     <tr><td class="text-muted">Judul</td><td>{{ $service->title }}</td></tr>
                     <tr><td class="text-muted">Tanggal</td><td>{{ $service->service_date->format('d M Y H:i') }}</td></tr>
                     <tr><td class="text-muted">Status</td><td>

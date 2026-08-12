@@ -131,7 +131,7 @@
                             <a href="{{ route('services.edit', $service) }}" class="btn btn-sm btn-outline-warning" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            @if($service->done_status < 2)
+                            @if($service->workflow_status < 12)
                             <form action="{{ route('services.complete', $service) }}" method="POST" class="d-inline">
                                 @csrf
                                 <button class="btn btn-sm btn-outline-success" title="Selesai" onclick="return confirm('Tandai servis ini selesai?')">

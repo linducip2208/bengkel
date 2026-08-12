@@ -135,17 +135,17 @@ class Service extends Model
 
     public function scopeOpen($query)
     {
-        return $query->whereIn('done_status', [0, 1]);
+        return $query->where('workflow_status', '<', 12);
     }
 
     public function scopeInProgress($query)
     {
-        return $query->where('done_status', 1);
+        return $query->whereBetween('workflow_status', [1, 11]);
     }
 
     public function scopeDone($query)
     {
-        return $query->where('done_status', 2);
+        return $query->where('workflow_status', 12);
     }
 
     public function scopeToday($query)
