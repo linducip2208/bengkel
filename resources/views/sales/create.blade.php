@@ -77,17 +77,21 @@
 </form>
 
 @push('scripts')
+@php
+$productsJson = json_encode($products->map(fn($p) => [
+    'id' => $p->id,
+    'name' => $p->name,
+    'code' => $p->code,
+    'price' => (float) $p->price,
+    'stock' => (int) ($p->stockRecord?->quantity ?? 0),
+])->values());
+$oldItemsJson = json_encode(old('items', []));
+@endphp
 <script>
 (function () {
-    const products = @json($products->map(fn($p) => [
-        'id' => $p->id,
-        'name' => $p->name,
-        'code' => $p->code,
-        'price' => (float) $p->price,
-        'stock' => (int) ($p->stockRecord?->quantity ?? 0),
-    ])->values());
+    const products = {!! $productsJson !!};
 
-    const oldItems = @json(old('items', []));
+    const oldItems = {!! $oldItemsJson !!};
 
     const body = document.getElementById('itemsBody');
     let rowIndex = 0;
