@@ -442,6 +442,23 @@
             <div class="stat"><div class="v">13</div><div class="l">Workflow Statuses</div></div>
             <div class="stat"><div class="v">10</div><div class="l">Tipe Laporan</div></div>
         </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2.5rem;">
+            <div class="feature-shot framed" style="transform:none;box-shadow:0 20px 40px -15px rgba(37,99,235,0.2),0 6px 12px -6px rgba(0,0,0,0.1);border-radius:12px;overflow:hidden;background:#fff;border:1px solid var(--c-line);">
+                <div class="browser-bar">
+                    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+                    <span class="url">app / dashboard</span>
+                </div>
+                <img src="{{ asset('marketing/screens/dashboard.png') }}" alt="Dashboard Overview" loading="lazy" style="border-top-left-radius:0;border-top-right-radius:0;">
+            </div>
+            <div class="feature-shot framed" style="transform:none;box-shadow:0 20px 40px -15px rgba(37,99,235,0.2),0 6px 12px -6px rgba(0,0,0,0.1);border-radius:12px;overflow:hidden;background:#fff;border:1px solid var(--c-line);">
+                <div class="browser-bar">
+                    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+                    <span class="url">app / services</span>
+                </div>
+                <img src="{{ asset('marketing/screens/service-list.png') }}" alt="Service List" loading="lazy" style="border-top-left-radius:0;border-top-right-radius:0;">
+            </div>
+        </div>
     </div>
 </section>
 
@@ -472,7 +489,7 @@
                     <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
                     <span class="url">/branches</span>
                 </div>
-                <img src="{{ asset('images/features/branches.png') }}" alt="Multi-Cabang & Booking">
+                <img src="{{ asset('marketing/screens/branch-list.png') }}" alt="Branch Management" loading="lazy">
             </div>
         </div>
 
@@ -494,7 +511,7 @@
                     <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
                     <span class="url">/services</span>
                 </div>
-                <img src="{{ asset('images/features/services.png') }}" alt="Service Management">
+                <img src="{{ asset('marketing/screens/service-create.png') }}" alt="Service Management" loading="lazy">
             </div>
         </div>
 
@@ -516,7 +533,7 @@
                     <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
                     <span class="url">/products</span>
                 </div>
-                <img src="{{ asset('images/features/products.png') }}" alt="Inventory & Gudang">
+                <img src="{{ asset('marketing/screens/product-list.png') }}" alt="Inventory & Gudang" loading="lazy">
             </div>
         </div>
 
@@ -538,7 +555,7 @@
                     <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
                     <span class="url">/invoices</span>
                 </div>
-                <img src="{{ asset('images/features/invoices.png') }}" alt="Sales POS & Invoice">
+                <img src="{{ asset('marketing/screens/invoice-list.png') }}" alt="Sales POS & Invoice" loading="lazy">
             </div>
         </div>
     </div>
@@ -648,7 +665,7 @@
                     <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
                     <span class="url">/reports/sales</span>
                 </div>
-                <img src="{{ asset('images/features/reports-sales.png') }}" alt="10 Tipe Laporan">
+                <img src="{{ asset('marketing/screens/report-service.png') }}" alt="10 Tipe Laporan" loading="lazy">
             </div>
         </div>
 

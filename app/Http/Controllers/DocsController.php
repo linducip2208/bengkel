@@ -129,6 +129,7 @@ class DocsController extends Controller
                         'Klik menu <b>Settings → General Settings</b>. Isi nama bengkel, alamat, no HP, email.',
                         'Set mata uang default di <b>Geography → Currencies</b> (IDR sudah ter-seed).',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'login.png', 'label' => 'Login Page', 'url' => '/admin/login', 'caption' => 'Halaman login two-column branded — login sebagai admin, manager, kasir, teknisi, atau sales.'],
                     ['type' => 'screenshot', 'file' => 'settings.png', 'label' => 'Settings', 'path' => '/settings', 'caption' => 'Halaman General Settings — isi profil bengkel, logo, alamat, dan kontak.'],
                 ],
             ],
@@ -144,6 +145,7 @@ class DocsController extends Controller
                         'Tambah hari libur nasional atau cuti bersama.',
                         'Switch cabang aktif dari dropdown topbar — semua data otomatis ter-filter per cabang.',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'branch-list.png', 'label' => 'Branch Management', 'url' => '/admin/branches', 'caption' => 'Daftar cabang bengkel — kelola multi-cabang, alamat, telepon, dan jam operasional per cabang.'],
                 ],
             ],
             [
@@ -183,6 +185,8 @@ class DocsController extends Controller
                         'Import massal via CSV template.',
                     ]],
                     ['type' => 'tip', 'text' => 'Customer Group berguna untuk fleet management — tracking seluruh kendaraan dalam satu perusahaan, lihat total spending, dan jadwal service per grup.'],
+                    ['type' => 'screenshot', 'file' => 'customer-list.png', 'label' => 'Customer List', 'url' => '/admin/customers', 'caption' => 'Daftar semua customer — filter, search, import CSV, dan link ke kendaraan terkait.'],
+                    ['type' => 'screenshot', 'file' => 'customer-create.png', 'label' => 'Add Customer Form', 'url' => '/admin/customers/create', 'caption' => 'Form tambah customer baru: nama, HP, email, alamat, NPWP, dan assign ke customer group.'],
                 ],
             ],
             [
@@ -197,6 +201,7 @@ class DocsController extends Controller
                         '<b>KM/Odometer Chart</b> — grafik riwayat odometer dari semua service.',
                         '<b>Service History</b> — halaman khusus menampilkan seluruh riwayat service kendaraan: tanggal, km, teknisi, parts terpakai, biaya total.',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'vehicle-list.png', 'label' => 'Vehicle List', 'url' => '/admin/vehicles', 'caption' => 'Daftar kendaraan per customer — plat nomor, merk, tipe, tahun, odometer, dan service history.'],
                 ],
             ],
             [
@@ -212,6 +217,7 @@ class DocsController extends Controller
                         'Booking yang sudah dikonfirmasi bisa langsung dikonversi ke <b>Service</b> dengan satu klik.',
                         'Status booking: Pending → Confirmed → Converted / Cancelled.',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'booking-list.png', 'label' => 'Booking List', 'url' => '/admin/bookings', 'caption' => 'Daftar booking online — kelola jadwal customer, konversi ke service dengan satu klik.'],
                 ],
             ],
             [
@@ -246,6 +252,8 @@ class DocsController extends Controller
                         '<b>Rollback</b>: admin bisa rollback ke status sebelumnya jika ada kesalahan.',
                     ]],
                     ['type' => 'tip', 'text' => '13-status workflow memastikan tidak ada tahap yang terlewat. Setiap status punya validasi data yang harus diisi sebelum bisa advance ke tahap berikutnya.'],
+                    ['type' => 'screenshot', 'file' => 'service-list.png', 'label' => 'Service/Job Card List', 'url' => '/admin/services', 'caption' => 'Daftar semua service — filter per status 13-step workflow, cabang, teknisi, dan tanggal.'],
+                    ['type' => 'screenshot', 'file' => 'service-create.png', 'label' => 'Create Service Form', 'url' => '/admin/services/create', 'caption' => 'Form create service: pilih customer, kendaraan, service package, assign teknisi, dan estimasi biaya.'],
                 ],
             ],
             [
@@ -260,6 +268,7 @@ class DocsController extends Controller
                         'Opsional: isi JSON items untuk auto-fill line item di invoice.',
                         'Di form <b>Add Service</b>, ada dropdown "Paket Service" — pilih paket → auto-fill judul, harga, estimasi jam, dan item invoice.',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'service-create.png', 'label' => 'Service Create with Package', 'url' => '/admin/services/create', 'caption' => 'Dropdown Service Package di form create service — pilih paket untuk auto-fill semua detail.'],
                 ],
             ],
             [
@@ -275,6 +284,7 @@ class DocsController extends Controller
                         '<b>QR Code</b> — print jobcard sekarang ada QR Code yang link ke halaman service detail.',
                         '<b>Conflict Detection</b> — sistem warning jika teknisi sudah punya service di tanggal/jam yang sama.',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'jobcard-list.png', 'label' => 'Job Card List', 'url' => '/admin/jobcards', 'caption' => 'Daftar job card — print dengan QR code, assign teknisi, isi odometer dan rekomendasi service berikutnya.'],
                 ],
             ],
             [
@@ -311,6 +321,7 @@ class DocsController extends Controller
                         'Kirim via <b>WhatsApp</b> atau <b>Email</b> langsung dari halaman invoice.',
                         '<b>QRIS Payment Link</b> — generate link pembayaran via payment gateway yang sudah dikonfigurasi.',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'invoice-list.png', 'label' => 'Invoice List', 'url' => '/admin/invoices', 'caption' => 'Daftar invoice — 3 tipe (service/sales/parts), filter status pembayaran, download PDF, kirim via WA/Email.'],
                 ],
             ],
             [
@@ -327,6 +338,7 @@ class DocsController extends Controller
                         'Auto: stok berkurang + invoice + payment record + stock history.',
                         'Akhir shift: <b>Tutup Sesi</b> — input saldo akhir, sistem hitung selisih.',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'product-list.png', 'label' => 'POS Product Grid', 'url' => '/admin/pos', 'caption' => 'Terminal POS kasir — grid produk, barcode scan, pilih customer, payment method, checkout cepat.'],
                 ],
             ],
             [
@@ -341,6 +353,7 @@ class DocsController extends Controller
                         'Touch-screen support (HP/tablet). Simpan sebagai base64 PNG.',
                         'Tanda tangan muncul di halaman gate pass & print.',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'gate-pass-list.png', 'label' => 'Gate Pass List', 'url' => '/admin/gate-passes', 'caption' => 'Daftar gate pass — surat jalan keluar dengan digital signature customer & teknisi, print siap serah terima.'],
                 ],
             ],
             [
@@ -369,6 +382,10 @@ class DocsController extends Controller
                         'Setiap gudang punya stok per produk + rak.',
                         '<b>Transfer Stok</b> antar gudang — pilih dari gudang A ke gudang B, stok otomatis pindah.',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'product-list.png', 'label' => 'Product List', 'url' => '/admin/products', 'caption' => 'Daftar produk sparepart — kode, barcode, harga beli/jual, stok per gudang, supplier terkait.'],
+                    ['type' => 'screenshot', 'file' => 'product-stock-opname.png', 'label' => 'Stock Opname', 'url' => '/admin/stock-adjustments', 'caption' => 'Stock opname & adjustment — koreksi stok dengan workflow approval, history trail lengkap.'],
+                    ['type' => 'screenshot', 'file' => 'purchase-list.png', 'label' => 'Purchase Orders', 'url' => '/admin/purchases', 'caption' => 'Daftar purchase order ke supplier — status order, receiving, dan auto-update stok.'],
+                    ['type' => 'screenshot', 'file' => 'supplier-list.png', 'label' => 'Supplier List', 'url' => '/admin/suppliers', 'caption' => 'Daftar supplier sparepart — kontak, alamat, history pembelian, dan perbandingan harga.'],
                 ],
             ],
             [
@@ -418,6 +435,7 @@ class DocsController extends Controller
                         'Semua adjustment (approved/rejected) tercatat di <b>Stock Adjustment History</b> untuk audit.',
                     ]],
                     ['type' => 'tip', 'text' => 'Stock Adjustment wajib approval untuk mencegah manipulasi stok. Semua perubahan stok (baik dari service usage, purchase, transfer, maupun adjustment) tercatat di Stock History — tidak ada yang bisa dihapus.'],
+                    ['type' => 'screenshot', 'file' => 'product-stock-opname.png', 'label' => 'Stock Adjustment', 'url' => '/admin/stock-adjustments', 'caption' => 'Form stock adjustment — pilih tipe (opname/rusak/hilang/expired), input quantity fisik, sistem hitung selisih, submit untuk approval.'],
                 ],
             ],
             [
@@ -442,6 +460,8 @@ class DocsController extends Controller
                     ['type' => 'h', 'text' => 'Journal Entry'],
                     ['type' => 'p', 'text' => 'Buka <b>Finance & Accounting → Journal Entry</b>. Buat jurnal double-entry: pilih akun debit & kredit, sistem cek balance (debit = kredit). Total otomatis dihitung. Bisa attach bukti transaksi.'],
                     ['type' => 'tip', 'text' => 'COA + Journal Entry adalah fondasi untuk laporan keuangan otomatis: General Ledger, Laba Rugi, Neraca.'],
+                    ['type' => 'screenshot', 'file' => 'income-list.png', 'label' => 'Income List', 'url' => '/admin/incomes', 'caption' => 'Daftar pemasukan non-operasional — kategori, jumlah, tanggal, dan total amount badge.'],
+                    ['type' => 'screenshot', 'file' => 'expense-list.png', 'label' => 'Expense List', 'url' => '/admin/expenses', 'caption' => 'Daftar pengeluaran operasional — kuitansi, kategori, COA link, dan ringkasan total.'],
                 ],
             ],
             [
@@ -468,6 +488,7 @@ class DocsController extends Controller
                     ['type' => 'h', 'text' => 'Neraca (Balance Sheet)'],
                     ['type' => 'p', 'text' => 'Buka <b>Finance & Accounting → Balance Sheet</b>. Laporan posisi keuangan: Aset = Liabilitas + Ekuitas. Auto-generate dari saldo akhir General Ledger. Cocok untuk tutup buku akhir bulan/tahun.'],
                     ['type' => 'tip', 'text' => 'AutoJournalService menghilangkan human error dalam pencatatan akuntansi. Setiap transaksi operasional (service, POS, purchase, payment) langsung tercatat ke buku besar — tidak perlu input jurnal manual. Akuntan hanya perlu review dan tutup buku periodik.'],
+                    ['type' => 'screenshot', 'file' => 'report-financial.png', 'label' => 'Financial Reports', 'url' => '/admin/reports/financial', 'caption' => 'Laporan keuangan — General Ledger, Profit & Loss, Balance Sheet auto-generate dari journal entry.'],
                 ],
             ],
             [
@@ -485,6 +506,10 @@ class DocsController extends Controller
                         ['Customer Lifetime Value', 'Top 20 customer: total spending, jumlah kunjungan, avg per visit, kendaraan terdaftar'],
                         ['Inventory Movement', 'Laporan mutasi stok: masuk (purchase, transfer in, adjustment in) vs keluar (service usage, POS, transfer out, rusak/hilang)'],
                     ]],
+                    ['type' => 'screenshot', 'file' => 'report-service.png', 'label' => 'Service Report', 'url' => '/admin/reports/service', 'caption' => 'Laporan service — volume per kategori & teknisi, filter tanggal & cabang, chart batang, export PDF/Excel.'],
+                    ['type' => 'screenshot', 'file' => 'report-sales.png', 'label' => 'Sales Report', 'url' => '/admin/reports/sales', 'caption' => 'Laporan penjualan — parts & jasa per periode, breakdown per produk/kategori, chart interaktif.'],
+                    ['type' => 'screenshot', 'file' => 'report-stock.png', 'label' => 'Stock Report', 'url' => '/admin/reports/stock', 'caption' => 'Laporan stok — stok berjalan, slow-moving items, reorder alert, stock valuation.'],
+                    ['type' => 'screenshot', 'file' => 'report-financial.png', 'label' => 'Financial Report', 'url' => '/admin/reports/financial', 'caption' => 'Laporan keuangan — Profit/Loss bulanan, income vs expense, cash flow summary.'],
                 ],
             ],
             [
@@ -502,6 +527,8 @@ class DocsController extends Controller
                         '<b>Recall CRM</b>: Deteksi customer yang sudah lama tidak service (3-6 bulan). Kirim reminder/promosi untuk mengajak kembali. Segmentasi berdasarkan kategori service terakhir, total spending, atau tipe kendaraan.',
                         '<b>Review & Rating</b>: Kumpulkan rating dari customer setelah service, publish/hide, admin reply.',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'voucher-list.png', 'label' => 'Voucher / Promo', 'url' => '/admin/vouchers', 'caption' => 'Daftar voucher & promo — kode diskon nominal/persen, minimal transaksi, masa berlaku, kuota pemakaian.'],
+                    ['type' => 'screenshot', 'file' => 'review-list.png', 'label' => 'Review & Rating', 'url' => '/admin/reviews', 'caption' => 'Daftar review customer — rating bintang, feedback, publish/hide toggle, admin reply.'],
                 ],
             ],
             [
@@ -528,6 +555,7 @@ class DocsController extends Controller
                     ]],
                     ['type' => 'h', 'text' => 'Notification Queue'],
                     ['type' => 'p', 'text' => 'Semua notifikasi masuk antrian (whatsapp/email/sms), diproses scheduler tiap 5 menit. Buka <b>Notifications → Antrian</b> untuk lihat status pending/sent/failed. Email log mencatat setiap notifikasi yang terkirim beserta timestamp.'],
+                    ['type' => 'screenshot', 'file' => 'activity-logs.png', 'label' => 'Notification Logs', 'url' => '/admin/activity-logs', 'caption' => 'Log notifikasi & aktivitas — semua notifikasi terkirim, timestamp, status pending/sent/failed.'],
                 ],
             ],
             [
@@ -541,6 +569,7 @@ class DocsController extends Controller
                         '<b>Attendance</b>: Clock-in / clock-out via form atau QR scan.',
                         '<b>Salary</b>: Generate slip gaji bulanan berdasarkan komisi + gaji pokok, mark paid.',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'commission-list.png', 'label' => 'Commission List', 'url' => '/admin/commissions', 'caption' => 'Daftar komisi teknisi — filter periode, hitung otomatis per service, mark paid batch, laporan per teknisi.'],
                 ],
             ],
             [
@@ -555,6 +584,7 @@ class DocsController extends Controller
                         '<b>Klaim Garansi</b>: customer ajukan klaim → teknisi verifikasi → approve/reject → jika approve, buat service baru gratis.',
                         'History klaim garansi per customer & per produk.',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'service-list.png', 'label' => 'Warranty Claims', 'url' => '/admin/services?status=warranty', 'caption' => 'Service dengan flag garansi — biaya parts Rp 0, tracking klaim garansi customer sampai selesai.'],
                 ],
             ],
             [
@@ -572,6 +602,7 @@ class DocsController extends Controller
                         '<b>Tracking</b>: <code>/track/{job_no}</code> — lihat progress service real-time + kasih star rating.',
                         '<b>Service History</b>: seluruh riwayat service kendaraan lengkap dengan detail parts, biaya, teknisi.',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'docs-index.png', 'label' => 'Customer Portal Dashboard', 'url' => '/customer/dashboard', 'caption' => 'Dashboard customer portal — lihat invoice, service status real-time, booking online, tracking, dan service history.'],
                 ],
             ],
             [
@@ -590,6 +621,9 @@ class DocsController extends Controller
                         '<b>Dark Mode</b>: Toggle di topbar, tersimpan di localStorage.',
                         '<b>PWA</b>: Install ke homescreen HP, service worker cache untuk offline mode.',
                     ]],
+                    ['type' => 'screenshot', 'file' => 'user-list.png', 'label' => 'User Management', 'url' => '/admin/users', 'caption' => 'Daftar user — CRUD karyawan, assign role & cabang, aktif/nonaktif, reset password.'],
+                    ['type' => 'screenshot', 'file' => 'role-list.png', 'label' => 'Role & Permission', 'url' => '/admin/roles', 'caption' => 'Daftar role — 5 role preset, 196 permission granular per modul, assign ke user.'],
+                    ['type' => 'screenshot', 'file' => 'activity-logs.png', 'label' => 'Activity Log', 'url' => '/admin/activity-logs', 'caption' => 'Activity log — jejak semua aksi user: create, update, delete, login, logout, dengan timestamp.'],
                 ],
             ],
             [
