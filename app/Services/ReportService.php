@@ -62,20 +62,22 @@ class ReportService
 
     public function salesReport(array $filters): array
     {
-        $query = Sale::with(['customer', 'vehicle']);
+        // Sales merged into POS — report POS invoices (spare part sales)
+        $query = Invoice::with(['customer'])
+            ->where('invoice_type', 'pos');
 
         if (!empty($filters['start_date'])) {
-            $query->whereDate('sale_date', '>=', $filters['start_date']);
+            $query->whereDate('invoice_date', '>=', $filters['start_date']);
         }
         if (!empty($filters['end_date'])) {
-            $query->whereDate('sale_date', '<=', $filters['end_date']);
+            $query->whereDate('invoice_date', '<=', $filters['end_date']);
         }
 
-        $sales = $query->latest('sale_date')->get();
+        $sales = $query->latest('invoice_date')->get();
         $totalSales = $sales->count();
         $totalRevenue = $sales->sum('grand_total');
 
-        $byDate = $sales->groupBy(fn($s) => \Carbon\Carbon::parse($s->sale_date)->format('Y-m-d'))
+        $byDate = $sales->groupBy(fn($s) => \Carbon\Carbon::parse($s->invoice_date)->format('Y-m-d'))
             ->map(fn($group) => [
                 'count' => $group->count(),
                 'revenue' => $group->sum('grand_total'),

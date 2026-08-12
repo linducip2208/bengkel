@@ -52,7 +52,6 @@ use App\Http\Controllers\Tenant\RecallController;
 use App\Http\Controllers\Tenant\ReminderController;
 use App\Http\Controllers\Tenant\RepairCategoryController;
 use App\Http\Controllers\Tenant\ReportController;
-use App\Http\Controllers\Tenant\SaleController;
 use App\Http\Controllers\Tenant\ServiceController;
 use App\Http\Controllers\Tenant\ServicePackageController;
 use App\Http\Controllers\Tenant\SellingPriceGroupController;
@@ -313,7 +312,9 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::resource('purchase-orders', PurchaseOrderController::class);
     Route::resource('purchase-requisitions', PurchaseRequisitionController::class);
     Route::resource('sell-returns', SellReturnController::class)->only(['index', 'create', 'store', 'show']);
-    Route::resource('sales', SaleController::class);
+    // Sales merged into POS — redirect old URLs to POS terminal
+    Route::redirect('/sales', '/pos/terminal')->name('sales.index');
+    Route::redirect('/sales/create', '/pos/terminal');
     Route::resource('suppliers', SupplierController::class);
     Route::resource('incomes', IncomeController::class);
     Route::resource('expenses', ExpenseController::class);

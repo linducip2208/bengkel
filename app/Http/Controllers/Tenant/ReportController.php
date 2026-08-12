@@ -112,13 +112,13 @@ class ReportController extends Controller
             }
         } elseif ($type === 'sales') {
             $sheet->setCellValue('A1', 'Date');
-            $sheet->setCellValue('B1', 'Sales No');
+            $sheet->setCellValue('B1', 'Invoice No');
             $sheet->setCellValue('C1', 'Customer');
             $sheet->setCellValue('D1', 'Grand Total');
             $row = 2;
             foreach (($report['sales'] ?? []) as $s) {
-                $sheet->setCellValue("A{$row}", $s->sales_date ?? '');
-                $sheet->setCellValue("B{$row}", $s->sales_no ?? '');
+                $sheet->setCellValue("A{$row}", $s->invoice_date ?? '');
+                $sheet->setCellValue("B{$row}", $s->invoice_number ?? '');
                 $sheet->setCellValue("C{$row}", $s->customer?->name ?? '');
                 $sheet->setCellValue("D{$row}", $s->grand_total ?? 0);
                 $row++;
