@@ -82,11 +82,16 @@ class ReportController extends Controller
             'sales' => $reportService->salesReport($filters),
             'stock' => $reportService->stockReport($filters),
             'financial' => $reportService->financialReport($filters),
+            'ar-aging' => $reportService->arAgingReport(),
+            'parts-usage' => $reportService->partsUsageReport($filters),
+            'branch-comparison' => $reportService->branchComparison($filters),
+            'cash-flow' => $reportService->cashFlowReport($filters),
             default => $reportService->serviceReport($filters),
         };
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
+        $lastCol = 'F';
 
         if ($type === 'service') {
             $sheet->setCellValue('A1', 'Date');
@@ -146,13 +151,262 @@ class ReportController extends Controller
                 $sheet->setCellValue("D{$row}", $m['profit'] ?? 0);
                 $row++;
             }
+        } elseif ($type === 'technician') {
+            $start = $filters['start_date'] ?? now()->startOfMonth()->toDateString();
+            $end = $filters['end_date'] ?? now()->toDateString();
+
+            $technicians = \App\Models\ServiceTechnician::join('services', 'service_technicians.service_id', '=', 'services.id')
+                ->whereBetween('services.service_date', [$start, $end])
+                ->selectRaw('service_technicians.user_id, COUNT(*) as job_count, SUM(services.charge) as total_revenue, AVG(TIMESTAMPDIFF(MINUTE, services.started_at, services.completed_at)) as avg_minutes')
+                ->groupBy('service_technicians.user_id')
+                ->with('user')
+                ->get()
+                ->map(function ($t) {
+                    $t->technician_name = $t->user?->name ?? 'Unknown';
+                    $t->avg_duration = $t->avg_minutes ? round($t->avg_minutes / 60, 1) : null;
+                    return $t;
+                });
+
+            $sheet->setCellValue('A1', 'Name');
+            $sheet->setCellValue('B1', 'Job Count');
+            $sheet->setCellValue('C1', 'Total Revenue');
+            $sheet->setCellValue('D1', 'Avg Duration (hrs)');
+            $row = 2;
+            foreach ($technicians as $t) {
+                $sheet->setCellValue("A{$row}", $t->technician_name ?? '');
+                $sheet->setCellValue("B{$row}", $t->job_count ?? 0);
+                $sheet->setCellValue("C{$row}", $t->total_revenue ?? 0);
+                $sheet->setCellValue("D{$row}", $t->avg_duration ?? '');
+                $row++;
+            }
+            $lastCol = 'D';
+        } elseif ($type === 'customer-lifetime') {
+            $topCustomers = \App\Models\Customer::withCount(['services'])
+                ->withSum('services', 'charge')
+                ->having('services_count', '>', 0)
+                ->orderByDesc('services_sum_charge')
+                ->limit(20)
+                ->get()
+                ->map(function ($c) {
+                    $c->lifetime_value = $c->services_sum_charge ?? 0;
+                    $c->avg_per_visit = $c->services_count > 0 ? $c->lifetime_value / $c->services_count : 0;
+                    return $c;
+                });
+
+            $sheet->setCellValue('A1', 'Customer');
+            $sheet->setCellValue('B1', 'Services Count');
+            $sheet->setCellValue('C1', 'Lifetime Value');
+            $sheet->setCellValue('D1', 'Avg Per Visit');
+            $row = 2;
+            foreach ($topCustomers as $c) {
+                $sheet->setCellValue("A{$row}", $c->name ?? '');
+                $sheet->setCellValue("B{$row}", $c->services_count ?? 0);
+                $sheet->setCellValue("C{$row}", $c->lifetime_value ?? 0);
+                $sheet->setCellValue("D{$row}", $c->avg_per_visit ?? 0);
+                $row++;
+            }
+            $lastCol = 'D';
+        } elseif ($type === 'ar-aging') {
+            $sheet->setCellValue('A1', 'Invoice Number');
+            $sheet->setCellValue('B1', 'Customer');
+            $sheet->setCellValue('C1', 'Days Overdue');
+            $sheet->setCellValue('D1', 'Remaining');
+            $sheet->setCellValue('E1', 'Age Group');
+            $row = 2;
+            foreach (($report['invoices'] ?? []) as $i) {
+                $sheet->setCellValue("A{$row}", $i->invoice_number ?? '');
+                $sheet->setCellValue("B{$row}", $i->customer?->name ?? '');
+                $sheet->setCellValue("C{$row}", $i->days_overdue ?? 0);
+                $sheet->setCellValue("D{$row}", $i->remaining ?? 0);
+                $sheet->setCellValue("E{$row}", $i->age_group ?? '');
+                $row++;
+            }
+            $lastCol = 'E';
+        } elseif ($type === 'parts-usage') {
+            $sheet->setCellValue('A1', 'Product');
+            $sheet->setCellValue('B1', 'Category');
+            $sheet->setCellValue('C1', 'Total Qty');
+            $sheet->setCellValue('D1', 'Unit Cost');
+            $sheet->setCellValue('E1', 'Total Cost');
+            $row = 2;
+            foreach (($report['usages'] ?? []) as $u) {
+                $sheet->setCellValue("A{$row}", $u->product_name ?? '');
+                $sheet->setCellValue("B{$row}", $u->category ?? '');
+                $sheet->setCellValue("C{$row}", $u->total_qty ?? 0);
+                $sheet->setCellValue("D{$row}", $u->unit_cost ?? 0);
+                $sheet->setCellValue("E{$row}", $u->total_cost ?? 0);
+                $row++;
+            }
+            $lastCol = 'E';
+        } elseif ($type === 'branch-comparison') {
+            $sheet->setCellValue('A1', 'Branch');
+            $sheet->setCellValue('B1', 'Service Count');
+            $sheet->setCellValue('C1', 'Service Revenue');
+            $sheet->setCellValue('D1', 'POS Count');
+            $sheet->setCellValue('E1', 'POS Revenue');
+            $sheet->setCellValue('F1', 'Total Revenue');
+            $row = 2;
+            foreach (($report['branches'] ?? []) as $b) {
+                $sheet->setCellValue("A{$row}", $b['name'] ?? '');
+                $sheet->setCellValue("B{$row}", $b['service_count'] ?? 0);
+                $sheet->setCellValue("C{$row}", $b['service_revenue'] ?? 0);
+                $sheet->setCellValue("D{$row}", $b['pos_count'] ?? 0);
+                $sheet->setCellValue("E{$row}", $b['pos_revenue'] ?? 0);
+                $sheet->setCellValue("F{$row}", $b['total_revenue'] ?? 0);
+                $row++;
+            }
+            $lastCol = 'F';
+        } elseif ($type === 'cash-flow') {
+            $sheet->setCellValue('A1', 'Date');
+            $sheet->setCellValue('B1', 'Income');
+            $sheet->setCellValue('C1', 'Expense');
+            $sheet->setCellValue('D1', 'Net');
+            $row = 2;
+            foreach (($report['daily'] ?? []) as $d) {
+                $sheet->setCellValue("A{$row}", $d['date'] ?? '');
+                $sheet->setCellValue("B{$row}", $d['income'] ?? 0);
+                $sheet->setCellValue("C{$row}", $d['expense'] ?? 0);
+                $sheet->setCellValue("D{$row}", $d['net'] ?? 0);
+                $row++;
+            }
+            $lastCol = 'D';
+        } elseif ($type === 'general-ledger') {
+            $start = $filters['start_date'] ?? now()->startOfMonth()->toDateString();
+            $end = $filters['end_date'] ?? now()->toDateString();
+
+            $entries = \App\Models\JournalEntry::with('lines.account')
+                ->whereBetween('entry_date', [$start, $end])
+                ->orderBy('entry_date')
+                ->orderBy('id')
+                ->get()
+                ->map(function ($entry) {
+                    $entry->total_debit = $entry->lines->sum('debit');
+                    $entry->total_credit = $entry->lines->sum('credit');
+                    return $entry;
+                });
+
+            $sheet->setCellValue('A1', 'Entry Number');
+            $sheet->setCellValue('B1', 'Date');
+            $sheet->setCellValue('C1', 'Description');
+            $sheet->setCellValue('D1', 'Debit');
+            $sheet->setCellValue('E1', 'Credit');
+            $row = 2;
+            foreach ($entries as $e) {
+                $sheet->setCellValue("A{$row}", $e->entry_number ?? '');
+                $sheet->setCellValue("B{$row}", $e->entry_date ?? '');
+                $sheet->setCellValue("C{$row}", $e->description ?? '');
+                $sheet->setCellValue("D{$row}", $e->total_debit ?? 0);
+                $sheet->setCellValue("E{$row}", $e->total_credit ?? 0);
+                $row++;
+            }
+            $lastCol = 'E';
+        } elseif ($type === 'profit-loss') {
+            $start = $filters['start_date'] ?? now()->startOfYear()->toDateString();
+            $end = $filters['end_date'] ?? now()->toDateString();
+
+            $revenueAccounts = \App\Models\ChartOfAccount::where('type', 'revenue')->where('is_active', true)->get();
+            $cogsAccounts = \App\Models\ChartOfAccount::whereIn('name', ['Cost of Goods Sold', 'COGS'])
+                ->orWhere('code', '5100')
+                ->where('is_active', true)
+                ->get();
+            $expenseAccounts = \App\Models\ChartOfAccount::where('type', 'expense')->where('is_active', true)->get();
+
+            $revenueAccounts->each(function ($a) use ($start, $end) {
+                $a->balance = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                    ->whereHas('journalEntry', fn($q) => $q->whereBetween('entry_date', [$start, $end]))
+                    ->sum('credit');
+            });
+            $cogsAccounts->each(function ($a) use ($start, $end) {
+                $a->balance = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                    ->whereHas('journalEntry', fn($q) => $q->whereBetween('entry_date', [$start, $end]))
+                    ->sum('debit');
+            });
+            $expenseAccounts->each(function ($a) use ($start, $end) {
+                $a->balance = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                    ->whereHas('journalEntry', fn($q) => $q->whereBetween('entry_date', [$start, $end]))
+                    ->sum('debit');
+            });
+
+            $sheet->setCellValue('A1', 'Account');
+            $sheet->setCellValue('B1', 'Amount');
+            $row = 2;
+            foreach ($revenueAccounts as $a) {
+                $sheet->setCellValue("A{$row}", $a->name ?? '');
+                $sheet->setCellValue("B{$row}", $a->balance ?? 0);
+                $row++;
+            }
+            foreach ($cogsAccounts as $a) {
+                $sheet->setCellValue("A{$row}", $a->name ?? '');
+                $sheet->setCellValue("B{$row}", $a->balance ?? 0);
+                $row++;
+            }
+            foreach ($expenseAccounts as $a) {
+                $sheet->setCellValue("A{$row}", $a->name ?? '');
+                $sheet->setCellValue("B{$row}", $a->balance ?? 0);
+                $row++;
+            }
+            $lastCol = 'B';
+        } elseif ($type === 'balance-sheet') {
+            $endDate = $filters['end_date'] ?? now()->toDateString();
+
+            $assetAccounts = \App\Models\ChartOfAccount::where('type', 'asset')->where('is_active', true)->get();
+            $liabilityAccounts = \App\Models\ChartOfAccount::where('type', 'liability')->where('is_active', true)->get();
+            $equityAccounts = \App\Models\ChartOfAccount::where('type', 'equity')->where('is_active', true)->get();
+
+            $assetAccounts->each(function ($a) use ($endDate) {
+                $debit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                    ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                    ->sum('debit');
+                $credit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                    ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                    ->sum('credit');
+                $a->balance = $debit - $credit;
+            });
+            $liabilityAccounts->each(function ($a) use ($endDate) {
+                $debit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                    ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                    ->sum('debit');
+                $credit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                    ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                    ->sum('credit');
+                $a->balance = $credit - $debit;
+            });
+            $equityAccounts->each(function ($a) use ($endDate) {
+                $credit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                    ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                    ->sum('credit');
+                $debit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                    ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                    ->sum('debit');
+                $a->balance = $credit - $debit;
+            });
+
+            $sheet->setCellValue('A1', 'Account');
+            $sheet->setCellValue('B1', 'Amount');
+            $row = 2;
+            foreach ($assetAccounts as $a) {
+                $sheet->setCellValue("A{$row}", $a->name ?? '');
+                $sheet->setCellValue("B{$row}", $a->balance ?? 0);
+                $row++;
+            }
+            foreach ($liabilityAccounts as $a) {
+                $sheet->setCellValue("A{$row}", $a->name ?? '');
+                $sheet->setCellValue("B{$row}", $a->balance ?? 0);
+                $row++;
+            }
+            foreach ($equityAccounts as $a) {
+                $sheet->setCellValue("A{$row}", $a->name ?? '');
+                $sheet->setCellValue("B{$row}", $a->balance ?? 0);
+                $row++;
+            }
+            $lastCol = 'B';
         }
 
         // Styling
-        foreach (range('A', 'F') as $col) {
+        foreach (range('A', $lastCol) as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
-        $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+        $sheet->getStyle("A1:{$lastCol}1")->getFont()->setBold(true);
 
         $writer = new Xlsx($spreadsheet);
         $filename = sys_get_temp_dir() . "/report-{$type}-" . date('Ymd') . ".xlsx";
