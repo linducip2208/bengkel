@@ -168,7 +168,7 @@ class PurchaseOrderController extends Controller
                     'total_price' => $item->total_price,
                 ]);
 
-                $this->addStock($item, $purchaseOrder);
+                $this->addStock($item, $purchase);
             }
 
             $purchaseOrder->update(['status' => 'received']);
@@ -176,13 +176,19 @@ class PurchaseOrderController extends Controller
             return $purchase;
         });
 
+        try {
+            app(\App\Services\AutoJournalService::class)->journalPurchase($purchase);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("PO auto-journal: {$e->getMessage()}");
+        }
+
         ActivityLog::record('purchase-order.receive', $purchaseOrder, "Purchase order {$purchaseOrder->po_number} diterima menjadi purchase {$purchase->purchase_no}");
 
         return redirect()->route('purchase-orders.show', $purchaseOrder)
             ->with('success', 'Barang diterima. Purchase order diubah menjadi purchase & stok bertambah.');
     }
 
-    private function addStock($item, PurchaseOrder $purchaseOrder): void
+    private function addStock($item, Purchase $purchase): void
     {
         if (empty($item->product_id)) {
             return;
@@ -213,8 +219,8 @@ class PurchaseOrderController extends Controller
             'new_stock' => $newStock,
             'type' => 'purchase',
             'reference_type' => Purchase::class,
-            'reference_id' => $purchaseOrder->id,
-            'reason' => "PO #{$purchaseOrder->po_number}",
+            'reference_id' => $purchase->id,
+            'reason' => "Purchase #{$purchase->purchase_no}",
             'user_id' => auth()->id(),
         ]);
     }
