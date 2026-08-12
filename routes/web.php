@@ -138,7 +138,7 @@ Route::redirect('/admin', '/')->name('admin');
 // Landing page (public) — guest lihat welcome, user login langsung ke dashboard
 Route::get('/', function (\App\Services\ReportService $reportService) {
     if (auth()->check()) {
-        return app(\App\Http\Controllers\DashboardController::class)->index($reportService);
+        return app(TenantDashboardController::class)->index($reportService);
     }
     return view('welcome');
 })->name('dashboard');
