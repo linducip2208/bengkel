@@ -65,7 +65,7 @@ Reports - {{ config('app.name') }}
                 <div class="card-body text-center">
                     <i class="bi bi-tools display-4"></i>
                     <h5>Service Report</h5>
-                    <p class="small mb-0">View service analytics & breakdown</p>
+                    <p class="small mb-0">Service analytics & breakdown</p>
                 </div>
             </div>
         </a>
@@ -76,7 +76,7 @@ Reports - {{ config('app.name') }}
                 <div class="card-body text-center">
                     <i class="bi bi-cart-check display-4"></i>
                     <h5>Sales Report</h5>
-                    <p class="small mb-0">View sales analytics & revenue</p>
+                    <p class="small mb-0">Sales analytics & revenue</p>
                 </div>
             </div>
         </a>
@@ -87,7 +87,7 @@ Reports - {{ config('app.name') }}
                 <div class="card-body text-center">
                     <i class="bi bi-box-seam display-4"></i>
                     <h5>Stock Report</h5>
-                    <p class="small mb-0">Inventory status & low stock alerts</p>
+                    <p class="small mb-0">Inventory & low stock alerts</p>
                 </div>
             </div>
         </a>
@@ -98,7 +98,73 @@ Reports - {{ config('app.name') }}
                 <div class="card-body text-center">
                     <i class="bi bi-graph-up-arrow display-4"></i>
                     <h5>Financial Report</h5>
-                    <p class="small mb-0">Profit & loss, income vs expense</p>
+                    <p class="small mb-0">P&L, income vs expense</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 mb-3">
+        <a href="{{ route('reports.technician') }}" class="text-decoration-none">
+            <div class="card bg-secondary text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-gear display-4"></i>
+                    <h5>Technician Performance</h5>
+                    <p class="small mb-0">Productivity & revenue per mekanik</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 mb-3">
+        <a href="{{ route('reports.customer-lifetime') }}" class="text-decoration-none">
+            <div class="card bg-danger text-white" style="background:linear-gradient(135deg,#8b5cf6,#ec4899)!important">
+                <div class="card-body text-center">
+                    <i class="bi bi-people-fill display-4"></i>
+                    <h5>Customer Lifetime</h5>
+                    <p class="small mb-0">Top customers & repeat value</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 mb-3">
+        <a href="{{ route('reports.ar-aging') }}" class="text-decoration-none">
+            <div class="card bg-dark text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-clock-history display-4"></i>
+                    <h5>AR Aging</h5>
+                    <p class="small mb-0">Outstanding invoices by age</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 mb-3">
+        <a href="{{ route('reports.parts-usage') }}" class="text-decoration-none">
+            <div class="card bg-light text-dark border">
+                <div class="card-body text-center">
+                    <i class="bi bi-cpu display-4"></i>
+                    <h5>Parts Usage</h5>
+                    <p class="small mb-0">Spare part consumption</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 mb-3">
+        <a href="{{ route('reports.branch-comparison') }}" class="text-decoration-none">
+            <div class="card text-white" style="background:linear-gradient(135deg,#1e40af,#3b82f6)">
+                <div class="card-body text-center">
+                    <i class="bi bi-building display-4"></i>
+                    <h5>Branch Comparison</h5>
+                    <p class="small mb-0">Side-by-side cabang revenue</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 mb-3">
+        <a href="{{ route('reports.cash-flow') }}" class="text-decoration-none">
+            <div class="card text-white" style="background:linear-gradient(135deg,#059669,#10b981)">
+                <div class="card-body text-center">
+                    <i class="bi bi-cash-coin display-4"></i>
+                    <h5>Cash Flow</h5>
+                    <p class="small mb-0">Daily cash in/out summary</p>
                 </div>
             </div>
         </a>

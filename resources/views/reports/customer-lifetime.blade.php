@@ -13,6 +13,11 @@
     <div class="col-md-3"><div class="card"><div class="card-body text-center"><h5>@money($top->avg_per_visit)</h5><small>Avg per Visit</small></div></div></div>
     @endif
 </div>
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card"><div class="card-header">Top 10 Customers</div><div class="card-body"><canvas id="ltvChart" height="80"></canvas></div></div>
+    </div>
+</div>
 <div class="card"><div class="card-body p-0">
 <table class="table table-hover mb-0">
     <thead class="table-light"><tr><th>#</th><th>Customer</th><th class="text-center">Kunjungan</th><th class="text-end">Lifetime Value</th><th class="text-end">Avg/Visit</th><th>Kunjungan Terakhir</th></tr></thead>
@@ -32,4 +37,12 @@
     </tbody>
 </table>
 </div></div>
+@endsection
+@push('scripts')
+<script>
+var customers = @json($topCustomers ?? []);
+var top10 = customers.slice(0, 10);
+new Chart(document.getElementById('ltvChart'),{type:'bar',data:{labels:top10.map(c=>c.name),datasets:[{label:'Lifetime Value',data:top10.map(c=>c.lifetime_value),backgroundColor:'#8b5cf6',borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+</script>
+@endpush
 @endsection

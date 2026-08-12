@@ -1,8 +1,5 @@
 @extends('layouts.app')
 @section('title', 'Produktivitas Teknisi')
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-@endpush
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4><i class="fas fa-user-gear me-2"></i>Produktivitas Teknisi</h4>
