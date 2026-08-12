@@ -11,6 +11,7 @@ use App\Models\Sale;
 use App\Models\Service;
 use App\Models\StockHistory;
 use App\Models\StockRecord;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ReportService
@@ -213,6 +214,125 @@ class ReportService
             'revenue_this_month' => $revenueThisMonth,
             'outstanding_invoices' => $outstandingInvoices,
             'low_stock_count' => $lowStockCount,
+        ];
+    }
+
+    public function arAgingReport(): array
+    {
+        $now = Carbon::now();
+        $invoices = Invoice::where('payment_status', '!=', 2)
+            ->with('customer')
+            ->get()
+            ->map(function ($inv) use ($now) {
+                $daysDue = $now->diffInDays($inv->due_date ?? $inv->invoice_date, false);
+                $inv->days_overdue = max(0, $daysDue);
+                $inv->remaining = max($inv->grand_total - ($inv->paid_amount ?? 0), 0);
+                $inv->age_group = match (true) {
+                    $inv->days_overdue <= 0 => 'current',
+                    $inv->days_overdue <= 30 => '1-30',
+                    $inv->days_overdue <= 60 => '31-60',
+                    $inv->days_overdue <= 90 => '61-90',
+                    default => '90+',
+                };
+                return $inv;
+            });
+
+        $aging = $invoices->groupBy('age_group')->map(fn($g) => [
+            'count' => $g->count(),
+            'total' => $g->sum('remaining'),
+        ]);
+
+        return ['invoices' => $invoices, 'aging' => $aging];
+    }
+
+    public function partsUsageReport(array $filters): array
+    {
+        $query = StockHistory::with('product.productType')
+            ->where('type', 'usage')
+            ->where('quantity_change', '<', 0);
+
+        if (!empty($filters['start_date'])) $query->whereDate('created_at', '>=', $filters['start_date']);
+        if (!empty($filters['end_date'])) $query->whereDate('created_at', '<=', $filters['end_date']);
+
+        $usage = $query->selectRaw('product_id, SUM(ABS(quantity_change)) as total_qty, COUNT(*) as usage_count')
+            ->groupBy('product_id')
+            ->orderByDesc('total_qty')
+            ->get()
+            ->map(function ($u) {
+                $product = Product::find($u->product_id);
+                $u->product_name = $product?->name ?? 'Unknown';
+                $u->category = $product?->productType?->name ?? '-';
+                $u->unit_cost = $product?->cost_price ?? 0;
+                $u->total_cost = $u->total_qty * $u->unit_cost;
+                return $u;
+            });
+
+        return ['usages' => $usage, 'total_cost' => $usage->sum('total_cost')];
+    }
+
+    public function branchComparison(array $filters): array
+    {
+        $branches = \App\Models\Branch::where('is_active', true)->get();
+        $startDate = $filters['start_date'] ?? now()->startOfMonth()->toDateString();
+        $endDate = $filters['end_date'] ?? now()->toDateString();
+
+        $results = $branches->map(function ($branch) use ($startDate, $endDate) {
+            $serviceRevenue = Service::where('branch_id', $branch->id)
+                ->whereBetween('service_date', [$startDate, $endDate])
+                ->sum('charge');
+            $serviceCount = Service::where('branch_id', $branch->id)
+                ->whereBetween('service_date', [$startDate, $endDate])
+                ->count();
+            $posRevenue = Invoice::where('branch_id', $branch->id)
+                ->where('invoice_type', 'pos')
+                ->whereBetween('invoice_date', [$startDate, $endDate])
+                ->sum('grand_total');
+            $posCount = Invoice::where('branch_id', $branch->id)
+                ->where('invoice_type', 'pos')
+                ->whereBetween('invoice_date', [$startDate, $endDate])
+                ->count();
+
+            return [
+                'id' => $branch->id,
+                'name' => $branch->name,
+                'service_revenue' => $serviceRevenue,
+                'service_count' => $serviceCount,
+                'pos_revenue' => $posRevenue,
+                'pos_count' => $posCount,
+                'total_revenue' => $serviceRevenue + $posRevenue,
+            ];
+        });
+
+        return ['branches' => $results, 'total_revenue' => $results->sum('total_revenue')];
+    }
+
+    public function cashFlowReport(array $filters): array
+    {
+        $startDate = $filters['start_date'] ?? now()->subDays(30)->toDateString();
+        $endDate = $filters['end_date'] ?? now()->toDateString();
+
+        $dailyIncome = Income::whereBetween('income_date', [$startDate, $endDate])
+            ->selectRaw('income_date as date, SUM(amount) as total')
+            ->groupBy('date')->pluck('total', 'date');
+
+        $dailyExpense = Expense::whereBetween('expense_date', [$startDate, $endDate])
+            ->selectRaw('expense_date as date, SUM(amount) as total')
+            ->groupBy('date')->pluck('total', 'date');
+
+        $daily = [];
+        $period = CarbonPeriod::create($startDate, $endDate);
+        foreach ($period as $day) {
+            $d = $day->toDateString();
+            $inc = $dailyIncome[$d] ?? 0;
+            $exp = $dailyExpense[$d] ?? 0;
+            $daily[] = ['date' => $d, 'income' => $inc, 'expense' => $exp, 'net' => $inc - $exp];
+        }
+
+        return [
+            'daily' => $daily,
+            'total_income' => array_sum(array_column($daily, 'income')),
+            'total_expense' => array_sum(array_column($daily, 'expense')),
+            'net' => array_sum(array_column($daily, 'net')),
         ];
     }
 }

@@ -148,6 +148,12 @@ class ReportController extends Controller
             }
         }
 
+        // Styling
+        foreach (range('A', 'F') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+        $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+
         $writer = new Xlsx($spreadsheet);
         $filename = sys_get_temp_dir() . "/report-{$type}-" . date('Ymd') . ".xlsx";
         $writer->save($filename);
@@ -211,5 +217,32 @@ class ReportController extends Controller
         $pdf->setPaper('a4');
 
         return $pdf->download('laporan-service-' . $service->job_no . '.pdf');
+    }
+
+    public function arAging(ReportService $reportService)
+    {
+        $report = $reportService->arAgingReport();
+        return view('reports.ar-aging', compact('report'));
+    }
+
+    public function partsUsage(Request $request, ReportService $reportService)
+    {
+        $filters = $request->only(['start_date', 'end_date']);
+        $report = $reportService->partsUsageReport($filters);
+        return view('reports.parts-usage', compact('report', 'filters'));
+    }
+
+    public function branchComparison(Request $request, ReportService $reportService)
+    {
+        $filters = $request->only(['start_date', 'end_date']);
+        $report = $reportService->branchComparison($filters);
+        return view('reports.branch-comparison', compact('report', 'filters'));
+    }
+
+    public function cashFlow(Request $request, ReportService $reportService)
+    {
+        $filters = $request->only(['start_date', 'end_date']);
+        $report = $reportService->cashFlowReport($filters);
+        return view('reports.cash-flow', compact('report', 'filters'));
     }
 }

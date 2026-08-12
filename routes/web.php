@@ -155,6 +155,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
     Route::get('/reports/export-excel', [ReportController::class, 'exportExcel'])->name('reports.export-excel');
     Route::get('/reports/service/{service}/pdf', [ReportController::class, 'serviceReportPdf'])->name('reports.service-pdf');
+    Route::get('/reports/ar-aging', [ReportController::class, 'arAging'])->name('reports.ar-aging');
+    Route::get('/reports/parts-usage', [ReportController::class, 'partsUsage'])->name('reports.parts-usage');
+    Route::get('/reports/branch-comparison', [ReportController::class, 'branchComparison'])->name('reports.branch-comparison');
+    Route::get('/reports/cash-flow', [ReportController::class, 'cashFlow'])->name('reports.cash-flow');
 
     // --- Settings ---
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');

@@ -50,6 +50,11 @@ Sales Report - {{ config('app.name') }}
     <a href="{{ route('reports.export-excel', ['type' => 'sales'] + request()->all()) }}" class="btn btn-success btn-sm"><i class="bi bi-file-excel"></i> Export Excel</a>
 </div>
 
+<div class="card mb-4">
+    <div class="card-header"><strong>Sales Revenue per Day</strong></div>
+    <div class="card-body"><canvas id="salesChart" height="80"></canvas></div>
+</div>
+
 <div class="card">
     <div class="card-header"><strong>Sales by Date</strong></div>
     <div class="card-body p-0">
@@ -70,3 +75,9 @@ Sales Report - {{ config('app.name') }}
     </div>
 </div>
 @endsection
+@push('scripts')
+<script>
+var byDate = @json($report['by_date'] ?? []);
+new Chart(document.getElementById('salesChart'),{type:'bar',data:{labels:Object.keys(byDate),datasets:[{label:'Revenue',data:Object.values(byDate).map(d=>d.revenue),backgroundColor:'#3b82f6'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+</script>
+@endpush

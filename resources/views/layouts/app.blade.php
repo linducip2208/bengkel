@@ -691,6 +691,10 @@
                     <li><a href="{{ route('reports.financial') }}" class="nav-link {{ request()->routeIs('reports.financial') ? 'active' : '' }}"><i class="fas fa-chart-pie me-1"></i> Financial Report</a></li>
                     <li><a href="{{ route('reports.technician') }}" class="nav-link {{ request()->routeIs('reports.technician') ? 'active' : '' }}"><i class="fas fa-user-gear me-1"></i> Produktivitas Teknisi</a></li>
                     <li><a href="{{ route('reports.customer-lifetime') }}" class="nav-link {{ request()->routeIs('reports.customer-lifetime') ? 'active' : '' }}"><i class="fas fa-crown me-1"></i> Customer Lifetime</a></li>
+                    <li><a href="{{ route('reports.ar-aging') }}" class="nav-link {{ request()->routeIs('reports.ar-aging') ? 'active' : '' }}"><i class="fas fa-clock me-1"></i> AR Aging</a></li>
+                    <li><a href="{{ route('reports.parts-usage') }}" class="nav-link {{ request()->routeIs('reports.parts-usage') ? 'active' : '' }}"><i class="fas fa-microchip me-1"></i> Parts Usage</a></li>
+                    <li><a href="{{ route('reports.branch-comparison') }}" class="nav-link {{ request()->routeIs('reports.branch-comparison') ? 'active' : '' }}"><i class="fas fa-code-branch me-1"></i> Branch Comparison</a></li>
+                    <li><a href="{{ route('reports.cash-flow') }}" class="nav-link {{ request()->routeIs('reports.cash-flow') ? 'active' : '' }}"><i class="fas fa-money-bill-wave me-1"></i> Cash Flow</a></li>
                 </ul>
             </li>
             @endcan
@@ -881,6 +885,7 @@
         // Auto-show toasts
         document.querySelectorAll('.toast').forEach(t => new bootstrap.Toast(t).show());
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     @stack('scripts')
 </body>
 </html>

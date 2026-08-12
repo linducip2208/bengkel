@@ -69,9 +69,18 @@ Service Report - {{ config('app.name') }}
         <div class="card border-info">
             <div class="card-body text-center">
                 <h4>@money($report['avg_value'] ?? 0)</h4>
-                <p class="text-muted">Average Service Value</p>
+                <p class="text-muted">Avg Service Value</p>
             </div>
         </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card"><div class="card-header"><strong>Revenue per Day</strong></div><div class="card-body"><canvas id="serviceDateChart" height="80"></canvas></div></div>
+    </div>
+    <div class="col-md-6">
+        <div class="card"><div class="card-header"><strong>By Technician</strong></div><div class="card-body"><canvas id="techChart" height="80"></canvas></div></div>
     </div>
 </div>
 
@@ -125,3 +134,11 @@ Service Report - {{ config('app.name') }}
     </div>
 </div>
 @endsection
+@push('scripts')
+<script>
+var byDate = @json($report['by_date'] ?? []);
+var byTech = @json($report['by_technician'] ?? []);
+new Chart(document.getElementById('serviceDateChart'),{type:'line',data:{labels:Object.keys(byDate),datasets:[{label:'Revenue',data:Object.values(byDate).map(d=>d.revenue),borderColor:'#3b82f6',tension:0.3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+new Chart(document.getElementById('techChart'),{type:'doughnut',data:{labels:Object.values(byTech).map(t=>t.technician_name),datasets:[{data:Object.values(byTech).map(t=>t.revenue),backgroundColor:['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16']}]},options:{responsive:true}});
+</script>
+@endpush

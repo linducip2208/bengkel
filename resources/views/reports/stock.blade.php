@@ -58,6 +58,11 @@ Stock Report - {{ config('app.name') }}
     <a href="{{ route('reports.export-excel', ['type' => 'stock'] + request()->all()) }}" class="btn btn-success btn-sm"><i class="bi bi-file-excel"></i> Export Excel</a>
 </div>
 
+<div class="card mb-4">
+    <div class="card-header"><strong>Stock Level Overview</strong></div>
+    <div class="card-body"><canvas id="stockChart" height="80"></canvas></div>
+</div>
+
 <div class="card">
     <div class="card-body p-0">
         <table class="table table-striped mb-0">
@@ -74,7 +79,7 @@ Stock Report - {{ config('app.name') }}
                 @forelse($report['products'] ?? [] as $product)
                 <tr class="{{ $product->current_stock <= 5 ? 'table-danger' : '' }}">
                     <td>{{ $product->name }}</td>
-                    <td>{{ $product->productType->name ?? '-' }}</td>
+                    <td>{{ $product->productType?->type ?? '-' }}</td>
                     <td>{{ $product->current_stock }} {{ $product->productUnit->name ?? '' }}</td>
                     <td>@money($product->cost_price ?? $product->price ?? 0)</td>
                     <td>@money($product->total_value ?? 0)</td>
@@ -87,3 +92,10 @@ Stock Report - {{ config('app.name') }}
     </div>
 </div>
 @endsection
+@push('scripts')
+<script>
+var products = @json($report['products'] ?? []);
+var top15 = products.slice(0, 15);
+new Chart(document.getElementById('stockChart'),{type:'bar',data:{labels:top15.map(p=>p.name),datasets:[{label:'Stock',data:top15.map(p=>p.current_stock),backgroundColor:top15.map(p=>p.current_stock<=5?'#dc3545':'#3b82f6')}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+</script>
+@endpush
