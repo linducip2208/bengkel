@@ -19,9 +19,9 @@ use App\Http\Controllers\Api\ApiReportController;
 use App\Http\Controllers\Api\ApiMasterDataController;
 
 Route::prefix('v1')->name('api.')->group(function () {
-    Route::post('/login', [AuthController::class, 'login'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login')->middleware('throttle:10,1');
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('/me', [AuthController::class, 'me'])->name('me');
 

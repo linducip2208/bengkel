@@ -159,7 +159,7 @@ class DashboardController extends Controller
         $widgets = [];
 
         // Owner & Admin: financial overview
-        if ($user->hasRole('owner') || $user->hasRole('admin')) {
+        if ($user->hasRole('super_admin') || $user->hasRole('admin') || $user->hasRole('owner')) {
             $widgets['revenue'] = Income::whereMonth('income_date', now()->month)->sum('amount');
             $widgets['expense'] = Expense::whereMonth('expense_date', now()->month)->sum('amount');
             $widgets['profit'] = $widgets['revenue'] - $widgets['expense'];
@@ -170,18 +170,18 @@ class DashboardController extends Controller
         // Manager: operational metrics
         if ($user->hasRole('manager') || $user->hasRole('admin')) {
             $widgets['services_today'] = Service::whereDate('service_date', today())->count();
-            $widgets['services_pending'] = Service::where('done_status', 0)->count();
-            $widgets['services_completed'] = Service::where('done_status', 2)->whereDate('updated_at', today())->count();
+            $widgets['services_pending'] = Service::where('workflow_status', '<', 12)->count();
+            $widgets['services_completed'] = Service::where('workflow_status', 12)->whereDate('updated_at', today())->count();
         }
 
-        // Teknisi: assigned tasks
-        if ($user->hasRole('teknisi')) {
-            $widgets['my_pending'] = Service::where('done_status', '!=', 2)
+        // Teknisi (mekanik): assigned tasks
+        if ($user->hasRole('mekanik') || $user->hasRole('teknisi')) {
+            $widgets['my_pending'] = Service::where('workflow_status', '<', 12)
                 ->where(function ($q) use ($user) {
                     $q->where('assign_to', $user->id)
                       ->orWhereHas('technicians', fn($t) => $t->where('users.id', $user->id));
                 })->count();
-            $widgets['my_completed_today'] = Service::where('done_status', 2)
+            $widgets['my_completed_today'] = Service::where('workflow_status', 12)
                 ->whereDate('updated_at', today())
                 ->where(function ($q) use ($user) {
                     $q->where('assign_to', $user->id)

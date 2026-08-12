@@ -81,15 +81,15 @@ Route::any('/payment/callback/{token}', [\App\Http\Controllers\Tenant\PaymentGat
 
 // 2FA challenge (post-login)
 Route::get('/2fa/challenge', [\App\Http\Controllers\Auth\TwoFactorController::class, 'showChallenge'])->name('2fa.challenge');
-Route::post('/2fa/verify', [\App\Http\Controllers\Auth\TwoFactorController::class, 'verify'])->name('2fa.verify');
+Route::post('/2fa/verify', [\App\Http\Controllers\Auth\TwoFactorController::class, 'verify'])->name('2fa.verify')->middleware('throttle:10,1');
 
 // Public Booking Online (no auth)
 Route::get('/booking', [\App\Http\Controllers\BookingController::class, 'publicForm'])->name('public.booking');
-Route::post('/booking', [\App\Http\Controllers\BookingController::class, 'publicStore'])->name('public.booking.store');
+Route::post('/booking', [\App\Http\Controllers\BookingController::class, 'publicStore'])->name('public.booking.store')->middleware('throttle:10,1');
 
 // Customer Portal (separate auth via session)
     Route::get('/customer/login', [\App\Http\Controllers\CustomerPortalController::class, 'loginForm'])->name('customer.login');
-    Route::post('/customer/login', [\App\Http\Controllers\CustomerPortalController::class, 'login']);
+    Route::post('/customer/login', [\App\Http\Controllers\CustomerPortalController::class, 'login'])->middleware('throttle:10,1');
     Route::get('/customer/dashboard', [\App\Http\Controllers\CustomerPortalController::class, 'dashboard'])->name('customer.dashboard');
     Route::get('/customer/invoice/{id}', [\App\Http\Controllers\CustomerPortalController::class, 'invoiceDetail'])->name('customer.invoice');
     Route::get('/customer/service/{id}', [\App\Http\Controllers\CustomerPortalController::class, 'serviceDetail'])->name('customer.service');
@@ -176,17 +176,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/parts-usage', [ReportController::class, 'partsUsage'])->name('reports.parts-usage');
     Route::get('/reports/branch-comparison', [ReportController::class, 'branchComparison'])->name('reports.branch-comparison');
     Route::get('/reports/cash-flow', [ReportController::class, 'cashFlow'])->name('reports.cash-flow');
-    Route::get('/reports/general-ledger', [ReportController::class, 'generalLedger'])->name('reports.general-ledger');
-    Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss'])->name('reports.profit-loss');
-    Route::get('/reports/balance-sheet', [ReportController::class, 'balanceSheet'])->name('reports.balance-sheet');
+Route::get('/reports/general-ledger', [ReportController::class, 'generalLedger'])->name('reports.general-ledger')->middleware('role:super_admin|admin|manager');
+Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss'])->name('reports.profit-loss')->middleware('role:super_admin|admin|manager');
+Route::get('/reports/balance-sheet', [ReportController::class, 'balanceSheet'])->name('reports.balance-sheet')->middleware('role:super_admin|admin|manager');
 
     // --- Settings ---
-    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index')->middleware('role:super_admin|admin');
     Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
     Route::put('/settings', [SettingsController::class, 'update']);
-    Route::get('/settings/backup', [SettingsController::class, 'backupPage'])->name('settings.backup-page');
-    Route::post('/settings/backup', [SettingsController::class, 'backup'])->name('settings.backup');
-    Route::get('/settings/backup/download', [SettingsController::class, 'backupDownload'])->name('settings.backup-download');
+Route::get('/settings/backup', [SettingsController::class, 'backupPage'])->name('settings.backup-page')->middleware('role:super_admin|admin');
+Route::post('/settings/backup', [SettingsController::class, 'backup'])->name('settings.backup')->middleware('role:super_admin|admin');
+Route::get('/settings/backup/download', [SettingsController::class, 'backupDownload'])->name('settings.backup-download')->middleware('role:super_admin|admin');
     Route::post('/settings/cache-clear', [SettingsController::class, 'cacheClear'])->name('settings.cache-clear');
     Route::post('/settings/optimize', [SettingsController::class, 'optimize'])->name('settings.optimize');
 
@@ -418,18 +418,18 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/warranty-claims/{warrantyClaim}', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'destroy'])->name('warranty-claims.destroy');
 
     // --- Payment Gateway (generic adapter, configurable) ---
-    Route::resource('payment-gateways', \App\Http\Controllers\Tenant\PaymentGatewayController::class)->except(['show']);
+    Route::resource('payment-gateways', \App\Http\Controllers\Tenant\PaymentGatewayController::class)->except(['show'])->middleware('role:super_admin|admin');
     Route::post('/invoices/{invoice}/generate-payment-link', [\App\Http\Controllers\Tenant\PaymentGatewayController::class, 'generateLink'])->name('invoices.generate-payment-link');
 
     // --- User & Role Management ---
-    Route::get('/users', [\App\Http\Controllers\Tenant\RoleController::class, 'userIndex'])->name('users.index');
+    Route::get('/users', [\App\Http\Controllers\Tenant\RoleController::class, 'userIndex'])->name('users.index')->middleware('role:super_admin|admin');
     Route::post('/users', [\App\Http\Controllers\Tenant\RoleController::class, 'userStore'])->name('users.store');
     Route::put('/users/{user}', [\App\Http\Controllers\Tenant\RoleController::class, 'userUpdate'])->name('users.update');
     Route::delete('/users/{user}', [\App\Http\Controllers\Tenant\RoleController::class, 'userDestroy'])->name('users.destroy');
     Route::get('/users/api-tokens', [\App\Http\Controllers\Tenant\RoleController::class, 'apiTokens'])->name('users.api-tokens');
     Route::post('/users/api-tokens', [\App\Http\Controllers\Tenant\RoleController::class, 'createToken'])->name('users.create-token');
     Route::delete('/admin/api-tokens/{token}', [\App\Http\Controllers\Tenant\RoleController::class, 'revokeToken'])->name('admin.revoke-token');
-    Route::get('/roles', [\App\Http\Controllers\Tenant\RoleController::class, 'roleIndex'])->name('roles.index');
+    Route::get('/roles', [\App\Http\Controllers\Tenant\RoleController::class, 'roleIndex'])->name('roles.index')->middleware('role:super_admin|admin');
     Route::post('/roles', [\App\Http\Controllers\Tenant\RoleController::class, 'roleStore'])->name('roles.store');
     Route::put('/roles/{role}', [\App\Http\Controllers\Tenant\RoleController::class, 'roleUpdate'])->name('roles.update');
     Route::delete('/roles/{role}', [\App\Http\Controllers\Tenant\RoleController::class, 'roleDestroy'])->name('roles.destroy');
@@ -467,7 +467,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/stock-transfers', [\App\Http\Controllers\Tenant\WarehouseController::class, 'transferStore'])->name('warehouses.transfers.store');
 
     // --- Finance / Accounting ---
-    Route::prefix('finance')->name('finance.')->group(function () {
+    Route::prefix('finance')->middleware('role:super_admin|admin|manager')->name('finance.')->group(function () {
         Route::get('/coa', [\App\Http\Controllers\Tenant\JournalController::class, 'coaIndex'])->name('coa');
         Route::get('/coa/create', [\App\Http\Controllers\Tenant\JournalController::class, 'coaCreate'])->name('coa.create');
         Route::post('/coa', [\App\Http\Controllers\Tenant\JournalController::class, 'coaStore'])->name('coa.store');

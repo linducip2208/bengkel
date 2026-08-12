@@ -38,14 +38,19 @@ class EscalateOverdueInvoices extends Command
 
             $this->line("Overdue: {$invoice->invoice_number} — {$invoice->customer->name} — Sisa: {$remaining}");
 
-            // Send WA reminder to customer
+            // Send WA reminder to customer via NotificationService
             $custPhone = $invoice->customer?->phone;
-            if ($custPhone) {
-                $custPhone = preg_replace('/[^0-9]/', '', $custPhone);
-                if (substr($custPhone, 0, 1) === '0') {
-                    $custPhone = '62' . substr($custPhone, 1);
+            if ($custPhone && $invoice->customer) {
+                try {
+                    app(\App\Services\NotificationService::class)->send('invoice-overdue', $invoice->customer, [
+                        'customer_name' => $invoice->customer->name,
+                        'invoice_number' => $invoice->invoice_number,
+                        'remaining' => $remaining,
+                    ]);
+                } catch (\Throwable $e) {
+                    \Log::warning("Overdue WA send failed: {$e->getMessage()}");
                 }
-                // Log: could send via NotificationService or just log
+
                 \App\Models\ActivityLog::create([
                     'user_id' => null,
                     'event' => 'overdue_reminder',

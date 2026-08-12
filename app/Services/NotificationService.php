@@ -26,6 +26,35 @@ class NotificationService
             $this->sendEmail($templateSlug, $to, $data);
         } elseif ($template->channel === 'whatsapp') {
             $this->sendWhatsApp($templateSlug, $to, $data);
+        } elseif ($template->channel === 'sms') {
+            $this->sendSms($templateSlug, $to, $data);
+        }
+    }
+
+    public function sendSms(string $templateSlug, string $to, array $data): void
+    {
+        $template = $this->getTemplate($templateSlug);
+        if (!$template || !$template->is_active) {
+            return;
+        }
+
+        $body = $this->parseTemplate($template->body, $data);
+        $apiUrl = app(SettingsService::class)->get('sms_api_url', '');
+        $apiKey = app(SettingsService::class)->get('sms_api_key', '');
+
+        if (!$apiUrl) {
+            return;
+        }
+
+        try {
+            \Illuminate\Support\Facades\Http::post($apiUrl, [
+                'phone' => $to,
+                'message' => $body,
+                'api_key' => $apiKey,
+            ]);
+            $this->logSent($to, 'SMS Notification', $body, 'sent');
+        } catch (\Exception $e) {
+            $this->logSent($to, 'SMS Notification', $body, 'failed', $e->getMessage());
         }
     }
 
