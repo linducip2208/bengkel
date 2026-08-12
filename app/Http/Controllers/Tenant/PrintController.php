@@ -15,8 +15,21 @@ class PrintController extends Controller
      */
     public function invoice(Invoice $invoice, Request $request, ThermalPrintService $printService)
     {
-        $printerIp = $request->get('printer_ip', config('services.printer.ip', '192.168.1.100'));
-        $printerPort = $request->get('printer_port', config('services.printer.port', 9100));
+        $printerIp = $request->get('printer_ip');
+        $printerPort = $request->get('printer_port');
+
+        if (!$printerIp) {
+            $printer = \App\Models\Printer::query()
+                ->where('is_active', true)
+                ->where('type', 'thermal')
+                ->whereNotNull('ip_address')
+                ->orderByDesc('is_default')
+                ->orderBy('id')
+                ->first();
+
+            $printerIp = $printer?->ip_address ?? config('services.printer.ip', '192.168.1.100');
+            $printerPort = $printer?->port ?? config('services.printer.port', 9100);
+        }
 
         try {
             $items = $invoice->items->map(fn($i) => [

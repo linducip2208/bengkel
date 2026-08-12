@@ -45,6 +45,8 @@ use App\Http\Controllers\Tenant\ProductUnitController;
 use App\Http\Controllers\Tenant\PurchaseController;
 use App\Http\Controllers\Tenant\PurchaseOrderController;
 use App\Http\Controllers\Tenant\PurchaseReturnController;
+use App\Http\Controllers\Tenant\PurchaseRequisitionController;
+use App\Http\Controllers\Tenant\SellReturnController;
 use App\Http\Controllers\Tenant\SalesOrderController;
 use App\Http\Controllers\Tenant\RecallController;
 use App\Http\Controllers\Tenant\ReminderController;
@@ -66,6 +68,9 @@ use App\Http\Controllers\Tenant\VehicleBrandController;
 use App\Http\Controllers\Tenant\VehicleController;
 use App\Http\Controllers\Tenant\VehicleTypeController;
 use App\Http\Controllers\Tenant\WashbayController;
+use App\Http\Controllers\Tenant\BankAccountController;
+use App\Http\Controllers\Tenant\InvoiceSchemeController;
+use App\Http\Controllers\Tenant\PrinterController;
 
 // Auth routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -190,6 +195,11 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::post('/settings/cache-clear', [SettingsController::class, 'cacheClear'])->name('settings.cache-clear');
     Route::post('/settings/optimize', [SettingsController::class, 'optimize'])->name('settings.optimize');
 
+    // --- Printer, Numbering & Bank Accounts ---
+    Route::resource('printers', PrinterController::class)->except(['show']);
+    Route::resource('invoice-schemes', InvoiceSchemeController::class)->except(['show']);
+    Route::resource('bank-accounts', BankAccountController::class)->except(['show']);
+
     // --- Jobcards (non-resource) ---
     Route::get('/jobcards', [JobcardController::class, 'index'])->name('jobcards.index');
     Route::get('/jobcards/{service}', [JobcardController::class, 'show'])->name('jobcards.show');
@@ -271,6 +281,12 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     // --- Purchase Orders custom routes (before resource) ---
     Route::post('/purchase-orders/{purchaseOrder}/mark-received', [PurchaseOrderController::class, 'markReceived'])->name('purchase-orders.mark-received');
 
+    // --- Purchase Requisitions custom routes (before resource) ---
+    Route::post('/purchase-requisitions/{purchaseRequisition}/submit', [PurchaseRequisitionController::class, 'submit'])->name('purchase-requisitions.submit');
+    Route::post('/purchase-requisitions/{purchaseRequisition}/approve', [PurchaseRequisitionController::class, 'approve'])->name('purchase-requisitions.approve')->middleware('role:super_admin|admin|manager');
+    Route::post('/purchase-requisitions/{purchaseRequisition}/reject', [PurchaseRequisitionController::class, 'reject'])->name('purchase-requisitions.reject')->middleware('role:super_admin|admin|manager');
+    Route::post('/purchase-requisitions/{purchaseRequisition}/convert', [PurchaseRequisitionController::class, 'convertToPurchaseOrder'])->name('purchase-requisitions.convert')->middleware('role:super_admin|admin|manager');
+
     // --- Gate Passes custom routes (before resource) ---
     Route::get('/gate-passes/{gate_pass}/print', [GatePassController::class, 'print'])->name('gate-passes.print');
     Route::post('/gate-passes/{gate_pass}/mark-exit', [GatePassController::class, 'markExit'])->name('gate-passes.mark-exit');
@@ -295,6 +311,8 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::resource('purchases', PurchaseController::class);
     Route::resource('sales-orders', SalesOrderController::class);
     Route::resource('purchase-orders', PurchaseOrderController::class);
+    Route::resource('purchase-requisitions', PurchaseRequisitionController::class);
+    Route::resource('sell-returns', SellReturnController::class)->only(['index', 'create', 'store', 'show']);
     Route::resource('sales', SaleController::class);
     Route::resource('suppliers', SupplierController::class);
     Route::resource('incomes', IncomeController::class);

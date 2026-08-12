@@ -493,17 +493,18 @@
             @canany(['product.view','supplier.view','purchase.view','equipment.view','warehouse.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuInventory"
-                    aria-expanded="{{ request()->routeIs('products.*','suppliers.*','purchases.*','purchase-orders.*','equipment.*','warehouses.*','stock-adjustments.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('products.*','suppliers.*','purchases.*','purchase-orders.*','purchase-requisitions.*','equipment.*','warehouses.*','stock-adjustments.*') ? 'true' : 'false' }}">
                     <i class="fas fa-boxes"></i> Inventory
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('products.*','suppliers.*','purchases.*','purchase-orders.*','equipment.*','warehouses.*','stock-adjustments.*') ? 'show' : '' }}" id="menuInventory">
+                <ul class="collapse submenu {{ request()->routeIs('products.*','suppliers.*','purchases.*','purchase-orders.*','purchase-requisitions.*','equipment.*','warehouses.*','stock-adjustments.*') ? 'show' : '' }}" id="menuInventory">
                     @can('product.view')<li><a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.index') ? 'active' : '' }}"><i class="fas fa-box me-1"></i> Products / Parts</a></li>@endcan
                     @can('product.stock-opname')<li><a href="{{ route('products.stock-opname') }}" class="nav-link {{ request()->routeIs('products.stock-opname') ? 'active' : '' }}"><i class="fas fa-clipboard me-1"></i> Stock Opname</a></li>@endcan
                     <li><a href="{{ route('stock-adjustments.index') }}" class="nav-link {{ request()->routeIs('stock-adjustments.*') ? 'active' : '' }}"><i class="fas fa-balance-scale me-1"></i> Stock Adjustment</a></li>
                     @can('supplier.view')<li><a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"><i class="fas fa-truck me-1"></i> Suppliers</a></li>@endcan
                     @can('purchase.view')<li><a href="{{ route('purchases.index') }}" class="nav-link {{ request()->routeIs('purchases.*') ? 'active' : '' }}"><i class="fas fa-shopping-basket me-1"></i> Purchases</a></li>@endcan
                     @can('purchase.view')<li><a href="{{ route('purchase-orders.index') }}" class="nav-link {{ request()->routeIs('purchase-orders.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar me-1"></i> Purchase Orders</a></li>@endcan
+                    <li><a href="{{ route('purchase-requisitions.index') }}" class="nav-link {{ request()->routeIs('purchase-requisitions.*') ? 'active' : '' }}"><i class="fas fa-clipboard-list me-1"></i> Purchase Requisitions</a></li>
                     @can('equipment.view')<li><a href="{{ route('equipment.index') }}" class="nav-link {{ request()->routeIs('equipment.*') ? 'active' : '' }}"><i class="fas fa-toolbox me-1"></i> Equipment</a></li>@endcan
                     @can('warehouse.view')<li><a href="{{ route('warehouses.index') }}" class="nav-link {{ request()->routeIs('warehouses.*') ? 'active' : '' }}"><i class="fas fa-warehouse me-1"></i> Warehouses</a></li>@endcan
                 </ul>
@@ -514,16 +515,17 @@
             @canany(['pos.view','sale.view','invoice.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuSalesPos"
-                    aria-expanded="{{ request()->routeIs('pos.*','sales.*','sales-orders.*','invoices.*','payments.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('pos.*','sales.*','sales-orders.*','invoices.*','payments.*','sell-returns.*') ? 'true' : 'false' }}">
                     <i class="fas fa-cash-register"></i> Sales & POS
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('pos.*','sales.*','sales-orders.*','invoices.*','payments.*') ? 'show' : '' }}" id="menuSalesPos">
+                <ul class="collapse submenu {{ request()->routeIs('pos.*','sales.*','sales-orders.*','invoices.*','payments.*','sell-returns.*') ? 'show' : '' }}" id="menuSalesPos">
                     @can('pos.view')<li><a href="{{ route('pos.terminal') }}" class="nav-link {{ request()->routeIs('pos.terminal','pos.openForm') ? 'active' : '' }}"><i class="fas fa-desktop me-1"></i> POS Terminal</a></li>@endcan
                     @can('pos.view')<li><a href="{{ route('pos.sessions') }}" class="nav-link {{ request()->routeIs('pos.sessions','pos.close*') ? 'active' : '' }}"><i class="fas fa-history me-1"></i> POS Sessions</a></li>@endcan
                     @can('sale.view')<li><a href="{{ route('sales.index') }}" class="nav-link {{ request()->routeIs('sales.index') ? 'active' : '' }}"><i class="fas fa-cart-plus me-1"></i> Penjualan Sparepart</a></li>@endcan
                     @can('sale.view')<li><a href="{{ route('sales-orders.index') }}" class="nav-link {{ request()->routeIs('sales-orders.*') ? 'active' : '' }}"><i class="fas fa-file-signature me-1"></i> Sales Orders</a></li>@endcan
                     @can('invoice.view')<li><a href="{{ route('invoices.index') }}" class="nav-link {{ request()->routeIs('invoices.index') ? 'active' : '' }}"><i class="fas fa-file-invoice me-1"></i> Invoices</a></li>@endcan
+                    @can('sale.view')<li><a href="{{ route('sell-returns.index') }}" class="nav-link {{ request()->routeIs('sell-returns.*') ? 'active' : '' }}"><i class="fas fa-undo-alt me-1"></i> Retur Penjualan</a></li>@endcan
                 </ul>
             </li>
             @endcanany
@@ -581,16 +583,17 @@
             @canany(['income.view','expense.view','petty-cash.view','finance-coa.view','finance-journal.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuFinance"
-                    aria-expanded="{{ request()->routeIs('incomes.*','expenses.*','petty-cash.*','finance.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('incomes.*','expenses.*','petty-cash.*','finance.*','bank-accounts.*') ? 'true' : 'false' }}">
                     <i class="fas fa-chart-line"></i> Finance & Accounting
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('incomes.*','expenses.*','petty-cash.*','finance.*') ? 'show' : '' }}" id="menuFinance">
+                <ul class="collapse submenu {{ request()->routeIs('incomes.*','expenses.*','petty-cash.*','finance.*','bank-accounts.*') ? 'show' : '' }}" id="menuFinance">
                     @can('income.view')<li><a href="{{ route('incomes.index') }}" class="nav-link {{ request()->routeIs('incomes.*') ? 'active' : '' }}"><i class="fas fa-arrow-up me-1 text-success"></i> Income</a></li>@endcan
                     @can('expense.view')<li><a href="{{ route('expenses.index') }}" class="nav-link {{ request()->routeIs('expenses.*') ? 'active' : '' }}"><i class="fas fa-arrow-down me-1 text-danger"></i> Expenses</a></li>@endcan
                     @can('petty-cash.view')<li><a href="{{ route('petty-cash.index') }}" class="nav-link {{ request()->routeIs('petty-cash.*') ? 'active' : '' }}"><i class="fas fa-wallet me-1"></i> Petty Cash</a></li>@endcan
                     @can('finance-coa.view')<li><a href="{{ route('finance.coa') }}" class="nav-link {{ request()->routeIs('finance.coa*') ? 'active' : '' }}"><i class="fas fa-list-ol me-1"></i> Chart of Accounts</a></li>@endcan
                     @can('finance-journal.view')<li><a href="{{ route('finance.journal') }}" class="nav-link {{ request()->routeIs('finance.journal*') ? 'active' : '' }}"><i class="fas fa-book me-1"></i> Journal Entries</a></li>@endcan
+                    <li><a href="{{ route('bank-accounts.index') }}" class="nav-link {{ request()->routeIs('bank-accounts.*') ? 'active' : '' }}"><i class="fas fa-university me-1"></i> Bank Accounts</a></li>
                 </ul>
             </li>
             @endcanany
@@ -709,16 +712,18 @@
             @canany(['settings.view','custom-field.view','payment-gateway.view','two-factor.view','backup.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuSettings"
-                    aria-expanded="{{ request()->routeIs('settings.*','custom-fields.*','payment-gateways.*','2fa.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('settings.*','custom-fields.*','payment-gateways.*','2fa.*','printers.*','invoice-schemes.*') ? 'true' : 'false' }}">
                     <i class="fas fa-cog"></i> Settings
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('settings.*','custom-fields.*','payment-gateways.*','2fa.*') ? 'show' : '' }}" id="menuSettings">
+                <ul class="collapse submenu {{ request()->routeIs('settings.*','custom-fields.*','payment-gateways.*','2fa.*','printers.*','invoice-schemes.*') ? 'show' : '' }}" id="menuSettings">
                     @can('settings.view')<li><a href="{{ route('settings.index') }}" class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}"><i class="fas fa-sliders-h me-1"></i> General</a></li>@endcan
                     @can('custom-field.view')<li><a href="{{ route('custom-fields.index') }}" class="nav-link {{ request()->is('custom-fields*') ? 'active' : '' }}"><i class="fas fa-puzzle-piece me-1"></i> Custom Fields</a></li>@endcan
                     @can('payment-gateway.view')<li><a href="{{ route('payment-gateways.index') }}" class="nav-link {{ request()->routeIs('payment-gateways.*') ? 'active' : '' }}"><i class="fas fa-plug me-1"></i> Integrations</a></li>@endcan
                     @can('two-factor.view')<li><a href="{{ route('2fa.enable.form') }}" class="nav-link {{ request()->routeIs('2fa.*') ? 'active' : '' }}"><i class="fas fa-fingerprint me-1"></i> 2FA Security</a></li>@endcan
                     @can('backup.view')<li><a href="{{ route('settings.backup-page') }}" class="nav-link {{ request()->routeIs('settings.backup*') ? 'active' : '' }}"><i class="fas fa-database me-1"></i> Backup & Restore</a></li>@endcan
+                    <li><a href="{{ route('printers.index') }}" class="nav-link {{ request()->routeIs('printers.*') ? 'active' : '' }}"><i class="fas fa-print me-1"></i> Printer</a></li>
+                    <li><a href="{{ route('invoice-schemes.index') }}" class="nav-link {{ request()->routeIs('invoice-schemes.*') ? 'active' : '' }}"><i class="fas fa-hashtag me-1"></i> Numbering</a></li>
                 </ul>
             </li>
             @endcanany

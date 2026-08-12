@@ -1,0 +1,170 @@
+<?php
+
+namespace App\Http\Controllers\Tenant;
+
+use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
+use App\Models\Customer;
+use App\Models\Invoice;
+use App\Models\Product;
+use App\Models\Sale;
+use App\Models\SellReturn;
+use App\Models\StockHistory;
+use App\Models\StockRecord;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class SellReturnController extends Controller
+{
+    public function index(Request $request)
+    {
+        $returns = SellReturn::query()
+            ->with(['customer', 'items'])
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $q->where('return_number', 'like', "%{$request->search}%")
+                    ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', "%{$request->search}%"));
+            })
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
+            ->latest('id')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('sell-returns.index', compact('returns'));
+    }
+
+    public function create()
+    {
+        $sales = Sale::with('customer')->orderByDesc('id')->limit(100)->get();
+        $invoices = Invoice::with('customer')->orderByDesc('id')->limit(100)->get();
+        $customers = Customer::orderBy('name')->get();
+        $returnNumber = $this->generateNumber();
+
+        return view('sell-returns.create', compact('sales', 'invoices', 'customers', 'returnNumber'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $this->validateData($request);
+
+        $sellReturn = DB::transaction(function () use ($validated) {
+            $items = $validated['items'];
+            unset($validated['items']);
+
+            $customerId = $validated['customer_id'];
+
+            if (!empty($validated['sale_id'])) {
+                $customerId = Sale::find($validated['sale_id'])?->customer_id;
+            } elseif (!empty($validated['invoice_id'])) {
+                $customerId = Invoice::find($validated['invoice_id'])?->customer_id;
+            }
+
+            $refundAmount = $this->sumTotal($items);
+
+            $sellReturn = SellReturn::create(array_merge($validated, [
+                'return_number' => $this->generateNumber(),
+                'customer_id' => $customerId,
+                'refund_amount' => $refundAmount,
+                'status' => 'completed',
+                'created_by' => auth()->id(),
+            ]));
+
+            foreach ($items as $item) {
+                $sellReturn->items()->create([
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $item['unit_price'],
+                    'total_price' => (float) $item['quantity'] * (float) $item['unit_price'],
+                ]);
+
+                $this->addStock($item['product_id'], $item['quantity'], $sellReturn);
+            }
+
+            return $sellReturn;
+        });
+
+        ActivityLog::record('sell-return.create', $sellReturn, "Retur penjualan {$sellReturn->return_number} dibuat");
+
+        return redirect()->route('sell-returns.show', $sellReturn)
+            ->with('success', 'Retur penjualan ' . $sellReturn->return_number . ' berhasil dibuat. Stok telah dikembalikan.');
+    }
+
+    public function show(SellReturn $sellReturn)
+    {
+        $sellReturn->load(['sale', 'invoice', 'customer', 'creator', 'items.product']);
+
+        return view('sell-returns.show', compact('sellReturn'));
+    }
+
+    private function validateData(Request $request): array
+    {
+        return $request->validate([
+            'sale_id' => 'nullable|exists:sales,id',
+            'invoice_id' => 'nullable|exists:invoices,id',
+            'customer_id' => 'nullable|exists:customers,id',
+            'return_date' => 'required|date',
+            'reason' => 'required|string|max:500',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.quantity' => 'required|numeric|min:0.01',
+            'items.*.unit_price' => 'required|numeric|min:0',
+        ]);
+    }
+
+    private function sumTotal(array $items): float
+    {
+        return (float) collect($items)->sum(function ($item) {
+            return (float) $item['quantity'] * (float) $item['unit_price'];
+        });
+    }
+
+    private function addStock(int $productId, $quantity, SellReturn $sellReturn): void
+    {
+        $product = Product::find($productId);
+        if (!$product) {
+            return;
+        }
+
+        $quantity = (int) round($quantity);
+        if ($quantity <= 0) {
+            return;
+        }
+
+        $stockRecord = StockRecord::firstOrCreate(
+            ['product_id' => $productId],
+            [
+                'supplier_id' => $product->supplier_id,
+                'quantity' => 0,
+                'minimum_stock' => 0,
+                'rack_location' => null,
+            ]
+        );
+
+        $previousStock = $stockRecord->quantity;
+        $newStock = $previousStock + $quantity;
+
+        $stockRecord->update(['quantity' => $newStock]);
+
+        StockHistory::create([
+            'product_id' => $productId,
+            'quantity_change' => $quantity,
+            'previous_stock' => $previousStock,
+            'new_stock' => $newStock,
+            'type' => 'sell_return',
+            'reference_type' => SellReturn::class,
+            'reference_id' => $sellReturn->id,
+            'reason' => 'Retur penjualan #' . $sellReturn->return_number,
+            'user_id' => auth()->id(),
+        ]);
+    }
+
+    private function generateNumber(): string
+    {
+        $prefix = 'RET-' . date('Ymd');
+        $last = SellReturn::where('return_number', 'like', $prefix . '%')
+            ->orderByDesc('id')
+            ->first();
+        $next = $last ? (int) substr($last->return_number, -4) + 1 : 1;
+
+        return $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+    }
+}

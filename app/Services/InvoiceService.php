@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Invoice;
+use App\Models\InvoiceScheme;
 use App\Models\StockHistory;
 
 class InvoiceService extends BaseService
@@ -122,6 +123,25 @@ class InvoiceService extends BaseService
 
     public function generateInvoiceNumber(): string
     {
+        $scheme = InvoiceScheme::query()
+            ->where('is_default', true)
+            ->where('is_active', true)
+            ->first();
+
+        if ($scheme) {
+            $number = (int) $scheme->next_number;
+            $scheme->increment('next_number');
+
+            $seq = str_pad((string) $number, 4, '0', STR_PAD_LEFT);
+            $format = $scheme->format ?: ($scheme->prefix . '-{seq}');
+
+            return str_replace(
+                ['{prefix}', '{year}', '{month}', '{seq}'],
+                [$scheme->prefix, date('Y'), date('m'), $seq],
+                $format
+            );
+        }
+
         $prefix = 'INV-' . date('Ym') . '-';
         $last = Invoice::where('invoice_number', 'like', $prefix . '%')
             ->orderBy('invoice_number', 'desc')
