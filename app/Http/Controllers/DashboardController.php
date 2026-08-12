@@ -111,8 +111,8 @@ class DashboardController extends Controller
                       ->orWhereHas('technicians', fn($t) => $t->where('users.id', $user->id));
                 })->count();
             $widgets['my_commission'] = \App\Models\ServiceTechnician::where('user_id', $user->id)
-                ->where('is_paid', false)
-                ->sum('commission_amount');
+                ->whereNull('paid_at')
+                ->sum('commission_amt');
         }
 
         // Kasir: POS stats

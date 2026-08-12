@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['name', 'phone', 'email', 'address', 'notes', 'branch_id', 'mobile', 'company_name', 'tax_id'])]
+#[Fillable(['name', 'phone', 'email', 'address', 'notes', 'branch_id', 'mobile', 'company_name', 'tax_id', 'loyalty_points', 'membership_tier', 'portal_password', 'portal_last_login'])]
 class Customer extends Model
 {
     use HasFactory, SoftDeletes, HasBranchScope;
@@ -18,6 +18,7 @@ class Customer extends Model
     protected function casts(): array
     {
         return [
+            'portal_last_login' => 'datetime',
         ];
     }
 

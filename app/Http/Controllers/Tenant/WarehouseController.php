@@ -10,6 +10,7 @@ use App\Models\WarehouseStock;
 use App\Models\StockTransfer;
 use App\Models\StockHistory;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class WarehouseController extends Controller
 {
