@@ -412,18 +412,17 @@
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="document.getElementById('sidebar').classList.remove('show'); this.classList.remove('show')"></div>
     <aside class="sidebar" id="sidebar">
         <div class="brand">
-            <i class="fas fa-wrench"></i> {{ config('app.name') }}
+            @if(!empty($appSettings['logo']))
+                <img src="{{ asset('storage/' . $appSettings['logo']) }}" alt="Logo" style="height:28px;width:auto;margin-right:8px;">
+            @else
+                <i class="fas fa-wrench"></i>
+            @endif
+            {{ $appSettings['name'] ?? config('app.name') }}
             <button class="btn btn-sm btn-link text-white-50 ms-auto d-md-none" style="text-decoration:none;" onclick="document.getElementById('sidebar').classList.remove('show'); document.getElementById('sidebarOverlay').classList.remove('show')">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <ul class="sidebar-nav">
-            <li class="nav-item">
-                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </a>
-            </li>
-
             @can('dashboard.view')
             <li class="nav-item">
                 <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">

@@ -33,7 +33,7 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
 <div class="row mb-3">
     @isset($roleWidgets['revenue'])
     <div class="col-md-3 mb-2">
-        <div class="card border-left-success" style="border-left:4px solid #10b981;">
+        <div class="card border-start border-success border-4 h-100">
             <div class="card-body py-2 px-3">
                 <small class="text-muted">Pemasukan Bulan Ini</small>
                 <h5 class="mb-0 text-success">@money($roleWidgets['revenue'])</h5>
@@ -41,7 +41,7 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
         </div>
     </div>
     <div class="col-md-3 mb-2">
-        <div class="card border-left-danger" style="border-left:4px solid #ef4444;">
+        <div class="card border-start border-danger border-4 h-100">
             <div class="card-body py-2 px-3">
                 <small class="text-muted">Pengeluaran Bulan Ini</small>
                 <h5 class="mb-0 text-danger">@money($roleWidgets['expense'])</h5>
@@ -49,22 +49,103 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
         </div>
     </div>
     <div class="col-md-3 mb-2">
-        <div class="card border-left-primary" style="border-left:4px solid #3b82f6;">
+        <div class="card border-start border-primary border-4 h-100">
             <div class="card-body py-2 px-3">
                 <small class="text-muted">Profit Bulan Ini</small>
                 <h5 class="mb-0 text-primary">@money($roleWidgets['profit'])</h5>
             </div>
         </div>
     </div>
-    @endisset
     <div class="col-md-3 mb-2">
-        <div class="card border-left-warning" style="border-left:4px solid #f59e0b;">
+        <div class="card border-start border-info border-4 h-100">
             <div class="card-body py-2 px-3">
-                <small class="text-muted">Task Saya</small>
-                <h5 class="mb-0 text-warning">{{ $roleWidgets['my_tasks'] }} service</h5>
+                <small class="text-muted">Total Invoice</small>
+                <h5 class="mb-0 text-info">{{ $roleWidgets['total_invoices'] }} <small class="text-muted">/ {{ $roleWidgets['unpaid_invoices'] }} unpaid</small></h5>
             </div>
         </div>
     </div>
+    @endisset
+
+    @isset($roleWidgets['services_today'])
+    <div class="col-md-3 mb-2">
+        <div class="card border-start border-info border-4 h-100">
+            <div class="card-body py-2 px-3">
+                <small class="text-muted">Service Hari Ini</small>
+                <h5 class="mb-0 text-info">{{ $roleWidgets['services_today'] }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-2">
+        <div class="card border-start border-warning border-4 h-100">
+            <div class="card-body py-2 px-3">
+                <small class="text-muted">Service Pending</small>
+                <h5 class="mb-0 text-warning">{{ $roleWidgets['services_pending'] }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-2">
+        <div class="card border-start border-success border-4 h-100">
+            <div class="card-body py-2 px-3">
+                <small class="text-muted">Selesai Hari Ini</small>
+                <h5 class="mb-0 text-success">{{ $roleWidgets['services_completed'] }}</h5>
+            </div>
+        </div>
+    </div>
+    @endisset
+
+    @isset($roleWidgets['my_pending'])
+    <div class="col-md-3 mb-2">
+        <div class="card border-start border-warning border-4 h-100">
+            <div class="card-body py-2 px-3">
+                <small class="text-muted">Task Pending Saya</small>
+                <h5 class="mb-0 text-warning">{{ $roleWidgets['my_pending'] }} service</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-2">
+        <div class="card border-start border-success border-4 h-100">
+            <div class="card-body py-2 px-3">
+                <small class="text-muted">Selesai Hari Ini (Saya)</small>
+                <h5 class="mb-0 text-success">{{ $roleWidgets['my_completed_today'] }} service</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-2">
+        <div class="card border-start border-primary border-4 h-100">
+            <div class="card-body py-2 px-3">
+                <small class="text-muted">Komisi Belum Dibayar</small>
+                <h5 class="mb-0 text-primary">@money($roleWidgets['my_commission'])</h5>
+            </div>
+        </div>
+    </div>
+    @endisset
+
+    @isset($roleWidgets['pos_today'])
+    <div class="col-md-3 mb-2">
+        <div class="card border-start border-info border-4 h-100">
+            <div class="card-body py-2 px-3">
+                <small class="text-muted">Transaksi POS Hari Ini</small>
+                <h5 class="mb-0 text-info">{{ $roleWidgets['pos_today'] }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-2">
+        <div class="card border-start border-success border-4 h-100">
+            <div class="card-body py-2 px-3">
+                <small class="text-muted">Revenue POS Hari Ini</small>
+                <h5 class="mb-0 text-success">@money($roleWidgets['pos_revenue_today'])</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-2">
+        <div class="card border-start border-primary border-4 h-100">
+            <div class="card-body py-2 px-3">
+                <small class="text-muted">Saldo Kas Saat Ini</small>
+                <h5 class="mb-0 text-primary">@money($roleWidgets['pos_balance'])</h5>
+            </div>
+        </div>
+    </div>
+    @endisset
 </div>
 @endif
 

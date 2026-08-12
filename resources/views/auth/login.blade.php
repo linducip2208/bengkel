@@ -181,8 +181,12 @@
         <div class="large-icon"><i class="fas fa-wrench"></i></div>
 
         <div class="brand-row">
-            <i class="fas fa-wrench brand-icon"></i>
-            <span class="brand-name">{{ config('app.name') }}</span>
+            @if(!empty($appSettings['logo']))
+                <img src="{{ asset('storage/' . $appSettings['logo']) }}" alt="Logo" class="brand-icon" style="height:32px;width:auto;">
+            @else
+                <i class="fas fa-wrench brand-icon"></i>
+            @endif
+            <span class="brand-name">{{ $appSettings['name'] ?? config('app.name') }}</span>
         </div>
 
         <div class="tagline-block">

@@ -64,6 +64,13 @@
                         <label class="form-label">Model</label>
                         <input type="text" name="vehicle_model" class="form-control" value="{{ old('vehicle_model') }}" placeholder="Avanza 2020">
                     </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Jenis Service</label>
+                        <select name="repair_category_id" class="form-select">
+                            <option value="">— Pilih jenis service —</option>
+                            @foreach($categories as $c)<option value="{{ $c->id }}" {{ old('repair_category_id') == $c->id ? 'selected' : '' }}>{{ $c->repair_category_name }}</option>@endforeach
+                        </select>
+                    </div>
                     <div class="col-12">
                         <label class="form-label">Keluhan / Service yang Diinginkan</label>
                         <textarea name="complaint" class="form-control" rows="3" placeholder="Mis: ganti oli + tune up, AC kurang dingin">{{ old('complaint') }}</textarea>

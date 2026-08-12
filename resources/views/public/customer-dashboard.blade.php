@@ -33,7 +33,7 @@
                         <tbody>
                             @forelse($invoices as $inv)
                             <tr>
-                                <td><code>{{ $inv->invoice_number }}</code></td>
+                                <td><a href="{{ route('customer.invoice', $inv) }}"><code>{{ $inv->invoice_number }}</code></a></td>
                                 <td>{{ $inv->invoice_date->format('d/m/y') }}</td>
                                 <td class="text-end">Rp {{ number_format($inv->grand_total, 0, ',', '.') }}</td>
                                 <td>
@@ -55,7 +55,7 @@
                         <tbody>
                             @forelse($services as $s)
                             <tr>
-                                <td><strong>{{ $s->job_no }}</strong></td>
+                                <td><a href="{{ route('customer.service', $s) }}"><strong>{{ $s->job_no }}</strong></a></td>
                                 <td>{{ $s->service_date->format('d/m/y') }}</td>
                                 <td>{{ $s->vehicle->number_plate ?? '-' }}</td>
                                 <td><span class="badge bg-{{ $s->status_color }}">{{ $s->status_label }}</span></td>

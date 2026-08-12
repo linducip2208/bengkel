@@ -12,6 +12,8 @@ use App\Models\PosSession;
 use App\Models\Product;
 use App\Models\StockHistory;
 use App\Models\StockRecord;
+use App\Models\Voucher;
+use App\Http\Controllers\Tenant\LoyaltyController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -160,6 +162,8 @@ class PosController extends Controller
             'payments' => 'nullable|array|min:1',
             'payments.*.method_id' => 'required_with:payments|exists:payment_methods,id',
             'payments.*.amount' => 'required_with:payments|numeric|min:1',
+            'voucher_id' => 'nullable|exists:vouchers,id',
+            'voucher_discount' => 'nullable|numeric|min:0',
         ]);
 
         $session = PosSession::findOrFail($validated['session_id']);
@@ -172,7 +176,17 @@ class PosController extends Controller
             $subtotal += $i['quantity'] * $i['unit_price'];
         }
         $discount = (float) ($validated['discount'] ?? 0);
-        $grandTotal = max($subtotal - $discount, 0);
+        $voucherDiscount = 0;
+        $voucher = null;
+
+        if (!empty($validated['voucher_id'])) {
+            $voucher = Voucher::find($validated['voucher_id']);
+            if ($voucher && $voucher->isUsable() && $subtotal >= $voucher->min_purchase) {
+                $voucherDiscount = $voucher->calculateDiscount($subtotal - $discount);
+            }
+        }
+
+        $grandTotal = max($subtotal - $discount - $voucherDiscount, 0);
 
         // Support split payment (multi metode) or single payment
         $payments = [];
@@ -187,7 +201,7 @@ class PosController extends Controller
             return back()->withInput()->with('error', 'Total bayar kurang dari total belanja (kurang Rp ' . number_format($grandTotal - $totalPaid, 0, ',', '.') . ').');
         }
 
-        $invoice = DB::transaction(function () use ($validated, $session, $subtotal, $discount, $grandTotal) {
+        $invoice = DB::transaction(function () use ($validated, $session, $subtotal, $discount, $grandTotal, $totalPaid, $payments, $voucher, $voucherDiscount) {
             $invoiceNumber = 'POS-' . now()->format('Ymd') . '-' . str_pad((string) (PosSession::find($session->id)->transaction_count + 1), 4, '0', STR_PAD_LEFT);
 
             // Walk-in customer fallback (kolom invoices.customer_id NOT NULL)
@@ -262,16 +276,37 @@ class PosController extends Controller
                 ]);
             }
 
+            if ($voucher && $voucherDiscount > 0) {
+                $voucher->increment('used_count');
+                \App\Models\VoucherUsage::create([
+                    'voucher_id' => $voucher->id,
+                    'invoice_id' => $invoice->id,
+                    'customer_id' => $customerId,
+                    'discount_applied' => $voucherDiscount,
+                ]);
+            }
+
+            if ($customerId) {
+                LoyaltyController::earnFromInvoice($invoice);
+            }
+
             return $invoice;
         });
 
+        $changeAmount = max($totalPaid - $grandTotal, 0);
+        $message = 'Transaksi POS sukses. Total: ' . number_format($grandTotal, 0, ',', '.');
+        if ($voucher && $voucherDiscount > 0) {
+            $message .= ' (hemat ' . number_format($voucherDiscount, 0, ',', '.') . ' dgn voucher ' . $voucher->code . ')';
+        }
+        $message .= ', Kembali: ' . number_format($changeAmount, 0, ',', '.');
+
         return redirect()->route('pos.receipt', $invoice)
-            ->with('success', 'Transaksi POS sukses. Total: ' . number_format($grandTotal, 0, ',', '.') . ', Kembali: ' . number_format($validated['amount_paid'] - $grandTotal, 0, ',', '.'));
+            ->with('success', $message);
     }
 
     public function receipt(Invoice $invoice)
     {
-        $invoice->load(['items.product', 'customer', 'paymentRecords.paymentMethod', 'posSession.user']);
+        $invoice->load(['items.product', 'customer', 'paymentRecords.paymentMethod', 'posSession.user', 'voucherUsages.voucher']);
         $change = max($invoice->amount_received - $invoice->grand_total, 0);
         return view('pos.receipt', compact('invoice', 'change'));
     }

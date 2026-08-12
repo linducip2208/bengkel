@@ -27,5 +27,11 @@ class AppServiceProvider extends ServiceProvider
             }
             return null; // fallthrough ke check normal
         });
+
+        // Share settings ke semua views
+        \Illuminate\Support\Facades\View::composer('*', function ($view) {
+            $service = app(\App\Services\SettingsService::class);
+            $view->with('appSettings', $service->getCompanyInfo());
+        });
     }
 }

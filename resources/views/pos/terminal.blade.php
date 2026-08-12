@@ -81,6 +81,16 @@
                     <span>Diskon</span>
                     <span><input type="number" name="discount" id="discountInput" class="form-control form-control-sm text-end" style="width: 110px;" value="0" min="0"></span>
                 </div>
+                <div class="row-line">
+                    <span>Voucher</span>
+                    <span style="display:flex;gap:4px;">
+                        <input type="text" id="voucherCode" class="form-control form-control-sm" style="width: 110px;" placeholder="Kode voucher" autocomplete="off">
+                        <input type="hidden" name="voucher_id" id="voucherId" value="">
+                        <input type="hidden" name="voucher_discount" id="voucherDiscount" value="0">
+                        <button type="button" id="applyVoucherBtn" class="btn btn-sm btn-outline-primary">Pakai</button>
+                    </span>
+                </div>
+                <div class="row-line text-success" id="voucherInfo" style="display:none;font-size:0.78rem;"></div>
                 <div class="row-line grand"><span>Total Bayar</span><span id="sumGrand">Rp 0</span></div>
                 <div class="row-line mt-2">
                     <span>Metode Bayar</span>
@@ -141,7 +151,8 @@
             cartEl.appendChild(row);
         });
         const discount = parseFloat(discountInput.value || 0);
-        const grand = Math.max(subtotal - discount, 0);
+        const vd = parseFloat(voucherDiscount.value || 0);
+        const grand = Math.max(subtotal - discount - vd, 0);
         document.getElementById('sumSubtotal').textContent = fmt(subtotal);
         document.getElementById('sumGrand').textContent = fmt(grand);
 
@@ -227,6 +238,41 @@
         }
     });
 
+    // Voucher AJAX validation
+    const voucherCode = document.getElementById('voucherCode');
+    const voucherId = document.getElementById('voucherId');
+    const voucherDiscount = document.getElementById('voucherDiscount');
+    const voucherInfo = document.getElementById('voucherInfo');
+    const applyVoucherBtn = document.getElementById('applyVoucherBtn');
+
+    function applyVoucher() {
+        const code = voucherCode.value.trim();
+        if (!code) { voucherInfo.style.display = 'none'; voucherId.value = ''; voucherDiscount.value = '0'; render(); return; }
+        const subtotal = Object.keys(cart).reduce((s, id) => s + cart[id].price * cart[id].quantity, 0);
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        fetch('{{ route("vouchers.validate") }}', {
+            method: 'POST', headers: {'Content-Type':'application/json','X-CSRF-TOKEN':csrf},
+            body: JSON.stringify({code, subtotal})
+        }).then(r => r.json()).then(d => {
+            if (d.ok) {
+                voucherId.value = d.voucher_id;
+                voucherDiscount.value = d.discount;
+                voucherInfo.textContent = 'Voucher ' + d.name + ': -' + fmt(d.discount);
+                voucherInfo.style.display = '';
+                voucherInfo.style.color = '#059669';
+            } else {
+                voucherId.value = ''; voucherDiscount.value = '0';
+                voucherInfo.textContent = d.error;
+                voucherInfo.style.display = '';
+                voucherInfo.style.color = 'red';
+            }
+            render();
+        }).catch(() => {});
+    }
+    applyVoucherBtn.addEventListener('click', applyVoucher);
+    voucherCode.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); applyVoucher(); } });
+
+    // Update render() to include voucher discount in grand total
     render();
 })();
 </script>

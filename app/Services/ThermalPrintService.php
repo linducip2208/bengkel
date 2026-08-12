@@ -68,6 +68,17 @@ class ThermalPrintService
 
         $p = $this->printer;
 
+        // Logo (if available)
+        if (!empty($data['logo'])) {
+            try {
+                $logo = EscposImage::load($data['logo'], false);
+                $p->setJustification(Printer::JUSTIFY_CENTER);
+                $p->graphics($logo);
+            } catch (\Throwable $e) {
+                Log::warning("Logo print skipped: {$e->getMessage()}");
+            }
+        }
+
         // Header - centered, bold, double height
         $p->setJustification(Printer::JUSTIFY_CENTER);
         $p->setTextSize(2, 2);

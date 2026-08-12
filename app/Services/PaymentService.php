@@ -31,6 +31,8 @@ class PaymentService extends BaseService
                 'label' => 'Pembayaran Invoice ' . $invoice->invoice_number,
                 'created_by' => auth()->id() ?? 1,
             ]);
+
+            \App\Http\Controllers\Tenant\LoyaltyController::earnFromInvoice($invoice);
         }
 
         return $payment;

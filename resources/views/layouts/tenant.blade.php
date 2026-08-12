@@ -182,7 +182,12 @@
 
     <aside class="sidebar" id="sidebar">
         <div class="brand">
-            <i class="fas fa-wrench"></i> {{ config('app.name') }}
+            @if(!empty($appSettings['logo']))
+                <img src="{{ asset('storage/' . $appSettings['logo']) }}" alt="Logo" style="height:28px;width:auto;margin-right:8px;">
+            @else
+                <i class="fas fa-wrench"></i>
+            @endif
+            {{ $appSettings['name'] ?? config('app.name') }}
         </div>
         <ul class="sidebar-nav">
             <li class="nav-item">

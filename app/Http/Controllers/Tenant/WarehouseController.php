@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
 use App\Models\StockTransfer;
+use App\Models\StockHistory;
 use Illuminate\Http\Request;
 
 class WarehouseController extends Controller
@@ -84,10 +85,34 @@ class WarehouseController extends Controller
             $transfer->items()->create($item);
             // Kurangi stok dari gudang asal
             $fromStock = WarehouseStock::firstOrCreate(['warehouse_id'=>$v['from_warehouse_id'],'product_id'=>$item['product_id']], ['quantity'=>0]);
+            $fromPrevious = $fromStock->quantity;
             $fromStock->decrement('quantity', $item['quantity']);
+            StockHistory::create([
+                'product_id' => $item['product_id'],
+                'quantity_change' => -$item['quantity'],
+                'previous_stock' => $fromPrevious,
+                'new_stock' => $fromStock->quantity,
+                'type' => 'transfer_out',
+                'reference_type' => StockTransfer::class,
+                'reference_id' => $transfer->id,
+                'reason' => 'Transfer #' . $transfer->transfer_number,
+                'user_id' => auth()->id(),
+            ]);
             // Tambah stok ke gudang tujuan
             $toStock = WarehouseStock::firstOrCreate(['warehouse_id'=>$v['to_warehouse_id'],'product_id'=>$item['product_id']], ['quantity'=>0]);
+            $toPrevious = $toStock->quantity;
             $toStock->increment('quantity', $item['quantity']);
+            StockHistory::create([
+                'product_id' => $item['product_id'],
+                'quantity_change' => $item['quantity'],
+                'previous_stock' => $toPrevious,
+                'new_stock' => $toStock->quantity,
+                'type' => 'transfer_in',
+                'reference_type' => StockTransfer::class,
+                'reference_id' => $transfer->id,
+                'reason' => 'Transfer #' . $transfer->transfer_number,
+                'user_id' => auth()->id(),
+            ]);
         }
 
         return redirect()->route('warehouses.transfers')->with('success', 'Transfer stok berhasil.');

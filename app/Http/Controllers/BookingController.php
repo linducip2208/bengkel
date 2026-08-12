@@ -28,6 +28,7 @@ class BookingController extends Controller
             'vehicle_plate' => 'nullable|string|max:20',
             'vehicle_brand' => 'nullable|string|max:50',
             'vehicle_model' => 'nullable|string|max:100',
+            'repair_category_id' => 'nullable|exists:repair_categories,id',
             'booking_at' => 'required|date|after:now',
             'complaint' => 'nullable|string|max:1000',
         ]);
@@ -105,6 +106,7 @@ class BookingController extends Controller
             'job_no' => $jobNo,
             'customer_id' => $customer->id,
             'vehicle_id' => $vehicle?->id,
+            'repair_category_id' => $booking->repair_category_id,
             'service_date' => $booking->booking_at,
             'description' => $booking->complaint,
             'done_status' => 0,

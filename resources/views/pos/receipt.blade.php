@@ -27,14 +27,30 @@
 </style>
 @endpush
 @section('content')
-<div class="d-flex justify-content-center mb-3 no-print gap-2">
-    <button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer me-1"></i>Print Struk</button>
+<div class="d-flex justify-content-center mb-3 no-print gap-2 flex-wrap">
+    <button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer me-1"></i>Print Browser</button>
+    <form method="POST" action="{{ route('print.invoice', $invoice) }}" class="d-inline" onsubmit="return confirm('Kirim struk ke thermal printer?')">
+        @csrf
+        <button type="submit" class="btn btn-dark"><i class="bi bi-receipt me-1"></i>Print Thermal</button>
+    </form>
+    <a href="{{ route('invoices.show', $invoice) }}" class="btn btn-info text-white"><i class="bi bi-file-earmark-text me-1"></i>Lihat Invoice</a>
     <a href="{{ route('pos.terminal') }}" class="btn btn-success"><i class="bi bi-cart-plus me-1"></i>Transaksi Baru</a>
     <a href="{{ route('pos.sessions') }}" class="btn btn-outline-secondary"><i class="bi bi-list me-1"></i>Histori Sesi</a>
 </div>
 
 <div class="receipt">
-    <h5>{{ config('app.name') }}</h5>
+    @if(!empty($appSettings['logo']))
+    <div style="text-align:center;margin-bottom:4px;">
+        <img src="{{ asset('storage/' . $appSettings['logo']) }}" alt="Logo" style="max-width:120px;max-height:60px;">
+    </div>
+    @endif
+    <h5>{{ $appSettings['name'] ?? config('app.name') }}</h5>
+    @if(!empty($appSettings['address']))
+    <div class="sub">{{ $appSettings['address'] }}</div>
+    @endif
+    @if(!empty($appSettings['phone']))
+    <div class="sub">{{ $appSettings['phone'] }}</div>
+    @endif
     <div class="sub">Struk Penjualan POS</div>
     <hr>
     <div>No: <strong>{{ $invoice->invoice_number }}</strong></div>
@@ -59,9 +75,16 @@
         @if($invoice->discount > 0)
         <tr><td>Diskon</td><td class="right">- @money($invoice->discount)</td></tr>
         @endif
+        @foreach($invoice->voucherUsages as $vu)
+        <tr><td>Voucher {{ $vu->voucher?->code }}</td><td class="right" style="color:#059669;">- @money($vu->discount_applied)</td></tr>
+        @endforeach
         <tr class="total"><td>TOTAL</td><td class="right">@money($invoice->grand_total)</td></tr>
-        <tr><td>Bayar ({{ $invoice->paymentMethod?->payment ?? 'Cash' }})</td><td class="right">@money($invoice->amount_received)</td></tr>
+        @foreach($invoice->paymentRecords as $pr)
+        <tr><td>Bayar ({{ $pr->paymentMethod?->payment ?? 'Cash' }})</td><td class="right">@money($pr->amount)</td></tr>
+        @endforeach
+        @if($change > 0)
         <tr class="change"><td>Kembali</td><td class="right">@money($change)</td></tr>
+        @endif
     </table>
     <hr>
     <div class="sub">Terima kasih atas kunjungan Anda!</div>

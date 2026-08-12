@@ -62,6 +62,8 @@ class InvoiceController extends Controller
     {
         $invoice = $this->invoiceService->create($request->validated());
 
+        \App\Models\ActivityLog::record('invoice.create', $invoice, "Invoice {$invoice->invoice_number} dibuat");
+
         return redirect()->route('invoices.show', $invoice)
             ->with('success', 'Invoice ' . $invoice->invoice_number . ' berhasil dibuat.');
     }

@@ -84,6 +84,7 @@ class ServiceService extends BaseService
             if (!empty($technicianIds)) {
                 $service->technicians()->sync($technicianIds);
                 $service->update(['assign_to' => $technicianIds[0]]);
+                $this->calculateCommissions($service, $technicianIds);
             }
 
             if ($request->has('products') && is_array($request->products)) {
@@ -91,7 +92,7 @@ class ServiceService extends BaseService
                 foreach ($request->products as $productData) {
                     $product = Product::find($productData['id'] ?? $productData['product_id'] ?? null);
                     if ($product && ($productData['quantity'] ?? 0) > 0) {
-                        $productService->useInService($product, (int) $productData['quantity']);
+                        $productService->useInService($product, (int) $productData['quantity'], $service->id);
                     }
                 }
             }
@@ -99,6 +100,7 @@ class ServiceService extends BaseService
             return $service;
         });
 
+        \App\Models\ActivityLog::record('service.create', $service, "Service {$service->job_no} dibuat");
         return redirect()
             ->route('services.show', $service)
             ->with('success', 'Servis berhasil dibuat.')
@@ -146,12 +148,14 @@ class ServiceService extends BaseService
             if (!empty($technicianIds)) {
                 $service->technicians()->sync($technicianIds);
                 $service->update(['assign_to' => $technicianIds[0]]);
+                app(static::class)->calculateCommissions($service, $technicianIds);
             } else {
                 $service->technicians()->detach();
                 $service->update(['assign_to' => null]);
             }
         });
 
+        \App\Models\ActivityLog::record('service.update', $service, "Service {$service->job_no} diperbarui");
         return redirect()
             ->route('services.show', $service)
             ->with('success', 'Servis berhasil diperbarui.');
@@ -160,8 +164,10 @@ class ServiceService extends BaseService
     public function destroy($id)
     {
         $service = Service::findOrFail($id);
+        $jobNo = $service->job_no;
         $service->delete();
 
+        \App\Models\ActivityLog::record('service.delete', null, "Service {$jobNo} dihapus");
         return redirect()
             ->route('services.index')
             ->with('success', 'Servis berhasil dihapus.');
@@ -191,14 +197,43 @@ class ServiceService extends BaseService
 
             $invoiceNumber = app(InvoiceService::class)->generateInvoiceNumber();
 
+            // Calculate product costs used during service
+            $productCosts = \App\Models\StockHistory::where('reference_type', \App\Models\Service::class)
+                ->where('reference_id', $service->id)
+                ->where('type', 'usage')
+                ->get();
+            $partsTotal = 0;
+            $invoiceItems = [];
+
+            if ($productCosts->isNotEmpty()) {
+                foreach ($productCosts as $sh) {
+                    $product = \App\Models\Product::find($sh->product_id);
+                    if ($product) {
+                        $qty = abs($sh->quantity_change);
+                        $price = $product->price ?? 0;
+                        $lineTotal = $qty * $price;
+                        $partsTotal += $lineTotal;
+                        $invoiceItems[] = [
+                            'product_id' => $product->id,
+                            'description' => 'Parts: ' . $product->name,
+                            'quantity' => $qty,
+                            'unit_price' => $price,
+                            'total_price' => $lineTotal,
+                        ];
+                    }
+                }
+            }
+
+            $totalAmount = ($service->charge ?? 0) + $partsTotal;
+
             $invoice = Invoice::create([
                 'invoice_number' => $invoiceNumber,
                 'customer_id' => $service->customer_id,
                 'service_id' => $service->id,
                 'vehicle_id' => $service->vehicle_id,
                 'payment_status' => 0,
-                'total_amount' => $service->charge,
-                'grand_total' => $service->charge,
+                'total_amount' => $totalAmount,
+                'grand_total' => $totalAmount,
                 'invoice_date' => now(),
                 'invoice_type' => 'service',
                 'created_by' => auth()->id() ?? 1,
@@ -210,7 +245,18 @@ class ServiceService extends BaseService
                 'unit_price' => $service->charge,
                 'total_price' => $service->charge,
             ]);
+
+            foreach ($invoiceItems as $item) {
+                $invoice->items()->create($item);
+            }
         });
+
+        $this->notifyCustomer($service, 'service-completed', [
+            'service' => $service,
+            'workshop_name' => config('app.name'),
+        ]);
+
+        \App\Models\ActivityLog::record('service.complete', $service, "Service {$service->job_no} selesai");
 
         return redirect()
             ->route('services.show', $service)
@@ -227,6 +273,12 @@ class ServiceService extends BaseService
             'checked_in_at' => $service->checked_in_at ?? now(),
         ]);
 
+        $this->notifyCustomer($service, 'service-started', [
+            'service' => $service,
+            'workshop_name' => config('app.name'),
+        ]);
+
+        \App\Models\ActivityLog::record('service.start', $service, "Service {$service->job_no} dimulai");
         return back()->with('success', 'Servis dimulai. Timer berjalan.');
     }
 
@@ -313,6 +365,24 @@ class ServiceService extends BaseService
         return $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
     }
 
+    public function calculateCommissions(Service $service, array $technicianIds): void
+    {
+        $charge = (float) ($service->charge ?? 0);
+        if ($charge <= 0 || empty($technicianIds)) return;
+
+        $settings = app(SettingsService::class);
+        $defaultPct = (float) ($settings->get('commission_default_pct', 10));
+        $share = round($charge * $defaultPct / 100 / count($technicianIds), 2);
+
+        foreach ($technicianIds as $uid) {
+            $pivot = \App\Models\ServiceTechnician::where('service_id', $service->id)
+                ->where('user_id', $uid)->first();
+            if ($pivot && !$pivot->commission_amt) {
+                $pivot->update(['commission_pct' => $defaultPct, 'commission_amt' => $share]);
+            }
+        }
+    }
+
     public function getStats(): array
     {
         return [
@@ -320,5 +390,16 @@ class ServiceService extends BaseService
             'in_progress' => Service::inProgress()->count(),
             'done_today' => Service::done()->today()->count(),
         ];
+    }
+
+    private function notifyCustomer(Service $service, string $templateSlug, array $data): void
+    {
+        $customer = $service->customer;
+        if (!$customer || (!$customer->email && !$customer->phone)) return;
+        try {
+            app(NotificationService::class)->send($templateSlug, $customer, $data);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Notify failed for service {$service->id}: {$e->getMessage()}");
+        }
     }
 }

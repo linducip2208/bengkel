@@ -57,6 +57,18 @@ class WarrantyClaimController extends Controller
         return back()->with('success', 'Status klaim diperbarui.');
     }
 
+    public function show(WarrantyClaim $warrantyClaim)
+    {
+        $warrantyClaim->load(['customer', 'invoiceItem.product', 'invoiceItem.invoice']);
+        return view('warranty-claims.show', compact('warrantyClaim'));
+    }
+
+    public function edit(WarrantyClaim $warrantyClaim)
+    {
+        $warrantyClaim->load(['customer', 'invoiceItem.product', 'invoiceItem.invoice']);
+        return view('warranty-claims.edit', compact('warrantyClaim'));
+    }
+
     public function destroy(WarrantyClaim $warrantyClaim)
     {
         ActivityLog::record('warranty.delete', $warrantyClaim, "Hapus klaim {$warrantyClaim->id}");

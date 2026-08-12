@@ -64,6 +64,11 @@ class Invoice extends Model
         return $this->belongsTo(PosSession::class);
     }
 
+    public function voucherUsages(): HasMany
+    {
+        return $this->hasMany(VoucherUsage::class);
+    }
+
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(Vehicle::class);

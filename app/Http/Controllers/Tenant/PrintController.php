@@ -25,9 +25,16 @@ class PrintController extends Controller
                 'unit_price' => $i->unit_price,
             ])->toArray();
 
+            $settingsService = app(\App\Services\SettingsService::class);
+            $companyLogo = $settingsService->get('company_logo', '');
+            $logoPath = $companyLogo ? public_path('storage/' . $companyLogo) : null;
+
             $printService->printToNetwork($printerIp, (int) $printerPort)
                 ->printReceipt([
                     'header' => config('app.name'),
+                    'logo' => $logoPath,
+                    'address' => $settingsService->get('company_address', ''),
+                    'phone' => $settingsService->get('company_phone', ''),
                     'invoice_number' => $invoice->invoice_number,
                     'date' => $invoice->invoice_date->format('d/m/Y H:i'),
                     'cashier' => auth()->user()?->name,
@@ -39,7 +46,8 @@ class PrintController extends Controller
                     'footer' => 'Layanan Bengkel Profesional',
                 ]);
 
-            return back()->with('success', 'Print berhasil dikirim ke printer.');
+            return redirect()->route('pos.receipt', $invoice)
+                ->with('success', 'Print berhasil dikirim ke printer.');
         } catch (\Throwable $e) {
             return back()->with('error', 'Print gagal: ' . $e->getMessage());
         }

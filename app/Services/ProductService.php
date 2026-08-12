@@ -123,9 +123,9 @@ class ProductService
         });
     }
 
-    public function useInService(Product $product, int $quantity): void
+    public function useInService(Product $product, int $quantity, ?int $serviceId = null): void
     {
-        DB::transaction(function () use ($product, $quantity) {
+        DB::transaction(function () use ($product, $quantity, $serviceId) {
             $stockRecord = $this->getOrCreateStockRecord($product);
 
             if ($stockRecord->quantity < $quantity) {
@@ -137,7 +137,12 @@ class ProductService
 
             $stockRecord->update(['quantity' => $newStock]);
 
-            $this->recordStockHistory($product, -$quantity, $previousStock, $newStock, 'usage', 'Digunakan dalam servis');
+            $this->recordStockHistory(
+                $product, -$quantity, $previousStock, $newStock, 'usage',
+                'Digunakan dalam servis',
+                $serviceId ? \App\Models\Service::class : null,
+                $serviceId
+            );
         });
     }
 
@@ -208,7 +213,9 @@ class ProductService
         int $previousStock,
         int $newStock,
         string $type,
-        ?string $reason = null
+        ?string $reason = null,
+        ?string $referenceType = null,
+        ?int $referenceId = null
     ): StockHistory {
         return StockHistory::create([
             'product_id' => $product->id,
@@ -217,6 +224,8 @@ class ProductService
             'new_stock' => $newStock,
             'type' => $type,
             'reason' => $reason,
+            'reference_type' => $referenceType,
+            'reference_id' => $referenceId,
             'user_id' => auth()->id(),
         ]);
     }

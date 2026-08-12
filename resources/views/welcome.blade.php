@@ -382,7 +382,14 @@
 
 <nav class="nav">
     <div class="container nav-inner">
-        <a href="/" class="brand"><i class="fas fa-wrench"></i> {{ config('app.name') }}</a>
+        <a href="/" class="brand">
+            @if(!empty($appSettings['logo']))
+                <img src="{{ asset('storage/' . $appSettings['logo']) }}" alt="Logo" style="height:28px;width:auto;margin-right:6px;vertical-align:middle;">
+            @else
+                <i class="fas fa-wrench"></i>
+            @endif
+            {{ $appSettings['name'] ?? config('app.name') }}
+        </a>
         <div class="nav-links">
             <a href="#fitur" class="nav-link">Fitur Utama</a>
             <a href="#operasional" class="nav-link">Operasional</a>

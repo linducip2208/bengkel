@@ -81,22 +81,52 @@ class DashboardController extends Controller
     {
         $widgets = [];
 
+        // Owner & Admin: financial overview
         if ($user->hasRole('owner') || $user->hasRole('admin')) {
             $widgets['revenue'] = Income::whereMonth('income_date', now()->month)->sum('amount');
             $widgets['expense'] = Expense::whereMonth('expense_date', now()->month)->sum('amount');
             $widgets['profit'] = $widgets['revenue'] - $widgets['expense'];
+            $widgets['total_invoices'] = Invoice::count();
+            $widgets['unpaid_invoices'] = Invoice::whereIn('payment_status', [0, 1])->count();
         }
 
-        // Specific for role 'teknisi' (assigned services)
-        $widgets['my_tasks'] = Service::where('done_status', '!=', 2)
-            ->where(function ($q) use ($user) {
-                $q->where('assign_to', $user->id)
-                  ->orWhereHas('technicians', fn($t) => $t->where('users.id', $user->id));
-            })->count();
+        // Manager: operational metrics
+        if ($user->hasRole('manager') || $user->hasRole('admin')) {
+            $widgets['services_today'] = Service::whereDate('service_date', today())->count();
+            $widgets['services_pending'] = Service::where('done_status', 0)->count();
+            $widgets['services_completed'] = Service::where('done_status', 2)->whereDate('updated_at', today())->count();
+        }
 
-        // Specific for role 'kasir' (POS sessions today)
-        $widgets['pos_today'] = Invoice::where('invoice_type', 'pos')
-            ->whereDate('invoice_date', today())->count();
+        // Teknisi: assigned tasks
+        if ($user->hasRole('teknisi')) {
+            $widgets['my_pending'] = Service::where('done_status', '!=', 2)
+                ->where(function ($q) use ($user) {
+                    $q->where('assign_to', $user->id)
+                      ->orWhereHas('technicians', fn($t) => $t->where('users.id', $user->id));
+                })->count();
+            $widgets['my_completed_today'] = Service::where('done_status', 2)
+                ->whereDate('updated_at', today())
+                ->where(function ($q) use ($user) {
+                    $q->where('assign_to', $user->id)
+                      ->orWhereHas('technicians', fn($t) => $t->where('users.id', $user->id));
+                })->count();
+            $widgets['my_commission'] = \App\Models\ServiceTechnician::where('user_id', $user->id)
+                ->where('is_paid', false)
+                ->sum('commission_amount');
+        }
+
+        // Kasir: POS stats
+        if ($user->hasRole('kasir')) {
+            $widgets['pos_today'] = Invoice::where('invoice_type', 'pos')
+                ->whereDate('invoice_date', today())->count();
+            $widgets['pos_revenue_today'] = Invoice::where('invoice_type', 'pos')
+                ->whereDate('invoice_date', today())
+                ->sum('grand_total');
+            $activeSession = \App\Models\PosSession::where('user_id', $user->id)
+                ->where('status', 'open')
+                ->first();
+            $widgets['pos_balance'] = $activeSession?->opening_balance ?? 0;
+        }
 
         return $widgets;
     }

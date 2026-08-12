@@ -71,6 +71,55 @@ class CustomerPortalController extends Controller
         return back()->with('success', 'Password berhasil diubah.');
     }
 
+    public function invoiceDetail($id)
+    {
+        $customer = $this->currentCustomer();
+        $invoice = Invoice::withoutGlobalScopes()
+            ->where('customer_id', $customer->id)
+            ->with(['items.product', 'paymentRecords.paymentMethod', 'voucherUsages.voucher'])
+            ->findOrFail($id);
+
+        $totalPaid = $invoice->paymentRecords->sum('amount');
+        $remaining = max($invoice->grand_total - $totalPaid, 0);
+
+        return view('public.customer-invoice', compact('customer', 'invoice', 'totalPaid', 'remaining'));
+    }
+
+    public function serviceDetail($id)
+    {
+        $customer = $this->currentCustomer();
+        $service = Service::withoutGlobalScopes()
+            ->where('customer_id', $customer->id)
+            ->with(['vehicle', 'repairCategory', 'technicians', 'jobcardDetail', 'invoice.items'])
+            ->findOrFail($id);
+
+        return view('public.customer-service', compact('customer', 'service'));
+    }
+
+    public function uploadPayment(Request $request, $id)
+    {
+        $customer = $this->currentCustomer();
+        $invoice = Invoice::withoutGlobalScopes()
+            ->where('customer_id', $customer->id)
+            ->findOrFail($id);
+
+        $request->validate([
+            'payment_proof' => 'required|image|max:5120',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        $path = $request->file('payment_proof')->store('payment-proofs/' . $invoice->id, 'public');
+
+        $invoice->update([
+            'payment_proof' => $path,
+            'payment_status' => $invoice->payment_status > 0 ? $invoice->payment_status : 1,
+        ]);
+
+        \App\Models\ActivityLog::record('payment.proof_upload', $invoice, "Customer upload bukti bayar invoice {$invoice->invoice_number}");
+
+        return back()->with('success', 'Bukti pembayaran berhasil diupload. Admin akan memverifikasi.');
+    }
+
     public function logout()
     {
         Session::forget('customer_id');

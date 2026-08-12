@@ -23,7 +23,7 @@
             <tr>
                 <td>{{ $c->claim_date->format('d M Y') }}</td>
                 <td>{{ $c->customer?->name ?? '-' }}</td>
-                <td>{{ $c->invoiceItem?->product?->name ?? $c->invoiceItem?->description }}</td>
+                <td><a href="{{ route('warranty-claims.show', $c) }}">{{ $c->invoiceItem?->product?->name ?? $c->invoiceItem?->description }}</a></td>
                 <td><code class="small">{{ $c->invoiceItem?->invoice?->invoice_number }}</code></td>
                 <td><small>{{ Str::limit($c->complaint, 80) }}</small></td>
                 <td>
@@ -38,6 +38,7 @@
                     </form>
                 </td>
                 <td>
+                    <a href="{{ route('warranty-claims.edit', $c) }}" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i></a>
                     <form action="{{ route('warranty-claims.destroy', $c) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus?')">@csrf @method('DELETE')<button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button></form>
                 </td>
             </tr>

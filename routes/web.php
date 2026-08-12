@@ -79,11 +79,14 @@ Route::get('/booking', [\App\Http\Controllers\BookingController::class, 'publicF
 Route::post('/booking', [\App\Http\Controllers\BookingController::class, 'publicStore'])->name('public.booking.store');
 
 // Customer Portal (separate auth via session)
-Route::get('/customer/login', [\App\Http\Controllers\CustomerPortalController::class, 'loginForm'])->name('customer.login');
-Route::post('/customer/login', [\App\Http\Controllers\CustomerPortalController::class, 'login'])->name('customer.login.submit');
-Route::get('/customer/dashboard', [\App\Http\Controllers\CustomerPortalController::class, 'dashboard'])->name('customer.dashboard');
-Route::post('/customer/change-password', [\App\Http\Controllers\CustomerPortalController::class, 'changePassword'])->name('customer.change-password');
-Route::post('/customer/logout', [\App\Http\Controllers\CustomerPortalController::class, 'logout'])->name('customer.logout');
+    Route::get('/customer/login', [\App\Http\Controllers\CustomerPortalController::class, 'loginForm'])->name('customer.login');
+    Route::post('/customer/login', [\App\Http\Controllers\CustomerPortalController::class, 'login']);
+    Route::get('/customer/dashboard', [\App\Http\Controllers\CustomerPortalController::class, 'dashboard'])->name('customer.dashboard');
+    Route::get('/customer/invoice/{id}', [\App\Http\Controllers\CustomerPortalController::class, 'invoiceDetail'])->name('customer.invoice');
+    Route::get('/customer/service/{id}', [\App\Http\Controllers\CustomerPortalController::class, 'serviceDetail'])->name('customer.service');
+    Route::post('/customer/invoice/{id}/upload-payment', [\App\Http\Controllers\CustomerPortalController::class, 'uploadPayment'])->name('customer.upload-payment');
+    Route::post('/customer/change-password', [\App\Http\Controllers\CustomerPortalController::class, 'changePassword'])->name('customer.change-password');
+    Route::post('/customer/logout', [\App\Http\Controllers\CustomerPortalController::class, 'logout'])->name('customer.logout');
 
 // Public SEO pages
 Route::get('/best/{category}', [ProgrammaticSeoController::class, 'bestService'])->name('seo.best');
@@ -179,6 +182,7 @@ Route::middleware(['auth'])->group(function () {
     // --- Observations ---
     Route::get('/observations/{service}/checklist', [ObservationController::class, 'checklist'])->name('observations.checklist');
     Route::post('/observations/{service}/save-checklist', [ObservationController::class, 'saveChecklist'])->name('observations.save-checklist');
+    Route::get('/observations-by-type/{type}', [ObservationController::class, 'getByType'])->name('observations.by-type');
 
     // --- Checkouts ---
     Route::get('/checkouts/{service}', [CheckoutController::class, 'index'])->name('checkouts.index');
@@ -297,7 +301,7 @@ Route::middleware(['auth'])->group(function () {
 
     // --- Marketing: Voucher & Loyalty ---
     Route::resource('vouchers', VoucherController::class)->except(['show']);
-    Route::get('/vouchers-validate', [VoucherController::class, 'validateCode'])->name('vouchers.validate');
+    Route::post('/vouchers-validate', [VoucherController::class, 'validateCode'])->name('vouchers.validate');
     Route::get('/marketing/campaign', [\App\Http\Controllers\Tenant\CampaignController::class, 'index'])->name('marketing.campaign');
     Route::post('/marketing/campaign', [\App\Http\Controllers\Tenant\CampaignController::class, 'send'])->name('marketing.campaign.send');
     Route::get('/marketing/campaign/search', [\App\Http\Controllers\Tenant\CampaignController::class, 'searchCustomers'])->name('marketing.campaign.search');
@@ -351,6 +355,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/warranty-claims', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'index'])->name('warranty-claims.index');
     Route::get('/warranty-claims/create', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'create'])->name('warranty-claims.create');
     Route::post('/warranty-claims', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'store'])->name('warranty-claims.store');
+    Route::get('/warranty-claims/{warrantyClaim}', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'show'])->name('warranty-claims.show');
+    Route::get('/warranty-claims/{warrantyClaim}/edit', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'edit'])->name('warranty-claims.edit');
     Route::put('/warranty-claims/{warrantyClaim}', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'update'])->name('warranty-claims.update');
     Route::delete('/warranty-claims/{warrantyClaim}', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'destroy'])->name('warranty-claims.destroy');
 
