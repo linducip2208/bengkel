@@ -136,6 +136,16 @@
             font-size: 0.82rem;
         }
 
+        .submenu .submenu-header {
+            padding: 6px 14px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.35);
+            font-weight: 600;
+            pointer-events: none;
+        }
+
         .topbar {
             position: fixed;
             top: 0;
@@ -423,6 +433,7 @@
             </button>
         </div>
         <ul class="sidebar-nav">
+            {{-- 1. DASHBOARD --}}
             @can('dashboard.view')
             <li class="nav-item">
                 <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
@@ -431,129 +442,48 @@
             </li>
             @endcan
 
-            @canany(['branch.view','holiday.view','washbay.view'])
-            {{-- Cabang --}}
+            {{-- 2. OPERATIONS --}}
+            @canany(['branch.view','booking.view','service.view','customer.view','vehicle.view','gate-pass.view'])
             <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuBranches"
-                    aria-expanded="{{ request()->is('branches*','holidays*','washbays*','business-hours*') ? 'true' : 'false' }}">
-                    <i class="fas fa-building"></i> Cabang
+                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuOperations"
+                    aria-expanded="{{ request()->is('branches*','holidays*','washbays*','business-hours*') || request()->routeIs('bookings.*','services.*','jobcards.*','customers.*','vehicles.*','gate-passes.*') ? 'true' : 'false' }}">
+                    <i class="fas fa-cogs"></i> Operations
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->is('branches*','holidays*','washbays*','business-hours*') ? 'show' : '' }}" id="menuBranches">
-                    @can('branch.view')<li><a href="{{ route('branches.index') }}" class="nav-link {{ request()->is('branches*') ? 'active' : '' }}"><i class="fas fa-store-alt me-1"></i> Daftar Cabang</a></li>@endcan
-                    @can('holiday.view')<li><a href="{{ route('holidays.index') }}" class="nav-link {{ request()->is('holidays*') ? 'active' : '' }}"><i class="fas fa-calendar-times me-1"></i> Hari Libur</a></li>@endcan
-                    @can('washbay.view')<li><a href="{{ route('washbays.index') }}" class="nav-link {{ request()->is('washbays*') ? 'active' : '' }}"><i class="fas fa-shower me-1"></i> Washbay / Slot</a></li>@endcan
+                <ul class="collapse submenu {{ request()->is('branches*','holidays*','washbays*','business-hours*') || request()->routeIs('bookings.*','services.*','jobcards.*','customers.*','vehicles.*','gate-passes.*') ? 'show' : '' }}" id="menuOperations">
+                    @can('branch.view')<li><a href="{{ route('branches.index') }}" class="nav-link {{ request()->is('branches*') ? 'active' : '' }}"><i class="fas fa-store-alt me-1"></i> Branches</a></li>@endcan
+                    @can('holiday.view')<li><a href="{{ route('holidays.index') }}" class="nav-link {{ request()->is('holidays*') ? 'active' : '' }}"><i class="fas fa-calendar-times me-1"></i> Holidays</a></li>@endcan
+                    @can('washbay.view')<li><a href="{{ route('washbays.index') }}" class="nav-link {{ request()->is('washbays*') ? 'active' : '' }}"><i class="fas fa-shower me-1"></i> Washbay / Slots</a></li>@endcan
+                    @can('booking.view')<li><a href="{{ route('bookings.index') }}" class="nav-link {{ request()->routeIs('bookings.index') ? 'active' : '' }}"><i class="fas fa-calendar-check me-1"></i> Bookings</a></li>@endcan
+                    @can('booking.view')<li><a href="{{ route('bookings.calendar') }}" class="nav-link {{ request()->routeIs('bookings.calendar*') ? 'active' : '' }}"><i class="fas fa-calendar-alt me-1"></i> Calendar</a></li>@endcan
+                    @can('service.view')<li><a href="{{ route('services.index') }}" class="nav-link {{ request()->routeIs('services.index') ? 'active' : '' }}"><i class="fas fa-clipboard-check me-1"></i> Job Cards / Services</a></li>@endcan
+                    @can('gate-pass.view')<li><a href="{{ route('gate-passes.index') }}" class="nav-link {{ request()->routeIs('gate-passes.*') ? 'active' : '' }}"><i class="fas fa-ticket-alt me-1"></i> Gate Passes</a></li>@endcan
+                    @can('vehicle.view')<li><a href="{{ route('vehicles.index') }}" class="nav-link {{ request()->routeIs('vehicles.*') ? 'active' : '' }}"><i class="fas fa-car me-1"></i> Vehicles</a></li>@endcan
+                    @can('customer.view')<li><a href="{{ route('customers.index') }}" class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}"><i class="fas fa-users me-1"></i> Customers</a></li>@endcan
+                    @can('customer-group.view')<li><a href="{{ route('customer-groups.index') }}" class="nav-link {{ request()->is('customer-groups*') ? 'active' : '' }}"><i class="fas fa-layer-group me-1"></i> Customer Groups</a></li>@endcan
                 </ul>
             </li>
             @endcanany
 
-            @can('master-data.view')
-            {{-- Master Data --}}
+            {{-- 3. SERVICE MANAGEMENT --}}
+            @canany(['service.view','jobcard.view','subcontractor.view','service-package.view'])
             <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuMasterData"
-                    aria-expanded="{{ request()->is('vehicle-types*','vehicle-brands*','fuel-types*','colors*','product-types*','product-units*','payment-methods*','tax-rates*','repair-categories*','observation-types*','observation-points*','inspection-points*','checkout-categories*','service-packages*') ? 'true' : 'false' }}">
-                    <i class="fas fa-database"></i> Master Data
+                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuServiceMgmt"
+                    aria-expanded="{{ request()->routeIs('services.*','jobcards.*','subcontractors.*','service-packages.*') ? 'true' : 'false' }}">
+                    <i class="fas fa-tools"></i> Service Management
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->is('vehicle-types*','vehicle-brands*','fuel-types*','colors*','product-types*','product-units*','payment-methods*','tax-rates*','repair-categories*','observation-types*','observation-points*','inspection-points*','checkout-categories*','service-packages*') ? 'show' : '' }}" id="menuMasterData">
-                    <li><a href="{{ route('vehicle-types.index') }}" class="nav-link {{ request()->is('vehicle-types*') ? 'active' : '' }}"><i class="fas fa-truck-pickup me-1"></i> Vehicle Types</a></li>
-                    <li><a href="{{ route('vehicle-brands.index') }}" class="nav-link {{ request()->is('vehicle-brands*') ? 'active' : '' }}"><i class="fas fa-trademark me-1"></i> Vehicle Brands</a></li>
-                    <li><a href="{{ route('fuel-types.index') }}" class="nav-link {{ request()->is('fuel-types*') ? 'active' : '' }}"><i class="fas fa-gas-pump me-1"></i> Fuel Types</a></li>
-                    <li><a href="{{ route('colors.index') }}" class="nav-link {{ request()->is('colors*') ? 'active' : '' }}"><i class="fas fa-palette me-1"></i> Colors</a></li>
-                    <li><a href="{{ route('product-types.index') }}" class="nav-link {{ request()->is('product-types*') ? 'active' : '' }}"><i class="fas fa-tags me-1"></i> Product Types</a></li>
-                    <li><a href="{{ route('product-units.index') }}" class="nav-link {{ request()->is('product-units*') ? 'active' : '' }}"><i class="fas fa-balance-scale me-1"></i> Product Units</a></li>
-                    <li><a href="{{ route('payment-methods.index') }}" class="nav-link {{ request()->is('payment-methods*') ? 'active' : '' }}"><i class="fas fa-credit-card me-1"></i> Payment Methods</a></li>
-                    <li><a href="{{ route('tax-rates.index') }}" class="nav-link {{ request()->is('tax-rates*') ? 'active' : '' }}"><i class="fas fa-percent me-1"></i> Tax Rates</a></li>
-                    <li><a href="{{ route('repair-categories.index') }}" class="nav-link {{ request()->is('repair-categories*') ? 'active' : '' }}"><i class="fas fa-toolbox me-1"></i> Repair Categories</a></li>
-                    <li><a href="{{ route('observation-types.index') }}" class="nav-link {{ request()->is('observation-types*') ? 'active' : '' }}"><i class="fas fa-clipboard-check me-1"></i> Observation Types</a></li>
-                    <li><a href="{{ route('observation-points.index') }}" class="nav-link {{ request()->is('observation-points*') ? 'active' : '' }}"><i class="fas fa-list-ol me-1"></i> Observation Points</a></li>
-                    <li><a href="{{ route('inspection-points.index') }}" class="nav-link {{ request()->is('inspection-points*') ? 'active' : '' }}"><i class="fas fa-search me-1"></i> Inspection Points</a></li>
-                    <li><a href="{{ route('checkout-categories.index') }}" class="nav-link {{ request()->is('checkout-categories*') ? 'active' : '' }}"><i class="fas fa-check-double me-1"></i> Checkout Categories</a></li>
+                <ul class="collapse submenu {{ request()->routeIs('services.*','jobcards.*','subcontractors.*','service-packages.*') ? 'show' : '' }}" id="menuServiceMgmt">
                     @can('service-package.view')<li><a href="{{ route('service-packages.index') }}" class="nav-link {{ request()->is('service-packages*') ? 'active' : '' }}"><i class="fas fa-cubes me-1"></i> Service Packages</a></li>@endcan
+                    @can('service.view')<li><a href="{{ route('services.index') }}" class="nav-link {{ request()->routeIs('services.index') ? 'active' : '' }}"><i class="fas fa-list me-1"></i> All Services</a></li>@endcan
+                    @can('jobcard.view')<li><a href="{{ route('jobcards.index') }}" class="nav-link {{ request()->routeIs('jobcards.*') ? 'active' : '' }}"><i class="fas fa-clipboard-list me-1"></i> Job Cards</a></li>@endcan
+                    @can('subcontractor.view')<li><a href="{{ route('subcontractors.index') }}" class="nav-link {{ request()->routeIs('subcontractors.*') ? 'active' : '' }}"><i class="fas fa-user-gear me-1"></i> Subcontractors</a></li>@endcan
                 </ul>
             </li>
-            @endcan
+            @endcanany
 
-            @can('customer.view')
-            {{-- Customer --}}
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuCustomer"
-                    aria-expanded="{{ request()->is('customers*','customer-groups*') ? 'true' : 'false' }}">
-                    <i class="fas fa-users"></i> Customer
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <ul class="collapse submenu {{ request()->is('customers*','customer-groups*') ? 'show' : '' }}" id="menuCustomer">
-                    <li><a href="{{ route('customers.index') }}" class="nav-link {{ request()->is('customers') ? 'active' : '' }}"><i class="fas fa-list me-1"></i> All Customers</a></li>
-                    @can('customer.create')<li><a href="{{ route('customers.create') }}" class="nav-link {{ request()->is('customers/create') ? 'active' : '' }}"><i class="fas fa-user-plus me-1"></i> Add Customer</a></li>@endcan
-                    @can('customer-group.view')<li><a href="{{ route('customer-groups.index') }}" class="nav-link {{ request()->is('customer-groups*') ? 'active' : '' }}"><i class="fas fa-layer-group me-1"></i> Customer Groups</a></li>@endcan
-                </ul>
-            </li>
-            @endcan
-
-            @can('vehicle.view')
-            {{-- Vehicle --}}
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuVehicle"
-                    aria-expanded="{{ request()->is('vehicles*') ? 'true' : 'false' }}">
-                    <i class="fas fa-car"></i> Vehicle
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <ul class="collapse submenu {{ request()->is('vehicles*') ? 'show' : '' }}" id="menuVehicle">
-                    <li><a href="{{ route('vehicles.index') }}" class="nav-link {{ request()->is('vehicles') ? 'active' : '' }}"><i class="fas fa-list me-1"></i> All Vehicles</a></li>
-                    @can('vehicle.create')<li><a href="{{ route('vehicles.create') }}" class="nav-link {{ request()->is('vehicles/create') ? 'active' : '' }}"><i class="fas fa-plus-circle me-1"></i> Add Vehicle</a></li>@endcan
-                </ul>
-            </li>
-            @endcan
-
-            @can('service.view')
-            {{-- Service --}}
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuService"
-                    aria-expanded="{{ request()->routeIs('services.*','jobcards.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-tools"></i> Service
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <ul class="collapse submenu {{ request()->routeIs('services.*','jobcards.*','subcontractors.*') ? 'show' : '' }}" id="menuService">
-                    <li><a href="{{ route('services.index') }}" class="nav-link {{ request()->routeIs('services.index') ? 'active' : '' }}"><i class="fas fa-list me-1"></i> All Services</a></li>
-                    @can('jobcard.view')<li><a href="{{ route('jobcards.index') }}" class="nav-link {{ request()->routeIs('jobcards.*') ? 'active' : '' }}"><i class="fas fa-clipboard-list me-1"></i> Jobcards</a></li>@endcan
-                    @can('service.create')<li><a href="{{ route('services.create') }}" class="nav-link {{ request()->routeIs('services.create') ? 'active' : '' }}"><i class="fas fa-plus-circle me-1"></i> Add Service</a></li>@endcan
-                    @can('subcontractor.view')<li><a href="{{ route('subcontractors.index') }}" class="nav-link {{ request()->routeIs('subcontractors.*') ? 'active' : '' }}"><i class="fas fa-user-gear me-1"></i> Subkontraktor</a></li>@endcan
-                </ul>
-            </li>
-            @endcan
-
-            @can('gate-pass.view')
-            {{-- Gate Passes --}}
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuGatePass"
-                    aria-expanded="{{ request()->routeIs('gate-passes.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-ticket-alt"></i> Gate Passes
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <ul class="collapse submenu {{ request()->routeIs('gate-passes.*') ? 'show' : '' }}" id="menuGatePass">
-                    <li><a href="{{ route('gate-passes.index') }}" class="nav-link {{ request()->routeIs('gate-passes.index') ? 'active' : '' }}"><i class="fas fa-list me-1"></i> All Gate Passes</a></li>
-                    @can('gate-pass.create')<li><a href="{{ route('gate-passes.create') }}" class="nav-link {{ request()->routeIs('gate-passes.create') ? 'active' : '' }}"><i class="fas fa-plus-circle me-1"></i> Add Gate Pass</a></li>@endcan
-                </ul>
-            </li>
-            @endcan
-
-            @can('invoice.view')
-            {{-- Invoice --}}
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuInvoice"
-                    aria-expanded="{{ request()->routeIs('invoices.*','payments.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-file-invoice"></i> Invoice
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <ul class="collapse submenu {{ request()->routeIs('invoices.*','payments.*') ? 'show' : '' }}" id="menuInvoice">
-                    <li><a href="{{ route('invoices.index') }}" class="nav-link {{ request()->routeIs('invoices.index') ? 'active' : '' }}"><i class="fas fa-list me-1"></i> All Invoices</a></li>
-                    @can('invoice.create')<li><a href="{{ route('invoices.create') }}" class="nav-link {{ request()->routeIs('invoices.create') ? 'active' : '' }}"><i class="fas fa-plus-circle me-1"></i> Add Invoice</a></li>@endcan
-                </ul>
-            </li>
-            @endcan
-
-            @canany(['product.view','supplier.view','purchase.view'])
-            {{-- Inventory --}}
+            {{-- 4. INVENTORY --}}
+            @canany(['product.view','supplier.view','purchase.view','equipment.view','warehouse.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuInventory"
                     aria-expanded="{{ request()->routeIs('products.*','suppliers.*','purchases.*','equipment.*','warehouses.*') ? 'true' : 'false' }}">
@@ -561,123 +491,102 @@
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <ul class="collapse submenu {{ request()->routeIs('products.*','suppliers.*','purchases.*','equipment.*','warehouses.*') ? 'show' : '' }}" id="menuInventory">
-                    @can('product.view')<li><a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.index') ? 'active' : '' }}"><i class="fas fa-box me-1"></i> Products</a></li>@endcan
-                    @can('product.stock-opname')<li><a href="{{ route('products.stock-opname') }}" class="nav-link {{ request()->routeIs('products.stock-opname') ? 'active' : '' }}"><i class="fas fa-clipboard me-1"></i> Stock</a></li>@endcan
+                    @can('product.view')<li><a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.index') ? 'active' : '' }}"><i class="fas fa-box me-1"></i> Products / Parts</a></li>@endcan
+                    @can('product.stock-opname')<li><a href="{{ route('products.stock-opname') }}" class="nav-link {{ request()->routeIs('products.stock-opname') ? 'active' : '' }}"><i class="fas fa-clipboard me-1"></i> Stock Opname</a></li>@endcan
                     @can('supplier.view')<li><a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"><i class="fas fa-truck me-1"></i> Suppliers</a></li>@endcan
                     @can('purchase.view')<li><a href="{{ route('purchases.index') }}" class="nav-link {{ request()->routeIs('purchases.*') ? 'active' : '' }}"><i class="fas fa-shopping-basket me-1"></i> Purchases</a></li>@endcan
-                    @can('equipment.view')<li><a href="{{ route('equipment.index') }}" class="nav-link {{ request()->routeIs('equipment.*') ? 'active' : '' }}"><i class="fas fa-toolbox me-1"></i> Peralatan Bengkel</a></li>@endcan
-                    @can('warehouse.view')<li><a href="{{ route('warehouses.index') }}" class="nav-link {{ request()->routeIs('warehouses.*') ? 'active' : '' }}"><i class="fas fa-warehouse me-1"></i> Gudang</a></li>@endcan
+                    @can('equipment.view')<li><a href="{{ route('equipment.index') }}" class="nav-link {{ request()->routeIs('equipment.*') ? 'active' : '' }}"><i class="fas fa-toolbox me-1"></i> Equipment</a></li>@endcan
+                    @can('warehouse.view')<li><a href="{{ route('warehouses.index') }}" class="nav-link {{ request()->routeIs('warehouses.*') ? 'active' : '' }}"><i class="fas fa-warehouse me-1"></i> Warehouses</a></li>@endcan
                 </ul>
             </li>
             @endcanany
 
-            @can('pos.view')
-            {{-- POS Kasir --}}
+            {{-- 5. SALES & POS --}}
+            @canany(['pos.view','sale.view','invoice.view'])
             <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuPos"
-                    aria-expanded="{{ request()->routeIs('pos.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-cash-register"></i> POS Kasir
+                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuSalesPos"
+                    aria-expanded="{{ request()->routeIs('pos.*','sales.*','invoices.*','payments.*') ? 'true' : 'false' }}">
+                    <i class="fas fa-cash-register"></i> Sales & POS
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('pos.*') ? 'show' : '' }}" id="menuPos">
-                    <li><a href="{{ route('pos.terminal') }}" class="nav-link {{ request()->routeIs('pos.terminal','pos.openForm') ? 'active' : '' }}"><i class="fas fa-desktop me-1"></i> Terminal Kasir</a></li>
-                    <li><a href="{{ route('pos.sessions') }}" class="nav-link {{ request()->routeIs('pos.sessions','pos.close*') ? 'active' : '' }}"><i class="fas fa-history me-1"></i> Histori Sesi POS</a></li>
-                </ul>
-            </li>
-            @endcan
-
-            @can('booking.view')
-            {{-- Booking Online --}}
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuBooking"
-                    aria-expanded="{{ request()->routeIs('bookings.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-calendar-check"></i> Booking Online
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <ul class="collapse submenu {{ request()->routeIs('bookings.*') ? 'show' : '' }}" id="menuBooking">
-                    <li><a href="{{ route('bookings.index') }}" class="nav-link {{ request()->routeIs('bookings.index') ? 'active' : '' }}"><i class="fas fa-list me-1"></i> Daftar Booking</a></li>
-                    <li><a href="{{ route('bookings.calendar') }}" class="nav-link {{ request()->routeIs('bookings.calendar*') ? 'active' : '' }}"><i class="fas fa-calendar-alt me-1"></i> Kalender</a></li>
-                </ul>
-            </li>
-            @endcan
-
-            @canany(['voucher.view','loyalty.view','review.view'])
-            {{-- Marketing --}}
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuMarketing"
-                    aria-expanded="{{ request()->routeIs('vouchers.*','loyalty.*','reviews.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-gift"></i> Marketing
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <ul class="collapse submenu {{ request()->routeIs('vouchers.*','loyalty.*','reviews.*') ? 'show' : '' }}" id="menuMarketing">
-                    @can('voucher.view')<li><a href="{{ route('vouchers.index') }}" class="nav-link {{ request()->routeIs('vouchers.*') ? 'active' : '' }}"><i class="fas fa-ticket-alt me-1"></i> Voucher / Promo</a></li>@endcan
-                    @can('loyalty.view')<li><a href="{{ route('loyalty.index') }}" class="nav-link {{ request()->routeIs('loyalty.*') ? 'active' : '' }}"><i class="fas fa-star me-1"></i> Loyalty & Membership</a></li>@endcan
-                    @can('review.view')<li><a href="{{ route('reviews.index') }}" class="nav-link {{ request()->routeIs('reviews.*') ? 'active' : '' }}"><i class="fas fa-comment-dots me-1"></i> Review & Rating</a></li>@endcan
-                    @can('blog.view')<li><a href="{{ route('blog.admin.index') }}" class="nav-link {{ request()->routeIs('blog.admin.*') ? 'active' : '' }}"><i class="fas fa-blog me-1"></i> Blog Artikel</a></li>@endcan
-                    @can('campaign.view')<li><a href="{{ route('marketing.campaign') }}" class="nav-link {{ request()->routeIs('marketing.campaign*') ? 'active' : '' }}"><i class="fas fa-bullhorn me-1"></i> Campaign</a></li>@endcan
+                <ul class="collapse submenu {{ request()->routeIs('pos.*','sales.*','invoices.*','payments.*') ? 'show' : '' }}" id="menuSalesPos">
+                    @can('pos.view')<li><a href="{{ route('pos.terminal') }}" class="nav-link {{ request()->routeIs('pos.terminal','pos.openForm') ? 'active' : '' }}"><i class="fas fa-desktop me-1"></i> POS Terminal</a></li>@endcan
+                    @can('pos.view')<li><a href="{{ route('pos.sessions') }}" class="nav-link {{ request()->routeIs('pos.sessions','pos.close*') ? 'active' : '' }}"><i class="fas fa-history me-1"></i> POS Sessions</a></li>@endcan
+                    @can('sale.view')<li><a href="{{ route('sales.index') }}" class="nav-link {{ request()->routeIs('sales.index') ? 'active' : '' }}"><i class="fas fa-cart-plus me-1"></i> Sales</a></li>@endcan
+                    @can('invoice.view')<li><a href="{{ route('invoices.index') }}" class="nav-link {{ request()->routeIs('invoices.index') ? 'active' : '' }}"><i class="fas fa-file-invoice me-1"></i> Invoices</a></li>@endcan
                 </ul>
             </li>
             @endcanany
 
-            @can('warranty.view')
-            {{-- Klaim Garansi --}}
+            {{-- 6. TECHNICIANS --}}
+            @canany(['commission.view','hrm.view'])
             <li class="nav-item">
-                <a href="{{ route('warranty-claims.index') }}" class="nav-link {{ request()->routeIs('warranty-claims.*') ? 'active' : '' }}">
-                    <i class="fas fa-shield-alt"></i> Klaim Garansi
-                </a>
-            </li>
-            @endcan
-
-            @can('commission.view')
-            {{-- HRM Teknisi --}}
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuHrm"
+                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuTechnicians"
                     aria-expanded="{{ request()->routeIs('commissions.*','hrm.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-user-tie"></i> HRM Teknisi
+                    <i class="fas fa-user-cog"></i> Technicians
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('commissions.*','hrm.*') ? 'show' : '' }}" id="menuHrm">
-                    @can('commission.view')<li><a href="{{ route('commissions.index') }}" class="nav-link {{ request()->routeIs('commissions.index','commissions.markPaid*') ? 'active' : '' }}"><i class="fas fa-hand-holding-usd me-1"></i> Komisi Teknisi</a></li>@endcan
-                    @can('commission.report')<li><a href="{{ route('commissions.report') }}" class="nav-link {{ request()->routeIs('commissions.report') ? 'active' : '' }}"><i class="fas fa-file-invoice me-1"></i> Laporan Komisi</a></li>@endcan
-                    <li><a href="{{ route('hrm.leaves.index') }}" class="nav-link {{ request()->routeIs('hrm.leaves.*') ? 'active' : '' }}"><i class="fas fa-calendar-alt me-1"></i> Cuti / Izin</a></li>
+                <ul class="collapse submenu {{ request()->routeIs('commissions.*','hrm.*') ? 'show' : '' }}" id="menuTechnicians">
+                    @can('commission.view')<li><a href="{{ route('commissions.index') }}" class="nav-link {{ request()->routeIs('commissions.index','commissions.markPaid*') ? 'active' : '' }}"><i class="fas fa-hand-holding-usd me-1"></i> Commissions</a></li>@endcan
+                    @can('commission.report')<li><a href="{{ route('commissions.report') }}" class="nav-link {{ request()->routeIs('commissions.report') ? 'active' : '' }}"><i class="fas fa-file-invoice me-1"></i> Commission Report</a></li>@endcan
+                    <li><a href="{{ route('hrm.leaves.index') }}" class="nav-link {{ request()->routeIs('hrm.leaves.*') ? 'active' : '' }}"><i class="fas fa-calendar-alt me-1"></i> Leave / Permission</a></li>
+                </ul>
+            </li>
+            @endcanany
+
+            {{-- 7. CRM & MARKETING --}}
+            @canany(['voucher.view','loyalty.view','review.view','blog.view','campaign.view','customer-group.view'])
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuCrm"
+                    aria-expanded="{{ request()->routeIs('vouchers.*','loyalty.*','reviews.*','blog.admin.*','marketing.campaign*') ? 'true' : 'false' }}">
+                    <i class="fas fa-bullhorn"></i> CRM & Marketing
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <ul class="collapse submenu {{ request()->routeIs('vouchers.*','loyalty.*','reviews.*','blog.admin.*','marketing.campaign*') ? 'show' : '' }}" id="menuCrm">
+                    @can('voucher.view')<li><a href="{{ route('vouchers.index') }}" class="nav-link {{ request()->routeIs('vouchers.*') ? 'active' : '' }}"><i class="fas fa-ticket-alt me-1"></i> Vouchers / Promos</a></li>@endcan
+                    @can('loyalty.view')<li><a href="{{ route('loyalty.index') }}" class="nav-link {{ request()->routeIs('loyalty.*') ? 'active' : '' }}"><i class="fas fa-star me-1"></i> Loyalty & Membership</a></li>@endcan
+                    @can('review.view')<li><a href="{{ route('reviews.index') }}" class="nav-link {{ request()->routeIs('reviews.*') ? 'active' : '' }}"><i class="fas fa-comment-dots me-1"></i> Reviews & Ratings</a></li>@endcan
+                    @can('blog.view')<li><a href="{{ route('blog.admin.index') }}" class="nav-link {{ request()->routeIs('blog.admin.*') ? 'active' : '' }}"><i class="fas fa-blog me-1"></i> Blog Articles</a></li>@endcan
+                    @can('campaign.view')<li><a href="{{ route('marketing.campaign') }}" class="nav-link {{ request()->routeIs('marketing.campaign*') ? 'active' : '' }}"><i class="fas fa-envelope-open-text me-1"></i> Campaigns</a></li>@endcan
+                </ul>
+            </li>
+            @endcanany
+
+            {{-- 8. WARRANTY --}}
+            @can('warranty.view')
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuWarranty"
+                    aria-expanded="{{ request()->routeIs('warranty-claims.*','recalls.*') ? 'true' : 'false' }}">
+                    <i class="fas fa-shield-alt"></i> Warranty
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <ul class="collapse submenu {{ request()->routeIs('warranty-claims.*','recalls.*') ? 'show' : '' }}" id="menuWarranty">
+                    <li><a href="{{ route('warranty-claims.index') }}" class="nav-link {{ request()->routeIs('warranty-claims.*') ? 'active' : '' }}"><i class="fas fa-shield-alt me-1"></i> Warranty Claims</a></li>
+                    <li><a href="{{ route('recalls.index') }}" class="nav-link {{ request()->routeIs('recalls.*') ? 'active' : '' }}"><i class="fas fa-exclamation-triangle me-1"></i> Recalls</a></li>
                 </ul>
             </li>
             @endcan
 
-            @can('sale.view')
-            {{-- Sales (Kendaraan) --}}
+            {{-- 9. FINANCE & ACCOUNTING --}}
+            @canany(['income.view','expense.view','petty-cash.view','finance-coa.view','finance-journal.view'])
             <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuSales"
-                    aria-expanded="{{ request()->routeIs('sales.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-shopping-cart"></i> Sales (Kendaraan)
+                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuFinance"
+                    aria-expanded="{{ request()->routeIs('incomes.*','expenses.*','petty-cash.*','finance.*') ? 'true' : 'false' }}">
+                    <i class="fas fa-chart-line"></i> Finance & Accounting
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('sales.*') ? 'show' : '' }}" id="menuSales">
-                    <li><a href="{{ route('sales.index') }}" class="nav-link {{ request()->routeIs('sales.index') ? 'active' : '' }}"><i class="fas fa-list me-1"></i> All Sales</a></li>
-                    @can('sale.create')<li><a href="{{ route('sales.create') }}" class="nav-link {{ request()->routeIs('sales.create') ? 'active' : '' }}"><i class="fas fa-plus-circle me-1"></i> Add Sale</a></li>@endcan
-                </ul>
-            </li>
-            @endcan
-
-            @canany(['income.view','expense.view'])
-            {{-- Financial --}}
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuFinancial"
-                    aria-expanded="{{ request()->routeIs('incomes.*','expenses.*','finance.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-chart-line"></i> Financial
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <ul class="collapse submenu {{ request()->routeIs('incomes.*','expenses.*','finance.*') ? 'show' : '' }}" id="menuFinancial">
+                <ul class="collapse submenu {{ request()->routeIs('incomes.*','expenses.*','petty-cash.*','finance.*') ? 'show' : '' }}" id="menuFinance">
                     @can('income.view')<li><a href="{{ route('incomes.index') }}" class="nav-link {{ request()->routeIs('incomes.*') ? 'active' : '' }}"><i class="fas fa-arrow-up me-1 text-success"></i> Income</a></li>@endcan
                     @can('expense.view')<li><a href="{{ route('expenses.index') }}" class="nav-link {{ request()->routeIs('expenses.*') ? 'active' : '' }}"><i class="fas fa-arrow-down me-1 text-danger"></i> Expenses</a></li>@endcan
+                    @can('petty-cash.view')<li><a href="{{ route('petty-cash.index') }}" class="nav-link {{ request()->routeIs('petty-cash.*') ? 'active' : '' }}"><i class="fas fa-wallet me-1"></i> Petty Cash</a></li>@endcan
                     @can('finance-coa.view')<li><a href="{{ route('finance.coa') }}" class="nav-link {{ request()->routeIs('finance.coa*') ? 'active' : '' }}"><i class="fas fa-list-ol me-1"></i> Chart of Accounts</a></li>@endcan
-                    @can('finance-journal.view')<li><a href="{{ route('finance.journal') }}" class="nav-link {{ request()->routeIs('finance.journal*') ? 'active' : '' }}"><i class="fas fa-book me-1"></i> Journal Entry</a></li>@endcan
+                    @can('finance-journal.view')<li><a href="{{ route('finance.journal') }}" class="nav-link {{ request()->routeIs('finance.journal*') ? 'active' : '' }}"><i class="fas fa-book me-1"></i> Journal Entries</a></li>@endcan
                 </ul>
             </li>
             @endcanany
 
+            {{-- 10. REPORTS --}}
             @can('report.view')
-            {{-- Reports --}}
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuReports"
                     aria-expanded="{{ request()->routeIs('reports.*') ? 'true' : 'false' }}">
@@ -689,90 +598,114 @@
                     <li><a href="{{ route('reports.sales') }}" class="nav-link {{ request()->routeIs('reports.sales') ? 'active' : '' }}"><i class="fas fa-shopping-cart me-1"></i> Sales Report</a></li>
                     <li><a href="{{ route('reports.stock') }}" class="nav-link {{ request()->routeIs('reports.stock') ? 'active' : '' }}"><i class="fas fa-boxes me-1"></i> Stock Report</a></li>
                     <li><a href="{{ route('reports.financial') }}" class="nav-link {{ request()->routeIs('reports.financial') ? 'active' : '' }}"><i class="fas fa-chart-pie me-1"></i> Financial Report</a></li>
-                    <li><a href="{{ route('reports.technician') }}" class="nav-link {{ request()->routeIs('reports.technician') ? 'active' : '' }}"><i class="fas fa-user-gear me-1"></i> Produktivitas Teknisi</a></li>
+                    <li><a href="{{ route('reports.technician') }}" class="nav-link {{ request()->routeIs('reports.technician') ? 'active' : '' }}"><i class="fas fa-user-gear me-1"></i> Technician</a></li>
                     <li><a href="{{ route('reports.customer-lifetime') }}" class="nav-link {{ request()->routeIs('reports.customer-lifetime') ? 'active' : '' }}"><i class="fas fa-crown me-1"></i> Customer Lifetime</a></li>
                     <li><a href="{{ route('reports.ar-aging') }}" class="nav-link {{ request()->routeIs('reports.ar-aging') ? 'active' : '' }}"><i class="fas fa-clock me-1"></i> AR Aging</a></li>
                     <li><a href="{{ route('reports.parts-usage') }}" class="nav-link {{ request()->routeIs('reports.parts-usage') ? 'active' : '' }}"><i class="fas fa-microchip me-1"></i> Parts Usage</a></li>
                     <li><a href="{{ route('reports.branch-comparison') }}" class="nav-link {{ request()->routeIs('reports.branch-comparison') ? 'active' : '' }}"><i class="fas fa-code-branch me-1"></i> Branch Comparison</a></li>
                     <li><a href="{{ route('reports.cash-flow') }}" class="nav-link {{ request()->routeIs('reports.cash-flow') ? 'active' : '' }}"><i class="fas fa-money-bill-wave me-1"></i> Cash Flow</a></li>
+                    <li><a href="{{ route('reports.general-ledger') }}" class="nav-link {{ request()->routeIs('reports.general-ledger') ? 'active' : '' }}"><i class="fas fa-book-open me-1"></i> General Ledger</a></li>
+                    <li><a href="{{ route('reports.profit-loss') }}" class="nav-link {{ request()->routeIs('reports.profit-loss') ? 'active' : '' }}"><i class="fas fa-chart-line me-1"></i> Profit & Loss</a></li>
+                    <li><a href="{{ route('reports.balance-sheet') }}" class="nav-link {{ request()->routeIs('reports.balance-sheet') ? 'active' : '' }}"><i class="fas fa-balance-scale me-1"></i> Balance Sheet</a></li>
                 </ul>
             </li>
             @endcan
 
+            {{-- 11. MASTER DATA --}}
+            @can('master-data.view')
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuMasterData"
+                    aria-expanded="{{ request()->is('vehicle-types*','vehicle-brands*','fuel-types*','colors*','product-types*','product-units*','payment-methods*','tax-rates*','repair-categories*','observation-types*','observation-points*','inspection-points*','checkout-categories*') ? 'true' : 'false' }}">
+                    <i class="fas fa-database"></i> Master Data
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <ul class="collapse submenu {{ request()->is('vehicle-types*','vehicle-brands*','fuel-types*','colors*','product-types*','product-units*','payment-methods*','tax-rates*','repair-categories*','observation-types*','observation-points*','inspection-points*','checkout-categories*') ? 'show' : '' }}" id="menuMasterData">
+                    <li class="submenu-header">Vehicle</li>
+                    <li><a href="{{ route('vehicle-types.index') }}" class="nav-link {{ request()->is('vehicle-types*') ? 'active' : '' }}"><i class="fas fa-truck-pickup me-1"></i> Vehicle Types</a></li>
+                    <li><a href="{{ route('vehicle-brands.index') }}" class="nav-link {{ request()->is('vehicle-brands*') ? 'active' : '' }}"><i class="fas fa-trademark me-1"></i> Vehicle Brands</a></li>
+                    <li><a href="{{ route('fuel-types.index') }}" class="nav-link {{ request()->is('fuel-types*') ? 'active' : '' }}"><i class="fas fa-gas-pump me-1"></i> Fuel Types</a></li>
+                    <li><a href="{{ route('colors.index') }}" class="nav-link {{ request()->is('colors*') ? 'active' : '' }}"><i class="fas fa-palette me-1"></i> Colors</a></li>
+                    <li class="submenu-header">Product</li>
+                    <li><a href="{{ route('product-types.index') }}" class="nav-link {{ request()->is('product-types*') ? 'active' : '' }}"><i class="fas fa-tags me-1"></i> Product Types</a></li>
+                    <li><a href="{{ route('product-units.index') }}" class="nav-link {{ request()->is('product-units*') ? 'active' : '' }}"><i class="fas fa-balance-scale me-1"></i> Product Units</a></li>
+                    <li class="submenu-header">Workshop</li>
+                    <li><a href="{{ route('repair-categories.index') }}" class="nav-link {{ request()->is('repair-categories*') ? 'active' : '' }}"><i class="fas fa-toolbox me-1"></i> Repair Categories</a></li>
+                    <li><a href="{{ route('observation-types.index') }}" class="nav-link {{ request()->is('observation-types*') ? 'active' : '' }}"><i class="fas fa-clipboard-check me-1"></i> Observation Types</a></li>
+                    <li><a href="{{ route('observation-points.index') }}" class="nav-link {{ request()->is('observation-points*') ? 'active' : '' }}"><i class="fas fa-list-ol me-1"></i> Observation Points</a></li>
+                    <li><a href="{{ route('inspection-points.index') }}" class="nav-link {{ request()->is('inspection-points*') ? 'active' : '' }}"><i class="fas fa-search me-1"></i> Inspection Points</a></li>
+                    <li><a href="{{ route('checkout-categories.index') }}" class="nav-link {{ request()->is('checkout-categories*') ? 'active' : '' }}"><i class="fas fa-check-double me-1"></i> Checkout Categories</a></li>
+                    <li class="submenu-header">Finance</li>
+                    <li><a href="{{ route('payment-methods.index') }}" class="nav-link {{ request()->is('payment-methods*') ? 'active' : '' }}"><i class="fas fa-credit-card me-1"></i> Payment Methods</a></li>
+                    <li><a href="{{ route('tax-rates.index') }}" class="nav-link {{ request()->is('tax-rates*') ? 'active' : '' }}"><i class="fas fa-percent me-1"></i> Tax Rates</a></li>
+                </ul>
+            </li>
+            @endcan
+
+            {{-- 12. GEOGRAPHY --}}
             @canany(['currency.view','country.view','state.view','city.view'])
-            {{-- Geografi & Currency --}}
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuGeo"
                     aria-expanded="{{ request()->is('countries*','states*','cities*','currencies*') ? 'true' : 'false' }}">
-                    <i class="fas fa-globe"></i> Geografi & Currency
+                    <i class="fas fa-globe"></i> Geography
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <ul class="collapse submenu {{ request()->is('countries*','states*','cities*','currencies*') ? 'show' : '' }}" id="menuGeo">
                     @can('currency.view')<li><a href="{{ route('currencies.index') }}" class="nav-link {{ request()->is('currencies*') ? 'active' : '' }}"><i class="fas fa-dollar-sign me-1"></i> Currencies</a></li>@endcan
-                    @can('country.view')<li><a href="{{ route('countries.index') }}" class="nav-link {{ request()->is('countries*') ? 'active' : '' }}"><i class="fas fa-flag me-1"></i> Negara</a></li>@endcan
-                    @can('state.view')<li><a href="{{ route('states.index') }}" class="nav-link {{ request()->is('states*') ? 'active' : '' }}"><i class="fas fa-map-pin me-1"></i> Provinsi</a></li>@endcan
-                    @can('city.view')<li><a href="{{ route('cities.index') }}" class="nav-link {{ request()->is('cities*') ? 'active' : '' }}"><i class="fas fa-city me-1"></i> Kota</a></li>@endcan
+                    @can('country.view')<li><a href="{{ route('countries.index') }}" class="nav-link {{ request()->is('countries*') ? 'active' : '' }}"><i class="fas fa-flag me-1"></i> Countries</a></li>@endcan
+                    @can('state.view')<li><a href="{{ route('states.index') }}" class="nav-link {{ request()->is('states*') ? 'active' : '' }}"><i class="fas fa-map-pin me-1"></i> Provinces</a></li>@endcan
+                    @can('city.view')<li><a href="{{ route('cities.index') }}" class="nav-link {{ request()->is('cities*') ? 'active' : '' }}"><i class="fas fa-city me-1"></i> Cities</a></li>@endcan
                 </ul>
             </li>
             @endcanany
 
-            @canany(['stock-history.view','email-log.view','note.view'])
-            {{-- Audit & Log --}}
+            {{-- 13. NOTIFICATIONS --}}
+            @canany(['notification-template.view','reminder.view','email-log.view','stock-history.view'])
             <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuAudit"
-                    aria-expanded="{{ request()->is('stock-histories*','email-logs*','notes*') ? 'true' : 'false' }}">
-                    <i class="fas fa-history"></i> Audit & Log
+                <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuNotifications"
+                    aria-expanded="{{ request()->routeIs('notification-templates.*','reminders.*') || request()->is('email-logs*','stock-histories*') ? 'true' : 'false' }}">
+                    <i class="fas fa-bell"></i> Notifications
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->is('stock-histories*','email-logs*','notes*') ? 'show' : '' }}" id="menuAudit">
+                <ul class="collapse submenu {{ request()->routeIs('notification-templates.*','reminders.*') || request()->is('email-logs*','stock-histories*') ? 'show' : '' }}" id="menuNotifications">
+                    @can('notification-template.view')<li><a href="{{ route('notification-templates.index') }}" class="nav-link {{ request()->routeIs('notification-templates.*') ? 'active' : '' }}"><i class="fas fa-envelope me-1"></i> Templates</a></li>@endcan
+                    @can('reminder.view')<li><a href="{{ route('reminders.index') }}" class="nav-link {{ request()->routeIs('reminders.*') ? 'active' : '' }}"><i class="fas fa-clock me-1"></i> Reminders</a></li>@endcan
+                    @can('email-log.view')<li><a href="{{ route('email-logs.index') }}" class="nav-link {{ request()->is('email-logs*') ? 'active' : '' }}"><i class="fas fa-paper-plane me-1"></i> Notification Logs</a></li>@endcan
                     @can('stock-history.view')<li><a href="{{ route('stock-histories.index') }}" class="nav-link {{ request()->is('stock-histories*') ? 'active' : '' }}"><i class="fas fa-archive me-1"></i> Stock History</a></li>@endcan
-                    @can('email-log.view')<li><a href="{{ route('email-logs.index') }}" class="nav-link {{ request()->is('email-logs*') ? 'active' : '' }}"><i class="fas fa-envelope me-1"></i> Log Notifikasi</a></li>@endcan
-                    @can('note.view')<li><a href="{{ route('notes.index') }}" class="nav-link {{ request()->is('notes*') ? 'active' : '' }}"><i class="fas fa-sticky-note me-1"></i> Catatan Internal</a></li>@endcan
                 </ul>
             </li>
             @endcanany
 
-            @can('petty-cash.view')
-            {{-- Kas Kecil --}}
-            <li class="nav-item">
-                <a href="{{ route('petty-cash.index') }}" class="nav-link {{ request()->routeIs('petty-cash.*') ? 'active' : '' }}">
-                    <i class="fas fa-wallet"></i> Kas Kecil
-                </a>
-            </li>
-            @endcan
-
-            @canany(['user.view','role.view','activity-log.view'])
-            {{-- User & Akses --}}
+            {{-- 14. USERS & SECURITY --}}
+            @canany(['user.view','role.view','activity-log.view','note.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuUsers"
-                    aria-expanded="{{ request()->routeIs('users.*','roles.*','activity-logs.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-user-shield"></i> User & Akses
+                    aria-expanded="{{ request()->routeIs('users.*','roles.*','activity-logs.*') || request()->is('notes*') ? 'true' : 'false' }}">
+                    <i class="fas fa-user-shield"></i> Users & Security
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('users.*','roles.*','activity-logs.*') ? 'show' : '' }}" id="menuUsers">
-                    @can('user.view')<li><a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}"><i class="fas fa-users-cog me-1"></i> Manajemen User</a></li>@endcan
-                    @can('role.view')<li><a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}"><i class="fas fa-lock me-1"></i> Role & Permission</a></li>@endcan
+                <ul class="collapse submenu {{ request()->routeIs('users.*','roles.*','activity-logs.*') || request()->is('notes*') ? 'show' : '' }}" id="menuUsers">
+                    @can('user.view')<li><a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}"><i class="fas fa-users-cog me-1"></i> Users</a></li>@endcan
+                    @can('role.view')<li><a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}"><i class="fas fa-lock me-1"></i> Roles & Permissions</a></li>@endcan
                     @can('activity-log.view')<li><a href="{{ route('activity-logs.index') }}" class="nav-link {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}"><i class="fas fa-history me-1"></i> Activity Log</a></li>@endcan
                     @can('api-token.view')<li><a href="{{ route('users.api-tokens') }}" class="nav-link {{ request()->routeIs('users.api-tokens') ? 'active' : '' }}"><i class="fas fa-key me-1"></i> API Tokens</a></li>@endcan
+                    @can('note.view')<li><a href="{{ route('notes.index') }}" class="nav-link {{ request()->is('notes*') ? 'active' : '' }}"><i class="fas fa-sticky-note me-1"></i> Internal Notes</a></li>@endcan
                 </ul>
             </li>
             @endcanany
 
-            @canany(['settings.view','notification-template.view','reminder.view','custom-field.view','payment-gateway.view','two-factor.view'])
-            {{-- Settings --}}
+            {{-- 15. SETTINGS --}}
+            @canany(['settings.view','custom-field.view','payment-gateway.view','two-factor.view','backup.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuSettings"
-                    aria-expanded="{{ request()->routeIs('settings.*','notification-templates.*','reminders.*','custom-fields.*','2fa.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('settings.*','custom-fields.*','payment-gateways.*','2fa.*') ? 'true' : 'false' }}">
                     <i class="fas fa-cog"></i> Settings
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('settings.*','notification-templates.*','reminders.*','custom-fields.*','2fa.*') ? 'show' : '' }}" id="menuSettings">
-                    @can('settings.view')<li><a href="{{ route('settings.index') }}" class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}"><i class="fas fa-sliders-h me-1"></i> General Settings</a></li>@endcan
-                    @can('notification-template.view')<li><a href="{{ route('notification-templates.index') }}" class="nav-link {{ request()->routeIs('notification-templates.*') ? 'active' : '' }}"><i class="fas fa-bell me-1"></i> Notification Templates</a></li>@endcan
-                    @can('reminder.view')<li><a href="{{ route('reminders.index') }}" class="nav-link {{ request()->routeIs('reminders.*') ? 'active' : '' }}"><i class="fas fa-clock me-1"></i> Reminders</a></li>@endcan
+                <ul class="collapse submenu {{ request()->routeIs('settings.*','custom-fields.*','payment-gateways.*','2fa.*') ? 'show' : '' }}" id="menuSettings">
+                    @can('settings.view')<li><a href="{{ route('settings.index') }}" class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}"><i class="fas fa-sliders-h me-1"></i> General</a></li>@endcan
                     @can('custom-field.view')<li><a href="{{ route('custom-fields.index') }}" class="nav-link {{ request()->is('custom-fields*') ? 'active' : '' }}"><i class="fas fa-puzzle-piece me-1"></i> Custom Fields</a></li>@endcan
-                    @can('payment-gateway.view')<li><a href="{{ route('payment-gateways.index') }}" class="nav-link {{ request()->routeIs('payment-gateways.*') ? 'active' : '' }}"><i class="fas fa-credit-card me-1"></i> Payment Gateway</a></li>@endcan
-                    @can('two-factor.view')<li><a href="{{ route('2fa.enable.form') }}" class="nav-link {{ request()->routeIs('2fa.*') ? 'active' : '' }}"><i class="fas fa-fingerprint me-1"></i> Two-Factor Auth (2FA)</a></li>@endcan
+                    @can('payment-gateway.view')<li><a href="{{ route('payment-gateways.index') }}" class="nav-link {{ request()->routeIs('payment-gateways.*') ? 'active' : '' }}"><i class="fas fa-plug me-1"></i> Integrations</a></li>@endcan
+                    @can('two-factor.view')<li><a href="{{ route('2fa.enable.form') }}" class="nav-link {{ request()->routeIs('2fa.*') ? 'active' : '' }}"><i class="fas fa-fingerprint me-1"></i> 2FA Security</a></li>@endcan
                     @can('backup.view')<li><a href="{{ route('settings.backup-page') }}" class="nav-link {{ request()->routeIs('settings.backup*') ? 'active' : '' }}"><i class="fas fa-database me-1"></i> Backup & Restore</a></li>@endcan
                 </ul>
             </li>

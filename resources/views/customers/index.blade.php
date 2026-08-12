@@ -10,7 +10,7 @@
             <i class="fas fa-upload me-1"></i>Import CSV
         </button>
         <a href="{{ route('customers.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i>Tambah Pelanggan
+            <i class="fas fa-plus me-1"></i>+ New Customer
         </a>
     </div>
 </div>

@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0"><i class="fas fa-car me-2"></i>Kendaraan</h4>
     <a href="{{ route('vehicles.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-1"></i>Tambah Kendaraan
+        <i class="fas fa-plus me-1"></i>+ New Vehicle
     </a>
 </div>
 

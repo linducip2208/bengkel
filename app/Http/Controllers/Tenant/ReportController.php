@@ -245,4 +245,144 @@ class ReportController extends Controller
         $report = $reportService->cashFlowReport($filters);
         return view('reports.cash-flow', compact('report', 'filters'));
     }
+
+    public function generalLedger(Request $request)
+    {
+        $start = $request->get('start_date', now()->startOfMonth()->toDateString());
+        $end = $request->get('end_date', now()->toDateString());
+        $accountId = $request->get('account_id');
+
+        $query = \App\Models\JournalEntry::with('lines.account')
+            ->whereBetween('entry_date', [$start, $end])
+            ->when($accountId, function ($q) use ($accountId) {
+                $q->whereHas('lines', fn($l) => $l->where('chart_of_account_id', $accountId));
+            })
+            ->orderBy('entry_date')
+            ->orderBy('id');
+
+        $entries = $query->get()->map(function ($entry) {
+            $entry->total_debit = $entry->lines->sum('debit');
+            $entry->total_credit = $entry->lines->sum('credit');
+            $entry->account_name = $entry->lines->first()?->account?->name;
+            $entry->account_code = $entry->lines->first()?->account?->code;
+            return $entry;
+        });
+
+        $totalDebit = $entries->sum('total_debit');
+        $totalCredit = $entries->sum('total_credit');
+        $totalEntries = $entries->count();
+
+        $accounts = \App\Models\ChartOfAccount::where('is_active', true)->orderBy('code')->get();
+
+        return view('reports.general-ledger', compact(
+            'entries', 'totalDebit', 'totalCredit', 'totalEntries', 'accounts'
+        ));
+    }
+
+    public function profitLoss(Request $request)
+    {
+        $start = $request->get('start_date', now()->startOfYear()->toDateString());
+        $end = $request->get('end_date', now()->toDateString());
+
+        $revenueAccounts = \App\Models\ChartOfAccount::where('type', 'revenue')->where('is_active', true)->get();
+        $cogsAccounts = \App\Models\ChartOfAccount::whereIn('name', ['Cost of Goods Sold', 'COGS'])
+            ->orWhere('code', '5100')
+            ->where('is_active', true)
+            ->get();
+        $expenseAccounts = \App\Models\ChartOfAccount::where('type', 'expense')->where('is_active', true)->get();
+
+        $revenueAccounts->each(function ($a) use ($start, $end) {
+            $a->balance = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->whereBetween('entry_date', [$start, $end]))
+                ->sum('credit');
+        });
+
+        $cogsAccounts->each(function ($a) use ($start, $end) {
+            $a->balance = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->whereBetween('entry_date', [$start, $end]))
+                ->sum('debit');
+        });
+
+        $expenseAccounts->each(function ($a) use ($start, $end) {
+            $a->balance = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->whereBetween('entry_date', [$start, $end]))
+                ->sum('debit');
+        });
+
+        $totalRevenue = $revenueAccounts->sum('balance');
+        $totalCogs = $cogsAccounts->sum('balance');
+        $totalExpenses = $expenseAccounts->sum('balance');
+        $grossProfit = $totalRevenue - $totalCogs;
+        $netProfit = $grossProfit - $totalExpenses;
+
+        return view('reports.profit-loss', compact(
+            'revenueAccounts', 'cogsAccounts', 'expenseAccounts',
+            'totalRevenue', 'totalCogs', 'totalExpenses', 'grossProfit', 'netProfit'
+        ));
+    }
+
+    public function balanceSheet(Request $request)
+    {
+        $endDate = $request->get('end_date', now()->toDateString());
+
+        $assetAccounts = \App\Models\ChartOfAccount::where('type', 'asset')->where('is_active', true)->get();
+        $liabilityAccounts = \App\Models\ChartOfAccount::where('type', 'liability')->where('is_active', true)->get();
+        $equityAccounts = \App\Models\ChartOfAccount::where('type', 'equity')->where('is_active', true)->get();
+
+        $assetAccounts->each(function ($a) use ($endDate) {
+            $debit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                ->sum('debit');
+            $credit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                ->sum('credit');
+            $a->balance = $debit - $credit;
+        });
+
+        $liabilityAccounts->each(function ($a) use ($endDate) {
+            $debit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                ->sum('debit');
+            $credit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                ->sum('credit');
+            $a->balance = $credit - $debit;
+        });
+
+        $equityAccounts->each(function ($a) use ($endDate) {
+            $credit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                ->sum('credit');
+            $debit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                ->sum('debit');
+            $a->balance = $credit - $debit;
+        });
+
+        $totalAssets = $assetAccounts->sum('balance');
+        $totalLiabilities = $liabilityAccounts->sum('balance');
+        $totalEquity = $equityAccounts->sum('balance');
+
+        $startOfYear = now()->startOfYear()->toDateString();
+        $pnlRevenue = \App\Models\JournalEntryLine::whereHas('account', fn($q) => $q->where('type', 'revenue'))
+            ->whereHas('journalEntry', fn($q) => $q->whereBetween('entry_date', [$startOfYear, $endDate]))
+            ->sum('credit');
+        $pnlExpense = \App\Models\JournalEntryLine::whereHas('account', fn($q) => $q->whereIn('type', ['expense']))
+            ->whereHas('journalEntry', fn($q) => $q->whereBetween('entry_date', [$startOfYear, $endDate]))
+            ->sum('debit');
+        $pnlCogs = \App\Models\JournalEntryLine::whereHas('account', fn($q) => $q->whereIn('name', ['Cost of Goods Sold', 'COGS'])->orWhere('code', '5100'))
+            ->whereHas('journalEntry', fn($q) => $q->whereBetween('entry_date', [$startOfYear, $endDate]))
+            ->sum('debit');
+        $netProfit = $pnlRevenue - $pnlCogs - $pnlExpense;
+
+        $balTotal = $totalLiabilities + $totalEquity + $netProfit;
+        $difference = $totalAssets - $balTotal;
+        $balanced = abs($difference) < 0.01;
+
+        return view('reports.balance-sheet', compact(
+            'assetAccounts', 'liabilityAccounts', 'equityAccounts',
+            'totalAssets', 'totalLiabilities', 'totalEquity',
+            'netProfit', 'difference', 'balanced'
+        ));
+    }
 }

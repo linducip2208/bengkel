@@ -31,12 +31,14 @@ class CustomerController extends Controller
 
     public function show($id)
     {
-        $customer = Customer::findOrFail($id);
+        $customer = Customer::with(['loyaltyTransactions', 'warrantyClaims'])->findOrFail($id);
         $stats = $this->service->getWithStats($customer);
         $vehicles = $customer->vehicles()->with(['vehicleType', 'vehicleBrand'])->latest()->get();
         $services = $customer->services()->with(['repairCategory'])->latest()->get();
         $invoices = $customer->invoices()->latest()->get();
-        return view('customers.show', compact('customer', 'stats', 'vehicles', 'services', 'invoices'));
+        $loyaltyTransactions = $customer->loyaltyTransactions()->latest()->get();
+        $warrantyClaims = $customer->warrantyClaims()->latest()->get();
+        return view('customers.show', compact('customer', 'stats', 'vehicles', 'services', 'invoices', 'loyaltyTransactions', 'warrantyClaims'));
     }
 
     public function edit($id)

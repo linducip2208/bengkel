@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['customer_id', 'vehicle_id', 'repair_category_id', 'title', 'description', 'service_date', 'charge', 'estimated_hours', 'started_at', 'completed_at', 'done_status', 'workflow_status', 'checked_in_at', 'qc_passed_at', 'mot_status', 'is_quotation', 'is_approved', 'created_by', 'branch_id', 'job_no', 'assign_to'])]
+#[Fillable(['customer_id', 'vehicle_id', 'repair_category_id', 'title', 'description', 'service_date', 'charge', 'estimated_hours', 'started_at', 'completed_at', 'done_status', 'workflow_status', 'checked_in_at', 'qc_passed_at', 'mot_status', 'is_quotation', 'is_approved', 'created_by', 'branch_id', 'job_no', 'assign_to', 'inspected_at', 'approved_at', 'invoiced_at', 'paid_at', 'released_at', 'cancelled_at', 'cancel_reason'])]
 class Service extends Model
 {
     use HasFactory, SoftDeletes, HasBranchScope;
@@ -25,6 +25,13 @@ class Service extends Model
             'estimated_hours' => 'decimal:1',
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
+            'checked_in_at' => 'datetime',
+            'inspected_at' => 'datetime',
+            'approved_at' => 'datetime',
+            'invoiced_at' => 'datetime',
+            'paid_at' => 'datetime',
+            'released_at' => 'datetime',
+            'cancelled_at' => 'datetime',
             'done_status' => 'integer',
             'mot_status' => 'boolean',
             'is_quotation' => 'boolean',
@@ -91,9 +98,12 @@ class Service extends Model
     {
         if ($this->workflow_status !== null) {
             return match ((int) $this->workflow_status) {
-                0 => 'Pending', 1 => 'Checked In', 2 => 'In Progress',
-                3 => 'QC', 4 => 'Ready', 5 => 'Delivered',
-                default => 'Pending',
+                0 => 'Booked', 1 => 'Checked In', 2 => 'Inspection',
+                3 => 'Waiting Approval', 4 => 'Approved', 5 => 'In Progress',
+                6 => 'Waiting Parts', 7 => 'QC', 8 => 'Ready',
+                9 => 'Invoiced', 10 => 'Paid', 11 => 'Released',
+                12 => 'Completed',
+                default => 'Booked',
             };
         }
         return match ((int) $this->done_status) {
@@ -106,8 +116,11 @@ class Service extends Model
     {
         if ($this->workflow_status !== null) {
             return match ((int) $this->workflow_status) {
-                0 => 'secondary', 1 => 'info', 2 => 'warning',
-                3 => 'primary', 4 => 'teal', 5 => 'success',
+                0 => 'secondary', 1 => 'info', 2 => 'primary',
+                3 => 'warning', 4 => 'success', 5 => 'primary',
+                6 => 'danger', 7 => 'info', 8 => 'teal',
+                9 => 'purple', 10 => 'success', 11 => 'dark',
+                12 => 'success',
                 default => 'secondary',
             };
         }

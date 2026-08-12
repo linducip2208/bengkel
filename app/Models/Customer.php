@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['name', 'phone', 'email', 'address', 'notes', 'branch_id', 'mobile', 'company_name', 'tax_id', 'loyalty_points', 'membership_tier', 'portal_password', 'portal_last_login'])]
+#[Fillable(['name', 'phone', 'email', 'address', 'notes', 'branch_id', 'mobile', 'company_name', 'tax_id', 'customer_group_id', 'birth_date', 'loyalty_points', 'membership_tier', 'portal_password', 'portal_last_login'])]
 class Customer extends Model
 {
     use HasFactory, SoftDeletes, HasBranchScope;
@@ -40,5 +40,15 @@ class Customer extends Model
     public function notes(): MorphMany
     {
         return $this->morphMany(Note::class, 'notable');
+    }
+
+    public function loyaltyTransactions(): HasMany
+    {
+        return $this->hasMany(LoyaltyTransaction::class);
+    }
+
+    public function warrantyClaims(): HasMany
+    {
+        return $this->hasMany(WarrantyClaim::class);
     }
 }

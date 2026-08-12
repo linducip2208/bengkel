@@ -180,7 +180,7 @@ class ServiceService extends BaseService
         DB::transaction(function () use ($service) {
             $service->update([
                 'done_status' => 2,
-                'workflow_status' => 5,
+                'workflow_status' => 12,
                 'completed_at' => now(),
             ]);
 
@@ -249,6 +249,20 @@ class ServiceService extends BaseService
             foreach ($invoiceItems as $item) {
                 $invoice->items()->create($item);
             }
+
+            foreach ($productCosts as $sh) {
+                \App\Models\StockHistory::create([
+                    'product_id' => $sh->product_id,
+                    'quantity_change' => 0,
+                    'previous_stock' => $sh->new_stock,
+                    'new_stock' => $sh->new_stock,
+                    'type' => 'invoice',
+                    'reason' => 'Tercatat di Invoice #' . $invoiceNumber,
+                    'reference_type' => \App\Models\Invoice::class,
+                    'reference_id' => $invoice->id,
+                    'user_id' => auth()->id() ?? 1,
+                ]);
+            }
         });
 
         $this->notifyCustomer($service, 'service-completed', [
@@ -286,21 +300,32 @@ class ServiceService extends BaseService
     {
         $service = Service::findOrFail($id);
         $nextStatus = ($service->workflow_status ?? 0) + 1;
-        if ($nextStatus > 5) $nextStatus = 5;
+        if ($nextStatus > 12) $nextStatus = 12;
 
         $data = ['workflow_status' => $nextStatus];
-        if ($nextStatus >= 5) {
-            $data['done_status'] = 2;
-            $data['completed_at'] = now();
-        } elseif ($nextStatus >= 2) {
-            $data['done_status'] = 1;
-            $data['started_at'] = $data['started_at'] ?? now();
+
+        switch ($nextStatus) {
+            case 1: $data['checked_in_at'] = now(); break;
+            case 2: $data['inspected_at'] = now(); break;
+            case 4:
+                $data['approved_at'] = now();
+                $data['is_approved'] = true;
+                break;
+            case 5: $data['started_at'] = $data['started_at'] ?? now(); break;
+            case 7: $data['qc_passed_at'] = now(); break;
+            case 9: $data['invoiced_at'] = now(); break;
+            case 10: $data['paid_at'] = now(); break;
+            case 11: $data['released_at'] = now(); break;
+            case 12: $data['completed_at'] = now(); break;
         }
-        if ($nextStatus >= 3) $data['qc_passed_at'] = now();
 
         $service->update($data);
 
-        $labels = [0=>'Pending',1=>'Checked In',2=>'In Progress',3=>'QC',4=>'Ready',5=>'Delivered'];
+        $labels = [
+            0=>'Booked',1=>'Checked In',2=>'Inspection',3=>'Waiting Approval',
+            4=>'Approved',5=>'In Progress',6=>'Waiting Parts',7=>'QC',
+            8=>'Ready',9=>'Invoiced',10=>'Paid',11=>'Released',12=>'Completed'
+        ];
         return back()->with('success', 'Status: ' . $labels[$nextStatus]);
     }
 

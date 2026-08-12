@@ -42,10 +42,13 @@ class VehicleController extends Controller
 
     public function show($id)
     {
-        $vehicle = Vehicle::findOrFail($id);
+        $vehicle = Vehicle::with(['customer', 'vehicleType', 'vehicleBrand', 'fuelType', 'images'])->findOrFail($id);
         $nextService = $this->service->predictNextService($vehicle);
-        $serviceHistory = $this->service->getServiceHistory($vehicle);
-        return view('vehicles.show', compact('vehicle', 'nextService', 'serviceHistory'));
+        $serviceHistory = $vehicle->services()->with(['repairCategory'])->latest()->get();
+        $jobCards = $vehicle->services()->has('jobcardDetail')->with(['jobcardDetail', 'repairCategory', 'technicians'])->latest()->get();
+        $invoices = $vehicle->invoices()->latest()->get();
+        $inspectionHistory = $vehicle->services()->has('checkoutResults')->with(['checkoutResults.checkoutCategory'])->latest()->get();
+        return view('vehicles.show', compact('vehicle', 'nextService', 'serviceHistory', 'jobCards', 'invoices', 'inspectionHistory'));
     }
 
     public function edit($id)

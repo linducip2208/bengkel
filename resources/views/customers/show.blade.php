@@ -54,35 +54,14 @@
     </div>
 </div>
 
-<div class="card mb-4">
-    <div class="card-header">
-        <h5 class="card-title mb-0">Informasi Pelanggan</h5>
-    </div>
-    <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-6">
-                <table class="table table-sm">
-                    <tr><th class="w-25">Nama</th><td>{{ $customer->name }}</td></tr>
-                    <tr><th>Email</th><td>{{ $customer->email ?? '-' }}</td></tr>
-                    <tr><th>Telepon</th><td>{{ $customer->phone ?? '-' }}</td></tr>
-                    <tr><th>Kota</th><td>{{ $customer->city ?? '-' }}</td></tr>
-                </table>
-            </div>
-            <div class="col-md-6">
-                <table class="table table-sm">
-                    <tr><th class="w-25">Alamat</th><td>{{ $customer->address ?? '-' }}</td></tr>
-                    <tr><th>Kode Pos</th><td>{{ $customer->postal_code ?? '-' }}</td></tr>
-                    <tr><th>Catatan</th><td>{{ $customer->notes ?? '-' }}</td></tr>
-                    <tr><th>Terdaftar</th><td>{{ $customer->created_at->format('d M Y H:i') }}</td></tr>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
 <ul class="nav nav-tabs mb-3" role="tablist">
     <li class="nav-item" role="presentation">
-        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#vehicles" type="button">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#overview" type="button">
+            <i class="fas fa-info-circle me-1"></i>Overview
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#vehicles" type="button">
             <i class="fas fa-car me-1"></i>Kendaraan
         </button>
     </li>
@@ -96,10 +75,48 @@
             <i class="fas fa-file-invoice me-1"></i>Invoice
         </button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#loyalty" type="button">
+            <i class="fas fa-star me-1"></i>Loyalty
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#warranty" type="button">
+            <i class="fas fa-shield-alt me-1"></i>Garansi
+        </button>
+    </li>
 </ul>
 
 <div class="tab-content">
-    <div class="tab-pane fade show active" id="vehicles">
+    <div class="tab-pane fade show active" id="overview">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Informasi Pelanggan</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr><th class="w-25">Nama</th><td>{{ $customer->name }}</td></tr>
+                            <tr><th>Email</th><td>{{ $customer->email ?? '-' }}</td></tr>
+                            <tr><th>Telepon</th><td>{{ $customer->phone ?? '-' }}</td></tr>
+                            <tr><th>Kota</th><td>{{ $customer->city ?? '-' }}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr><th class="w-25">Alamat</th><td>{{ $customer->address ?? '-' }}</td></tr>
+                            <tr><th>Kode Pos</th><td>{{ $customer->postal_code ?? '-' }}</td></tr>
+                            <tr><th>Catatan</th><td>{{ $customer->notes ?? '-' }}</td></tr>
+                            <tr><th>Terdaftar</th><td>{{ $customer->created_at->format('d M Y H:i') }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="vehicles">
         <div class="card">
             <div class="card-body">
                 <div class="table-responsive">
@@ -219,6 +236,127 @@
                             @empty
                             <tr>
                                 <td colspan="5" class="text-center py-3 text-muted">Belum ada invoice.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="loyalty">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Poin Loyalty</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="card border-warning">
+                            <div class="card-body text-center">
+                                <i class="fas fa-coins fa-2x text-warning mb-2"></i>
+                                <h5 class="mb-0">{{ number_format($customer->loyalty_points ?? 0) }}</h5>
+                                <small class="text-muted">Total Poin</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-info">
+                            <div class="card-body text-center">
+                                <i class="fas fa-crown fa-2x text-info mb-2"></i>
+                                <h5 class="mb-0">{{ $customer->membership_tier ?? 'Standard' }}</h5>
+                                <small class="text-muted">Membership Tier</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calendar-check fa-2x text-success mb-2"></i>
+                                <h5 class="mb-0">{{ $loyaltyTransactions->count() }}</h5>
+                                <small class="text-muted">Total Transaksi</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Riwayat Transaksi Poin</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Tipe</th>
+                                <th>Poin</th>
+                                <th>Deskripsi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($loyaltyTransactions as $trans)
+                            <tr>
+                                <td>{{ $trans->created_at->format('d M Y H:i') }}</td>
+                                <td>
+                                    @php
+                                        $typeColors = ['earn' => 'success', 'redeem' => 'danger', 'adjust' => 'warning', 'expire' => 'secondary'];
+                                    @endphp
+                                    <span class="badge bg-{{ $typeColors[$trans->type] ?? 'secondary' }}">
+                                        {{ $trans->type }}
+                                    </span>
+                                </td>
+                                <td><strong>{{ $trans->points > 0 ? '+' . $trans->points : $trans->points }}</strong></td>
+                                <td>{{ $trans->description ?? '-' }}</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="text-center py-3 text-muted">Belum ada transaksi loyalty.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="warranty">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Tanggal Klaim</th>
+                                <th>Keluhan</th>
+                                <th>Status</th>
+                                <th>Resolusi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($warrantyClaims as $claim)
+                            <tr>
+                                <td>{{ $claim->id }}</td>
+                                <td>{{ $claim->claim_date?->format('d M Y') }}</td>
+                                <td>{{ $claim->complaint ?? '-' }}</td>
+                                <td>
+                                    @php
+                                        $wStatusColors = ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger', 'resolved' => 'info'];
+                                    @endphp
+                                    <span class="badge bg-{{ $wStatusColors[$claim->status] ?? 'secondary' }}">
+                                        {{ $claim->status ?? '-' }}
+                                    </span>
+                                </td>
+                                <td>{{ $claim->resolution ?? '-' }}</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5" class="text-center py-3 text-muted">Belum ada klaim garansi.</td>
                             </tr>
                             @endforelse
                         </tbody>

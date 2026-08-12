@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0"><i class="fas fa-wrench text-warning me-2"></i>Daftar Servis</h4>
     <a href="{{ route('services.create') }}" class="btn btn-danger">
-        <i class="fas fa-plus me-1"></i> Servis Baru
+        <i class="fas fa-plus me-1"></i>+ New Job Card
     </a>
 </div>
 

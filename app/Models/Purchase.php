@@ -52,6 +52,7 @@ class Purchase extends Model
             'draft' => '<span class="badge bg-secondary">Draft</span>',
             'ordered' => '<span class="badge bg-primary">Dipesan</span>',
             'received' => '<span class="badge bg-success">Diterima</span>',
+            'returned' => '<span class="badge bg-warning text-dark">Diretur</span>',
             'cancelled' => '<span class="badge bg-danger">Dibatalkan</span>',
             default => '<span class="badge bg-secondary">' . $this->status . '</span>',
         };

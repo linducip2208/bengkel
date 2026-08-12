@@ -41,6 +41,7 @@ use App\Http\Controllers\Tenant\ProductController;
 use App\Http\Controllers\Tenant\ProductTypeController;
 use App\Http\Controllers\Tenant\ProductUnitController;
 use App\Http\Controllers\Tenant\PurchaseController;
+use App\Http\Controllers\Tenant\PurchaseReturnController;
 use App\Http\Controllers\Tenant\ReminderController;
 use App\Http\Controllers\Tenant\RepairCategoryController;
 use App\Http\Controllers\Tenant\ReportController;
@@ -159,6 +160,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/parts-usage', [ReportController::class, 'partsUsage'])->name('reports.parts-usage');
     Route::get('/reports/branch-comparison', [ReportController::class, 'branchComparison'])->name('reports.branch-comparison');
     Route::get('/reports/cash-flow', [ReportController::class, 'cashFlow'])->name('reports.cash-flow');
+    Route::get('/reports/general-ledger', [ReportController::class, 'generalLedger'])->name('reports.general-ledger');
+    Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss'])->name('reports.profit-loss');
+    Route::get('/reports/balance-sheet', [ReportController::class, 'balanceSheet'])->name('reports.balance-sheet');
 
     // --- Settings ---
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
@@ -224,6 +228,9 @@ Route::middleware(['auth'])->group(function () {
 
     // --- Purchases custom routes (before resource) ---
     Route::post('/purchases/{purchase}/mark-received', [PurchaseController::class, 'markReceived'])->name('purchases.mark-received');
+    Route::get('/purchases/return', [PurchaseReturnController::class, 'index'])->name('purchases.return.index');
+    Route::get('/purchases/{purchase}/return', [PurchaseReturnController::class, 'create'])->name('purchases.return.create');
+    Route::post('/purchases/{purchase}/return', [PurchaseReturnController::class, 'store'])->name('purchases.return.store');
 
     // --- Gate Passes custom routes (before resource) ---
     Route::get('/gate-passes/{gate_pass}/print', [GatePassController::class, 'print'])->name('gate-passes.print');
@@ -355,6 +362,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/reviews/{review}/unpublish', [\App\Http\Controllers\Tenant\ReviewController::class, 'unpublish'])->name('reviews.unpublish');
     Route::put('/reviews/{review}/reply', [\App\Http\Controllers\Tenant\ReviewController::class, 'reply'])->name('reviews.reply');
     Route::delete('/reviews/{review}', [\App\Http\Controllers\Tenant\ReviewController::class, 'destroy'])->name('reviews.destroy');
+
+    Route::resource('recalls', RecallController::class)->except(['show']);
 
     Route::get('/warranty-claims', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'index'])->name('warranty-claims.index');
     Route::get('/warranty-claims/create', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'create'])->name('warranty-claims.create');
