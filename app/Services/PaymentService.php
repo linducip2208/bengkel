@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Income;
 use App\Models\Invoice;
 use App\Models\PaymentRecord;
+use App\Services\AutoJournalService;
 use Illuminate\Http\Request;
 
 class PaymentService extends BaseService
@@ -33,6 +34,7 @@ class PaymentService extends BaseService
             ]);
 
             \App\Http\Controllers\Tenant\LoyaltyController::earnFromInvoice($invoice);
+            app(AutoJournalService::class)->journalInvoicePayment($payment);
         }
 
         return $payment;

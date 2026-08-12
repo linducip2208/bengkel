@@ -37,10 +37,10 @@ class SendServiceReminders extends Command
 
             \App\Models\ActivityLog::create([
                 'user_id' => null,
-                'action' => 'service_reminder',
+                'event' => 'service_reminder',
                 'description' => "Pengingat service besok: {$service->job_no} ke {$customer->name}",
-                'model_type' => 'Service',
-                'model_id' => $service->id,
+                'subject_type' => 'Service',
+                'subject_id' => $service->id,
             ]);
             $sent++;
         }

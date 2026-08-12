@@ -66,7 +66,7 @@
                     <td>{{ $recall->issue_date?->format('d M Y') }}</td>
                     <td>
                         @php
-                            $sevColors = ['low' => 'success', 'medium' => 'warning', 'high' => 'orange', 'critical' => 'danger'];
+                            $sevColors = ['low' => 'success', 'medium' => 'warning', 'high' => 'danger', 'critical' => 'dark'];
                         @endphp
                         <span class="badge bg-{{ $sevColors[$recall->severity] ?? 'secondary' }} rounded-pill px-3">
                             {{ ucfirst($recall->severity) }}

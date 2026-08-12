@@ -96,19 +96,19 @@
                                             <i class="bi bi-check-lg"></i>
                                         </button>
                                     </form>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Reject" onclick="document.getElementById('rejectModal{{ $adj->id }}').classList.add('d-block')" style="display:inline-block;">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Reject" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $adj->id }}">
                                         <i class="bi bi-x-lg"></i>
                                     </button>
                                 </div>
 
-                                <div class="modal fade" id="rejectModal{{ $adj->id }}" tabindex="-1" style="display:none;">
+                                <div class="modal fade" id="rejectModal{{ $adj->id }}" tabindex="-1">
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content">
                                             <form method="POST" action="{{ route('stock-adjustments.reject', $adj) }}">
                                                 @csrf
                                                 <div class="modal-header">
                                                     <h6 class="modal-title">Reject Adjustment #{{ $adj->id }}</h6>
-                                                    <button type="button" class="btn-close" onclick="document.getElementById('rejectModal{{ $adj->id }}').classList.remove('d-block')"></button>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <div class="modal-body">
                                                     <div class="mb-3">
@@ -117,7 +117,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('rejectModal{{ $adj->id }}').classList.remove('d-block')">Batal</button>
+                                                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
                                                     <button type="submit" class="btn btn-sm btn-danger">Reject</button>
                                                 </div>
                                             </form>

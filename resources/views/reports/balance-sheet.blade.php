@@ -147,7 +147,7 @@
                         <td>Total Liabilities + Equity</td>
                         <td class="text-end {{ $balanced ? 'text-success' : 'text-danger' }}">
                             @money($totalLiabilities + $totalEquity + $netProfit)
-                            @if(!$balanced) <span class="text-danger ms-2">(Out of balance!</span>) @endif
+                            @if(!$balanced) <span class="text-danger ms-2">(Out of balance!)</span> @endif
                         </td>
                     </tr>
                 </tbody>

@@ -795,7 +795,7 @@
                     <li><span class="dropdown-item text-muted small py-2">No notifications</span></li>
                     @endif
                     <li><hr class="dropdown-divider"></li>
-                    <li><a href="{{ route('notification-templates.index') }}" class="dropdown-item small text-center text-primary">Lihat Semua</a></li>
+                    <li><a href="{{ route('notification-templates.index') }}" class="dropdown-item small text-center text-primary">Notification Settings</a></li>
                 </ul>
             </div>
 
