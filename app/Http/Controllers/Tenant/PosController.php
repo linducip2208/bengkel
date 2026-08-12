@@ -202,7 +202,7 @@ class PosController extends Controller
         }
 
         $invoice = DB::transaction(function () use ($validated, $session, $subtotal, $discount, $grandTotal, $totalPaid, $payments, $voucher, $voucherDiscount) {
-            $invoiceNumber = 'POS-' . now()->format('Ymd') . '-' . str_pad((string) (PosSession::find($session->id)->transaction_count + 1), 4, '0', STR_PAD_LEFT);
+            $invoiceNumber = 'POS-' . now()->format('Ymd') . '-' . str_pad((string) ($session->transaction_count + 1), 4, '0', STR_PAD_LEFT);
 
             // Walk-in customer fallback (kolom invoices.customer_id NOT NULL)
             $customerId = $validated['customer_id'] ?? null;

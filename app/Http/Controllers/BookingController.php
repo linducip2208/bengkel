@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Branch;
 use App\Models\RepairCategory;
-use App\Models\Service;
 use Illuminate\Http\Request;
 
 class BookingController extends Controller
@@ -101,7 +100,7 @@ class BookingController extends Controller
         }
 
         // Create service
-        $jobNo = 'JOB-' . date('Ym') . '-' . str_pad(\App\Models\Service::max('id') + 1, 4, '0', STR_PAD_LEFT);
+        $jobNo = app(\App\Services\ServiceService::class)->generateJobNo();
         $service = \App\Models\Service::create([
             'job_no' => $jobNo,
             'customer_id' => $customer->id,

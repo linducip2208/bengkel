@@ -65,7 +65,7 @@
         </tr>
         <tr>
             <td>{{ $item->quantity }} × @money($item->unit_price)</td>
-            <td class="right">@money($item->total)</td>
+            <td class="right">@money($item->total_price)</td>
         </tr>
         @endforeach
     </table>

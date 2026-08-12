@@ -145,7 +145,7 @@ class InvoiceService extends BaseService
 
         StockHistory::create([
             'product_id' => $productId,
-            'reference_type' => 'invoice',
+            'reference_type' => Invoice::class,
             'reference_id' => $invoice->id,
             'type' => 'out',
             'quantity_change' => -$quantity,
@@ -166,7 +166,7 @@ class InvoiceService extends BaseService
 
         StockHistory::create([
             'product_id' => $productId,
-            'reference_type' => 'invoice',
+            'reference_type' => Invoice::class,
             'reference_id' => $invoice->id,
             'type' => 'in',
             'quantity_change' => $quantity,

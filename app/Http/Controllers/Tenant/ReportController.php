@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
-use App\Models\RepairCategory;
 use App\Models\Service;
 use App\Models\User;
 use App\Services\ReportService;
@@ -100,8 +99,8 @@ class ReportController extends Controller
             foreach (($report['services'] ?? []) as $s) {
                 $sheet->setCellValue("A{$row}", $s->service_date ?? '');
                 $sheet->setCellValue("B{$row}", $s->job_no ?? '');
-                $sheet->setCellValue("C{$row}", $s->customer->name ?? '');
-                $sheet->setCellValue("D{$row}", $s->vehicle->number_plate ?? '');
+                $sheet->setCellValue("C{$row}", $s->customer?->name ?? '');
+                $sheet->setCellValue("D{$row}", $s->vehicle?->number_plate ?? '');
                 $sheet->setCellValue("E{$row}", $s->done_status ?? '');
                 $sheet->setCellValue("F{$row}", $s->charge ?? 0);
                 $row++;
@@ -115,7 +114,7 @@ class ReportController extends Controller
             foreach (($report['sales'] ?? []) as $s) {
                 $sheet->setCellValue("A{$row}", $s->sales_date ?? '');
                 $sheet->setCellValue("B{$row}", $s->sales_no ?? '');
-                $sheet->setCellValue("C{$row}", $s->customer->name ?? '');
+                $sheet->setCellValue("C{$row}", $s->customer?->name ?? '');
                 $sheet->setCellValue("D{$row}", $s->grand_total ?? 0);
                 $row++;
             }
@@ -128,7 +127,7 @@ class ReportController extends Controller
             $row = 2;
             foreach (($report['products'] ?? []) as $p) {
                 $sheet->setCellValue("A{$row}", $p->name ?? '');
-                $sheet->setCellValue("B{$row}", $p->productType->name ?? '');
+                $sheet->setCellValue("B{$row}", $p->productType?->name ?? '');
                 $sheet->setCellValue("C{$row}", $p->current_stock ?? 0);
                 $sheet->setCellValue("D{$row}", $p->cost_price ?? 0);
                 $sheet->setCellValue("E{$row}", ($p->current_stock ?? 0) * ($p->cost_price ?? 0));
@@ -169,7 +168,7 @@ class ReportController extends Controller
             ->with('user')
             ->get()
             ->map(function ($t) {
-                $t->technician_name = $t->user->name ?? 'Unknown';
+                $t->technician_name = $t->user?->name ?? 'Unknown';
                 $t->avg_duration = $t->avg_minutes ? round($t->avg_minutes / 60, 1) : null;
                 return $t;
             });
