@@ -265,8 +265,9 @@ class PosController extends Controller
                 }
             }
 
+            $firstPayment = null;
             foreach ($payments as $pmt) {
-                PaymentRecord::create([
+                $record = PaymentRecord::create([
                     'invoice_id' => $invoice->id,
                     'payment_method_id' => $pmt['method_id'],
                     'amount' => $pmt['amount'],
@@ -274,6 +275,25 @@ class PosController extends Controller
                     'reference_number' => $invoice->invoice_number,
                     'notes' => 'POS payment',
                 ]);
+                $firstPayment = $firstPayment ?? $record;
+            }
+
+            \App\Models\Income::create([
+                'invoice_number' => $invoice->invoice_number,
+                'customer_id' => $customerId,
+                'payment_method_id' => $payments[0]['method_id'] ?? null,
+                'amount' => $grandTotal,
+                'income_date' => now(),
+                'label' => 'POS ' . $invoice->invoice_number,
+                'created_by' => auth()->id(),
+            ]);
+
+            if ($firstPayment) {
+                try {
+                    app(\App\Services\AutoJournalService::class)->journalInvoicePayment($firstPayment);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning("POS auto-journal: {$e->getMessage()}");
+                }
             }
 
             if ($voucher && $voucherDiscount > 0) {

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'branch_id', 'customer_id', 'name', 'phone', 'email',
     'vehicle_plate', 'vehicle_brand', 'vehicle_model',
     'booking_at', 'complaint', 'status', 'service_id', 'admin_notes',
+    'repair_category_id',
 ])]
 class Booking extends Model
 {
