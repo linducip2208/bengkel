@@ -515,14 +515,13 @@
             @canany(['pos.view','sale.view','invoice.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuSalesPos"
-                    aria-expanded="{{ request()->routeIs('pos.*','sales.*','sales-orders.*','invoices.*','payments.*','sell-returns.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('pos.*','sales.*','invoices.*','payments.*','sell-returns.*') ? 'true' : 'false' }}">
                     <i class="fas fa-cash-register"></i> Sales & POS
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('pos.*','sales.*','sales-orders.*','invoices.*','payments.*','sell-returns.*') ? 'show' : '' }}" id="menuSalesPos">
+                <ul class="collapse submenu {{ request()->routeIs('pos.*','sales.*','invoices.*','payments.*','sell-returns.*') ? 'show' : '' }}" id="menuSalesPos">
                     @can('pos.view')<li><a href="{{ route('pos.terminal') }}" class="nav-link {{ request()->routeIs('pos.terminal','pos.openForm') ? 'active' : '' }}"><i class="fas fa-desktop me-1"></i> POS Terminal</a></li>@endcan
                     @can('pos.view')<li><a href="{{ route('pos.sessions') }}" class="nav-link {{ request()->routeIs('pos.sessions','pos.close*') ? 'active' : '' }}"><i class="fas fa-history me-1"></i> POS Sessions</a></li>@endcan
-                    @can('sale.view')<li><a href="{{ route('sales-orders.index') }}" class="nav-link {{ request()->routeIs('sales-orders.*') ? 'active' : '' }}"><i class="fas fa-file-signature me-1"></i> Sales Orders</a></li>@endcan
                     @can('invoice.view')<li><a href="{{ route('invoices.index') }}" class="nav-link {{ request()->routeIs('invoices.index') ? 'active' : '' }}"><i class="fas fa-file-invoice me-1"></i> Invoices</a></li>@endcan
                     @can('sale.view')<li><a href="{{ route('sell-returns.index') }}" class="nav-link {{ request()->routeIs('sell-returns.*') ? 'active' : '' }}"><i class="fas fa-undo-alt me-1"></i> Retur Penjualan</a></li>@endcan
                 </ul>

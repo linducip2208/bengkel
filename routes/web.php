@@ -47,7 +47,6 @@ use App\Http\Controllers\Tenant\PurchaseOrderController;
 use App\Http\Controllers\Tenant\PurchaseReturnController;
 use App\Http\Controllers\Tenant\PurchaseRequisitionController;
 use App\Http\Controllers\Tenant\SellReturnController;
-use App\Http\Controllers\Tenant\SalesOrderController;
 use App\Http\Controllers\Tenant\RecallController;
 use App\Http\Controllers\Tenant\ReminderController;
 use App\Http\Controllers\Tenant\RepairCategoryController;
@@ -272,10 +271,8 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::get('/purchases/{purchase}/return', [PurchaseReturnController::class, 'create'])->name('purchases.return.create');
     Route::post('/purchases/{purchase}/return', [PurchaseReturnController::class, 'store'])->name('purchases.return.store');
 
-    // --- Sales Orders custom routes (before resource) ---
-    Route::post('/sales-orders/{salesOrder}/approve', [SalesOrderController::class, 'approve'])->name('sales-orders.approve');
-    Route::post('/sales-orders/{salesOrder}/reject', [SalesOrderController::class, 'reject'])->name('sales-orders.reject');
-    Route::post('/sales-orders/{salesOrder}/convert', [SalesOrderController::class, 'convertToInvoice'])->name('sales-orders.convert');
+    // Sales Orders merged into POS — redirect old URLs
+    Route::redirect('/sales-orders', '/pos/terminal');
 
     // --- Purchase Orders custom routes (before resource) ---
     Route::post('/purchase-orders/{purchaseOrder}/mark-received', [PurchaseOrderController::class, 'markReceived'])->name('purchase-orders.mark-received');
@@ -308,7 +305,6 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::resource('invoices', InvoiceController::class);
     Route::resource('products', ProductController::class);
     Route::resource('purchases', PurchaseController::class);
-    Route::resource('sales-orders', SalesOrderController::class);
     Route::resource('purchase-orders', PurchaseOrderController::class);
     Route::resource('purchase-requisitions', PurchaseRequisitionController::class);
     Route::resource('sell-returns', SellReturnController::class)->only(['index', 'create', 'store', 'show']);
