@@ -270,6 +270,9 @@ class ServiceService extends BaseService
             'workshop_name' => config('app.name'),
         ]);
 
+        // Auto-generate next service reminder
+        $this->createNextServiceReminder($service);
+
         \App\Models\ActivityLog::record('service.complete', $service, "Service {$service->job_no} selesai");
 
         return redirect()
@@ -415,6 +418,37 @@ class ServiceService extends BaseService
             'in_progress' => Service::inProgress()->count(),
             'done_today' => Service::done()->today()->count(),
         ];
+    }
+
+    private function createNextServiceReminder(Service $service): void
+    {
+        try {
+            $jobcardDetail = $service->jobcardDetail;
+            $vehicle = $service->vehicle;
+
+            $description = 'Estimated next service based on time interval';
+            $remindAt = now()->addDays(90);
+
+            if ($jobcardDetail && $jobcardDetail->odometer_out) {
+                $nextOdometer = $jobcardDetail->odometer_out + 5000;
+                $description = "Estimated next service at {$nextOdometer} km based on current odometer reading ({$jobcardDetail->odometer_out} km)";
+            }
+
+            \App\Models\Reminder::create([
+                'customer_id' => $service->customer_id,
+                'vehicle_id' => $service->vehicle_id,
+                'service_id' => $service->id,
+                'title' => 'Next Service Reminder for ' . ($vehicle?->number_plate ?? 'Vehicle #' . $service->vehicle_id),
+                'description' => $description,
+                'reminder_date' => $remindAt,
+                'reminder_type' => 'service',
+                'is_active' => true,
+                'branch_id' => $service->branch_id,
+                'created_by' => auth()->id(),
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Next service reminder failed for service {$service->id}: {$e->getMessage()}");
+        }
     }
 
     private function notifyCustomer(Service $service, string $templateSlug, array $data): void

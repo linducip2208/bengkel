@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name') }} — Aplikasi Manajemen Bengkel Modern</title>
-    <meta name="description" content="Aplikasi manajemen bengkel 44 modul: multi-cabang, POS, booking online, customer, kendaraan, jobcard, inspeksi, inventory parts, invoice, loyalty, klaim garansi, komisi, audit log, dan laporan keuangan dalam satu sistem.">
+    <meta name="description" content="ERP Bengkel Modern — 80+ modul terintegrasi: 13-step workflow, multi-cabang, auto-accounting, inventory, POS, CRM, loyalty, dan laporan keuangan dalam satu sistem.">
     <link rel="canonical" href="{{ url('/') }}">
     <meta property="og:title" content="{{ config('app.name') }} — Manajemen Bengkel Modern">
     <meta property="og:description" content="Catat customer, kendaraan, service, parts, invoice, dan keuangan bengkel dalam satu aplikasi.">
@@ -392,9 +392,9 @@
         </a>
         <div class="nav-links">
             <a href="#fitur" class="nav-link">Fitur Utama</a>
-            <a href="#operasional" class="nav-link">Operasional</a>
-            <a href="#marketing" class="nav-link">Marketing</a>
-            <a href="#modul" class="nav-link">44 Modul</a>
+            <a href="#operasional" class="nav-link">Teknisi & CRM</a>
+            <a href="#marketing" class="nav-link">Finance</a>
+            <a href="#modul" class="nav-link">85+ Modul</a>
             <a href="{{ route('docs.index') }}" class="nav-link">Dokumentasi</a>
             @auth
                 <a href="{{ route('dashboard') }}" class="btn btn-primary"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
@@ -410,25 +410,25 @@
     <div class="container">
         <div class="hero-grid">
             <div>
-                <span class="badge"><i class="fas fa-bolt"></i> 44 modul · multi-cabang · POS · Booking</span>
-                <h1>Bengkel digital end-to-end, <span>satu aplikasi</span>.</h1>
+                <span class="badge"><i class="fas fa-bolt"></i> ERP Bengkel · 80+ modul · 13-step workflow</span>
+                <h1>ERP Bengkel Modern, <span>80+ Modul Terintegrasi</span>.</h1>
                 <p class="lead">
-                    Customer, kendaraan, jobcard, inspeksi, sparepart, POS kasir, booking online,
-                    invoice, loyalty, klaim garansi, audit log, sampai laporan keuangan — semua
-                    saling terhubung dan siap pakai di banyak cabang.
+                    Multi-cabang, 13-step workflow, auto-accounting, inventory, POS, CRM —
+                    satu sistem lengkap untuk mengelola seluruh operasional bengkel dari front-desk
+                    sampai laporan keuangan.
                 </p>
                 <div class="hero-cta">
-                    <a href="{{ route('login') }}" class="btn btn-primary">
-                        <i class="fas fa-rocket"></i> Mulai Pakai
+                    <a href="{{ url('/admin/login') }}" class="btn btn-primary">
+                        <i class="fas fa-rocket"></i> Coba Demo
                     </a>
                     <a href="{{ route('docs.index') }}" class="btn btn-ghost">
-                        <i class="fas fa-book"></i> Baca Tutorial
+                        <i class="fas fa-book"></i> Lihat Dokumentasi
                     </a>
                 </div>
                 <div class="hero-meta">
+                    <span><i class="fas fa-check-circle"></i> 13-step workflow bengkel</span>
+                    <span><i class="fas fa-check-circle"></i> Auto-accounting & journal</span>
                     <span><i class="fas fa-check-circle"></i> Multi-cabang siap pakai</span>
-                    <span><i class="fas fa-check-circle"></i> Audit log lengkap</span>
-                    <span><i class="fas fa-check-circle"></i> Reminder WA/Email otomatis</span>
                 </div>
             </div>
             <div class="hero-img">
@@ -437,10 +437,10 @@
         </div>
 
         <div class="stats">
-            <div class="stat"><div class="v">44</div><div class="l">Modul Terintegrasi</div></div>
-            <div class="stat"><div class="v">3</div><div class="l">Tipe Invoice</div></div>
-            <div class="stat"><div class="v">6</div><div class="l">Kategori Inspeksi</div></div>
-            <div class="stat"><div class="v">∞</div><div class="l">Cabang & Pengguna</div></div>
+            <div class="stat"><div class="v">85+</div><div class="l">Modul Terintegrasi</div></div>
+            <div class="stat"><div class="v">15</div><div class="l">Menu Groups</div></div>
+            <div class="stat"><div class="v">13</div><div class="l">Workflow Statuses</div></div>
+            <div class="stat"><div class="v">10</div><div class="l">Tipe Laporan</div></div>
         </div>
     </div>
 </section>
@@ -450,164 +450,21 @@
     <div class="container">
         <div class="sec-head">
             <div class="eyebrow">Fitur Utama</div>
-            <h2>Inti operasional yang dipakai setiap hari</h2>
-            <p>Dari customer datang sampai kendaraan keluar — semua langkah punya tempat sendiri di aplikasi.</p>
+            <h2>8 modul kunci yang menjalankan operasional bengkel</h2>
+            <p>Dari customer datang, booking, service, inventory, POS, sampai laporan keuangan — semua dalam satu sistem terintegrasi.</p>
         </div>
 
-        {{-- Customer --}}
+        {{-- Operations --}}
         <div class="feature">
             <div class="feature-text">
-                <div class="icon-pill"><i class="fas fa-users"></i></div>
-                <h3>Manajemen Pelanggan</h3>
-                <p>Catat customer lengkap dengan kontak, perusahaan, dan NPWP. Lihat seluruh riwayat service & invoice per customer dalam satu halaman.</p>
+                <div class="icon-pill"><i class="fas fa-building"></i></div>
+                <h3>Operations — Multi-Cabang & Booking</h3>
+                <p>Kelola cabang, booking online customer, check-in kendaraan, dan gate pass dalam satu alur. Setiap cabang punya jam operasional, slot service, dan hari libur sendiri.</p>
                 <ul class="feature-bullets">
-                    <li>CRUD lengkap + import CSV massal</li>
-                    <li>Riwayat semua kendaraan & service</li>
-                    <li>Custom fields (tgl lahir, sumber customer, dll)</li>
-                    <li>Dukungan customer perorangan & perusahaan</li>
-                </ul>
-            </div>
-            <div class="feature-shot framed">
-                <div class="browser-bar">
-                    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-                    <span class="url">/customers</span>
-                </div>
-                <img src="{{ asset('images/features/customers.png') }}" alt="Manajemen Customer">
-            </div>
-        </div>
-
-        {{-- Vehicle --}}
-        <div class="feature reverse">
-            <div class="feature-text">
-                <div class="icon-pill"><i class="fas fa-car"></i></div>
-                <h3>Database Kendaraan</h3>
-                <p>Daftarkan setiap kendaraan dengan plat unik, foto kondisi, dan riwayat servis lengkap. Master data jenis, merk, BBM, dan warna sudah siap pakai.</p>
-                <ul class="feature-bullets">
-                    <li>Plat nomor unik dengan validasi otomatis</li>
-                    <li>Foto multi-angle (depan, samping, kerusakan)</li>
-                    <li>Tracking odometer & rekomendasi service berikutnya</li>
-                    <li>Mobil, motor, truk, bus — semua didukung</li>
-                </ul>
-            </div>
-            <div class="feature-shot framed">
-                <div class="browser-bar">
-                    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-                    <span class="url">/vehicles</span>
-                </div>
-                <img src="{{ asset('images/features/vehicles.png') }}" alt="Database Kendaraan">
-            </div>
-        </div>
-
-        {{-- Service --}}
-        <div class="feature">
-            <div class="feature-text">
-                <div class="icon-pill"><i class="fas fa-tools"></i></div>
-                <h3>Alur Service & Jobcard</h3>
-                <p>Jantung aplikasi. Buat service dari customer + kendaraan, otomatis generate jobcard. Status transparan: Open → In Process → Done.</p>
-                <ul class="feature-bullets">
-                    <li>Assign ke teknisi, tracking siapa kerjakan apa</li>
-                    <li>Kategori service: berkala, breakdown, repeat, garansi</li>
-                    <li>Foto before / after untuk bukti & dokumentasi</li>
-                    <li>Auto-link ke invoice ketika selesai</li>
-                </ul>
-            </div>
-            <div class="feature-shot framed">
-                <div class="browser-bar">
-                    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-                    <span class="url">/services</span>
-                </div>
-                <img src="{{ asset('images/features/services.png') }}" alt="Daftar Service">
-            </div>
-        </div>
-
-        {{-- Jobcard & Inspection --}}
-        <div class="feature reverse">
-            <div class="feature-text">
-                <div class="icon-pill"><i class="fas fa-clipboard-list"></i></div>
-                <h3>Jobcard & Inspection Checklist</h3>
-                <p>Setiap service punya satu jobcard dengan nomor unik, odometer masuk-keluar, dan checklist inspeksi 6 kategori (mesin, kaki-kaki, kelistrikan, dst).</p>
-                <ul class="feature-bullets">
-                    <li>Checklist inspeksi yang bisa di-custom</li>
-                    <li>Library inspection points 30+ titik standar</li>
-                    <li>Print jobcard untuk ditandatangani customer & teknisi</li>
-                    <li>Rekomendasi service berikutnya (odo + tanggal)</li>
-                </ul>
-            </div>
-            <div class="feature-shot framed">
-                <div class="browser-bar">
-                    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-                    <span class="url">/jobcards</span>
-                </div>
-                <img src="{{ asset('images/features/jobcards.png') }}" alt="Daftar Jobcard">
-            </div>
-        </div>
-
-        {{-- Invoice --}}
-        <div class="feature">
-            <div class="feature-text">
-                <div class="icon-pill"><i class="fas fa-file-invoice-dollar"></i></div>
-                <h3>Invoice & Pembayaran Fleksibel</h3>
-                <p>3 tipe invoice (service, sales, parts) dengan dukungan pembayaran cicil, kirim PDF, kirim via WhatsApp atau email langsung dari aplikasi.</p>
-                <ul class="feature-bullets">
-                    <li>Multiple payment methods (Cash, Transfer, QRIS, dll)</li>
-                    <li>Status otomatis: Unpaid → Half Paid → Full Paid</li>
-                    <li>Generate PDF profesional dengan logo bengkel</li>
-                    <li>Histori pembayaran lengkap per invoice</li>
-                </ul>
-            </div>
-            <div class="feature-shot framed">
-                <div class="browser-bar">
-                    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-                    <span class="url">/invoices</span>
-                </div>
-                <img src="{{ asset('images/features/invoices.png') }}" alt="Daftar Invoice">
-            </div>
-        </div>
-
-        {{-- Inventory --}}
-        <div class="feature reverse">
-            <div class="feature-text">
-                <div class="icon-pill"><i class="fas fa-boxes-stacked"></i></div>
-                <h3>Inventory & Stok Sparepart</h3>
-                <p>Kelola sparepart dengan stok real-time. Otomatis berkurang ketika dipakai service, otomatis bertambah ketika purchase order diterima.</p>
-                <ul class="feature-bullets">
-                    <li>CRUD produk dengan harga beli & harga jual</li>
-                    <li>Stock opname untuk koreksi hitung fisik</li>
-                    <li>Audit trail setiap perubahan stok (siapa, kapan, alasannya)</li>
-                    <li>Import CSV massal untuk migrasi awal</li>
-                </ul>
-            </div>
-            <div class="feature-shot framed">
-                <div class="browser-bar">
-                    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-                    <span class="url">/products</span>
-                </div>
-                <img src="{{ asset('images/features/products.png') }}" alt="Inventory Produk">
-            </div>
-        </div>
-    </div>
-</section>
-
-{{-- ====================== SECTION OPERASIONAL & MULTI-CABANG ====================== --}}
-<section id="operasional" class="alt">
-    <div class="container">
-        <div class="sec-head">
-            <div class="eyebrow">Operasional Skala Besar</div>
-            <h2>Multi-cabang, slot service, dan reminder otomatis</h2>
-            <p>Dirancang untuk bengkel yang tumbuh — banyak cabang, banyak slot service, dan banyak customer yang harus diingatkan.</p>
-        </div>
-
-        {{-- Multi-cabang --}}
-        <div class="feature">
-            <div class="feature-text">
-                <div class="icon-pill" style="background:#fef3c7;color:#d97706"><i class="fas fa-building"></i></div>
-                <h3>Multi-Cabang dengan Switch Cepat</h3>
-                <p>Punya lebih dari satu cabang? Daftarkan semuanya. Setiap cabang punya jam operasional, hari libur, dan washbay (slot service) sendiri. Operator bisa switch cabang dari topbar.</p>
-                <ul class="feature-bullets">
-                    <li>Daftar cabang dengan kode, alamat, kontak</li>
-                    <li>Jam operasional per hari per cabang</li>
-                    <li>Hari libur (sekali / berulang tahunan)</li>
-                    <li>Branch switcher cepat di topbar</li>
+                    <li>Multi-cabang dengan branch switcher cepat di topbar</li>
+                    <li>Booking online — customer pesan jadwal dari HP</li>
+                    <li>Check-in & check-out kendaraan dengan odometer</li>
+                    <li>Gate pass PDF dengan stempel waktu masuk/keluar</li>
                 </ul>
             </div>
             <div class="feature-shot framed">
@@ -615,240 +472,120 @@
                     <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
                     <span class="url">/branches</span>
                 </div>
-                <img src="{{ asset('images/features/branches.png') }}" alt="Multi-Cabang">
+                <img src="{{ asset('images/features/branches.png') }}" alt="Multi-Cabang & Booking">
             </div>
         </div>
 
-        {{-- Washbay --}}
+        {{-- Service Management --}}
         <div class="feature reverse">
             <div class="feature-text">
-                <div class="icon-pill" style="background:#dcfce7;color:#16a34a"><i class="fas fa-warehouse"></i></div>
-                <h3>Washbay & Slot Service</h3>
-                <p>Visualisasi slot fisik bengkel: kosong, sedang dipakai, atau maintenance. Tempatkan kendaraan ke slot saat dikerjakan teknisi, lepas saat selesai.</p>
+                <div class="icon-pill"><i class="fas fa-tools"></i></div>
+                <h3>Service Management — 13-Step Workflow</h3>
+                <p>Jantung aplikasi. 13 status workflow dari booking sampai selesai: job card, inspeksi 6 kategori, assign teknisi, tracking progres, subcontractor, dan serah terima.</p>
                 <ul class="feature-bullets">
-                    <li>Status real-time: kosong / dipakai / maintenance</li>
-                    <li>Tempelkan ke service yang sedang dikerjakan</li>
-                    <li>Pemetaan per cabang</li>
-                    <li>Visual card layout, sekali lihat langsung paham</li>
+                    <li>Booking → Check-in → Diagnosis → Estimate → Approval</li>
+                    <li>In Progress → Inspection → Subcontract → QC → Done</li>
+                    <li>Job card print dengan checklist inspeksi 30+ titik</li>
+                    <li>Foto before/after, catatan teknisi, rekomendasi lanjutan</li>
                 </ul>
             </div>
             <div class="feature-shot framed">
                 <div class="browser-bar">
                     <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-                    <span class="url">/washbays</span>
+                    <span class="url">/services</span>
                 </div>
-                <img src="{{ asset('images/features/washbays.png') }}" alt="Washbay / Slot Service">
+                <img src="{{ asset('images/features/services.png') }}" alt="Service Management">
             </div>
         </div>
 
-        {{-- Reminder --}}
+        {{-- Inventory & Equipment --}}
         <div class="feature">
             <div class="feature-text">
-                <div class="icon-pill" style="background:#fce7f3;color:#db2777"><i class="fas fa-bell"></i></div>
-                <h3>Reminder Otomatis ke Pelanggan</h3>
-                <p>Sistem menemukan kendaraan yang sudah jatuh tempo service (berdasarkan odo atau tanggal) dan menyiapkan pesan reminder. Kirim batch ke WhatsApp atau email.</p>
+                <div class="icon-pill"><i class="fas fa-boxes-stacked"></i></div>
+                <h3>Inventory — Multi-Warehouse & Equipment</h3>
+                <p>Kelola sparepart, oli, ban, dan equipment di banyak gudang. Stok otomatis berkurang saat dipakai service, otomatis bertambah saat PO diterima. Stock opname & adjustment dengan audit trail lengkap.</p>
                 <ul class="feature-bullets">
-                    <li>Template notifikasi yang bisa di-custom dengan variabel</li>
-                    <li>Reminder ganti oli, MOT, tanggal STNK, ulang tahun</li>
-                    <li>Kirim manual atau auto-scheduled</li>
-                    <li>Email log untuk verifikasi keterkiriman</li>
+                    <li>Multi-warehouse dengan transfer stok antar gudang</li>
+                    <li>Purchase order → receive → stok auto-bertambah</li>
+                    <li>Stock opname & adjustment dengan history trail</li>
+                    <li>Equipment tracking: tools, scanner, lift, dan aset bengkel</li>
                 </ul>
             </div>
             <div class="feature-shot framed">
                 <div class="browser-bar">
                     <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-                    <span class="url">/reminders</span>
+                    <span class="url">/products</span>
                 </div>
-                <img src="{{ asset('images/features/reminders.png') }}" alt="Reminder Otomatis">
+                <img src="{{ asset('images/features/products.png') }}" alt="Inventory & Gudang">
             </div>
         </div>
 
-        {{-- Audit & Stock History --}}
+        {{-- Sales & POS --}}
         <div class="feature reverse">
             <div class="feature-text">
-                <div class="icon-pill" style="background:#ede9fe;color:#7c3aed"><i class="fas fa-clock-rotate-left"></i></div>
-                <h3>Audit Trail & Email Log</h3>
-                <p>Setiap perubahan stok tercatat: siapa, kapan, alasan, qty sebelum & sesudah. Setiap email yang dikirim ada log-nya. Tidak ada lagi "tadi siapa yang ubah?".</p>
+                <div class="icon-pill"><i class="fas fa-cash-register"></i></div>
+                <h3>Sales & POS — Terminal Kasir + Invoice</h3>
+                <p>POS terminal untuk transaksi cepat walk-in customer. Invoice service, sales, dan parts dengan dukungan split payment, cicilan, voucher diskon, dan multi-metode bayar. Generate PDF + kirim via WA/Email.</p>
                 <ul class="feature-bullets">
-                    <li>Stock history per produk: in, out, adjust, opname</li>
-                    <li>Email log lengkap dengan status delivered</li>
-                    <li>Notes polymorphic di customer, kendaraan, service, dst</li>
-                    <li>Compliance & rekonsiliasi jadi mudah</li>
+                    <li>POS real-time: scan barcode, klik produk, bayar, cetak struk</li>
+                    <li>3 tipe invoice: service, sales, parts — semua terintegrasi</li>
+                    <li>Split payment & cicilan dengan status auto-update</li>
+                    <li>Voucher & promo dengan masa berlaku dan max usage</li>
                 </ul>
             </div>
             <div class="feature-shot framed">
                 <div class="browser-bar">
                     <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-                    <span class="url">/stock-histories</span>
+                    <span class="url">/invoices</span>
                 </div>
-                <img src="{{ asset('images/features/stock-histories.png') }}" alt="Stock History / Audit Trail">
+                <img src="{{ asset('images/features/invoices.png') }}" alt="Sales POS & Invoice">
             </div>
         </div>
     </div>
 </section>
 
-{{-- ====================== SECTION REPORT & ANALYTICS ====================== --}}
-<section>
+{{-- ====================== SECTION TEKNISI & CRM ====================== --}}
+<section id="operasional" class="alt">
     <div class="container">
         <div class="sec-head">
-            <div class="eyebrow">Laporan & Analytics</div>
-            <h2>Empat sudut pandang bisnis bengkel</h2>
-            <p>Laporan service, sales, stok, dan keuangan — semua bisa di-export ke PDF & Excel.</p>
+            <div class="eyebrow">Teknisi & CRM</div>
+            <h2>Teknisi, marketing, dan retensi pelanggan</h2>
+            <p>Komisi teknisi otomatis, loyalty program, voucher promo, dan review customer — semua untuk menahan pelanggan datang kembali.</p>
         </div>
 
-        <div class="mini-grid">
-            <div class="mini-card">
-                <img src="{{ asset('images/features/reports.png') }}" alt="Financial Report">
-                <div class="body">
-                    <h4><i class="fas fa-chart-line"></i> Laporan Keuangan</h4>
-                    <p>Profit/loss harian dan bulanan otomatis dari income, sales, service, & expense.</p>
-                </div>
-            </div>
-            <div class="mini-card">
-                <img src="{{ asset('images/features/reports-sales.png') }}" alt="Sales Report">
-                <div class="body">
-                    <h4><i class="fas fa-chart-bar"></i> Laporan Penjualan</h4>
-                    <p>Volume penjualan, item terlaris, tren per periode — ekspor PDF maupun Excel.</p>
-                </div>
-            </div>
-            <div class="mini-card">
-                <img src="{{ asset('images/features/reports-stock.png') }}" alt="Stock Report">
-                <div class="body">
-                    <h4><i class="fas fa-warehouse"></i> Laporan Stok</h4>
-                    <p>Stok berjalan, slow-moving items, dan rekomendasi reorder.</p>
-                </div>
-            </div>
-            <div class="mini-card">
-                <img src="{{ asset('images/features/reports-service.png') }}" alt="Service Report">
-                <div class="body">
-                    <h4><i class="fas fa-wrench"></i> Laporan Service</h4>
-                    <p>Volume service per kategori dan per teknisi untuk evaluasi tim.</p>
-                </div>
-            </div>
-            <div class="mini-card">
-                <img src="{{ asset('images/features/incomes.png') }}" alt="Income">
-                <div class="body">
-                    <h4><i class="fas fa-arrow-trend-up"></i> Pemasukan</h4>
-                    <p>Catat pemasukan non-service terpisah agar laporan profit akurat.</p>
-                </div>
-            </div>
-            <div class="mini-card">
-                <img src="{{ asset('images/features/expenses.png') }}" alt="Expense">
-                <div class="body">
-                    <h4><i class="fas fa-arrow-trend-down"></i> Pengeluaran</h4>
-                    <p>Track gaji, listrik, sewa, dan biaya operasional dengan kategori & kuitansi.</p>
-                </div>
-            </div>
-            <div class="mini-card">
-                <img src="{{ asset('images/features/suppliers.png') }}" alt="Supplier">
-                <div class="body">
-                    <h4><i class="fas fa-truck"></i> Manajemen Supplier</h4>
-                    <p>Catat semua supplier sparepart dengan kontak & history pembelian.</p>
-                </div>
-            </div>
-            <div class="mini-card">
-                <img src="{{ asset('images/features/purchases.png') }}" alt="Purchase Order">
-                <div class="body">
-                    <h4><i class="fas fa-cart-shopping"></i> Purchase Order</h4>
-                    <p>Buat PO, tandai received → stok otomatis bertambah dengan trail history.</p>
-                </div>
-            </div>
-            <div class="mini-card">
-                <img src="{{ asset('images/features/gate-passes.png') }}" alt="Gate Pass">
-                <div class="body">
-                    <h4><i class="fas fa-ticket-alt"></i> Gate Pass</h4>
-                    <p>Surat jalan keluar dengan stempel waktu masuk/keluar dan print PDF.</p>
-                </div>
-            </div>
-            <div class="mini-card">
-                <img src="{{ asset('images/features/sales.png') }}" alt="Sales POS">
-                <div class="body">
-                    <h4><i class="fas fa-cash-register"></i> Sales / POS Parts</h4>
-                    <p>POS jual sparepart langsung tanpa service untuk walk-in customer.</p>
-                </div>
-            </div>
-            <div class="mini-card">
-                <img src="{{ asset('images/features/email-logs.png') }}" alt="Email Log">
-                <div class="body">
-                    <h4><i class="fas fa-envelope-open-text"></i> Email Log</h4>
-                    <p>Verifikasi setiap email yang terkirim dengan status & isi pesan.</p>
-                </div>
-            </div>
-            <div class="mini-card">
-                <img src="{{ asset('images/features/custom-fields.png') }}" alt="Custom Fields">
-                <div class="body">
-                    <h4><i class="fas fa-puzzle-piece"></i> Custom Fields</h4>
-                    <p>Tambah field tambahan di customer, kendaraan, service tanpa coding.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-{{-- ====================== SECTION MARKETING & LOYALTY ====================== --}}
-<section id="marketing" class="alt">
-    <div class="container">
-        <div class="sec-head">
-            <div class="eyebrow">Marketing & Pelanggan Setia</div>
-            <h2>Modul lengkap untuk menarik dan menahan customer</h2>
-            <p>Lebih dari sekadar pencatat service — sistem ini punya POS, booking online, voucher, loyalty, dan review untuk mengubah bengkel jadi mesin retention.</p>
-        </div>
-
-        {{-- POS Counter --}}
+        {{-- Technicians --}}
         <div class="feature">
             <div class="feature-text">
-                <div class="icon-pill" style="background:#ecfdf5;color:#059669"><i class="fas fa-cash-register"></i></div>
-                <h3>POS Kasir Real-Time</h3>
-                <p>Terminal kasir khusus untuk transaksi cepat: scan barcode, klik produk, langsung bayar dan cetak struk. Cocok untuk walk-in customer yang beli oli atau sparepart eceran.</p>
+                <div class="icon-pill" style="background:#fef3c7;color:#d97706"><i class="fas fa-user-gear"></i></div>
+                <h3>Manajemen Teknisi & Komisi</h3>
+                <p>Assign teknisi ke service, tracking progres, hitung komisi otomatis berdasarkan service yang dikerjakan. Attendance & leave management untuk tim bengkel.</p>
                 <ul class="feature-bullets">
-                    <li>Scan barcode atau klik produk langsung</li>
-                    <li>Multi-metode bayar + auto kembalian</li>
-                    <li>Sesi kasir (buka–tutup) dengan rekap</li>
-                    <li>Stok berkurang otomatis tiap transaksi</li>
+                    <li>Komisi otomatis per service & parts yang dikerjakan</li>
+                    <li>Attendance check-in/check-out harian</li>
+                    <li>Leave management: izin, sakit, cuti tahunan</li>
+                    <li>Leaderboard performa teknisi per periode</li>
                 </ul>
             </div>
             <div class="feature-shot framed">
                 <div class="browser-bar">
                     <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-                    <span class="url">/pos</span>
+                    <span class="url">/commissions</span>
                 </div>
-                <img src="{{ asset('images/features/pos.png') }}" alt="POS Terminal Kasir">
+                <img src="{{ asset('images/features/commissions.png') }}" alt="Komisi Teknisi">
             </div>
         </div>
 
-        {{-- Booking --}}
+        {{-- CRM & Loyalty --}}
         <div class="feature reverse">
             <div class="feature-text">
-                <div class="icon-pill" style="background:#fef3c7;color:#d97706"><i class="fas fa-calendar-check"></i></div>
-                <h3>Booking Online Customer</h3>
-                <p>Customer pesan jadwal service dari handphone, operator tinggal konfirmasi. Tidak ada lagi customer datang tapi bengkel penuh, atau bengkel kosong tapi customer tidak tahu.</p>
+                <div class="icon-pill" style="background:#dcfce7;color:#16a34a"><i class="fas fa-medal"></i></div>
+                <h3>CRM & Loyalty Program</h3>
+                <p>Customer dapat poin dari setiap transaksi. Tier otomatis Bronze → Silver → Gold → Platinum. Voucher promo, review customer, blog content, dan campaign marketing — semua built-in.</p>
                 <ul class="feature-bullets">
-                    <li>Pilih tanggal, jam, kendaraan, dan layanan</li>
-                    <li>Konfirmasi → otomatis jadi service di sistem</li>
-                    <li>Cek kapasitas washbay & teknisi sebelum approve</li>
-                    <li>Notifikasi otomatis ke customer setelah dikonfirmasi</li>
-                </ul>
-            </div>
-            <div class="feature-shot framed">
-                <div class="browser-bar">
-                    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-                    <span class="url">/bookings</span>
-                </div>
-                <img src="{{ asset('images/features/bookings.png') }}" alt="Booking Online">
-            </div>
-        </div>
-
-        {{-- Loyalty --}}
-        <div class="feature">
-            <div class="feature-text">
-                <div class="icon-pill" style="background:#fce7f3;color:#db2777"><i class="fas fa-medal"></i></div>
-                <h3>Loyalty Points & Membership Tier</h3>
-                <p>Customer dapat poin dari setiap transaksi. Tier otomatis naik dari Bronze → Silver → Gold → Platinum. Customer balik untuk dapat reward.</p>
-                <ul class="feature-bullets">
-                    <li>Poin per Rupiah pembelian (rasio bisa di-set)</li>
-                    <li>4 tier dengan benefit yang bisa di-custom</li>
-                    <li>Leaderboard Top 5 customer per cabang</li>
-                    <li>Redemption: poin → diskon atau hadiah</li>
+                    <li>Loyalty points per Rupiah dengan 4 tier membership</li>
+                    <li>Voucher diskon nominal & persentase dengan masa berlaku</li>
+                    <li>Review & rating customer — material SEO publik</li>
+                    <li>Blog, campaign, dan reminder WA/Email otomatis</li>
                 </ul>
             </div>
             <div class="feature-shot framed">
@@ -859,41 +596,102 @@
                 <img src="{{ asset('images/features/loyalty.png') }}" alt="Loyalty Program">
             </div>
         </div>
+    </div>
+</section>
 
-        {{-- Voucher + Review (row 2 mini-cards) --}}
-        <div class="mini-grid" style="margin-top:1rem;">
+{{-- ====================== SECTION FINANCE & REPORTS ====================== --}}
+<section id="marketing">
+    <div class="container">
+        <div class="sec-head">
+            <div class="eyebrow">Finance & Reports</div>
+            <h2>Auto-accounting, 10 tipe laporan, PDF & Excel export</h2>
+            <p>Jurnal otomatis dari setiap transaksi, COA, General Ledger, Profit & Loss, Balance Sheet — plus 10 tipe laporan bisnis dengan chart dan export.</p>
+        </div>
+
+        {{-- Finance & Accounting --}}
+        <div class="feature">
+            <div class="feature-text">
+                <div class="icon-pill" style="background:#ecfdf5;color:#059669"><i class="fas fa-calculator"></i></div>
+                <h3>Finance & Accounting — Auto-Journal</h3>
+                <p>Chart of Accounts (COA), General Ledger, dan jurnal otomatis dari setiap transaksi: service, sales, purchase, payment, expense. Profit & Loss dan Balance Sheet real-time.</p>
+                <ul class="feature-bullets">
+                    <li>COA dengan akun kas, piutang, hutang, pendapatan, beban</li>
+                    <li>Auto-journal dari setiap invoice, payment, purchase, expense</li>
+                    <li>General Ledger, Trial Balance, P&L, Balance Sheet</li>
+                    <li>Income & Expense tracking dengan kategori dan kuitansi</li>
+                </ul>
+            </div>
+            <div class="feature-shot framed">
+                <div class="browser-bar">
+                    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+                    <span class="url">/reports</span>
+                </div>
+                <img src="{{ asset('images/features/reports.png') }}" alt="Finance & Accounting">
+            </div>
+        </div>
+
+        {{-- Reports --}}
+        <div class="feature reverse">
+            <div class="feature-text">
+                <div class="icon-pill" style="background:#ede9fe;color:#7c3aed"><i class="fas fa-chart-pie"></i></div>
+                <h3>10 Tipe Laporan dengan Chart & Export</h3>
+                <p>Laporan service, penjualan, stok, keuangan, teknisi, customer, dan lainnya. Setiap laporan dilengkapi chart interaktif (bar, line, doughnut) dan bisa di-export ke PDF & Excel.</p>
+                <ul class="feature-bullets">
+                    <li>10 tipe laporan: sales, service, stock, finance, technician, dll</li>
+                    <li>Date filter + group by harian/mingguan/bulanan</li>
+                    <li>Chart interaktif dengan Chart.js</li>
+                    <li>Export PDF (DomPDF) & Excel dengan satu klik</li>
+                </ul>
+            </div>
+            <div class="feature-shot framed">
+                <div class="browser-bar">
+                    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+                    <span class="url">/reports/sales</span>
+                </div>
+                <img src="{{ asset('images/features/reports-sales.png') }}" alt="10 Tipe Laporan">
+            </div>
+        </div>
+
+        <div class="mini-grid">
             <div class="mini-card">
-                <img src="{{ asset('images/features/vouchers.png') }}" alt="Voucher Promo">
+                <img src="{{ asset('images/features/reports-stock.png') }}" alt="Stock Report">
                 <div class="body">
-                    <h4><i class="fas fa-tags"></i> Voucher & Promo</h4>
-                    <p>Generate kode promo dengan masa berlaku, max usage, dan diskon nominal atau persentase. Bisa dipakai di POS atau invoice.</p>
+                    <h4><i class="fas fa-warehouse"></i> Laporan Stok</h4>
+                    <p>Stok berjalan, slow-moving items, rekomendasi reorder — export PDF/Excel.</p>
                 </div>
             </div>
             <div class="mini-card">
-                <img src="{{ asset('images/features/reviews.png') }}" alt="Reviews">
+                <img src="{{ asset('images/features/reports-service.png') }}" alt="Service Report">
                 <div class="body">
-                    <h4><i class="fas fa-star"></i> Review Customer</h4>
-                    <p>Kumpulkan rating & feedback dari customer setelah service. Konten ini juga jadi material untuk halaman SEO publik.</p>
+                    <h4><i class="fas fa-wrench"></i> Laporan Service</h4>
+                    <p>Volume service per kategori & teknisi — evaluasi performa tim.</p>
                 </div>
             </div>
             <div class="mini-card">
-                <img src="{{ asset('images/features/warranty-claims.png') }}" alt="Warranty Claims">
+                <img src="{{ asset('images/features/incomes.png') }}" alt="Income & Expense">
                 <div class="body">
-                    <h4><i class="fas fa-shield-halved"></i> Klaim Garansi</h4>
-                    <p>Catat klaim garansi dari customer, link ke parts/jobcard asal, dan tracking sampai diselesaikan.</p>
+                    <h4><i class="fas fa-file-invoice-dollar"></i> Income & Expense</h4>
+                    <p>Pemasukan non-service + pengeluaran operasional — profit akurat.</p>
+                </div>
+            </div>
+            <div class="mini-card">
+                <img src="{{ asset('images/features/suppliers.png') }}" alt="Supplier">
+                <div class="body">
+                    <h4><i class="fas fa-truck"></i> Supplier & Purchase</h4>
+                    <p>Supplier sparepart, PO, receiving — stok auto-bertambah.</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-{{-- ====================== SECTION HRM & TATA KELOLA ====================== --}}
-<section id="hrm">
+{{-- ====================== SECTION TATA KELOLA ====================== --}}
+<section id="hrm" class="alt">
     <div class="container">
         <div class="sec-head">
-            <div class="eyebrow">HRM & Tata Kelola</div>
-            <h2>Kelola tim, hak akses, dan kas internal dengan rapi</h2>
-            <p>Modul yang membuat bengkel siap di-audit: siapa boleh akses apa, siapa kerjakan apa, dan uang masuk-keluar dari kasir kecil.</p>
+            <div class="eyebrow">Sistem & Tata Kelola</div>
+            <h2>User, hak akses, audit, dan integrasi</h2>
+            <p>Kelola tim, kontrol akses granular, payment gateway dinamis, dan activity log — bengkel siap di-audit kapan saja.</p>
         </div>
 
         <div class="mini-grid">
@@ -948,7 +746,7 @@
     <div class="container">
         <div class="sec-head">
             <div class="eyebrow">Katalog Modul Lengkap</div>
-            <h2>44 modul siap pakai</h2>
+            <h2>85+ modul siap pakai</h2>
             <p>Semua kebutuhan bengkel modern dalam satu instalasi — tidak ada add-on terpisah yang harus dibeli.</p>
         </div>
 
@@ -956,7 +754,7 @@
             <div class="module-tile"><div class="ic"><i class="fas fa-gauge-high"></i></div><div><h5>Dashboard</h5><p>Ringkasan operasional real-time.</p></div></div>
             <div class="module-tile"><div class="ic"><i class="fas fa-users"></i></div><div><h5>Customer</h5><p>CRUD + import CSV + histori.</p></div></div>
             <div class="module-tile"><div class="ic"><i class="fas fa-car"></i></div><div><h5>Vehicle</h5><p>Plat unik + foto + odometer.</p></div></div>
-            <div class="module-tile"><div class="ic"><i class="fas fa-tools"></i></div><div><h5>Service</h5><p>Workflow open → in process → done.</p></div></div>
+            <div class="module-tile"><div class="ic"><i class="fas fa-tools"></i></div><div><h5>Service</h5><p>13-step workflow booking → done.</p></div></div>
             <div class="module-tile"><div class="ic"><i class="fas fa-clipboard-list"></i></div><div><h5>Jobcard</h5><p>Lembar kerja teknisi + print.</p></div></div>
             <div class="module-tile"><div class="ic"><i class="fas fa-search"></i></div><div><h5>Observation Points</h5><p>Titik inspeksi 6 kategori.</p></div></div>
             <div class="module-tile"><div class="ic"><i class="fas fa-list-check"></i></div><div><h5>Inspection Library</h5><p>30+ titik standar yang bisa di-pakai-ulang.</p></div></div>
@@ -974,7 +772,7 @@
             <div class="module-tile"><div class="ic"><i class="fas fa-clock"></i></div><div><h5>Business Hours</h5><p>Jam operasional per hari.</p></div></div>
             <div class="module-tile"><div class="ic"><i class="fas fa-calendar-xmark"></i></div><div><h5>Hari Libur</h5><p>Libur sekali atau berulang.</p></div></div>
             <div class="module-tile"><div class="ic"><i class="fas fa-warehouse"></i></div><div><h5>Washbay</h5><p>Slot service real-time.</p></div></div>
-            <div class="module-tile"><div class="ic"><i class="fas fa-chart-line"></i></div><div><h5>Reports</h5><p>4 jenis + ekspor PDF/Excel.</p></div></div>
+            <div class="module-tile"><div class="ic"><i class="fas fa-chart-line"></i></div><div><h5>Reports</h5><p>10 jenis + ekspor PDF/Excel.</p></div></div>
             <div class="module-tile"><div class="ic"><i class="fas fa-bell"></i></div><div><h5>Reminder</h5><p>Reminder service & ulang tahun.</p></div></div>
             <div class="module-tile"><div class="ic"><i class="fas fa-envelope"></i></div><div><h5>Notif Templates</h5><p>WA + Email dengan variabel.</p></div></div>
             <div class="module-tile"><div class="ic"><i class="fas fa-clock-rotate-left"></i></div><div><h5>Stock History</h5><p>Audit trail per produk.</p></div></div>
@@ -1008,30 +806,30 @@
     <div class="container">
         <div class="sec-head">
             <div class="eyebrow">Alur Kerja</div>
-            <h2>Dari kendaraan masuk sampai siap diserahkan</h2>
-            <p>Satu alur sederhana yang mencerminkan kerja nyata di lapangan — tidak ada langkah yang berlebihan.</p>
+            <h2>13-step workflow — dari booking sampai serah terima</h2>
+            <p>Alur lengkap yang mencerminkan operasional bengkel nyata — setiap langkah punya status transparan dan terdokumentasi.</p>
         </div>
 
         <div class="timeline">
             <div class="timeline-step">
-                <div class="num">1</div>
-                <h4>Customer Datang</h4>
-                <p>Operator catat customer (kalau baru) dan pilih kendaraan miliknya. Plat & odometer dicatat sebagai bukti kondisi masuk.</p>
+                <div class="num">1-4</div>
+                <h4>Booking → Check-in</h4>
+                <p>Customer booking online atau walk-in. Operator check-in kendaraan: catat plat, odometer, keluhan, dan foto kondisi masuk.</p>
             </div>
             <div class="timeline-step">
-                <div class="num">2</div>
-                <h4>Service & Jobcard</h4>
-                <p>Buat service baru otomatis menghasilkan jobcard. Assign teknisi, tempatkan ke washbay, isi checklist inspeksi 6 kategori.</p>
+                <div class="num">5-8</div>
+                <h4>Diagnosis → In Progress</h4>
+                <p>Teknisi diagnosis, buat estimasi biaya, minta approval customer. Setelah approve, mulai pengerjaan dengan jobcard & inspection checklist.</p>
             </div>
             <div class="timeline-step">
-                <div class="num">3</div>
-                <h4>Pengerjaan & Parts</h4>
-                <p>Teknisi mulai kerja. Setiap sparepart dipakai otomatis kurangi stok. Foto after & catatan internal direkam.</p>
+                <div class="num">9-11</div>
+                <h4>QC → Done</h4>
+                <p>Quality control setelah pengerjaan selesai. Subcontract ke pihak ketiga jika diperlukan. Foto after sebagai bukti.</p>
             </div>
             <div class="timeline-step">
-                <div class="num">4</div>
-                <h4>Invoice & Serah Terima</h4>
-                <p>Generate invoice, terima pembayaran, cetak gate pass. Reminder service berikutnya otomatis di-set untuk WA/email.</p>
+                <div class="num">12-13</div>
+                <h4>Invoice → Serah Terima</h4>
+                <p>Generate invoice, terima pembayaran (full/cicil), cetak gate pass. Auto-set reminder service berikutnya via WA/Email.</p>
             </div>
         </div>
     </div>
@@ -1043,7 +841,7 @@
         <div class="sec-head">
             <div class="eyebrow">Akun Demo</div>
             <h2>Coba semua fitur dengan akun demo</h2>
-            <p>Gunakan kredensial di bawah untuk login dan eksplorasi semua 44 modul {{ config('app.name') }}.</p>
+            <p>Gunakan kredensial di bawah untuk login dan eksplorasi semua 85+ modul {{ config('app.name') }}.</p>
         </div>
 
         <div class="table-responsive" style="max-width:700px;margin:0 auto;">
@@ -1159,7 +957,7 @@
 <section class="cta">
     <div class="container">
         <h2>Siap mulai dengan {{ config('app.name') }}?</h2>
-        <p>Masuk dengan akun demo dan jelajahi semua 44 modul — data sample sudah disiapkan untuk dicoba.</p>
+        <p>Masuk dengan akun demo dan jelajahi semua 85+ modul — data sample sudah disiapkan untuk dicoba.</p>
         <div style="display:flex;justify-content:center;gap:0.75rem;flex-wrap:wrap;">
             <a href="{{ route('login') }}" class="btn btn-primary">
                 <i class="fas fa-arrow-right-to-bracket"></i> Login Sekarang
@@ -1184,7 +982,7 @@
                 <h5>Produk</h5>
                 <ul>
                     <li><a href="#fitur">Fitur Utama</a></li>
-                    <li><a href="#operasional">Operasional</a></li>
+                    <li><a href="#operasional">Teknisi & CRM</a></li>
                     <li><a href="#modul">Daftar Modul</a></li>
                     <li><a href="{{ route('docs.index') }}">Dokumentasi</a></li>
                 </ul>
@@ -1218,7 +1016,7 @@
     '@context' => 'https://schema.org',
     '@type' => 'SoftwareApplication',
     'name' => config('app.name'),
-    'description' => 'Aplikasi manajemen bengkel multi-cabang: customer, kendaraan, jobcard, inspeksi, inventory parts, invoice, reminder otomatis, audit log, dan laporan keuangan.',
+    'description' => 'ERP Bengkel Modern — 80+ modul: 13-step workflow, multi-cabang, auto-accounting, inventory, POS, CRM, loyalty, dan laporan keuangan.',
     'applicationCategory' => 'BusinessApplication',
     'operatingSystem' => 'Web',
     'inLanguage' => 'id-ID',

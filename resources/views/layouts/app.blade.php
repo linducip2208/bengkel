@@ -457,8 +457,9 @@
                     @can('booking.view')<li><a href="{{ route('bookings.index') }}" class="nav-link {{ request()->routeIs('bookings.index') ? 'active' : '' }}"><i class="fas fa-calendar-check me-1"></i> Bookings</a></li>@endcan
                     @can('booking.view')<li><a href="{{ route('bookings.calendar') }}" class="nav-link {{ request()->routeIs('bookings.calendar*') ? 'active' : '' }}"><i class="fas fa-calendar-alt me-1"></i> Calendar</a></li>@endcan
                     @can('service.view')<li><a href="{{ route('services.index') }}" class="nav-link {{ request()->routeIs('services.index') ? 'active' : '' }}"><i class="fas fa-clipboard-check me-1"></i> Job Cards / Services</a></li>@endcan
+                    @can('service.view')<li><a href="{{ route('services.history') }}" class="nav-link {{ request()->routeIs('services.history') ? 'active' : '' }}"><i class="fas fa-history me-1"></i> Service History</a></li>@endcan
                     @can('gate-pass.view')<li><a href="{{ route('gate-passes.index') }}" class="nav-link {{ request()->routeIs('gate-passes.*') ? 'active' : '' }}"><i class="fas fa-ticket-alt me-1"></i> Gate Passes</a></li>@endcan
-                    @can('vehicle.view')<li><a href="{{ route('vehicles.index') }}" class="nav-link {{ request()->routeIs('vehicles.*') ? 'active' : '' }}"><i class="fas fa-car me-1"></i> Vehicles</a></li>@endcan
+                    @can('vehicle.view')<li><a href="{{ route('vehicles.index') }}" class="nav-link {{ request()->routeIs('vehicles.show') ? 'active' : request()->routeIs('vehicles.index') ? 'active' : '' }}"><i class="fas fa-car me-1"></i> Vehicles</a></li>@endcan
                     @can('customer.view')<li><a href="{{ route('customers.index') }}" class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}"><i class="fas fa-users me-1"></i> Customers</a></li>@endcan
                     @can('customer-group.view')<li><a href="{{ route('customer-groups.index') }}" class="nav-link {{ request()->is('customer-groups*') ? 'active' : '' }}"><i class="fas fa-layer-group me-1"></i> Customer Groups</a></li>@endcan
                 </ul>
@@ -486,13 +487,14 @@
             @canany(['product.view','supplier.view','purchase.view','equipment.view','warehouse.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuInventory"
-                    aria-expanded="{{ request()->routeIs('products.*','suppliers.*','purchases.*','equipment.*','warehouses.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('products.*','suppliers.*','purchases.*','equipment.*','warehouses.*','stock-adjustments.*') ? 'true' : 'false' }}">
                     <i class="fas fa-boxes"></i> Inventory
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('products.*','suppliers.*','purchases.*','equipment.*','warehouses.*') ? 'show' : '' }}" id="menuInventory">
+                <ul class="collapse submenu {{ request()->routeIs('products.*','suppliers.*','purchases.*','equipment.*','warehouses.*','stock-adjustments.*') ? 'show' : '' }}" id="menuInventory">
                     @can('product.view')<li><a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.index') ? 'active' : '' }}"><i class="fas fa-box me-1"></i> Products / Parts</a></li>@endcan
                     @can('product.stock-opname')<li><a href="{{ route('products.stock-opname') }}" class="nav-link {{ request()->routeIs('products.stock-opname') ? 'active' : '' }}"><i class="fas fa-clipboard me-1"></i> Stock Opname</a></li>@endcan
+                    <li><a href="{{ route('stock-adjustments.index') }}" class="nav-link {{ request()->routeIs('stock-adjustments.*') ? 'active' : '' }}"><i class="fas fa-balance-scale me-1"></i> Stock Adjustment</a></li>
                     @can('supplier.view')<li><a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"><i class="fas fa-truck me-1"></i> Suppliers</a></li>@endcan
                     @can('purchase.view')<li><a href="{{ route('purchases.index') }}" class="nav-link {{ request()->routeIs('purchases.*') ? 'active' : '' }}"><i class="fas fa-shopping-basket me-1"></i> Purchases</a></li>@endcan
                     @can('equipment.view')<li><a href="{{ route('equipment.index') }}" class="nav-link {{ request()->routeIs('equipment.*') ? 'active' : '' }}"><i class="fas fa-toolbox me-1"></i> Equipment</a></li>@endcan
@@ -720,6 +722,77 @@
         <span class="tenant-name">{{ config('app.name') }}</span>
 
         <div class="d-flex align-items-center gap-2">
+            {{-- Quick Actions --}}
+            <div class="d-none d-md-flex align-items-center gap-1">
+                @can('booking.view')
+                <a href="{{ route('bookings.index') }}" class="btn btn-outline-primary btn-sm" title="Booking Baru" style="font-size:0.75rem;">
+                    <i class="fas fa-calendar-plus me-1"></i>Booking
+                </a>
+                @endcan
+                @can('service.view')
+                <a href="{{ route('services.create') }}" class="btn btn-outline-primary btn-sm" title="Job Card Baru" style="font-size:0.75rem;">
+                    <i class="fas fa-clipboard-check me-1"></i>Job Card
+                </a>
+                @endcan
+                @can('invoice.view')
+                <a href="{{ route('invoices.create') }}" class="btn btn-outline-primary btn-sm" title="Invoice Baru" style="font-size:0.75rem;">
+                    <i class="fas fa-file-invoice me-1"></i>Invoice
+                </a>
+                @endcan
+            </div>
+
+            {{-- Notification Bell --}}
+            @php
+                $unreadCount = 0;
+                try {
+                    $notifications = \App\Models\NotificationQueue::where('status','pending')->latest()->limit(5)->get();
+                    $reminders = \App\Models\Reminder::where('sent',false)->where('reminder_date','>=',now()->toDateString())->latest()->limit(5)->get();
+                    $unreadCount = $notifications->count() + $reminders->count();
+                } catch(\Throwable $e) { $notifications = collect(); $reminders = collect(); }
+            @endphp
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary position-relative" data-bs-toggle="dropdown" id="notifBell">
+                    <i class="fas fa-bell"></i>
+                    @if($unreadCount > 0)
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notifBadge" style="font-size:0.6rem;">
+                        {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+                    </span>
+                    @endif
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" style="width:320px;max-height:400px;overflow-y:auto;">
+                    <li class="dropdown-header fw-semibold small text-uppercase">Notifications</li>
+                    @forelse($notifications as $n)
+                    <li>
+                        <a href="#" class="dropdown-item small py-2 d-flex">
+                            <i class="fas fa-envelope me-2 text-muted mt-1"></i>
+                            <div>
+                                <div class="text-truncate" style="max-width:230px;">{{ Str::limit($n->message ?? 'Notification', 50) }}</div>
+                                <small class="text-muted">{{ $n->created_at ? $n->created_at->diffForHumans() : '-' }}</small>
+                            </div>
+                        </a>
+                    </li>
+                    @empty
+                    @endforelse
+                    @forelse($reminders as $r)
+                    <li>
+                        <a href="{{ route('reminders.show', $r) }}" class="dropdown-item small py-2 d-flex">
+                            <i class="fas fa-clock me-2 text-warning mt-1"></i>
+                            <div>
+                                <div class="text-truncate" style="max-width:230px;">{{ $r->reminder_type }}</div>
+                                <small class="text-muted">{{ \Carbon\Carbon::parse($r->reminder_date)->diffForHumans() }}</small>
+                            </div>
+                        </a>
+                    </li>
+                    @empty
+                    @endforelse
+                    @if($notifications->isEmpty() && $reminders->isEmpty())
+                    <li><span class="dropdown-item text-muted small py-2">No notifications</span></li>
+                    @endif
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a href="{{ route('notification-templates.index') }}" class="dropdown-item small text-center text-primary">Lihat Semua</a></li>
+                </ul>
+            </div>
+
             <button class="btn btn-sm btn-outline-secondary" id="darkToggle" title="Dark Mode" onclick="toggleDark()">
                 <i class="fas fa-moon"></i>
             </button>
@@ -817,6 +890,33 @@
             document.getElementById('darkToggle').innerHTML=document.body.classList.contains('dark')?'<i class="fas fa-sun"></i>':'<i class="fas fa-moon"></i>'; }
         // Auto-show toasts
         document.querySelectorAll('.toast').forEach(t => new bootstrap.Toast(t).show());
+        // Auto-refresh notification badge every 60s
+        setInterval(function(){
+            fetch(window.location.href,{headers:{'X-Requested-With':'XMLHttpRequest'}})
+                .then(function(r){return r.text();})
+                .then(function(html){
+                    var parser=new DOMParser();
+                    var doc=parser.parseFromString(html,'text/html');
+                    var newBadge=doc.getElementById('notifBadge');
+                    var currentBadge=document.getElementById('notifBadge');
+                    if(newBadge){
+                        if(currentBadge) currentBadge.textContent=newBadge.textContent;
+                        else {
+                            var bell=document.getElementById('notifBell');
+                            if(bell){
+                                var span=document.createElement('span');
+                                span.id='notifBadge';
+                                span.className='position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
+                                span.style.fontSize='0.6rem';
+                                span.textContent=newBadge.textContent;
+                                bell.appendChild(span);
+                            }
+                        }
+                    } else {
+                        if(currentBadge) currentBadge.remove();
+                    }
+                }).catch(function(){});
+        },60000);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     @stack('scripts')

@@ -94,4 +94,15 @@ class VehicleController extends Controller
         $vehicleImage->delete();
         return back()->with('success', 'Foto berhasil dihapus.');
     }
+
+    public function serviceHistory($id)
+    {
+        $vehicle = Vehicle::with(['customer', 'vehicleType', 'vehicleBrand'])->findOrFail($id);
+        $services = $vehicle->services()
+            ->with(['repairCategory', 'technicians', 'invoice'])
+            ->latest('service_date')
+            ->paginate(20);
+
+        return view('vehicles.service-history', compact('vehicle', 'services'));
+    }
 }

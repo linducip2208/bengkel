@@ -50,6 +50,7 @@ use App\Http\Controllers\Tenant\ServiceController;
 use App\Http\Controllers\Tenant\ServicePackageController;
 use App\Http\Controllers\Tenant\SettingsController;
 use App\Http\Controllers\Tenant\StateController;
+use App\Http\Controllers\Tenant\StockAdjustmentController;
 use App\Http\Controllers\Tenant\StockHistoryController;
 use App\Http\Controllers\Tenant\SubcontractorController;
 use App\Http\Controllers\Tenant\SupplierController;
@@ -203,10 +204,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/services/{service}/upload-image', [ServiceController::class, 'uploadImage'])->name('services.upload-image');
     Route::get('/services/customers/search', [ServiceController::class, 'searchCustomers'])->name('services.customers.search');
     Route::get('/services/vehicles-by-customer/{customer}', [ServiceController::class, 'vehiclesByCustomer'])->name('services.vehicles-by-customer');
+    Route::get('/services/history', [ServiceController::class, 'history'])->name('services.history');
 
     // --- Vehicles custom routes (before resource) ---
     Route::post('/vehicles/{vehicle}/upload-image', [VehicleController::class, 'uploadImage'])->name('vehicles.upload-image');
     Route::delete('/vehicles/images/{image}', [VehicleController::class, 'deleteImage'])->name('vehicles.delete-image');
+    Route::get('/vehicles/{vehicle}/history', [VehicleController::class, 'serviceHistory'])->name('vehicles.history');
 
     // --- Invoices custom routes (before resource) ---
     Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
@@ -225,6 +228,13 @@ Route::middleware(['auth'])->group(function () {
     Route::match(['get', 'post'], '/products/stock-opname', [ProductController::class, 'stockOpname'])->name('products.stock-opname');
     Route::get('/products/search-json', [ProductController::class, 'searchJson'])->name('products.search-json');
     Route::match(['get', 'post'], '/products/{product}/stock-adjust', [ProductController::class, 'stockAdjust'])->name('products.stock-adjust');
+
+    // --- Stock Adjustments (approval flow) ---
+    Route::get('/stock-adjustments', [StockAdjustmentController::class, 'index'])->name('stock-adjustments.index');
+    Route::get('/stock-adjustments/create', [StockAdjustmentController::class, 'create'])->name('stock-adjustments.create');
+    Route::post('/stock-adjustments', [StockAdjustmentController::class, 'store'])->name('stock-adjustments.store');
+    Route::post('/stock-adjustments/{adjustment}/approve', [StockAdjustmentController::class, 'approve'])->name('stock-adjustments.approve');
+    Route::post('/stock-adjustments/{adjustment}/reject', [StockAdjustmentController::class, 'reject'])->name('stock-adjustments.reject');
 
     // --- Purchases custom routes (before resource) ---
     Route::post('/purchases/{purchase}/mark-received', [PurchaseController::class, 'markReceived'])->name('purchases.mark-received');

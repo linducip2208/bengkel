@@ -23,4 +23,23 @@ class ServiceController extends Controller
     public function uploadImage(Request $request, $id) { return $this->service->uploadImage($request, $id); }
     public function searchCustomers(Request $request) { return $this->service->searchCustomers($request); }
     public function vehiclesByCustomer($customer) { return $this->service->vehiclesByCustomer($customer); }
+
+    public function history(Request $request)
+    {
+        $services = \App\Models\Service::with(['customer', 'vehicle', 'repairCategory', 'technicians'])
+            ->where('done_status', 2)
+            ->when($request->filled('date_from'), fn($q) => $q->whereDate('service_date', '>=', $request->date_from))
+            ->when($request->filled('date_to'), fn($q) => $q->whereDate('service_date', '<=', $request->date_to))
+            ->when($request->filled('customer_search'), fn($q) => $q->whereHas('customer', fn($c) => $c->where('name', 'like', '%' . $request->customer_search . '%')))
+            ->when($request->filled('vehicle_search'), fn($q) => $q->whereHas('vehicle', fn($v) => $v->where('number_plate', 'like', '%' . $request->vehicle_search . '%')))
+            ->when($request->filled('technician'), fn($q) => $q->whereHas('technicians', fn($t) => $t->where('users.id', $request->technician)))
+            ->latest('completed_at')
+            ->paginate(20)
+            ->withQueryString();
+
+        $technicians = \App\Models\User::role('mekanik')->get();
+        $customers = \App\Models\Customer::orderBy('name')->get();
+
+        return view('services.history', compact('services', 'technicians', 'customers'));
+    }
 }
