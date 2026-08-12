@@ -57,4 +57,9 @@ class Customer extends Model
     {
         return $this->hasMany(WarrantyClaim::class);
     }
+
+    public function mediaAttachments(): MorphMany
+    {
+        return $this->morphMany(MediaAttachment::class, 'attachable');
+    }
 }

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable(['customer_id', 'vehicle_type_id', 'vehicle_brand_id', 'fuel_type_id', 'number_plate', 'chassis_number', 'engine_number', 'model_name', 'model_year', 'color', 'odometer', 'branch_id', 'price', 'description'])]
@@ -56,5 +57,10 @@ class Vehicle extends Model
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    public function mediaAttachments(): MorphMany
+    {
+        return $this->morphMany(MediaAttachment::class, 'attachable');
     }
 }

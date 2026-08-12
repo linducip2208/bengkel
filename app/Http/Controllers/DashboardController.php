@@ -12,9 +12,21 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    public const WIDGETS = [
+        'role_widgets' => 'Role Widgets',
+        'stat_cards' => 'Stat Cards',
+        'revenue_chart' => 'Revenue Chart',
+        'status_chart' => 'Status Chart',
+        'recent_services' => 'Recent Services',
+        'upcoming_services' => 'Upcoming Services',
+        'low_stock' => 'Low Stock Alert',
+    ];
+
     public function index(ReportService $reportService)
     {
         $user = auth()->user();
+        $enabledWidgets = $this->getEnabledWidgets($user);
+
         $stats = $reportService->getDashboardStats();
         $recentServices = Service::with(['customer', 'vehicle'])
             ->latest()
@@ -43,8 +55,60 @@ class DashboardController extends Controller
         return view('dashboard', compact(
             'stats', 'recentServices', 'upcomingServices',
             'chartData', 'statusChart', 'roleWidgets', 'lowStockAlert',
-            'lowStockReorder'
+            'lowStockReorder', 'enabledWidgets'
         ));
+    }
+
+    public function configure()
+    {
+        $config = auth()->user()->dashboardConfig?->config;
+
+        $enabled = is_array($config)
+            ? array_keys(array_filter($config))
+            : array_keys(self::WIDGETS);
+
+        return view('dashboard.config', [
+            'widgets' => self::WIDGETS,
+            'enabled' => $enabled,
+        ]);
+    }
+
+    public function saveConfig(Request $request)
+    {
+        $validated = $request->validate([
+            'widgets' => ['array'],
+            'widgets.*' => ['string', 'in:' . implode(',', array_keys(self::WIDGETS))],
+        ]);
+
+        $enabled = array_fill_keys(array_keys(self::WIDGETS), false);
+        foreach ($validated['widgets'] ?? [] as $key) {
+            $enabled[$key] = true;
+        }
+
+        auth()->user()->dashboardConfig()->updateOrCreate(
+            ['user_id' => auth()->id()],
+            ['config' => $enabled]
+        );
+
+        return redirect()->route('dashboard')->with('success', 'Konfigurasi dashboard disimpan.');
+    }
+
+    protected function getEnabledWidgets($user): array
+    {
+        $config = $user->dashboardConfig?->config;
+
+        if (!is_array($config)) {
+            return array_keys(self::WIDGETS);
+        }
+
+        $enabled = [];
+        foreach (array_keys(self::WIDGETS) as $key) {
+            if (!empty($config[$key])) {
+                $enabled[] = $key;
+            }
+        }
+
+        return $enabled;
     }
 
     protected function getRevenueChartData(): array

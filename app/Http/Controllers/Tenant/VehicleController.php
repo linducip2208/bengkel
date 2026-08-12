@@ -42,7 +42,7 @@ class VehicleController extends Controller
 
     public function show($id)
     {
-        $vehicle = Vehicle::with(['customer', 'vehicleType', 'vehicleBrand', 'fuelType', 'images'])->findOrFail($id);
+        $vehicle = Vehicle::with(['customer', 'vehicleType', 'vehicleBrand', 'fuelType', 'images', 'mediaAttachments'])->findOrFail($id);
         $nextService = $this->service->predictNextService($vehicle);
         $serviceHistory = $vehicle->services()->with(['repairCategory'])->latest()->get();
         $jobCards = $vehicle->services()->has('jobcardDetail')->with(['jobcardDetail', 'repairCategory', 'technicians'])->latest()->get();

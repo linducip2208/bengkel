@@ -36,6 +36,7 @@ use App\Http\Controllers\Tenant\PaymentController;
 use App\Http\Controllers\Tenant\PaymentMethodController;
 use App\Http\Controllers\Tenant\PosController;
 use App\Http\Controllers\Tenant\LoyaltyController;
+use App\Http\Controllers\Tenant\MediaAttachmentController;
 use App\Http\Controllers\Tenant\VoucherController;
 use App\Http\Controllers\Tenant\ProductController;
 use App\Http\Controllers\Tenant\ProductVariationController;
@@ -151,6 +152,14 @@ Route::get('/', function (\App\Services\ReportService $reportService) {
 
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
+
+    // --- Dashboard config ---
+    Route::get('/dashboard/config', [TenantDashboardController::class, 'configure'])->name('dashboard.config');
+    Route::post('/dashboard/config', [TenantDashboardController::class, 'saveConfig'])->name('dashboard.config.save');
+
+    // --- Media / Document attachments ---
+    Route::post('/media', [MediaAttachmentController::class, 'store'])->name('media.store');
+    Route::delete('/media/{media}', [MediaAttachmentController::class, 'destroy'])->name('media.destroy');
 
     // --- Reports ---
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

@@ -80,6 +80,11 @@
             <i class="fas fa-check-double me-1"></i>Inspeksi
         </button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents" type="button">
+            <i class="fas fa-paperclip me-1"></i>Dokumen
+        </button>
+    </li>
 </ul>
 
 <div class="tab-content">
@@ -377,6 +382,10 @@
                 @endif
             </div>
         </div>
+    </div>
+
+    <div class="tab-pane fade" id="documents">
+        @include('partials.media-attachments', ['attachable' => $vehicle, 'attachableType' => 'vehicle'])
     </div>
 </div>
 @endsection

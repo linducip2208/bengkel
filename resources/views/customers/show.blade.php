@@ -85,6 +85,11 @@
             <i class="fas fa-shield-alt me-1"></i>Garansi
         </button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#documents" type="button">
+            <i class="fas fa-paperclip me-1"></i>Dokumen
+        </button>
+    </li>
 </ul>
 
 <div class="tab-content">
@@ -364,6 +369,10 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="tab-pane fade" id="documents">
+        @include('partials.media-attachments', ['attachable' => $customer, 'attachableType' => 'customer'])
     </div>
 </div>
 @endsection

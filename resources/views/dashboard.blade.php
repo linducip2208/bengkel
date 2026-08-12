@@ -15,8 +15,15 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
 @endpush
 
 @section('content')
+<div class="d-flex justify-content-between align-items-center mb-3 no-print">
+    <h4 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h4>
+    <a href="{{ route('dashboard.config') }}" class="btn btn-outline-secondary btn-sm" title="Atur widget dashboard">
+        <i class="fas fa-cog me-1"></i>Atur Widget
+    </a>
+</div>
+
 {{-- Low Stock Alert — sekali per session --}}
-@if($lowStockAlert)
+@if(in_array('low_stock', $enabledWidgets) && $lowStockAlert)
 <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-3" role="alert">
     <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
     <div>
@@ -28,7 +35,7 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
 @endif
 
 {{-- Role Widgets --}}
-@if(!empty($roleWidgets))
+@if(in_array('role_widgets', $enabledWidgets) && !empty($roleWidgets))
 <div class="row mb-3">
     @isset($roleWidgets['revenue'])
     <div class="col-md-3 mb-2">
@@ -149,6 +156,7 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
 @endif
 
 {{-- Stats Cards — clickable drill-down --}}
+@if(in_array('stat_cards', $enabledWidgets))
 <div class="row mb-4">
     <div class="col-md-2 mb-3">
         <a href="{{ route('services.index', ['status' => 'active']) }}" class="text-decoration-none">
@@ -209,9 +217,10 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
         </div>
     </div>
 </div>
+@endif
 
 {{-- Auto PO Suggestion: Low Stock Reorder Table --}}
-@if($lowStockAlert && !empty($lowStockReorder))
+@if(in_array('low_stock', $enabledWidgets) && $lowStockAlert && !empty($lowStockReorder))
 <div class="card mb-4 border-danger">
     <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
         <h6 class="mb-0"><i class="fas fa-boxes me-2"></i>Rekomendasi Reorder Produk (Auto PO)</h6>
@@ -259,7 +268,9 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
 @endif
 
 {{-- Charts Row --}}
+@if(in_array('revenue_chart', $enabledWidgets) || in_array('status_chart', $enabledWidgets))
 <div class="row mb-4">
+    @if(in_array('revenue_chart', $enabledWidgets))
     <div class="col-md-8 mb-3">
         <div class="card">
             <div class="card-header"><h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>Revenue & Expenses (14 Hari)</h6></div>
@@ -268,6 +279,8 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
             </div>
         </div>
     </div>
+    @endif
+    @if(in_array('status_chart', $enabledWidgets))
     <div class="col-md-4 mb-3">
         <div class="card">
             <div class="card-header"><h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Status Service Hari Ini</h6></div>
@@ -276,7 +289,9 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
             </div>
         </div>
     </div>
+    @endif
 </div>
+@endif
 
 {{-- Quick Actions --}}
 <div class="row mb-4 no-print">
@@ -291,6 +306,7 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
 
 {{-- Tables --}}
 <div class="row">
+    @if(in_array('recent_services', $enabledWidgets))
     <div class="col-md-6 mb-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -318,6 +334,8 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
             </div>
         </div>
     </div>
+    @endif
+    @if(in_array('upcoming_services', $enabledWidgets))
     <div class="col-md-6 mb-4">
         <div class="card">
             <div class="card-header"><h6 class="mb-0">Upcoming Services (Next 7 Days)</h6></div>
@@ -342,6 +360,7 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
             </div>
         </div>
     </div>
+    @endif
 </div>
 @endsection
 
@@ -349,7 +368,9 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Revenue Chart
-    const ctx1 = document.getElementById('revenueChart').getContext('2d');
+    const revenueEl = document.getElementById('revenueChart');
+    if (revenueEl) {
+    const ctx1 = revenueEl.getContext('2d');
     new Chart(ctx1, {
         type: 'bar',
         data: {
@@ -381,9 +402,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    }
 
     // Status Pie Chart
-    const ctx2 = document.getElementById('statusChart').getContext('2d');
+    const statusEl = document.getElementById('statusChart');
+    if (statusEl) {
+    const ctx2 = statusEl.getContext('2d');
     new Chart(ctx2, {
         type: 'doughnut',
         data: {
@@ -410,6 +434,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    }
 });
 </script>
 @endpush
