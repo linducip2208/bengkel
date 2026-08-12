@@ -240,7 +240,7 @@ class ServiceService extends BaseService
                 'grand_total' => $totalAmount,
                 'invoice_date' => now(),
                 'invoice_type' => 'service',
-                'created_by' => auth()->id() ?? 1,
+                'created_by' => auth()->id(),
             ]);
 
             $invoice->items()->create([

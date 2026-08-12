@@ -126,6 +126,10 @@ class PurchaseReturnController extends Controller
             }
         });
 
+        if (!$returnedAny) {
+            return back()->with('error', 'Tidak ada item yang valid untuk diretur.');
+        }
+
         return redirect()->route('purchases.return.index')
             ->with('success', 'Retur pembelian berhasil diproses.');
     }

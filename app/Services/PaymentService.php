@@ -15,6 +15,7 @@ class PaymentService extends BaseService
         $data['created_by'] = auth()->id() ?? 1;
         $payment = $invoice->paymentRecords()->create($data);
 
+        $wasAlreadyPaid = $invoice->payment_status >= 2;
         $newPaid = $invoice->paid_amount + $data['amount'];
         $invoice->update([
             'paid_amount' => $newPaid,
@@ -22,7 +23,7 @@ class PaymentService extends BaseService
             'payment_status' => $newPaid >= $invoice->grand_total ? 2 : ($newPaid > 0 ? 1 : 0),
         ]);
 
-        if ($invoice->payment_status === 2) {
+        if (!$wasAlreadyPaid && $invoice->payment_status === 2) {
             Income::create([
                 'invoice_number' => $invoice->invoice_number,
                 'customer_id' => $invoice->customer_id,

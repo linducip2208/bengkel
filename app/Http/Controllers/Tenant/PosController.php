@@ -286,12 +286,16 @@ class PosController extends Controller
                 ]);
             }
 
-            if ($customerId) {
-                LoyaltyController::earnFromInvoice($invoice);
-            }
-
             return $invoice;
         });
+
+        try {
+            if ($invoice->customer_id) {
+                LoyaltyController::earnFromInvoice($invoice);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Loyalty earn failed for POS: {$e->getMessage()}");
+        }
 
         $changeAmount = max($totalPaid - $grandTotal, 0);
         $message = 'Transaksi POS sukses. Total: ' . number_format($grandTotal, 0, ',', '.');
