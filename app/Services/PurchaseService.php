@@ -150,6 +150,8 @@ class PurchaseService
 
             $purchase->update(['status' => 'received']);
 
+            try { app(AutoJournalService::class)->journalPurchase($purchase); } catch (\Throwable $e) { \Log::warning("AutoJournal purchase: {$e->getMessage()}"); }
+
             PurchaseHistoryRecord::create([
                 'purchase_id' => $purchase->id,
                 'status' => 'received',

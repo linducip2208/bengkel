@@ -96,10 +96,10 @@
                                 <table class="table table-sm">
                                     <tr><th class="w-25">No. Plat</th><td><strong>{{ $vehicle->number_plate }}</strong></td></tr>
                                     <tr><th>Pelanggan</th><td>
-                                        <a href="{{ route('customers.show', $vehicle->customer) }}">{{ $vehicle->customer->name }}</a>
+                                        <a href="{{ route('customers.show', $vehicle->customer) }}">{{ $vehicle->customer?->name ?? '-' }}</a>
                                     </td></tr>
-                                    <tr><th>Tipe</th><td>{{ $vehicle->vehicleType->name ?? '-' }}</td></tr>
-                                    <tr><th>Merek</th><td>{{ $vehicle->vehicleBrand->name ?? '-' }}</td></tr>
+                                    <tr><th>Tipe</th><td>{{ $vehicle->vehicleType?->name ?? '-' }}</td></tr>
+                                    <tr><th>Merek</th><td>{{ $vehicle->vehicleBrand?->name ?? '-' }}</td></tr>
                                     <tr><th>Model</th><td>{{ $vehicle->model_name ?? '-' }}</td></tr>
                                     <tr><th>Tahun</th><td>{{ $vehicle->year ?? '-' }}</td></tr>
                                     <tr><th>Warna</th><td>{{ $vehicle->color ?? '-' }}</td></tr>
@@ -107,7 +107,7 @@
                             </div>
                             <div class="col-md-6">
                                 <table class="table table-sm">
-                                    <tr><th class="w-25">Bahan Bakar</th><td>{{ $vehicle->fuelType->name ?? '-' }}</td></tr>
+                                    <tr><th class="w-25">Bahan Bakar</th><td>{{ $vehicle->fuelType?->name ?? '-' }}</td></tr>
                                     <tr><th>KM Saat Ini</th><td>{{ $vehicle->odometer ? number_format($vehicle->odometer) . ' km' : '-' }}</td></tr>
                                     <tr><th>VIN</th><td>{{ $vehicle->vin ?? '-' }}</td></tr>
                                     <tr><th>No. Mesin</th><td>{{ $vehicle->engine_number ?? '-' }}</td></tr>
@@ -383,7 +383,6 @@
 
 @push('scripts')
 @if($odoData->count() > 1)
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>new Chart(document.getElementById('odoChart'),{type:'line',data:{labels:{!! json_encode($labels) !!},datasets:[{label:'Odometer (KM)',data:{!! json_encode($values) !!},borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.1)',fill:true,tension:0.3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}});</script>
 @endif
 @endpush

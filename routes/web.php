@@ -42,7 +42,6 @@ use App\Http\Controllers\Tenant\ProductTypeController;
 use App\Http\Controllers\Tenant\ProductUnitController;
 use App\Http\Controllers\Tenant\PurchaseController;
 use App\Http\Controllers\Tenant\PurchaseReturnController;
-use App\Http\Controllers\Tenant\PurchaseReturnController;
 use App\Http\Controllers\Tenant\RecallController;
 use App\Http\Controllers\Tenant\ReminderController;
 use App\Http\Controllers\Tenant\RepairCategoryController;
