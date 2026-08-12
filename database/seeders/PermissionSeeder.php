@@ -128,11 +128,13 @@ class PermissionSeeder extends Seeder
         $this->command->info('  Created 5 roles: super_admin, admin, manager, kasir, mekanik.');
 
         // Assign roles — syncRoles ensures only the intended role is active
-        $adminUser = \App\Models\User::where('email', 'admin@bengkel.test')->first();
-        if ($adminUser) { $adminUser->syncRoles('super_admin'); $this->command->info('  admin@bengkel.test → super_admin'); }
+        $adminUser = \App\Models\User::firstOrCreate(['email' => 'admin@bengkel.test'], ['name' => 'Administrator', 'password' => bcrypt('password'), 'is_active' => true]);
+        $adminUser->syncRoles('super_admin');
+        $this->command->info('  admin@bengkel.test → super_admin');
 
-        $mekanikUser = \App\Models\User::where('email', 'teknisi@bengkel.test')->first();
-        if ($mekanikUser) { $mekanikUser->syncRoles('mekanik'); $this->command->info('  teknisi@bengkel.test → mekanik'); }
+        $mekanikUser = \App\Models\User::firstOrCreate(['email' => 'teknisi@bengkel.test'], ['name' => 'Teknisi Bengkel', 'password' => bcrypt('password'), 'is_active' => true]);
+        $mekanikUser->syncRoles('mekanik');
+        $this->command->info('  teknisi@bengkel.test → mekanik');
 
         \App\Models\User::firstOrCreate(['email' => 'manager@bengkel.test'], ['name' => 'Manager Cabang', 'password' => bcrypt('password'), 'is_active' => true])->syncRoles('manager');
         \App\Models\User::firstOrCreate(['email' => 'kasir@bengkel.test'], ['name' => 'Kasir Counter', 'password' => bcrypt('password'), 'is_active' => true])->syncRoles('kasir');
