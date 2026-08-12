@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['invoice_id', 'product_id', 'description', 'quantity', 'unit_price', 'total_price'])]
+#[Fillable(['invoice_id', 'product_id', 'description', 'quantity', 'unit_price', 'total_price', 'serial_number', 'warranty_expiry', 'sold_date', 'discount', 'discount_type'])]
 class InvoiceItem extends Model
 {
     use HasFactory, SoftDeletes;
@@ -19,7 +19,16 @@ class InvoiceItem extends Model
             'quantity' => 'decimal:2',
             'unit_price' => 'decimal:2',
             'total_price' => 'decimal:2',
+            'discount' => 'decimal:2',
+            'warranty_expiry' => 'date',
+            'sold_date' => 'date',
         ];
+    }
+
+    public function isUnderWarranty(): bool
+    {
+        return $this->warranty_expiry !== null
+            && now()->lt($this->warranty_expiry);
     }
 
     public function invoice(): BelongsTo

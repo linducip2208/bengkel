@@ -6,6 +6,7 @@ use App\Traits\HasBranchScope;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -20,6 +21,11 @@ class Customer extends Model
         return [
             'portal_last_login' => 'datetime',
         ];
+    }
+
+    public function customerGroup(): BelongsTo
+    {
+        return $this->belongsTo(CustomerGroup::class);
     }
 
     public function vehicles(): HasMany

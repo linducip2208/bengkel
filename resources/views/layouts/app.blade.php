@@ -493,16 +493,17 @@
             @canany(['product.view','supplier.view','purchase.view','equipment.view','warehouse.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuInventory"
-                    aria-expanded="{{ request()->routeIs('products.*','suppliers.*','purchases.*','equipment.*','warehouses.*','stock-adjustments.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('products.*','suppliers.*','purchases.*','purchase-orders.*','equipment.*','warehouses.*','stock-adjustments.*') ? 'true' : 'false' }}">
                     <i class="fas fa-boxes"></i> Inventory
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('products.*','suppliers.*','purchases.*','equipment.*','warehouses.*','stock-adjustments.*') ? 'show' : '' }}" id="menuInventory">
+                <ul class="collapse submenu {{ request()->routeIs('products.*','suppliers.*','purchases.*','purchase-orders.*','equipment.*','warehouses.*','stock-adjustments.*') ? 'show' : '' }}" id="menuInventory">
                     @can('product.view')<li><a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.index') ? 'active' : '' }}"><i class="fas fa-box me-1"></i> Products / Parts</a></li>@endcan
                     @can('product.stock-opname')<li><a href="{{ route('products.stock-opname') }}" class="nav-link {{ request()->routeIs('products.stock-opname') ? 'active' : '' }}"><i class="fas fa-clipboard me-1"></i> Stock Opname</a></li>@endcan
                     <li><a href="{{ route('stock-adjustments.index') }}" class="nav-link {{ request()->routeIs('stock-adjustments.*') ? 'active' : '' }}"><i class="fas fa-balance-scale me-1"></i> Stock Adjustment</a></li>
                     @can('supplier.view')<li><a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"><i class="fas fa-truck me-1"></i> Suppliers</a></li>@endcan
                     @can('purchase.view')<li><a href="{{ route('purchases.index') }}" class="nav-link {{ request()->routeIs('purchases.*') ? 'active' : '' }}"><i class="fas fa-shopping-basket me-1"></i> Purchases</a></li>@endcan
+                    @can('purchase.view')<li><a href="{{ route('purchase-orders.index') }}" class="nav-link {{ request()->routeIs('purchase-orders.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar me-1"></i> Purchase Orders</a></li>@endcan
                     @can('equipment.view')<li><a href="{{ route('equipment.index') }}" class="nav-link {{ request()->routeIs('equipment.*') ? 'active' : '' }}"><i class="fas fa-toolbox me-1"></i> Equipment</a></li>@endcan
                     @can('warehouse.view')<li><a href="{{ route('warehouses.index') }}" class="nav-link {{ request()->routeIs('warehouses.*') ? 'active' : '' }}"><i class="fas fa-warehouse me-1"></i> Warehouses</a></li>@endcan
                 </ul>
@@ -513,14 +514,15 @@
             @canany(['pos.view','sale.view','invoice.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuSalesPos"
-                    aria-expanded="{{ request()->routeIs('pos.*','sales.*','invoices.*','payments.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('pos.*','sales.*','sales-orders.*','invoices.*','payments.*') ? 'true' : 'false' }}">
                     <i class="fas fa-cash-register"></i> Sales & POS
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('pos.*','sales.*','invoices.*','payments.*') ? 'show' : '' }}" id="menuSalesPos">
+                <ul class="collapse submenu {{ request()->routeIs('pos.*','sales.*','sales-orders.*','invoices.*','payments.*') ? 'show' : '' }}" id="menuSalesPos">
                     @can('pos.view')<li><a href="{{ route('pos.terminal') }}" class="nav-link {{ request()->routeIs('pos.terminal','pos.openForm') ? 'active' : '' }}"><i class="fas fa-desktop me-1"></i> POS Terminal</a></li>@endcan
                     @can('pos.view')<li><a href="{{ route('pos.sessions') }}" class="nav-link {{ request()->routeIs('pos.sessions','pos.close*') ? 'active' : '' }}"><i class="fas fa-history me-1"></i> POS Sessions</a></li>@endcan
                     @can('sale.view')<li><a href="{{ route('sales.index') }}" class="nav-link {{ request()->routeIs('sales.index') ? 'active' : '' }}"><i class="fas fa-cart-plus me-1"></i> Sales</a></li>@endcan
+                    @can('sale.view')<li><a href="{{ route('sales-orders.index') }}" class="nav-link {{ request()->routeIs('sales-orders.*') ? 'active' : '' }}"><i class="fas fa-file-signature me-1"></i> Sales Orders</a></li>@endcan
                     @can('invoice.view')<li><a href="{{ route('invoices.index') }}" class="nav-link {{ request()->routeIs('invoices.index') ? 'active' : '' }}"><i class="fas fa-file-invoice me-1"></i> Invoices</a></li>@endcan
                 </ul>
             </li>
@@ -623,11 +625,11 @@
             @can('master-data.view')
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuMasterData"
-                    aria-expanded="{{ request()->is('vehicle-types*','vehicle-brands*','fuel-types*','colors*','product-types*','product-units*','payment-methods*','tax-rates*','repair-categories*','observation-types*','observation-points*','inspection-points*','checkout-categories*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->is('vehicle-types*','vehicle-brands*','fuel-types*','colors*','product-types*','product-units*','payment-methods*','tax-rates*','tax-groups*','selling-price-groups*','repair-categories*','observation-types*','observation-points*','inspection-points*','checkout-categories*') ? 'true' : 'false' }}">
                     <i class="fas fa-database"></i> Master Data
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->is('vehicle-types*','vehicle-brands*','fuel-types*','colors*','product-types*','product-units*','payment-methods*','tax-rates*','repair-categories*','observation-types*','observation-points*','inspection-points*','checkout-categories*') ? 'show' : '' }}" id="menuMasterData">
+                <ul class="collapse submenu {{ request()->is('vehicle-types*','vehicle-brands*','fuel-types*','colors*','product-types*','product-units*','payment-methods*','tax-rates*','tax-groups*','selling-price-groups*','repair-categories*','observation-types*','observation-points*','inspection-points*','checkout-categories*') ? 'show' : '' }}" id="menuMasterData">
                     <li class="submenu-header">Vehicle</li>
                     <li><a href="{{ route('vehicle-types.index') }}" class="nav-link {{ request()->is('vehicle-types*') ? 'active' : '' }}"><i class="fas fa-truck-pickup me-1"></i> Vehicle Types</a></li>
                     <li><a href="{{ route('vehicle-brands.index') }}" class="nav-link {{ request()->is('vehicle-brands*') ? 'active' : '' }}"><i class="fas fa-trademark me-1"></i> Vehicle Brands</a></li>
@@ -645,6 +647,8 @@
                     <li class="submenu-header">Finance</li>
                     <li><a href="{{ route('payment-methods.index') }}" class="nav-link {{ request()->is('payment-methods*') ? 'active' : '' }}"><i class="fas fa-credit-card me-1"></i> Payment Methods</a></li>
                     <li><a href="{{ route('tax-rates.index') }}" class="nav-link {{ request()->is('tax-rates*') ? 'active' : '' }}"><i class="fas fa-percent me-1"></i> Tax Rates</a></li>
+                    <li><a href="{{ route('tax-groups.index') }}" class="nav-link {{ request()->is('tax-groups*') ? 'active' : '' }}"><i class="fas fa-layer-group me-1"></i> Tax Groups</a></li>
+                    <li><a href="{{ route('selling-price-groups.index') }}" class="nav-link {{ request()->is('selling-price-groups*') ? 'active' : '' }}"><i class="fas fa-tags me-1"></i> Selling Price Groups</a></li>
                 </ul>
             </li>
             @endcan

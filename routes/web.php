@@ -38,10 +38,13 @@ use App\Http\Controllers\Tenant\PosController;
 use App\Http\Controllers\Tenant\LoyaltyController;
 use App\Http\Controllers\Tenant\VoucherController;
 use App\Http\Controllers\Tenant\ProductController;
+use App\Http\Controllers\Tenant\ProductVariationController;
 use App\Http\Controllers\Tenant\ProductTypeController;
 use App\Http\Controllers\Tenant\ProductUnitController;
 use App\Http\Controllers\Tenant\PurchaseController;
+use App\Http\Controllers\Tenant\PurchaseOrderController;
 use App\Http\Controllers\Tenant\PurchaseReturnController;
+use App\Http\Controllers\Tenant\SalesOrderController;
 use App\Http\Controllers\Tenant\RecallController;
 use App\Http\Controllers\Tenant\ReminderController;
 use App\Http\Controllers\Tenant\RepairCategoryController;
@@ -49,12 +52,14 @@ use App\Http\Controllers\Tenant\ReportController;
 use App\Http\Controllers\Tenant\SaleController;
 use App\Http\Controllers\Tenant\ServiceController;
 use App\Http\Controllers\Tenant\ServicePackageController;
+use App\Http\Controllers\Tenant\SellingPriceGroupController;
 use App\Http\Controllers\Tenant\SettingsController;
 use App\Http\Controllers\Tenant\StateController;
 use App\Http\Controllers\Tenant\StockAdjustmentController;
 use App\Http\Controllers\Tenant\StockHistoryController;
 use App\Http\Controllers\Tenant\SubcontractorController;
 use App\Http\Controllers\Tenant\SupplierController;
+use App\Http\Controllers\Tenant\TaxGroupController;
 use App\Http\Controllers\Tenant\TaxRateController;
 use App\Http\Controllers\Tenant\VehicleBrandController;
 use App\Http\Controllers\Tenant\VehicleController;
@@ -225,10 +230,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/print/invoice/{invoice}/raw', [\App\Http\Controllers\Tenant\PrintController::class, 'rawData'])->name('print.raw');
 
     // --- Products custom routes (before resource) ---
-    Route::match(['get', 'post'], '/products/import', [ProductController::class, 'import'])->name('products.import');
+    Route::get('/products/import', [ProductController::class, 'importForm'])->name('products.import-form');
+    Route::post('/products/import', [ProductController::class, 'import'])->name('products.import');
     Route::match(['get', 'post'], '/products/stock-opname', [ProductController::class, 'stockOpname'])->name('products.stock-opname');
     Route::get('/products/search-json', [ProductController::class, 'searchJson'])->name('products.search-json');
     Route::match(['get', 'post'], '/products/{product}/stock-adjust', [ProductController::class, 'stockAdjust'])->name('products.stock-adjust');
+    Route::get('/products/{product}/barcode', [ProductController::class, 'printBarcode'])->name('products.barcode');
+    Route::get('/products/{product}/variations', [ProductVariationController::class, 'index'])->name('products.variations.index');
+    Route::post('/products/{product}/variations', [ProductVariationController::class, 'store'])->name('products.variations.store');
+    Route::put('/products/{product}/variations/{variation}', [ProductVariationController::class, 'update'])->name('products.variations.update');
+    Route::delete('/products/{product}/variations/{variation}', [ProductVariationController::class, 'destroy'])->name('products.variations.destroy');
 
     // --- Stock Adjustments (approval flow) ---
     Route::get('/stock-adjustments', [StockAdjustmentController::class, 'index'])->name('stock-adjustments.index');
@@ -243,6 +254,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/purchases/{purchase}/return', [PurchaseReturnController::class, 'create'])->name('purchases.return.create');
     Route::post('/purchases/{purchase}/return', [PurchaseReturnController::class, 'store'])->name('purchases.return.store');
 
+    // --- Sales Orders custom routes (before resource) ---
+    Route::post('/sales-orders/{salesOrder}/approve', [SalesOrderController::class, 'approve'])->name('sales-orders.approve');
+    Route::post('/sales-orders/{salesOrder}/reject', [SalesOrderController::class, 'reject'])->name('sales-orders.reject');
+    Route::post('/sales-orders/{salesOrder}/convert', [SalesOrderController::class, 'convertToInvoice'])->name('sales-orders.convert');
+
+    // --- Purchase Orders custom routes (before resource) ---
+    Route::post('/purchase-orders/{purchaseOrder}/mark-received', [PurchaseOrderController::class, 'markReceived'])->name('purchase-orders.mark-received');
+
     // --- Gate Passes custom routes (before resource) ---
     Route::get('/gate-passes/{gate_pass}/print', [GatePassController::class, 'print'])->name('gate-passes.print');
     Route::post('/gate-passes/{gate_pass}/mark-exit', [GatePassController::class, 'markExit'])->name('gate-passes.mark-exit');
@@ -255,6 +274,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/notification-templates/{template}/preview', [NotificationTemplateController::class, 'preview'])->name('notification-templates.preview');
 
     // --- Customers custom routes (before resource) ---
+    Route::get('/customers/import', [CustomerController::class, 'importForm'])->name('customers.import-form');
     Route::post('/customers/import', [CustomerController::class, 'import'])->name('customers.import');
 
     // --- Resource routes ---
@@ -264,6 +284,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('invoices', InvoiceController::class);
     Route::resource('products', ProductController::class);
     Route::resource('purchases', PurchaseController::class);
+    Route::resource('sales-orders', SalesOrderController::class);
+    Route::resource('purchase-orders', PurchaseOrderController::class);
     Route::resource('sales', SaleController::class);
     Route::resource('suppliers', SupplierController::class);
     Route::resource('incomes', IncomeController::class);
@@ -276,6 +298,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('observation-types', ObservationTypeController::class)->except(['show']);
     Route::resource('repair-categories', RepairCategoryController::class)->except(['show']);
     Route::resource('tax-rates', TaxRateController::class)->except(['show']);
+    Route::resource('tax-groups', TaxGroupController::class)->except(['show']);
     Route::resource('payment-methods', PaymentMethodController::class)->except(['show']);
     Route::resource('product-units', ProductUnitController::class)->except(['show']);
     Route::resource('product-types', ProductTypeController::class)->except(['show']);
@@ -363,6 +386,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/sessions/{session}/close', [PosController::class, 'closeForm'])->name('closeForm');
         Route::put('/sessions/{session}/close', [PosController::class, 'close'])->name('close');
         Route::get('/search-product', [PosController::class, 'searchProduct'])->name('search-product');
+        Route::get('/prices', [PosController::class, 'prices'])->name('prices');
         Route::post('/checkout', [PosController::class, 'checkout'])->name('checkout');
         Route::get('/receipt/{invoice}', [PosController::class, 'receipt'])->name('receipt');
     });
@@ -446,6 +470,11 @@ Route::middleware(['auth'])->group(function () {
 
     // --- Customer Groups ---
     Route::resource('customer-groups', \App\Http\Controllers\Tenant\CustomerGroupController::class);
+
+    // --- Selling Price Groups ---
+    Route::get('/selling-price-groups/{sellingPriceGroup}/prices', [SellingPriceGroupController::class, 'prices'])->name('selling-price-groups.prices');
+    Route::post('/selling-price-groups/{sellingPriceGroup}/prices', [SellingPriceGroupController::class, 'setProductPrices'])->name('selling-price-groups.prices.store');
+    Route::resource('selling-price-groups', SellingPriceGroupController::class)->except(['show']);
 
     // --- Blog Admin ---
     Route::prefix('blog-admin')->name('blog.admin.')->group(function () {

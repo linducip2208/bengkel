@@ -90,15 +90,26 @@
             <table class="table table-bordered mb-0" id="itemsTable">
                 <thead class="table-light">
                     <tr>
-                        <th width="40%">Deskripsi *</th>
-                        <th width="10%">Qty *</th>
-                        <th width="20%">Harga Satuan (Rp)</th>
-                        <th width="20%">Total (Rp)</th>
-                        <th width="10%"></th>
+                        <th width="26%">Deskripsi *</th>
+                        <th width="8%">Qty *</th>
+                        <th width="14%">Harga Satuan (Rp)</th>
+                        <th width="13%">Diskon</th>
+                        <th width="14%">Total (Rp)</th>
+                        <th width="20%">Serial / Garansi</th>
+                        <th width="5%"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (old('items', $invoice->items) as $i => $item)
+                    @php
+                        $itQty = is_array($item) ? ($item['quantity'] ?? 1) : floatval($item->quantity ?? 1);
+                        $itPrice = is_array($item) ? ($item['unit_price'] ?? 0) : floatval($item->unit_price ?? 0);
+                        $itDisc = is_array($item) ? ($item['discount'] ?? 0) : floatval($item->discount ?? 0);
+                        $itDiscType = is_array($item) ? ($item['discount_type'] ?? 'fixed') : ($item->discount_type ?? 'fixed');
+                        $itSubtotal = $itQty * $itPrice;
+                        $itDiscAmount = $itDiscType === 'percent' ? $itSubtotal * $itDisc / 100 : $itDisc;
+                        $itLineTotal = max($itSubtotal - $itDiscAmount, 0);
+                    @endphp
                     <tr>
                         <td>
                             <div class="d-flex gap-2">
@@ -109,7 +120,20 @@
                         </td>
                         <td><input type="number" name="items[{{ $i }}][quantity]" class="form-control qty" value="{{ is_array($item) ? ($item['quantity'] ?? 1) : floatval($item->quantity) }}" min="0.01" step="0.01" oninput="calcRow(this)" required></td>
                         <td><input type="number" name="items[{{ $i }}][unit_price]" class="form-control price" value="{{ is_array($item) ? ($item['unit_price'] ?? 0) : floatval($item->unit_price) }}" min="0" step="100" oninput="calcRow(this)" required></td>
-                        <td><input type="text" class="form-control row-total" readonly value="{{ number_format((is_array($item) ? (($item['quantity']??1) * ($item['unit_price']??0)) : (($item->quantity ?? 1) * ($item->unit_price ?? 0))), 0, ',', '.') }}"></td>
+                        <td>
+                            <div class="input-group input-group-sm">
+                                <input type="number" name="items[{{ $i }}][discount]" class="form-control discount" value="{{ $itDisc }}" min="0" step="100" oninput="calcRow(this)">
+                                <select name="items[{{ $i }}][discount_type]" class="form-select discount-type" style="max-width:56px;">
+                                    <option value="fixed" {{ $itDiscType === 'fixed' ? 'selected' : '' }}>Rp</option>
+                                    <option value="percent" {{ $itDiscType === 'percent' ? 'selected' : '' }}>%</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td><input type="text" class="form-control row-total" readonly value="{{ number_format($itLineTotal, 0, ',', '.') }}"></td>
+                        <td>
+                            <input type="text" name="items[{{ $i }}][serial_number]" class="form-control form-control-sm" value="{{ is_array($item) ? ($item['serial_number'] ?? '') : ($item->serial_number ?? '') }}" placeholder="Serial No...">
+                            <input type="date" name="items[{{ $i }}][warranty_expiry]" class="form-control form-control-sm mt-1" value="{{ is_array($item) ? ($item['warranty_expiry'] ?? '') : ($item->warranty_expiry ? \Carbon\Carbon::parse($item->warranty_expiry)->format('Y-m-d') : '') }}">
+                        </td>
                         <td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
                     </tr>
                     @endforeach
@@ -217,7 +241,7 @@ let activeRow = null;
 function addPart() {
     const tbody = document.querySelector('#itemsTable tbody');
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td><div class="d-flex gap-2"><input type="text" name="items[${itemIndex}][description]" class="form-control item-desc" required placeholder="Nama sparepart..."><input type="hidden" name="items[${itemIndex}][product_id]" class="product-id-input" value=""><button type="button" class="btn btn-sm btn-outline-secondary pick-product" onclick="openProductPicker(this)"><i class="bi bi-search"></i></button></div></td><td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="0.01" step="0.01" oninput="calcRow(this)" required></td><td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="0" min="0" step="100" oninput="calcRow(this)" required></td><td><input type="text" class="form-control row-total" readonly value="0"></td><td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>`;
+    tr.innerHTML = `<td><div class="d-flex gap-2"><input type="text" name="items[${itemIndex}][description]" class="form-control item-desc" required placeholder="Nama sparepart..."><input type="hidden" name="items[${itemIndex}][product_id]" class="product-id-input" value=""><button type="button" class="btn btn-sm btn-outline-secondary pick-product" onclick="openProductPicker(this)"><i class="bi bi-search"></i></button></div></td><td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="0.01" step="0.01" oninput="calcRow(this)" required></td><td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="0" min="0" step="100" oninput="calcRow(this)" required></td><td><div class="input-group input-group-sm"><input type="number" name="items[${itemIndex}][discount]" class="form-control discount" value="0" min="0" step="100" oninput="calcRow(this)"><select name="items[${itemIndex}][discount_type]" class="form-select discount-type" style="max-width:56px;"><option value="fixed">Rp</option><option value="percent">%</option></select></div></td><td><input type="text" class="form-control row-total" readonly value="0"></td><td><input type="text" name="items[${itemIndex}][serial_number]" class="form-control form-control-sm" placeholder="Serial No..."><input type="date" name="items[${itemIndex}][warranty_expiry]" class="form-control form-control-sm mt-1"></td><td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>`;
     tbody.appendChild(tr);
     itemIndex++;
 }
@@ -227,7 +251,7 @@ function openServicePicker() { new bootstrap.Modal(document.getElementById('serv
 function selectService(name, price) {
     const tbody = document.querySelector('#itemsTable tbody');
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td><input type="text" name="items[${itemIndex}][description]" class="form-control" value="${name}" required></td><td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="0.01" step="0.01" oninput="calcRow(this)" required></td><td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="${price}" min="0" step="100" oninput="calcRow(this)" required></td><td><input type="text" class="form-control row-total" readonly value="${Number(price).toLocaleString('id-ID')}"></td><td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>`;
+    tr.innerHTML = `<td><input type="text" name="items[${itemIndex}][description]" class="form-control" value="${name}" required></td><td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="0.01" step="0.01" oninput="calcRow(this)" required></td><td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="${price}" min="0" step="100" oninput="calcRow(this)" required></td><td><div class="input-group input-group-sm"><input type="number" name="items[${itemIndex}][discount]" class="form-control discount" value="0" min="0" step="100" oninput="calcRow(this)"><select name="items[${itemIndex}][discount_type]" class="form-select discount-type" style="max-width:56px;"><option value="fixed">Rp</option><option value="percent">%</option></select></div></td><td><input type="text" class="form-control row-total" readonly value="${Number(price).toLocaleString('id-ID')}"></td><td><input type="text" name="items[${itemIndex}][serial_number]" class="form-control form-control-sm" placeholder="Serial No..."><input type="date" name="items[${itemIndex}][warranty_expiry]" class="form-control form-control-sm mt-1"></td><td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>`;
     tbody.appendChild(tr);
     itemIndex++;
     calcGrand();
@@ -241,7 +265,9 @@ function addItem() {
         <td><input type="text" name="items[${itemIndex}][description]" class="form-control" required></td>
          <td><input type="number" name="items[${itemIndex}][quantity]" class="form-control qty" value="1" min="0.01" step="0.01" oninput="calcRow(this)" required></td>
         <td><input type="number" name="items[${itemIndex}][unit_price]" class="form-control price" value="0" min="0" step="100" oninput="calcRow(this)" required></td>
+        <td><div class="input-group input-group-sm"><input type="number" name="items[${itemIndex}][discount]" class="form-control discount" value="0" min="0" step="100" oninput="calcRow(this)"><select name="items[${itemIndex}][discount_type]" class="form-select discount-type" style="max-width:56px;"><option value="fixed">Rp</option><option value="percent">%</option></select></div></td>
         <td><input type="text" class="form-control row-total" readonly value="0"></td>
+        <td><input type="text" name="items[${itemIndex}][serial_number]" class="form-control form-control-sm" placeholder="Serial No..."><input type="date" name="items[${itemIndex}][warranty_expiry]" class="form-control form-control-sm mt-1"></td>
         <td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i></button></td>
     `;
     tbody.appendChild(tr);
@@ -254,18 +280,26 @@ function removeRow(btn) {
     calcGrand();
 }
 
-function calcRow(input) {
-    const row = input.closest('tr');
+function lineTotal(row) {
     const qty = parseFloat(row.querySelector('.qty').value) || 0;
     const price = parseFloat(row.querySelector('.price').value) || 0;
-    row.querySelector('.row-total').value = 'Rp ' + (qty * price).toLocaleString('id-ID');
+    const subtotal = qty * price;
+    const discount = parseFloat(row.querySelector('.discount').value) || 0;
+    const type = row.querySelector('.discount-type') ? row.querySelector('.discount-type').value : 'fixed';
+    const d = type === 'percent' ? subtotal * discount / 100 : discount;
+    return Math.max(subtotal - d, 0);
+}
+
+function calcRow(input) {
+    const row = input.closest('tr');
+    row.querySelector('.row-total').value = 'Rp ' + lineTotal(row).toLocaleString('id-ID');
     calcGrand();
 }
 
 function calcGrand() {
     let subtotal = 0;
     document.querySelectorAll('#itemsTable tbody tr').forEach(row => {
-        subtotal += (parseFloat(row.querySelector('.qty').value) || 0) * (parseFloat(row.querySelector('.price').value) || 0);
+        subtotal += lineTotal(row);
     });
     const discount = parseFloat(document.querySelector('[name="discount"]').value) || 0;
     const tax = parseFloat(document.querySelector('[name="tax_amount"]').value) || 0;
@@ -275,7 +309,7 @@ function calcGrand() {
 function calcGrandPercent() {
     let subtotal = 0;
     document.querySelectorAll('#itemsTable tbody tr').forEach(row => {
-        subtotal += (parseFloat(row.querySelector('.qty').value) || 0) * (parseFloat(row.querySelector('.price').value) || 0);
+        subtotal += lineTotal(row);
     });
     const pct = parseFloat(document.getElementById('discountPercent').value) || 0;
     const tax = parseFloat(document.querySelector('[name="tax_amount"]').value) || 0;

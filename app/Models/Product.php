@@ -52,6 +52,31 @@ class Product extends Model
         return $this->hasMany(StockHistory::class);
     }
 
+    public function variations(): HasMany
+    {
+        return $this->hasMany(ProductVariation::class);
+    }
+
+    public function sellingPrices(): HasMany
+    {
+        return $this->hasMany(ProductSellingPrice::class);
+    }
+
+    public function getPriceFor(?int $sellingPriceGroupId): float
+    {
+        if ($sellingPriceGroupId) {
+            $price = $this->sellingPrices()
+                ->where('selling_price_group_id', $sellingPriceGroupId)
+                ->value('price');
+
+            if ($price !== null) {
+                return (float) $price;
+            }
+        }
+
+        return (float) ($this->price ?? 0);
+    }
+
     public function purchaseItems(): HasMany
     {
         return $this->hasMany(PurchaseItem::class);

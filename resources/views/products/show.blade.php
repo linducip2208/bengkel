@@ -5,6 +5,9 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">Detail Produk</h4>
     <div>
+        <a href="{{ route('products.barcode', $product) }}" class="btn btn-outline-secondary btn-sm" target="_blank">
+            <i class="bi bi-upc-scan"></i> Barcode
+        </a>
         <a href="{{ route('products.stock-adjust', $product) }}" class="btn btn-info btn-sm">
             <i class="bi bi-box-arrow-in-down"></i> Stok Adjust
         </a>
@@ -110,6 +113,49 @@
                 </table>
             </div>
         </div>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="card-title mb-0">Variasi Produk</h6>
+        <a href="{{ route('products.variations.index', $product) }}" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-sitemap me-1"></i> Kelola Variasi
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Nama</th>
+                    <th>SKU</th>
+                    <th class="text-end">Harga</th>
+                    <th class="text-center">Stok</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($product->variations as $v)
+                <tr>
+                    <td>{{ $v->name }}</td>
+                    <td>{{ $v->sku ?: '-' }}</td>
+                    <td class="text-end">@money($v->price ?? $product->price)</td>
+                    <td class="text-center">{{ $v->stock }}</td>
+                    <td>
+                        @if($v->is_active)
+                        <span class="badge bg-success">Aktif</span>
+                        @else
+                        <span class="badge bg-secondary">Nonaktif</span>
+                        @endif
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-3">Belum ada variasi.</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 

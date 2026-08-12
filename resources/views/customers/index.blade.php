@@ -3,12 +3,25 @@
 @section('title', 'Pelanggan')
 
 @section('content')
+@if(session('import_errors'))
+<div class="alert alert-warning small">
+    <strong><i class="fas fa-exclamation-triangle me-1"></i>Beberapa baris gagal diimport:</strong>
+    <ul class="mb-0 mt-1">
+        @foreach(array_slice(session('import_errors'), 0, 10) as $err)
+            <li>{{ $err }}</li>
+        @endforeach
+        @if(count(session('import_errors')) > 10)
+            <li>... dan {{ count(session('import_errors')) - 10 }} error lainnya.</li>
+        @endif
+    </ul>
+</div>
+@endif
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0"><i class="fas fa-users me-2"></i>Pelanggan</h4>
     <div>
-        <button class="btn btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#importModal">
-            <i class="fas fa-upload me-1"></i>Import CSV
-        </button>
+        <a href="{{ route('customers.import-form') }}" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-upload me-1"></i>Import
+        </a>
         <a href="{{ route('customers.create') }}" class="btn btn-primary">
             <i class="fas fa-plus me-1"></i>+ New Customer
         </a>
@@ -92,31 +105,6 @@
 
         <div class="d-flex justify-content-end">
             {{ $customers->links() }}
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="importModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form action="{{ route('customers.import') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Import CSV Pelanggan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">File CSV</label>
-                        <input type="file" name="csv_file" class="form-control" accept=".csv" required>
-                        <div class="form-text">Kolom: name, email, phone, mobile, address, company_name, tax_id</div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Import</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>

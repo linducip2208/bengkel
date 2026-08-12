@@ -41,6 +41,11 @@ class PosSession extends Model
         return $this->hasMany(Invoice::class, 'pos_session_id');
     }
 
+    public function cashDenominations(): HasMany
+    {
+        return $this->hasMany(CashDenomination::class);
+    }
+
     public function getRevenueAttribute(): float
     {
         return (float) $this->invoices()->withoutGlobalScopes()->sum('grand_total');

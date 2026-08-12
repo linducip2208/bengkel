@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CustomerRequest;
+use App\Imports\CustomersImport;
 use App\Models\Customer;
 use App\Services\CustomerService;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerController extends Controller
 {
@@ -61,24 +63,26 @@ class CustomerController extends Controller
         return redirect()->route('customers.index')->with('success', 'Pelanggan berhasil dihapus.');
     }
 
+    public function importForm()
+    {
+        return view('customers.import');
+    }
+
     public function import(Request $request)
     {
         $request->validate([
-            'csv_file' => ['required', 'file', 'mimes:csv,txt'],
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
         ]);
 
-        $file = $request->file('csv_file');
-        $handle = fopen($file->getRealPath(), 'r');
-        $headers = fgetcsv($handle);
-        $rows = [];
-        while (($row = fgetcsv($handle)) !== false) {
-            if (count($row) === count($headers)) {
-                $rows[] = array_combine($headers, $row);
-            }
-        }
-        fclose($handle);
+        $import = new CustomersImport();
+        Excel::import($import, $request->file('file'));
 
-        $imported = $this->service->importFromCsv($rows);
-        return redirect()->route('customers.index')->with('success', "{$imported} pelanggan berhasil diimport.");
+        $failed = count($import->errors);
+        $message = "{$import->imported} pelanggan berhasil diimport."
+            . ($failed > 0 ? " {$failed} baris gagal." : '');
+
+        return redirect()->route('customers.index')
+            ->with('success', $message)
+            ->with('import_errors', $import->errors);
     }
 }

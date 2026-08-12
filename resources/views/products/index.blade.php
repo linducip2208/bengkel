@@ -2,14 +2,27 @@
 @section('title', 'Daftar Produk')
 
 @section('content')
+@if(session('import_errors'))
+<div class="alert alert-warning small">
+    <strong><i class="bi bi-exclamation-triangle me-1"></i>Beberapa baris gagal diimport:</strong>
+    <ul class="mb-0 mt-1">
+        @foreach(array_slice(session('import_errors'), 0, 10) as $err)
+            <li>{{ $err }}</li>
+        @endforeach
+        @if(count(session('import_errors')) > 10)
+            <li>... dan {{ count(session('import_errors')) - 10 }} error lainnya.</li>
+        @endif
+    </ul>
+</div>
+@endif
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">Daftar Produk</h4>
     <div class="d-flex gap-2">
         <a href="{{ route('products.stock-opname') }}" class="btn btn-outline-warning btn-sm">
             <i class="bi bi-clipboard-check"></i> Stock Opname
         </a>
-        <a href="{{ route('products.import') }}" class="btn btn-outline-info btn-sm">
-            <i class="bi bi-upload"></i> Import CSV
+        <a href="{{ route('products.import-form') }}" class="btn btn-outline-info btn-sm">
+            <i class="bi bi-upload"></i> Import
         </a>
         <a href="{{ route('products.create') }}" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-lg"></i> Tambah Produk
@@ -108,6 +121,9 @@
                     <td>{{ $product->supplier?->name ?? '-' }}</td>
                     <td class="text-center">
                         <div class="btn-group btn-group-sm">
+                            <a href="{{ route('products.barcode', $product) }}" class="btn btn-outline-secondary" title="Barcode" target="_blank">
+                                <i class="bi bi-upc-scan"></i>
+                            </a>
                             <a href="{{ route('products.stock-adjust', $product) }}" class="btn btn-outline-info" title="Stok Adjust">
                                 <i class="bi bi-box-arrow-in-down"></i>
                             </a>

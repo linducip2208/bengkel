@@ -18,10 +18,10 @@ class InvoiceService extends BaseService
         // Validate stock before any DB writes
         $this->validateStockAvailability($items);
 
-        // Calculate total from items
+        // Calculate total from items (post line-discount)
         $totalAmount = 0;
         foreach ($items as $item) {
-            $totalAmount += ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0);
+            $totalAmount += $this->lineTotal($item);
         }
         // Calculate discount from percent if needed
         $data['discount_type'] = $data['discount_type'] ?? 'fixed';
@@ -44,7 +44,12 @@ class InvoiceService extends BaseService
                 'description' => $item['description'],
                 'quantity' => $item['quantity'] ?? 1,
                 'unit_price' => $item['unit_price'] ?? 0,
-                'total_price' => ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0),
+                'total_price' => $this->lineTotal($item),
+                'discount' => $item['discount'] ?? 0,
+                'discount_type' => $item['discount_type'] ?? null,
+                'serial_number' => $item['serial_number'] ?? null,
+                'warranty_expiry' => $item['warranty_expiry'] ?? null,
+                'sold_date' => $item['sold_date'] ?? null,
             ]);
 
             // Auto-reduce stock when product_id is linked
@@ -66,7 +71,7 @@ class InvoiceService extends BaseService
 
         $totalAmount = 0;
         foreach ($items as $item) {
-            $totalAmount += ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0);
+            $totalAmount += $this->lineTotal($item);
         }
         // Calculate discount from percent if needed
         $data['discount_type'] = $data['discount_type'] ?? ($invoice->discount_type ?? 'fixed');
@@ -98,7 +103,12 @@ class InvoiceService extends BaseService
                     'description' => $item['description'],
                     'quantity' => $item['quantity'] ?? 1,
                     'unit_price' => $item['unit_price'] ?? 0,
-                    'total_price' => ($item['quantity'] ?? 1) * ($item['unit_price'] ?? 0),
+                    'total_price' => $this->lineTotal($item),
+                    'discount' => $item['discount'] ?? 0,
+                    'discount_type' => $item['discount_type'] ?? null,
+                    'serial_number' => $item['serial_number'] ?? null,
+                    'warranty_expiry' => $item['warranty_expiry'] ?? null,
+                    'sold_date' => $item['sold_date'] ?? null,
                 ]);
 
                 if (!empty($item['product_id'])) {
@@ -127,6 +137,32 @@ class InvoiceService extends BaseService
             'total_amount' => $total,
             'grand_total' => $total + ($invoice->tax_amount ?? 0) - ($invoice->discount ?? 0),
         ]);
+    }
+
+    /**
+     * Compute the line-level discount amount for a single item.
+     */
+    protected function lineDiscount(array $item): float
+    {
+        $subtotal = (float) ($item['quantity'] ?? 1) * (float) ($item['unit_price'] ?? 0);
+        $discount = (float) ($item['discount'] ?? 0);
+        $type = $item['discount_type'] ?? null;
+
+        if ($type === 'percent') {
+            $discount = $subtotal * ($discount / 100);
+        }
+
+        return min(round($discount, 2), round($subtotal, 2));
+    }
+
+    /**
+     * Line total after line-level discount: (unit_price * quantity) - discount.
+     */
+    protected function lineTotal(array $item): float
+    {
+        $subtotal = (float) ($item['quantity'] ?? 1) * (float) ($item['unit_price'] ?? 0);
+
+        return round($subtotal - $this->lineDiscount($item), 2);
     }
 
     protected function reduceStock(int $productId, float $quantity, Invoice $invoice): void

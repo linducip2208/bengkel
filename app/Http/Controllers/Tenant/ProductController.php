@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductRequest;
+use App\Imports\ProductsImport;
 use App\Models\Product;
 use App\Models\ProductType;
 use App\Models\ProductUnit;
 use App\Models\Supplier;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
@@ -64,6 +66,11 @@ class ProductController extends Controller
         return view('products.show', compact('product', 'purchaseHistory'));
     }
 
+    public function printBarcode(Product $product)
+    {
+        return view('products.barcode', compact('product'));
+    }
+
     public function edit(Product $product)
     {
         $product->load('stockRecord');
@@ -90,33 +97,30 @@ class ProductController extends Controller
             ->with('success', 'Produk berhasil dihapus.');
     }
 
+    public function importForm()
+    {
+        $productTypes = ProductType::orderBy('type')->get();
+        $units = ProductUnit::orderBy('name')->get();
+
+        return view('products.import', compact('productTypes', 'units'));
+    }
+
     public function import(Request $request)
     {
-        if ($request->isMethod('get')) {
-            return view('products.import');
-        }
-
         $request->validate([
-            'file' => ['required', 'file', 'mimes:csv,txt', 'max:2048'],
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
         ]);
 
-        $file = $request->file('file');
-        $handle = fopen($file->getRealPath(), 'r');
-        $header = fgetcsv($handle);
+        $import = new ProductsImport();
+        Excel::import($import, $request->file('file'));
 
-        $rows = [];
-        while (($row = fgetcsv($handle)) !== false) {
-            if (count($row) === count($header)) {
-                $rows[] = array_combine($header, $row);
-            }
-        }
-        fclose($handle);
-
-        $result = $this->productService->bulkImport($rows);
+        $failed = count($import->errors);
+        $message = "{$import->imported} produk berhasil diimport."
+            . ($failed > 0 ? " {$failed} baris gagal." : '');
 
         return redirect()->route('products.index')
-            ->with('success', "{$result['imported']} produk berhasil diimport.")
-            ->with('import_errors', $result['errors']);
+            ->with('success', $message)
+            ->with('import_errors', $import->errors);
     }
 
     public function stockAdjust(Request $request, Product $product)

@@ -1,0 +1,3 @@
+name,code,barcode,product_type_id,unit_id,cost_price,price,warranty,description,minimum_stock
+Oli Mesin 5W-30,OLI-001,899123456001,1,1,50000,75000,6 bulan,Oli sintetis untuk mesin bensin,10
+Kampas Rem Depan,REM-001,899123456002,2,2,60000,90000,3 bulan,Kampas rem depan universal,5

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Models\CashDenomination;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
@@ -10,6 +11,7 @@ use App\Models\PaymentMethod;
 use App\Models\PaymentRecord;
 use App\Models\PosSession;
 use App\Models\Product;
+use App\Models\ProductSellingPrice;
 use App\Models\StockHistory;
 use App\Models\StockRecord;
 use App\Models\Voucher;
@@ -43,7 +45,7 @@ class PosController extends Controller
             return redirect()->route('pos.openForm');
         }
 
-        $customers = Customer::orderBy('name')->limit(500)->get();
+        $customers = Customer::with('customerGroup')->orderBy('name')->limit(500)->get();
         $paymentMethods = PaymentMethod::where('is_active', true)->orderBy('payment')->get();
         $products = Product::with('stockRecord')->orderBy('name')->limit(1000)->get();
 
@@ -99,14 +101,46 @@ class PosController extends Controller
         $validated = $request->validate([
             'closing_balance' => 'required|numeric|min:0',
             'notes' => 'nullable|string',
+            'denominations' => 'nullable|array',
+            'denominations.*.denomination' => 'required_with:denominations|integer|min:1',
+            'denominations.*.count' => 'required_with:denominations|integer|min:0',
         ]);
 
         $expected = $session->opening_balance + $session->revenue;
+
+        $physicalTotal = null;
+        $hasPhysicalCount = false;
+        if (! empty($validated['denominations'])) {
+            DB::transaction(function () use ($session, $validated, &$physicalTotal, &$hasPhysicalCount) {
+                $total = 0;
+                foreach ($validated['denominations'] as $item) {
+                    $denomination = (int) $item['denomination'];
+                    $count = (int) $item['count'];
+                    if ($count <= 0) {
+                        continue;
+                    }
+                    $hasPhysicalCount = true;
+                    $subtotal = $denomination * $count;
+                    $total += $subtotal;
+
+                    CashDenomination::create([
+                        'pos_session_id' => $session->id,
+                        'denomination' => $denomination,
+                        'count' => $count,
+                        'subtotal' => $subtotal,
+                    ]);
+                }
+                $physicalTotal = $total;
+            });
+        }
+
+        $closingBalance = $hasPhysicalCount ? $physicalTotal : $validated['closing_balance'];
+
         $session->update([
             'closed_at' => now(),
-            'closing_balance' => $validated['closing_balance'],
+            'closing_balance' => $closingBalance,
             'expected_balance' => $expected,
-            'difference' => $validated['closing_balance'] - $expected,
+            'difference' => $closingBalance - $expected,
             'status' => 'closed',
             'notes' => trim(($session->notes ? $session->notes . "\n---\n" : '') . ($validated['notes'] ?? '')),
         ]);
@@ -123,6 +157,7 @@ class PosController extends Controller
         if ($q === '') {
             return response()->json([]);
         }
+        $groupId = $this->resolveSellingPriceGroupId($request->input('customer_id'));
         $products = Product::with('stockRecord')
             ->where(function ($qq) use ($q) {
                 $qq->where('code', $q)
@@ -137,11 +172,56 @@ class PosController extends Controller
                 'id' => $p->id,
                 'code' => $p->code,
                 'name' => $p->name,
-                'price' => (float) $p->price,
+                'price' => $p->getPriceFor($groupId),
                 'stock' => $p->stockRecord?->quantity ?? 0,
             ]);
 
         return response()->json($products);
+    }
+
+    /**
+     * AJAX endpoint — harga jual per produk untuk customer (group-aware).
+     */
+    public function prices(Request $request): JsonResponse
+    {
+        $groupId = $this->resolveSellingPriceGroupId($request->input('customer_id'));
+
+        $overrides = collect();
+        if ($groupId) {
+            $overrides = ProductSellingPrice::where('selling_price_group_id', $groupId)
+                ->pluck('price', 'product_id');
+        }
+
+        $prices = Product::query()->pluck('price', 'id')
+            ->map(fn ($price, $id) => (float) ($overrides->get($id, $price)));
+
+        return response()->json($prices);
+    }
+
+    protected function resolveSellingPriceGroupId($customerId): ?int
+    {
+        if (!$customerId) {
+            return null;
+        }
+
+        $customer = Customer::with('customerGroup')->find($customerId);
+
+        return $customer?->customerGroup?->selling_price_group_id;
+    }
+
+    /**
+     * Line total after line-level discount: (unit_price * quantity) - discount.
+     */
+    protected function lineTotal(array $item): float
+    {
+        $subtotal = (float) $item['quantity'] * (float) $item['unit_price'];
+        $discount = (float) ($item['discount'] ?? 0);
+
+        if (($item['discount_type'] ?? null) === 'percent') {
+            $discount = $subtotal * ($discount / 100);
+        }
+
+        return round($subtotal - min($discount, $subtotal), 2);
     }
 
     /**
@@ -156,6 +236,11 @@ class PosController extends Controller
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.discount' => 'nullable|numeric|min:0',
+            'items.*.discount_type' => 'nullable|in:fixed,percent',
+            'items.*.serial_number' => 'nullable|string|max:255',
+            'items.*.warranty_expiry' => 'nullable|date',
+            'items.*.sold_date' => 'nullable|date',
             'discount' => 'nullable|numeric|min:0',
             'amount_paid' => 'nullable|numeric|min:0',
             'payment_method_id' => 'nullable|exists:payment_methods,id',
@@ -173,7 +258,7 @@ class PosController extends Controller
 
         $subtotal = 0;
         foreach ($validated['items'] as $i) {
-            $subtotal += $i['quantity'] * $i['unit_price'];
+            $subtotal += $this->lineTotal($i);
         }
         $discount = (float) ($validated['discount'] ?? 0);
         $voucherDiscount = 0;
@@ -236,7 +321,6 @@ class PosController extends Controller
 
             foreach ($validated['items'] as $item) {
                 $product = Product::withoutGlobalScopes()->findOrFail($item['product_id']);
-                $total = $item['quantity'] * $item['unit_price'];
 
                 InvoiceItem::create([
                     'invoice_id' => $invoice->id,
@@ -244,7 +328,12 @@ class PosController extends Controller
                     'description' => $product->name,
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
-                    'total_price' => $total,
+                    'total_price' => $this->lineTotal($item),
+                    'discount' => $item['discount'] ?? 0,
+                    'discount_type' => $item['discount_type'] ?? null,
+                    'serial_number' => $item['serial_number'] ?? null,
+                    'warranty_expiry' => $item['warranty_expiry'] ?? null,
+                    'sold_date' => $item['sold_date'] ?? null,
                 ]);
 
                 $stock = StockRecord::withoutGlobalScopes()->where('product_id', $product->id)->first();

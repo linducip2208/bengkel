@@ -134,7 +134,8 @@
         if (keys.length === 0) { cartEl.appendChild(empty); }
         keys.forEach(id => {
             const it = cart[id];
-            subtotal += it.price * it.quantity;
+            const lineDisc = it.discount || 0;
+            subtotal += it.price * it.quantity - lineDisc;
             const row = document.createElement('div');
             row.className = 'cart-item';
             row.innerHTML = `
@@ -143,9 +144,11 @@
                     <div class="meta small text-muted">${fmt(it.price)} × ${it.quantity}</div>
                     <input type="hidden" name="items[${id}][product_id]" value="${id}">
                     <input type="hidden" name="items[${id}][unit_price]" value="${it.price}">
+                    <input type="hidden" name="items[${id}][discount_type]" value="fixed">
+                    <input type="number" name="items[${id}][discount]" class="form-control form-control-sm discount-input" style="width:90px;" value="${lineDisc}" min="0" data-id="${id}" placeholder="Diskon">
                 </div>
                 <input type="number" name="items[${id}][quantity]" class="form-control form-control-sm qty-input" value="${it.quantity}" min="1" data-id="${id}">
-                <div class="total">${fmt(it.price * it.quantity)}</div>
+                <div class="total">${fmt(it.price * it.quantity - lineDisc)}</div>
                 <button type="button" class="btn btn-sm btn-outline-danger" data-remove="${id}"><i class="bi bi-x"></i></button>
             `;
             cartEl.appendChild(row);
@@ -182,7 +185,7 @@
             if (cart[p.id].quantity + 1 > p.stock) { alert('Stok tidak cukup'); return; }
             cart[p.id].quantity += 1;
         } else {
-            cart[p.id] = { id: p.id, name: p.name, price: parseFloat(p.price), quantity: 1, stock: p.stock };
+            cart[p.id] = { id: p.id, name: p.name, price: parseFloat(p.price), quantity: 1, stock: p.stock, discount: 0 };
         }
         render();
     }
@@ -202,6 +205,10 @@
         if (e.target.matches('.qty-input')) {
             const id = e.target.dataset.id;
             cart[id].quantity = Math.max(1, parseInt(e.target.value, 10) || 1);
+            render();
+        } else if (e.target.matches('.discount-input')) {
+            const id = e.target.dataset.id;
+            cart[id].discount = Math.max(0, parseFloat(e.target.value) || 0);
             render();
         }
     });
@@ -248,7 +255,7 @@
     function applyVoucher() {
         const code = voucherCode.value.trim();
         if (!code) { voucherInfo.style.display = 'none'; voucherId.value = ''; voucherDiscount.value = '0'; render(); return; }
-        const subtotal = Object.keys(cart).reduce((s, id) => s + cart[id].price * cart[id].quantity, 0);
+        const subtotal = Object.keys(cart).reduce((s, id) => s + cart[id].price * cart[id].quantity - (cart[id].discount || 0), 0);
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
         fetch('{{ route("vouchers.validate") }}', {
             method: 'POST', headers: {'Content-Type':'application/json','X-CSRF-TOKEN':csrf},
@@ -271,6 +278,24 @@
     }
     applyVoucherBtn.addEventListener('click', applyVoucher);
     voucherCode.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); applyVoucher(); } });
+
+    // Re-price product cards based on customer's selling price group
+    const customerSelect = document.querySelector('select[name="customer_id"]');
+    customerSelect?.addEventListener('change', async () => {
+        const cid = customerSelect.value;
+        try {
+            const res = await fetch('{{ route("pos.prices") }}?customer_id=' + encodeURIComponent(cid));
+            const data = await res.json();
+            items.forEach(el => {
+                const newPrice = data[el.dataset.id];
+                if (newPrice !== undefined) {
+                    el.dataset.price = newPrice;
+                    const priceEl = el.querySelector('.price');
+                    if (priceEl) priceEl.textContent = fmt(newPrice);
+                }
+            });
+        } catch (e) {}
+    });
 
     // Update render() to include voucher discount in grand total
     render();

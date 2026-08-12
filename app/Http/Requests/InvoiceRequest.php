@@ -28,6 +28,11 @@ class InvoiceRequest extends FormRequest
             'items.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
             'items.*.product_id' => ['nullable', 'exists:products,id'],
+            'items.*.discount' => ['nullable', 'numeric', 'min:0'],
+            'items.*.discount_type' => ['nullable', 'in:fixed,percent'],
+            'items.*.serial_number' => ['nullable', 'string', 'max:255'],
+            'items.*.warranty_expiry' => ['nullable', 'date'],
+            'items.*.sold_date' => ['nullable', 'date'],
         ];
     }
 

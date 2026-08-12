@@ -148,7 +148,9 @@
                             <th>Deskripsi</th>
                             <th class="text-center">Qty</th>
                             <th class="text-end">Harga Satuan</th>
+                            <th class="text-end">Diskon</th>
                             <th class="text-end">Total</th>
+                            <th>Serial / Garansi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -158,34 +160,59 @@
                                 <td>{{ $item->description }}</td>
                                 <td class="text-center">{{ $item->quantity }}</td>
                                 <td class="text-end">@money($item->unit_price)</td>
+                                <td class="text-end">
+                                    @if((float) $item->discount > 0)
+                                        <span class="text-danger">- @money($item->discount){{ $item->discount_type === 'percent' ? ' (' . $item->discount . '%)' : '' }}</span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td class="text-end">@money($item->total_price)</td>
+                                <td>
+                                    @if($item->serial_number)
+                                        <small class="d-block"><strong>SN:</strong> {{ $item->serial_number }}</small>
+                                    @endif
+                                    @if($item->warranty_expiry)
+                                        @if($item->isUnderWarranty())
+                                            <span class="badge bg-success">Garansi s/d {{ $item->warranty_expiry->format('d/m/Y') }}</span>
+                                        @else
+                                            <span class="badge bg-secondary">Garansi habis {{ $item->warranty_expiry->format('d/m/Y') }}</span>
+                                        @endif
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
                     <tfoot class="table-light">
                         <tr>
-                            <td colspan="4" class="text-end">Subtotal</td>
+                            <td colspan="5" class="text-end">Subtotal</td>
                             <td class="text-end">@money($invoice->subtotal)</td>
+                            <td></td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="text-end">Diskon{{ $invoice->discount_type === 'percent' ? ' ' . $invoice->discount_percent . '%' : '' }}</td>
+                            <td colspan="5" class="text-end">Diskon{{ $invoice->discount_type === 'percent' ? ' ' . $invoice->discount_percent . '%' : '' }}</td>
                             <td class="text-end text-danger">- @money($invoice->discount)</td>
+                            <td></td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="text-end">Pajak</td>
+                            <td colspan="5" class="text-end">Pajak</td>
                             <td class="text-end">@money($invoice->tax_amount)</td>
+                            <td></td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="text-end"><strong>Grand Total</strong></td>
+                            <td colspan="5" class="text-end"><strong>Grand Total</strong></td>
                             <td class="text-end"><strong>@money($invoice->grand_total)</strong></td>
+                            <td></td>
                         </tr>
                         <tr>
-                            <td colspan="4" class="text-end text-success">Total Dibayar</td>
+                            <td colspan="5" class="text-end text-success">Total Dibayar</td>
                             <td class="text-end text-success">@money($totalPaid)</td>
+                            <td></td>
                         </tr>
                         <tr class="{{ $remaining > 0 ? 'table-danger' : 'table-success' }}">
-                            <td colspan="4" class="text-end"><strong>Sisa</strong></td>
+                            <td colspan="5" class="text-end"><strong>Sisa</strong></td>
                             <td class="text-end"><strong>@money($remaining)</strong></td>
+                            <td></td>
                         </tr>
                     </tfoot>
                 </table>

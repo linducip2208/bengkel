@@ -6,7 +6,7 @@
     <a href="{{ route('pos.terminal') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Kembali</a>
 </div>
 <div class="row justify-content-center">
-    <div class="col-md-7">
+    <div class="col-md-9">
         <div class="card">
             <div class="card-body">
                 <h6 class="text-muted">Sesi #{{ $session->id }} oleh {{ $session->user->name ?? '-' }}</h6>
@@ -21,13 +21,54 @@
 
                 <form action="{{ route('pos.close', $session) }}" method="POST">
                     @csrf @method('PUT')
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold"><i class="bi bi-cash-stack me-1"></i>Hitungan Pecahan Uang Fisik</label>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Pecahan</th>
+                                        <th style="width: 40%;">Jumlah Lembar/Keping</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $denominations = [100000 => 'Rp 100.000', 50000 => 'Rp 50.000', 20000 => 'Rp 20.000', 10000 => 'Rp 10.000', 5000 => 'Rp 5.000', 2000 => 'Rp 2.000', 1000 => 'Rp 1.000', 500 => 'Rp 500', 200 => 'Rp 200', 100 => 'Rp 100'];
+                                    @endphp
+                                    @foreach($denominations as $value => $label)
+                                    <tr>
+                                        <td>{{ $label }}</td>
+                                        <td>
+                                            <input type="hidden" name="denominations[{{ $value }}][denomination]" value="{{ $value }}">
+                                            <input type="number" name="denominations[{{ $value }}][count]" class="form-control form-control-sm text-end denom-count"
+                                                data-denomination="{{ $value }}" min="0" step="1" value="0" placeholder="0">
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="denom-subtotal" data-denomination="{{ $value }}">Rp 0</span>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-light fw-semibold">
+                                        <td colspan="2" class="text-end">Total Uang Fisik</td>
+                                        <td class="text-end" id="physicalTotal">Rp 0</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <small class="text-muted">Isi jumlah uang fisik per pecahan. Total otomatis mengisi saldo akhir di laci.</small>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">Saldo Akhir di Laci (Closing Balance) <span class="text-danger">*</span></label>
                         <div class="input-group input-group-lg">
                             <span class="input-group-text">Rp</span>
-                            <input type="number" name="closing_balance" id="closingBalance" class="form-control text-end" value="{{ $expectedBalance }}" min="0" step="1000" required autofocus>
+                            <input type="number" name="closing_balance" id="closingBalance" class="form-control text-end" value="{{ $expectedBalance }}" min="0" step="1000" required>
                         </div>
-                        <small class="text-muted">Hitung uang fisik di laci, masukkan apa adanya.</small>
+                        <small class="text-muted">Kosongkan pecahan di atas dan hitung uang fisik secara manual, atau biarkan terisi otomatis.</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Catatan Penutupan</label>
@@ -48,13 +89,35 @@
     const expected = {{ $expectedBalance }};
     const closingInput = document.getElementById('closingBalance');
     const diffEl = document.getElementById('differenceDisplay');
-    function update() {
+    const physicalTotalEl = document.getElementById('physicalTotal');
+
+    function recalcDenominations() {
+        let total = 0;
+        document.querySelectorAll('.denom-count').forEach(input => {
+            const denom = parseInt(input.dataset.denomination, 10);
+            const count = parseInt(input.value || 0, 10);
+            const subtotal = denom * count;
+            total += subtotal;
+            const cell = document.querySelector('.denom-subtotal[data-denomination="' + denom + '"]');
+            if (cell) cell.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+        });
+        physicalTotalEl.textContent = 'Rp ' + total.toLocaleString('id-ID');
+        closingInput.value = total;
+        updateDiff();
+    }
+
+    function updateDiff() {
         const closing = parseFloat(closingInput.value || 0);
         const diff = closing - expected;
         diffEl.textContent = 'Rp ' + diff.toLocaleString('id-ID');
         diffEl.className = 'ms-2 ' + (diff === 0 ? 'text-success' : (diff > 0 ? 'text-info' : 'text-danger'));
     }
-    closingInput.addEventListener('input', update);
-    update();
+
+    document.querySelectorAll('.denom-count').forEach(input => {
+        input.addEventListener('input', recalcDenominations);
+    });
+    closingInput.addEventListener('input', updateDiff);
+
+    recalcDenominations();
 </script>
 @endsection
