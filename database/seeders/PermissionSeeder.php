@@ -138,7 +138,7 @@ class PermissionSeeder extends Seeder
 
         \App\Models\User::firstOrCreate(['email' => 'manager@bengkel.test'], ['name' => 'Manager Cabang', 'password' => bcrypt('password'), 'is_active' => true])->syncRoles('manager');
         \App\Models\User::firstOrCreate(['email' => 'kasir@bengkel.test'], ['name' => 'Kasir Counter', 'password' => bcrypt('password'), 'is_active' => true])->syncRoles('kasir');
-        \App\Models\User::firstOrCreate(['email' => 'sales@bengkel.test'], ['name' => 'Sales Counter', 'password' => bcrypt('password'), 'is_active' => true])->syncRoles('kasir');
+        \App\Models\User::firstOrCreate(['email' => 'kasir2@bengkel.test'], ['name' => 'Kasir 2', 'password' => bcrypt('password'), 'is_active' => true])->syncRoles('kasir');
 
         $this->command->info('  Demo users ready: admin / manager / kasir / teknisi / sales @bengkel.test');
     }

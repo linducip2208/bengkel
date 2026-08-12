@@ -256,7 +256,7 @@
                 <div class="demo-row"><span class="role">Manager:</span> manager@bengkel.test / password</div>
                 <div class="demo-row"><span class="role">Kasir:</span> kasir@bengkel.test / password</div>
                 <div class="demo-row"><span class="role">Teknisi:</span> teknisi@bengkel.test / password</div>
-                <div class="demo-row"><span class="role">Sales:</span> sales@bengkel.test / password</div>
+                <div class="demo-row"><span class="role">Kasir 2:</span> kasir2@bengkel.test / password</div>
             </div>
         </div>
     </div>

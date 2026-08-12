@@ -892,8 +892,8 @@
                         <td><code style="font-size:0.82rem;">password</code></td>
                     </tr>
                     <tr>
-                        <td><span class="badge bg-secondary">Sales</span></td>
-                        <td><code style="font-size:0.82rem;">sales@bengkel.test</code></td>
+                        <td><span class="badge bg-secondary">Kasir 2</span></td>
+                        <td><code style="font-size:0.82rem;">kasir2@bengkel.test</code></td>
                         <td><code style="font-size:0.82rem;">password</code></td>
                     </tr>
                 </tbody>
