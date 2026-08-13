@@ -119,7 +119,7 @@ class DatabaseSeeder extends Seeder
     {
         $types = ['Mobil', 'Motor', 'Truk', 'Bus', 'Pick Up'];
         foreach ($types as $t) {
-            VehicleType::firstOrCreate(['vehicle_type' => $t], ['slug' => Str::slug($t)]);
+            VehicleType::firstOrCreate(['slug' => Str::slug($t)], ['vehicle_type' => $t]);
         }
 
         $brands = [
@@ -140,7 +140,7 @@ class DatabaseSeeder extends Seeder
 
         $fuels = ['Bensin', 'Solar / Diesel', 'Pertamax', 'Pertalite', 'Listrik (EV)', 'Hybrid'];
         foreach ($fuels as $f) {
-            FuelType::firstOrCreate(['fuel_type' => $f], ['slug' => Str::slug($f)]);
+            FuelType::firstOrCreate(['slug' => Str::slug($f)], ['fuel_type' => $f]);
         }
 
         $colors = ['Putih', 'Hitam', 'Silver / Abu', 'Merah', 'Biru', 'Kuning', 'Hijau', 'Orange'];
@@ -150,7 +150,7 @@ class DatabaseSeeder extends Seeder
 
         $pTypes = ['Oli & Pelumas', 'Filter', 'Sistem Pengapian', 'Sistem Rem', 'Baterai / Aki', 'Cairan', 'Ban & Velg', 'Komponen Mesin', 'Kelistrikan', 'Aksesoris', 'Parts CVT', 'Rantai & Sproket'];
         foreach ($pTypes as $pt) {
-            ProductType::firstOrCreate(['type' => $pt], ['slug' => Str::slug($pt)]);
+            ProductType::firstOrCreate(['slug' => Str::slug($pt)], ['type' => $pt]);
         }
 
         $units = ['Pcs', 'Liter', 'Set', 'Pasang', 'Botol', 'Gram', 'Meter', 'Roll'];
@@ -160,7 +160,7 @@ class DatabaseSeeder extends Seeder
 
         $payments = ['Cash / Tunai', 'Transfer Bank', 'QRIS', 'GoPay', 'OVO', 'Dana', 'Kartu Debit', 'Kartu Kredit', 'Piutang / Kredit'];
         foreach ($payments as $p) {
-            PaymentMethod::firstOrCreate(['payment' => $p], ['slug' => Str::slug($p)]);
+            PaymentMethod::firstOrCreate(['slug' => Str::slug($p)], ['payment' => $p]);
         }
 
         $taxes = [
