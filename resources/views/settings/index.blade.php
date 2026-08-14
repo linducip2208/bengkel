@@ -311,6 +311,27 @@ Settings - {{ config('app.name') }}
                         </div>
                     </div>
                     <hr>
+                    <h6 class="mb-3">Tampilan (Warna & Font)</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Warna Aksen Invoice</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="color" name="settings[invoice_accent_color]" class="form-control form-control-color" value="{{ $invoiceSettings['invoice_accent_color'] ?? '#2563eb' }}" style="width:70px;height:44px;padding:4px;">
+                                <input type="text" class="form-control form-control-sm" value="{{ $invoiceSettings['invoice_accent_color'] ?? '#2563eb' }}" style="max-width:110px;" oninput="document.querySelector('input[name=\'settings[invoice_accent_color]\'][type=color]').value = this.value;">
+                            </div>
+                            <small class="text-muted">Warna header, border & aksen pada PDF dan halaman invoice publik.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Font Invoice</label>
+                            <select name="settings[invoice_font]" class="form-select">
+                                @foreach(['Inter' => 'Inter', 'Poppins' => 'Poppins', 'Roboto' => 'Roboto', 'Lato' => 'Lato', 'Open Sans' => 'Open Sans', 'Helvetica' => 'Helvetica', 'Times New Roman' => 'Times New Roman', 'Courier New' => 'Courier New'] as $val => $label)
+                                    <option value="{{ $val }}" {{ ($invoiceSettings['invoice_font'] ?? 'Inter') === $val ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Font utama untuk template PDF invoice.</small>
+                        </div>
+                    </div>
+                    <hr>
                     <h6>Info Pembayaran</h6>
                     <div class="row mb-3">
                         <div class="col-md-6">

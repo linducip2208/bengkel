@@ -67,6 +67,9 @@
         </div>
         @endcan
         <button type="button" class="btn btn-outline-dark" onclick="window.print()"><i class="bi bi-printer"></i> Print</button>
+        <button type="button" class="btn btn-outline-primary" id="shareLinkBtn" data-url="{{ route('invoices.share', $invoice) }}">
+            <i class="bi bi-link-45deg"></i> Bagikan Link
+        </button>
         @can('invoice.send-wa')
         <a href="{{ route('invoices.sendWA', $invoice) }}" class="btn btn-outline-success" target="_blank"><i class="bi bi-whatsapp"></i> Kirim WA</a>
         @endcan
@@ -318,5 +321,48 @@
         .status-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; border: 1px solid #000; }
     }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('shareLinkBtn');
+    if (!btn) return;
+
+    btn.addEventListener('click', async function () {
+        const original = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Membuat link...';
+
+        try {
+            const res = await fetch(btn.dataset.url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            if (!res.ok) throw new Error('Request failed');
+
+            const data = await res.json();
+            if (!data.url) throw new Error('URL tidak tersedia');
+
+            try {
+                await navigator.clipboard.writeText(data.url);
+                alert('Link invoice berhasil disalin ke clipboard:\n\n' + data.url);
+            } catch (e) {
+                window.prompt('Salin link invoice:', data.url);
+            }
+        } catch (e) {
+            alert('Gagal membuat link invoice. Silakan coba lagi.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = original;
+        }
+    });
+});
+</script>
 @endpush
 @endsection

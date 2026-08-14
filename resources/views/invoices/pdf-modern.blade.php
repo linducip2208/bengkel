@@ -1,30 +1,34 @@
+@php
+    $accentColor = app(\App\Services\SettingsService::class)->get('invoice_accent_color', '#2563eb');
+    $font = app(\App\Services\SettingsService::class)->get('invoice_font', 'Inter');
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
     <title>Invoice {{ $invoice->invoice_number }}</title>
     <style>
-        body { font-family: Helvetica, Arial, sans-serif; font-size: 13px; color: #333; margin: 0; padding: 15px; }
-        .header { border-bottom: 2px solid #1a56db; padding-bottom: 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; }
-        .header .logo { width: 70px; height: 70px; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; background: #f8fafc; color: #1a56db; }
-        .header .info h2 { margin: 0; color: #1a56db; font-size: 20px; }
+        body { font-family: '{{ $font }}', Helvetica, Arial, sans-serif; font-size: 13px; color: #333; margin: 0; padding: 15px; }
+        .header { border-bottom: 2px solid {{ $accentColor }}; padding-bottom: 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; }
+        .header .logo { width: 70px; height: 70px; border: 1px solid #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; background: #f8fafc; color: {{ $accentColor }}; }
+        .header .info h2 { margin: 0; color: {{ $accentColor }}; font-size: 20px; }
         .header .info p { margin: 2px 0; font-size: 11px; color: #666; }
         .header .invoice-title { text-align: right; flex: 1; }
-        .header .invoice-title h3 { margin: 0; font-size: 22px; color: #1a56db; }
+        .header .invoice-title h3 { margin: 0; font-size: 22px; color: {{ $accentColor }}; }
         .body-table { width: 100%; margin-bottom: 15px; }
         .body-table td { vertical-align: top; padding: 5px 10px; }
         .section-title { font-size: 11px; color: #888; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
         .value { font-size: 13px; }
         .value strong { font-size: 14px; }
         table.items { width: 100%; border-collapse: collapse; margin: 10px 0; }
-        table.items th { background: #1a56db; color: #fff; padding: 7px 10px; text-align: left; font-size: 11px; }
+        table.items th { background: {{ $accentColor }}; color: #fff; padding: 7px 10px; text-align: left; font-size: 11px; }
         table.items td { padding: 7px 10px; border-bottom: 1px solid #ddd; font-size: 12px; }
         .text-end { text-align: right; }
         .text-center { text-align: center; }
         .totals { margin-top: 10px; }
         .totals table { width: 100%; }
         .totals td { padding: 4px 10px; font-size: 12px; }
-        .totals .total-row td { border-top: 2px solid #1a56db; font-weight: bold; font-size: 14px; padding-top: 6px; }
+        .totals .total-row td { border-top: 2px solid {{ $accentColor }}; font-weight: bold; font-size: 14px; padding-top: 6px; }
         .footer { margin-top: 25px; text-align: center; font-size: 11px; color: #888; border-top: 1px solid #ddd; padding-top: 12px; line-height: 1.6; }
         .status-badge { display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; }
         .status-lunas { background: #d4edda; color: #155724; }
@@ -51,7 +55,7 @@
     </div>
     <div class="invoice-title">
         <h3>INVOICE</h3>
-        <div style="font-size:14px;color:#1a56db;font-weight:bold;">{{ $invoice->invoice_number }}</div>
+        <div style="font-size:14px;color:{{ $accentColor }};font-weight:bold;">{{ $invoice->invoice_number }}</div>
     </div>
 </div>
 

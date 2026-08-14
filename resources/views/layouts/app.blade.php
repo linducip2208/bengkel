@@ -187,6 +187,12 @@
             z-index: 1060;
         }
 
+        /* ===== Global Search Command Palette ===== */
+        .search-result-item { border-radius: 8px; cursor: pointer; }
+        .search-result-item:hover,
+        .search-result-item.active { background: rgba(59,130,246,0.12); }
+        .search-result-item .min-w-0 { min-width: 0; flex: 1; }
+
         /* ===== SIDEBAR OVERLAY (mobile) ===== */
         .sidebar-overlay {
             display: none;
@@ -806,6 +812,10 @@
                 </ul>
             </div>
 
+            <button class="btn btn-sm btn-outline-secondary" id="globalSearchBtn" title="Pencarian Global (Ctrl+K)">
+                <i class="fas fa-search"></i>
+            </button>
+
             <button class="btn btn-sm btn-outline-secondary" id="darkToggle" title="Dark Mode" onclick="toggleDark()">
                 <i class="fas fa-moon"></i>
             </button>
@@ -965,5 +975,147 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     @stack('scripts')
+
+    {{-- ===== Global Search Command Palette (Ctrl+K) ===== --}}
+    <div class="modal fade" id="globalSearchModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-body p-0">
+                    <div class="p-3 border-bottom">
+                        <input type="text" id="globalSearchInput" class="form-control form-control-lg border-0" placeholder="Cari customer, kendaraan, service, invoice, produk... (Ctrl+K)" autocomplete="off">
+                    </div>
+                    <div id="globalSearchResults" class="p-2" style="max-height: 400px; overflow-y: auto;">
+                        <div class="text-center text-muted py-4">Ketik untuk mencari...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            var $modal = $('#globalSearchModal');
+            var $input = $('#globalSearchInput');
+            var $results = $('#globalSearchResults');
+            var debounceTimer = null;
+            var activeIndex = -1;
+            var allItems = [];
+
+            var TYPE_META = {
+                customers: { label: 'Pelanggan', icon: 'fa-user' },
+                vehicles: { label: 'Kendaraan', icon: 'fa-car' },
+                services: { label: 'Service / Job Card', icon: 'fa-tools' },
+                invoices: { label: 'Invoice', icon: 'fa-file-invoice' },
+                products: { label: 'Produk', icon: 'fa-box' }
+            };
+
+            function escapeHtml(str) {
+                return $('<div>').text(str || '').html();
+            }
+
+            function openSearch() {
+                bootstrap.Modal.getOrCreateInstance($modal[0]).show();
+            }
+
+            function setActive(index) {
+                var $items = $results.find('.search-result-item');
+                if ($items.length === 0) { activeIndex = -1; return; }
+                if (index < 0) index = 0;
+                if (index >= $items.length) index = $items.length - 1;
+                activeIndex = index;
+                $items.removeClass('active');
+                $items.eq(index).addClass('active');
+            }
+
+            function render(data) {
+                allItems = [];
+                var html = '';
+                var hasResults = false;
+
+                $.each(TYPE_META, function (type, meta) {
+                    var items = data[type] || [];
+                    if (!items.length) return;
+                    hasResults = true;
+                    html += '<div class="px-2 pt-2 pb-1 small text-uppercase text-muted fw-semibold" style="letter-spacing:.05em;">' +
+                        '<i class="fas ' + meta.icon + ' me-1"></i>' + meta.label + '</div>';
+                    $.each(items, function (i, item) {
+                        var idx = allItems.length;
+                        allItems.push(item);
+                        html += '<a href="' + escapeHtml(item.url) + '" class="search-result-item d-flex align-items-center gap-2 px-2 py-2 text-decoration-none" data-index="' + idx + '">' +
+                            '<span class="text-muted ps-1"><i class="fas ' + meta.icon + '"></i></span>' +
+                            '<div class="min-w-0">' +
+                            '<div class="text-truncate fw-medium" style="color:var(--text);">' + escapeHtml(item.title) + '</div>' +
+                            '<div class="text-truncate small text-muted">' + escapeHtml(item.subtitle) + '</div>' +
+                            '</div>' +
+                            '</a>';
+                    });
+                });
+
+                if (!hasResults) {
+                    html = '<div class="text-center text-muted py-4">Tidak ada hasil untuk "' + escapeHtml($input.val()) + '"</div>';
+                }
+
+                $results.html(html);
+                setActive(0);
+            }
+
+            function doSearch() {
+                var q = $input.val().trim();
+                if (q === '') {
+                    allItems = [];
+                    $results.html('<div class="text-center text-muted py-4">Ketik untuk mencari...</div>');
+                    return;
+                }
+                $.getJSON('/search', { q: q })
+                    .done(render)
+                    .fail(function () {
+                        $results.html('<div class="text-center text-danger py-4">Gagal memuat hasil pencarian.</div>');
+                    });
+            }
+
+            $('#globalSearchBtn').on('click', openSearch);
+
+            $(document).on('keydown', function (e) {
+                if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+                    e.preventDefault();
+                    openSearch();
+                }
+            });
+
+            $input.on('input', function () {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(doSearch, 300);
+            });
+
+            $input.on('keydown', function (e) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setActive(activeIndex + 1);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setActive(activeIndex - 1);
+                } else if (e.key === 'Enter') {
+                    var item = allItems[activeIndex];
+                    if (item) {
+                        e.preventDefault();
+                        window.location.href = item.url;
+                    }
+                }
+            });
+
+            $modal.on('shown.bs.modal', function () {
+                allItems = [];
+                $input.val('');
+                $results.html('<div class="text-center text-muted py-4">Ketik untuk mencari...</div>');
+                $input.trigger('focus');
+            });
+
+            $modal.on('hidden.bs.modal', function () {
+                clearTimeout(debounceTimer);
+                allItems = [];
+                $input.val('');
+            });
+        });
+    </script>
 </body>
 </html>

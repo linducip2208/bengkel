@@ -51,6 +51,7 @@ use App\Http\Controllers\Tenant\RecallController;
 use App\Http\Controllers\Tenant\ReminderController;
 use App\Http\Controllers\Tenant\RepairCategoryController;
 use App\Http\Controllers\Tenant\ReportController;
+use App\Http\Controllers\Tenant\SearchController;
 use App\Http\Controllers\Tenant\ServiceController;
 use App\Http\Controllers\Tenant\ServicePackageController;
 use App\Http\Controllers\Tenant\SellingPriceGroupController;
@@ -78,6 +79,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Public tracking service (token-based, no auth)
 Route::get('/track/{token}', [\App\Http\Controllers\TrackingController::class, 'show'])->name('public.tracking');
 Route::post('/track/{token}/review', [\App\Http\Controllers\TrackingController::class, 'review'])->name('public.tracking.review');
+
+// Public shareable invoice link (token-based, no auth)
+Route::get('/invoice/{token}', [\App\Http\Controllers\PublicInvoiceController::class, 'show'])->name('public.invoice');
 
 // Payment Gateway webhook callback (PUBLIC — gateway POST tanpa session)
 Route::any('/payment/callback/{token}', [\App\Http\Controllers\Tenant\PaymentGatewayController::class, 'callback'])->name('payment.callback');
@@ -155,6 +159,9 @@ Route::get('/', function (\App\Services\ReportService $reportService) {
 
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
+
+    // --- Global search command palette ---
+    Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 
     // --- Dashboard config ---
     Route::get('/dashboard/config', [TenantDashboardController::class, 'configure'])->name('dashboard.config');
@@ -239,6 +246,7 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::get('/invoices/{invoice}/preview', [InvoiceController::class, 'preview'])->name('invoices.preview');
     Route::get('/invoices/{invoice}/send-wa', [InvoiceController::class, 'sendWA'])->name('invoices.sendWA');
     Route::post('/invoices/{invoice}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.sendEmail');
+    Route::post('/invoices/{invoice}/share', [InvoiceController::class, 'share'])->name('invoices.share');
 
     // --- Thermal Print ---
     Route::post('/invoices/{invoice}/print', [\App\Http\Controllers\Tenant\PrintController::class, 'invoice'])->name('print.invoice');

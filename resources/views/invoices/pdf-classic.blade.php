@@ -1,34 +1,38 @@
+@php
+    $accentColor = app(\App\Services\SettingsService::class)->get('invoice_accent_color', '#2563eb');
+    $font = app(\App\Services\SettingsService::class)->get('invoice_font', 'Inter');
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
     <title>Invoice {{ $invoice->invoice_number }}</title>
     <style>
-        body { font-family: 'Times New Roman', Times, serif; font-size: 13px; color: #000; margin: 0; padding: 25px; }
-        .header { border-bottom: 3px double #000; padding-bottom: 12px; margin-bottom: 20px; }
+        body { font-family: '{{ $font }}', 'Times New Roman', Times, serif; font-size: 13px; color: #000; margin: 0; padding: 25px; }
+        .header { border-bottom: 3px double {{ $accentColor }}; padding-bottom: 12px; margin-bottom: 20px; }
         .header table { width: 100%; }
         .header .logo-cell { width: 80px; vertical-align: top; }
         .header .logo { width: 70px; height: 70px; border: 1px solid #ccc; text-align: center; display: flex; align-items: center; justify-content: center; font-size: 28px; }
         .header h2 { margin: 0 0 5px 0; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
         .header .company-detail { font-size: 11px; line-height: 1.5; }
         .header .invoice-box { text-align: right; vertical-align: top; }
-        .header .invoice-title { font-size: 26px; font-weight: bold; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 0; }
+        .header .invoice-title { font-size: 26px; font-weight: bold; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 0; color: {{ $accentColor }}; }
         .header .invoice-no { font-size: 14px; font-weight: bold; }
         .info-table { width: 100%; margin-bottom: 18px; }
         .info-table td { vertical-align: top; padding: 4px 8px; font-size: 12px; }
         .info-table .label { font-weight: bold; width: 130px; }
         .divider { border-top: 1px solid #000; margin: 5px 0 10px 0; }
         table.items { width: 100%; border-collapse: collapse; margin: 12px 0; }
-        table.items thead { border-top: 2px solid #000; border-bottom: 2px solid #000; }
-        table.items th { padding: 8px 10px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        table.items thead { border-top: 2px solid {{ $accentColor }}; border-bottom: 2px solid {{ $accentColor }}; }
+        table.items th { padding: 8px 10px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: {{ $accentColor }}; }
         table.items td { padding: 7px 10px; border-bottom: 1px solid #ddd; font-size: 12px; }
-        table.items tfoot { border-top: 2px solid #000; }
+        table.items tfoot { border-top: 2px solid {{ $accentColor }}; }
         table.items tfoot td { border-bottom: none; padding: 6px 10px; }
         .text-end { text-align: right; }
         .text-center { text-align: center; }
         .totals-table { width: 50%; float: right; margin-top: 5px; }
         .totals-table td { padding: 3px 10px; font-size: 12px; }
-        .totals-table .grand-total { font-size: 15px; font-weight: bold; border-top: 2px solid #000; border-bottom: 3px double #000; }
+        .totals-table .grand-total { font-size: 15px; font-weight: bold; border-top: 2px solid {{ $accentColor }}; border-bottom: 3px double {{ $accentColor }}; }
         .clearfix::after { content: ""; display: table; clear: both; }
         .footer { margin-top: 35px; padding-top: 12px; border-top: 1px solid #000; font-size: 10px; line-height: 1.6; }
         .footer strong { font-size: 11px; }

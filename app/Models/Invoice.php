@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['invoice_number', 'customer_id', 'service_id', 'sale_id', 'vehicle_id', 'payment_method_id', 'payment_status', 'total_amount', 'discount', 'discount_type', 'discount_percent', 'tax_amount', 'grand_total', 'paid_amount', 'amount_received', 'dp_amount', 'dp_status', 'invoice_date', 'due_date', 'invoice_type', 'created_by', 'notes', 'payment_proof', 'branch_id', 'pos_session_id'])]
+#[Fillable(['invoice_number', 'customer_id', 'service_id', 'sale_id', 'vehicle_id', 'payment_method_id', 'payment_status', 'total_amount', 'discount', 'discount_type', 'discount_percent', 'tax_amount', 'grand_total', 'paid_amount', 'amount_received', 'dp_amount', 'dp_status', 'invoice_date', 'due_date', 'invoice_type', 'created_by', 'notes', 'payment_proof', 'public_token', 'branch_id', 'pos_session_id'])]
 class Invoice extends Model
 {
     use HasFactory, SoftDeletes, HasBranchScope;
@@ -86,5 +86,26 @@ class Invoice extends Model
     public function getSubtotalAttribute(): float
     {
         return (float) ($this->total_amount ?? 0);
+    }
+
+    public function getOrCreatePublicToken(): string
+    {
+        if (!empty($this->public_token)) {
+            return $this->public_token;
+        }
+
+        $this->public_token = $this->generateUniquePublicToken();
+        $this->save();
+
+        return $this->public_token;
+    }
+
+    protected function generateUniquePublicToken(): string
+    {
+        do {
+            $token = \Illuminate\Support\Str::random(32);
+        } while (static::withoutGlobalScopes()->where('public_token', $token)->exists());
+
+        return $token;
     }
 }

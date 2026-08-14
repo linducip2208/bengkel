@@ -247,4 +247,20 @@ class InvoiceController extends Controller
 
         return redirect()->away($url);
     }
+
+    public function share(Request $request, Invoice $invoice)
+    {
+        $token = $invoice->getOrCreatePublicToken();
+        $url = url('/invoice/' . $token);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'url' => $url,
+                'token' => $token,
+            ]);
+        }
+
+        return redirect()->route('invoices.show', $invoice)
+            ->with('success', 'Link invoice publik: ' . $url);
+    }
 }
