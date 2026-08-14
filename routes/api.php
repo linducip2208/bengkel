@@ -17,6 +17,11 @@ use App\Http\Controllers\Api\ApiExpenseController;
 use App\Http\Controllers\Api\ApiDashboardController;
 use App\Http\Controllers\Api\ApiReportController;
 use App\Http\Controllers\Api\ApiMasterDataController;
+use App\Http\Controllers\Api\ApiJobcardController;
+use App\Http\Controllers\Api\ApiBookingController;
+use App\Http\Controllers\Api\ApiWarrantyController;
+use App\Http\Controllers\Api\ApiCommissionController;
+use App\Http\Controllers\Api\ApiPosController;
 
 Route::prefix('v1')->name('api.')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login')->middleware('throttle:10,1');
@@ -48,6 +53,15 @@ Route::prefix('v1')->name('api.')->group(function () {
         Route::apiResource('suppliers', ApiSupplierController::class);
         Route::apiResource('incomes', ApiIncomeController::class);
         Route::apiResource('expenses', ApiExpenseController::class);
+
+        Route::apiResource('jobcards', ApiJobcardController::class);
+        Route::apiResource('bookings', ApiBookingController::class);
+        Route::apiResource('warranty-claims', ApiWarrantyController::class);
+        Route::get('/commissions', [ApiCommissionController::class, 'index'])->name('commissions.index');
+        Route::post('/commissions/{serviceTechnician}/mark-paid', [ApiCommissionController::class, 'markPaid'])->name('commissions.mark-paid');
+        Route::post('/pos/open', [ApiPosController::class, 'openSession'])->name('pos.open');
+        Route::post('/pos/close', [ApiPosController::class, 'closeSession'])->name('pos.close');
+        Route::post('/pos/checkout', [ApiPosController::class, 'checkout'])->name('pos.checkout');
 
         Route::get('/reports/service', [ApiReportController::class, 'serviceReport'])->name('reports.service');
         Route::get('/reports/sales', [ApiReportController::class, 'salesReport'])->name('reports.sales');
