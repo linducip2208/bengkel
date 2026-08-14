@@ -3,19 +3,26 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     public function up(): void
     {
         if (!Schema::hasTable('invoice_items')) return;
-        DB::statement('ALTER TABLE invoice_items MODIFY product_id BIGINT UNSIGNED NULL');
+        if (!Schema::hasColumn('invoice_items', 'product_id')) return;
+
+        Schema::table('invoice_items', function (Blueprint $table) {
+            $table->unsignedBigInteger('product_id')->nullable()->change();
+        });
     }
 
     public function down(): void
     {
         if (!Schema::hasTable('invoice_items')) return;
-        DB::statement('ALTER TABLE invoice_items MODIFY product_id BIGINT UNSIGNED NOT NULL');
+        if (!Schema::hasColumn('invoice_items', 'product_id')) return;
+
+        Schema::table('invoice_items', function (Blueprint $table) {
+            $table->unsignedBigInteger('product_id')->nullable(false)->change();
+        });
     }
 };

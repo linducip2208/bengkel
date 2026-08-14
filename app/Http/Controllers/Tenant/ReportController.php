@@ -65,10 +65,20 @@ class ReportController extends Controller
             'sales' => $reportService->salesReport($filters),
             'stock' => $reportService->stockReport($filters),
             'financial' => $reportService->financialReport($filters),
+            'ar-aging' => $reportService->arAgingReport(),
+            'parts-usage' => $reportService->partsUsageReport($filters),
+            'branch-comparison' => $reportService->branchComparison($filters),
+            'cash-flow' => $reportService->cashFlowReport($filters),
+            'technician' => $this->technicianReportData($filters),
+            'customer-lifetime' => $this->customerLifetimeReportData(),
+            'general-ledger' => $this->generalLedgerReportData($filters),
+            'profit-loss' => $this->profitLossReportData($filters),
+            'balance-sheet' => $this->balanceSheetReportData($filters),
             default => $reportService->serviceReport($filters),
         };
 
         $pdf = Pdf::loadView("reports.pdf.{$type}", compact('report', 'filters'));
+        $pdf->setPaper('a4');
         return $pdf->download("report-{$type}-" . date('Ymd') . ".pdf");
     }
 
@@ -639,5 +649,163 @@ class ReportController extends Controller
             'totalAssets', 'totalLiabilities', 'totalEquity',
             'netProfit', 'difference', 'balanced'
         ));
+    }
+
+    private function technicianReportData(array $filters): array
+    {
+        $start = $filters['start_date'] ?? now()->startOfMonth()->toDateString();
+        $end = $filters['end_date'] ?? now()->toDateString();
+
+        $technicians = \App\Models\ServiceTechnician::join('services', 'service_technicians.service_id', '=', 'services.id')
+            ->whereBetween('services.service_date', [$start, $end])
+            ->selectRaw('service_technicians.user_id, COUNT(*) as job_count, SUM(services.charge) as total_revenue, AVG(TIMESTAMPDIFF(MINUTE, services.started_at, services.completed_at)) as avg_minutes')
+            ->groupBy('service_technicians.user_id')
+            ->with('user')
+            ->get()
+            ->map(function ($t) {
+                $t->technician_name = $t->user?->name ?? 'Unknown';
+                $t->avg_duration = $t->avg_minutes ? round($t->avg_minutes / 60, 1) : null;
+                return $t;
+            });
+
+        return [
+            'technicians' => $technicians,
+            'total_jobs' => $technicians->sum('job_count'),
+            'total_revenue' => $technicians->sum('total_revenue'),
+        ];
+    }
+
+    private function customerLifetimeReportData(): array
+    {
+        $customers = \App\Models\Customer::withCount(['services'])
+            ->withSum('services', 'charge')
+            ->with(['services' => fn($q) => $q->latest('service_date')])
+            ->having('services_count', '>', 0)
+            ->orderByDesc('services_sum_charge')
+            ->limit(20)
+            ->get()
+            ->map(function ($c) {
+                $c->last_service = $c->services->first()?->service_date;
+                $c->lifetime_value = $c->services_sum_charge ?? 0;
+                $c->avg_per_visit = $c->services_count > 0 ? $c->lifetime_value / $c->services_count : 0;
+                return $c;
+            });
+
+        return ['customers' => $customers];
+    }
+
+    private function generalLedgerReportData(array $filters): array
+    {
+        $start = $filters['start_date'] ?? now()->startOfMonth()->toDateString();
+        $end = $filters['end_date'] ?? now()->toDateString();
+
+        $entries = \App\Models\JournalEntry::with('lines.account')
+            ->whereBetween('entry_date', [$start, $end])
+            ->orderBy('entry_date')
+            ->orderBy('id')
+            ->get()
+            ->map(function ($entry) {
+                $entry->total_debit = $entry->lines->sum('debit');
+                $entry->total_credit = $entry->lines->sum('credit');
+                $entry->account_name = $entry->lines->first()?->account?->name;
+                $entry->account_code = $entry->lines->first()?->account?->code;
+                return $entry;
+            });
+
+        return [
+            'entries' => $entries,
+            'total_debit' => $entries->sum('total_debit'),
+            'total_credit' => $entries->sum('total_credit'),
+        ];
+    }
+
+    private function profitLossReportData(array $filters): array
+    {
+        $start = $filters['start_date'] ?? now()->startOfYear()->toDateString();
+        $end = $filters['end_date'] ?? now()->toDateString();
+
+        $revenueAccounts = \App\Models\ChartOfAccount::where('type', 'revenue')->where('is_active', true)->get();
+        $cogsAccounts = \App\Models\ChartOfAccount::whereIn('name', ['Cost of Goods Sold', 'COGS'])
+            ->orWhere('code', '5100')
+            ->where('is_active', true)
+            ->get();
+        $expenseAccounts = \App\Models\ChartOfAccount::where('type', 'expense')->where('is_active', true)->get();
+
+        $revenueAccounts->each(function ($a) use ($start, $end) {
+            $a->balance = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->whereBetween('entry_date', [$start, $end]))
+                ->sum('credit');
+        });
+        $cogsAccounts->each(function ($a) use ($start, $end) {
+            $a->balance = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->whereBetween('entry_date', [$start, $end]))
+                ->sum('debit');
+        });
+        $expenseAccounts->each(function ($a) use ($start, $end) {
+            $a->balance = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->whereBetween('entry_date', [$start, $end]))
+                ->sum('debit');
+        });
+
+        $totalRevenue = $revenueAccounts->sum('balance');
+        $totalCogs = $cogsAccounts->sum('balance');
+        $totalExpenses = $expenseAccounts->sum('balance');
+
+        return [
+            'revenue_accounts' => $revenueAccounts,
+            'cogs_accounts' => $cogsAccounts,
+            'expense_accounts' => $expenseAccounts,
+            'total_revenue' => $totalRevenue,
+            'total_cogs' => $totalCogs,
+            'total_expenses' => $totalExpenses,
+            'gross_profit' => $totalRevenue - $totalCogs,
+            'net_profit' => $totalRevenue - $totalCogs - $totalExpenses,
+        ];
+    }
+
+    private function balanceSheetReportData(array $filters): array
+    {
+        $endDate = $filters['end_date'] ?? now()->toDateString();
+
+        $assetAccounts = \App\Models\ChartOfAccount::where('type', 'asset')->where('is_active', true)->get();
+        $liabilityAccounts = \App\Models\ChartOfAccount::where('type', 'liability')->where('is_active', true)->get();
+        $equityAccounts = \App\Models\ChartOfAccount::where('type', 'equity')->where('is_active', true)->get();
+
+        $assetAccounts->each(function ($a) use ($endDate) {
+            $debit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                ->sum('debit');
+            $credit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                ->sum('credit');
+            $a->balance = $debit - $credit;
+        });
+        $liabilityAccounts->each(function ($a) use ($endDate) {
+            $debit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                ->sum('debit');
+            $credit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                ->sum('credit');
+            $a->balance = $credit - $debit;
+        });
+        $equityAccounts->each(function ($a) use ($endDate) {
+            $credit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                ->sum('credit');
+            $debit = \App\Models\JournalEntryLine::where('chart_of_account_id', $a->id)
+                ->whereHas('journalEntry', fn($q) => $q->where('entry_date', '<=', $endDate))
+                ->sum('debit');
+            $a->balance = $credit - $debit;
+        });
+
+        return [
+            'asset_accounts' => $assetAccounts,
+            'liability_accounts' => $liabilityAccounts,
+            'equity_accounts' => $equityAccounts,
+            'total_assets' => $assetAccounts->sum('balance'),
+            'total_liabilities' => $liabilityAccounts->sum('balance'),
+            'total_equity' => $equityAccounts->sum('balance'),
+        ];
     }
 }

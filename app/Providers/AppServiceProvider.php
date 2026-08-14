@@ -35,8 +35,19 @@ class AppServiceProvider extends ServiceProvider
 
         // Share settings ke semua views
         \Illuminate\Support\Facades\View::composer('*', function ($view) {
-            $service = app(\App\Services\SettingsService::class);
-            $view->with('appSettings', $service->getCompanyInfo());
+            try {
+                $service = app(\App\Services\SettingsService::class);
+                $view->with('appSettings', $service->getCompanyInfo());
+            } catch (\Throwable $e) {
+                $view->with('appSettings', [
+                    'name' => config('app.name'),
+                    'address' => '',
+                    'phone' => '',
+                    'email' => '',
+                    'logo' => '',
+                    'tax_id' => '',
+                ]);
+            }
         });
     }
 }
