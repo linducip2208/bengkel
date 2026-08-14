@@ -26,6 +26,22 @@ class SettingsService
         return Setting::where('group', $group)->pluck('value', 'key')->toArray();
     }
 
+    public function getInvoiceSections(): array
+    {
+        $default = ['company', 'customer', 'items', 'totals', 'payments', 'notes', 'footer'];
+
+        $raw = $this->get('invoice_sections', '');
+
+        if (is_string($raw) && $raw !== '') {
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+                return array_values(array_filter($decoded, fn ($section) => in_array($section, $default, true)));
+            }
+        }
+
+        return $default;
+    }
+
     public function getCompanyInfo(): array
     {
         return [

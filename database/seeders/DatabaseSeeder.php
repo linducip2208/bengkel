@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Branch;
 use App\Models\CheckoutCategory;
+use App\Models\Company;
 use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Customer;
@@ -105,14 +106,22 @@ class DatabaseSeeder extends Seeder
 
     private function seedBranches(): void
     {
+        $company = Company::firstOrCreate(
+            ['code' => 'DEF'],
+            ['name' => 'Default Company', 'code' => 'DEF', 'is_active' => true]
+        );
+
         $branches = [
             ['code' => 'PST', 'name' => 'Aplikasi Bengkel Terbaik — Pusat Semarang', 'phone' => '024-7612345', 'email' => 'pusat@bengkelpaten.id', 'address' => 'Jl. Siliwangi No. 88, Semarang', 'is_active' => true],
             ['code' => 'UNG', 'name' => 'Aplikasi Bengkel Terbaik — Cabang Ungaran', 'phone' => '024-6921111', 'email' => 'ungaran@bengkelpaten.id', 'address' => 'Jl. Diponegoro No. 12, Ungaran', 'is_active' => true],
             ['code' => 'KDL', 'name' => 'Aplikasi Bengkel Terbaik — Cabang Kendal', 'phone' => '0294-381234', 'email' => 'kendal@bengkelpaten.id', 'address' => 'Jl. Pemuda No. 5, Kendal', 'is_active' => true],
         ];
         foreach ($branches as $b) {
-            Branch::firstOrCreate(['code' => $b['code']], $b);
+            Branch::firstOrCreate(['code' => $b['code']], array_merge($b, ['company_id' => $company->id]));
         }
+
+        // Link cabang lama (sebelum layer company) ke perusahaan default.
+        Branch::whereNull('company_id')->update(['company_id' => $company->id]);
     }
 
     private function seedMasterData(): void

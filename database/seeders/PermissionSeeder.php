@@ -10,6 +10,7 @@ class PermissionSeeder extends Seeder
 {
     private const MODULES = [
         'dashboard'       => ['view'],
+        'company'         => ['view','create','edit','delete'],
         'branch'          => ['view','create','edit','delete'],
         'holiday'         => ['view','create','edit','delete'],
         'washbay'         => ['view','create','edit','delete'],

@@ -5,6 +5,19 @@ Settings - {{ config('app.name') }}
 @endsection
 
 @section('content')
+@php
+    $invoiceSections = app(\App\Services\SettingsService::class)->getInvoiceSections();
+    $invoiceSectionDefs = [
+        'company' => 'Info Perusahaan (logo, nama, alamat)',
+        'customer' => 'Info Pelanggan & Kendaraan',
+        'items' => 'Tabel Item / Rincian',
+        'totals' => 'Subtotal, Diskon, Pajak & Total',
+        'payments' => 'Riwayat Pembayaran',
+        'notes' => 'Catatan Invoice',
+        'footer' => 'Footer & Ucapan Terima Kasih',
+    ];
+    $invoiceSectionOrder = array_values(array_unique(array_merge($invoiceSections, array_keys($invoiceSectionDefs))));
+@endphp
 <h4 class="mb-3">Settings</h4>
 
 <form action="{{ route('settings.update') }}" method="POST" enctype="multipart/form-data">
@@ -346,6 +359,21 @@ Settings - {{ config('app.name') }}
                             </select>
                         </div>
                     </div>
+                    <hr>
+                    <h6 class="mb-3">Tata Letak Bagian Invoice</h6>
+                    <p class="text-muted small mb-3">Aktifkan/nonaktifkan bagian yang tampil di invoice dan atur urutannya dengan tombol panah.</p>
+                    <input type="hidden" name="settings[invoice_sections]" id="invoiceSectionsInput" value="{{ json_encode($invoiceSections) }}">
+                    <div id="invoiceSectionsList">
+                        @foreach ($invoiceSectionOrder as $section)
+                        <div class="invoice-section-item d-flex align-items-center gap-2 border rounded p-2 mb-2" data-key="{{ $section }}">
+                            <span class="text-muted" style="cursor:grab;"><i class="fas fa-grip-vertical"></i></span>
+                            <input class="form-check-input invoice-section-checkbox" type="checkbox" value="{{ $section }}" {{ in_array($section, $invoiceSections) ? 'checked' : '' }}>
+                            <label class="form-check-label flex-grow-1">{{ $invoiceSectionDefs[$section] ?? $section }}</label>
+                            <button type="button" class="btn btn-sm btn-outline-secondary btn-move-up" title="Naik"><i class="fas fa-arrow-up"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary btn-move-down" title="Turun"><i class="fas fa-arrow-down"></i></button>
+                        </div>
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </div>
@@ -402,6 +430,46 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+
+    // ── Invoice layout builder ──
+    const sectionsInput = document.getElementById('invoiceSectionsInput');
+    const sectionCheckboxes = document.querySelectorAll('.invoice-section-checkbox');
+
+    function syncInvoiceSections() {
+        const keys = [];
+        document.querySelectorAll('.invoice-section-checkbox:checked').forEach(function (cb) {
+            keys.push(cb.value);
+        });
+        sectionsInput.value = JSON.stringify(keys);
+    }
+
+    sectionCheckboxes.forEach(function (cb) {
+        cb.addEventListener('change', syncInvoiceSections);
+    });
+
+    document.querySelectorAll('.btn-move-up').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const item = this.closest('.invoice-section-item');
+            const prev = item.previousElementSibling;
+            if (prev && prev.classList.contains('invoice-section-item')) {
+                item.parentNode.insertBefore(item, prev);
+                syncInvoiceSections();
+            }
+        });
+    });
+
+    document.querySelectorAll('.btn-move-down').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const item = this.closest('.invoice-section-item');
+            const next = item.nextElementSibling;
+            if (next && next.classList.contains('invoice-section-item')) {
+                item.parentNode.insertBefore(next, item);
+                syncInvoiceSections();
+            }
+        });
+    });
+
+    document.querySelector('form').addEventListener('submit', syncInvoiceSections);
 });
 </script>
 @endpush

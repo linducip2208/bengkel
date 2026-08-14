@@ -3,12 +3,14 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\DocsController;
 use App\Http\Controllers\ObservationController;
 use App\Http\Controllers\ProgrammaticSeoController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Tenant\BranchController;
 use App\Http\Controllers\Tenant\BusinessHourController;
+use App\Http\Controllers\Tenant\CompanyController;
 use App\Http\Controllers\Tenant\CheckoutCategoryController;
 use App\Http\Controllers\Tenant\CityController;
 use App\Http\Controllers\Tenant\ColorController;
@@ -75,6 +77,9 @@ use App\Http\Controllers\Tenant\PrinterController;
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Locale switcher (id|en) — stores locale in session
+Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
 
 // Public tracking service (token-based, no auth)
 Route::get('/track/{token}', [\App\Http\Controllers\TrackingController::class, 'show'])->name('public.tracking');
@@ -338,6 +343,9 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::resource('fuel-types', FuelTypeController::class)->except(['show']);
     Route::resource('vehicle-brands', VehicleBrandController::class)->except(['show']);
     Route::resource('vehicle-types', VehicleTypeController::class)->except(['show']);
+
+    // --- Perusahaan / Multi-company ---
+    Route::resource('companies', CompanyController::class);
 
     // --- Cabang / Multi-branch ---
     Route::post('/branches/switch', [BranchController::class, 'switchBranch'])->name('branches.switch');

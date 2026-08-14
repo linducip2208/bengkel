@@ -20,6 +20,16 @@
                 @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-12">
+                <label class="form-label">Perusahaan</label>
+                <select name="company_id" class="form-select @error('company_id') is-invalid @enderror">
+                    <option value="">-- Tanpa Perusahaan --</option>
+                    @foreach($companies as $company)
+                        <option value="{{ $company->id }}" {{ old('company_id', $branch->company_id) == $company->id ? 'selected' : '' }}>{{ $company->name }} ({{ $company->code }})</option>
+                    @endforeach
+                </select>
+                @error('company_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-12">
                 <label class="form-label">Alamat</label>
                 <textarea name="address" class="form-control @error('address') is-invalid @enderror" rows="2">{{ old('address', $branch->address) }}</textarea>
                 @error('address') <div class="invalid-feedback">{{ $message }}</div> @enderror

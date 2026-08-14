@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk — {{ config('app.name') }}</title>
+    <title>{{ __('Masuk') }} — {{ config('app.name') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -214,9 +214,9 @@
     {{-- Right: Login Form --}}
     <div class="form-panel">
         <div class="form-wrapper">
-            <h1>Masuk</h1>
+            <h1>{{ __('Masuk') }}</h1>
             <p class="subtitle">
-                Belum punya akun? <a href="#">Hubungi admin</a>
+                {{ __('Belum punya akun') }}? <a href="#">{{ __('Hubungi admin') }}</a>
             </p>
 
             @if ($errors->any())
@@ -230,28 +230,28 @@
             <form method="POST" action="{{ route('login') }}">
                 @csrf
                 <div class="form-group">
-                    <label for="email">Email</label>
+                    <label for="email">{{ __('Alamat Email') }}</label>
                     <input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus autocomplete="email">
                 </div>
                 <div class="form-group">
-                    <label for="password">Password</label>
+                    <label for="password">{{ __('Password') }}</label>
                     <input type="password" name="password" id="password" required autocomplete="current-password">
                 </div>
                 <div class="form-row">
                     <label>
-                        <input type="checkbox" name="remember"> Ingat saya
+                        <input type="checkbox" name="remember"> {{ __('Ingat saya') }}
                     </label>
-                    <a href="#">Lupa password?</a>
+                    <a href="#">{{ __('Lupa password?') }}</a>
                 </div>
                 <button type="submit" class="btn-login">
-                    <i class="fas fa-sign-in-alt"></i> Masuk
+                    <i class="fas fa-sign-in-alt"></i> {{ __('Masuk') }}
                 </button>
             </form>
 
             <div class="divider">atau</div>
 
             <div class="demo-box">
-                <div class="demo-title"><i class="fas fa-flask"></i> Demo Login</div>
+                <div class="demo-title"><i class="fas fa-flask"></i> {{ __('Demo Login') }}</div>
                 <div class="demo-row"><span class="role">Admin:</span> admin@bengkel.test / password</div>
                 <div class="demo-row"><span class="role">Manager:</span> manager@bengkel.test / password</div>
                 <div class="demo-row"><span class="role">Kasir:</span> kasir@bengkel.test / password</div>

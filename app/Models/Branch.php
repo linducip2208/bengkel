@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['name', 'code', 'address', 'phone', 'email', 'is_active'])]
+#[Fillable(['name', 'code', 'company_id', 'address', 'phone', 'email', 'is_active'])]
 class Branch extends Model
 {
     use HasFactory, SoftDeletes;
@@ -18,6 +19,11 @@ class Branch extends Model
         return [
             'is_active' => 'boolean',
         ];
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
     }
 
     public function businessHours(): HasMany

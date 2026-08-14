@@ -449,20 +449,21 @@
             @can('dashboard.view')
             <li class="nav-item">
                 <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                    <i class="fas fa-tachometer-alt"></i> {{ __('Dashboard') }}
                 </a>
             </li>
             @endcan
 
             {{-- 2. OPERATIONS --}}
-            @canany(['branch.view','booking.view','service.view','customer.view','vehicle.view','gate-pass.view'])
+            @canany(['company.view','branch.view','booking.view','service.view','customer.view','vehicle.view','gate-pass.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuOperations"
-                    aria-expanded="{{ request()->is('branches*','holidays*','washbays*','business-hours*') || request()->routeIs('bookings.*','services.*','jobcards.*','customers.*','vehicles.*','gate-passes.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-cogs"></i> Operations
+                    aria-expanded="{{ request()->is('companies*','branches*','holidays*','washbays*','business-hours*') || request()->routeIs('bookings.*','services.*','jobcards.*','customers.*','vehicles.*','gate-passes.*') ? 'true' : 'false' }}">
+                    <i class="fas fa-cogs"></i> {{ __('Operations') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->is('branches*','holidays*','washbays*','business-hours*') || request()->routeIs('bookings.*','services.*','jobcards.*','customers.*','vehicles.*','gate-passes.*') ? 'show' : '' }}" id="menuOperations">
+                <ul class="collapse submenu {{ request()->is('companies*','branches*','holidays*','washbays*','business-hours*') || request()->routeIs('bookings.*','services.*','jobcards.*','customers.*','vehicles.*','gate-passes.*') ? 'show' : '' }}" id="menuOperations">
+                    @can('company.view')<li><a href="{{ route('companies.index') }}" class="nav-link {{ request()->is('companies*') ? 'active' : '' }}"><i class="fas fa-city me-1"></i> Companies</a></li>@endcan
                     @can('branch.view')<li><a href="{{ route('branches.index') }}" class="nav-link {{ request()->is('branches*') ? 'active' : '' }}"><i class="fas fa-store-alt me-1"></i> Branches</a></li>@endcan
                     @can('holiday.view')<li><a href="{{ route('holidays.index') }}" class="nav-link {{ request()->is('holidays*') ? 'active' : '' }}"><i class="fas fa-calendar-times me-1"></i> Holidays</a></li>@endcan
                     @can('washbay.view')<li><a href="{{ route('washbays.index') }}" class="nav-link {{ request()->is('washbays*') ? 'active' : '' }}"><i class="fas fa-shower me-1"></i> Washbay / Slots</a></li>@endcan
@@ -483,7 +484,7 @@
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuServiceMgmt"
                     aria-expanded="{{ request()->routeIs('services.*','jobcards.*','subcontractors.*','service-packages.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-tools"></i> Service Management
+                    <i class="fas fa-tools"></i> {{ __('Service Management') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <ul class="collapse submenu {{ request()->routeIs('services.*','jobcards.*','subcontractors.*','service-packages.*') ? 'show' : '' }}" id="menuServiceMgmt">
@@ -500,7 +501,7 @@
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuInventory"
                     aria-expanded="{{ request()->routeIs('products.*','suppliers.*','purchases.*','purchase-orders.*','purchase-requisitions.*','equipment.*','warehouses.*','stock-adjustments.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-boxes"></i> Inventory
+                    <i class="fas fa-boxes"></i> {{ __('Inventory') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <ul class="collapse submenu {{ request()->routeIs('products.*','suppliers.*','purchases.*','purchase-orders.*','purchase-requisitions.*','equipment.*','warehouses.*','stock-adjustments.*') ? 'show' : '' }}" id="menuInventory">
@@ -522,7 +523,7 @@
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuSalesPos"
                     aria-expanded="{{ request()->routeIs('pos.*','sales.*','invoices.*','payments.*','sell-returns.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-cash-register"></i> Sales & POS
+                    <i class="fas fa-cash-register"></i> {{ __('Sales & POS') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <ul class="collapse submenu {{ request()->routeIs('pos.*','sales.*','invoices.*','payments.*','sell-returns.*') ? 'show' : '' }}" id="menuSalesPos">
@@ -539,7 +540,7 @@
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuTechnicians"
                     aria-expanded="{{ request()->routeIs('commissions.*','hrm.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-user-cog"></i> Technicians
+                    <i class="fas fa-user-cog"></i> {{ __('Technicians') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <ul class="collapse submenu {{ request()->routeIs('commissions.*','hrm.*') ? 'show' : '' }}" id="menuTechnicians">
@@ -555,7 +556,7 @@
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuCrm"
                     aria-expanded="{{ request()->routeIs('vouchers.*','loyalty.*','reviews.*','blog.admin.*','marketing.campaign*') ? 'true' : 'false' }}">
-                    <i class="fas fa-bullhorn"></i> CRM & Marketing
+                    <i class="fas fa-bullhorn"></i> {{ __('CRM & Marketing') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <ul class="collapse submenu {{ request()->routeIs('vouchers.*','loyalty.*','reviews.*','blog.admin.*','marketing.campaign*') ? 'show' : '' }}" id="menuCrm">
@@ -573,7 +574,7 @@
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuWarranty"
                     aria-expanded="{{ request()->routeIs('warranty-claims.*','recalls.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-shield-alt"></i> Warranty
+                    <i class="fas fa-shield-alt"></i> {{ __('Warranty') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <ul class="collapse submenu {{ request()->routeIs('warranty-claims.*','recalls.*') ? 'show' : '' }}" id="menuWarranty">
@@ -588,7 +589,7 @@
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuFinance"
                     aria-expanded="{{ request()->routeIs('incomes.*','expenses.*','petty-cash.*','finance.*','bank-accounts.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-chart-line"></i> Finance & Accounting
+                    <i class="fas fa-chart-line"></i> {{ __('Finance & Accounting') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <ul class="collapse submenu {{ request()->routeIs('incomes.*','expenses.*','petty-cash.*','finance.*','bank-accounts.*') ? 'show' : '' }}" id="menuFinance">
@@ -607,7 +608,7 @@
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuReports"
                     aria-expanded="{{ request()->routeIs('reports.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-chart-bar"></i> Reports
+                    <i class="fas fa-chart-bar"></i> {{ __('Reports') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <ul class="collapse submenu {{ request()->routeIs('reports.*') ? 'show' : '' }}" id="menuReports">
@@ -633,7 +634,7 @@
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuMasterData"
                     aria-expanded="{{ request()->is('vehicle-types*','vehicle-brands*','fuel-types*','colors*','product-types*','product-units*','payment-methods*','tax-rates*','tax-groups*','selling-price-groups*','repair-categories*','observation-types*','observation-points*','inspection-points*','checkout-categories*') ? 'true' : 'false' }}">
-                    <i class="fas fa-database"></i> Master Data
+                    <i class="fas fa-database"></i> {{ __('Master Data') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <ul class="collapse submenu {{ request()->is('vehicle-types*','vehicle-brands*','fuel-types*','colors*','product-types*','product-units*','payment-methods*','tax-rates*','tax-groups*','selling-price-groups*','repair-categories*','observation-types*','observation-points*','inspection-points*','checkout-categories*') ? 'show' : '' }}" id="menuMasterData">
@@ -665,7 +666,7 @@
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuGeo"
                     aria-expanded="{{ request()->is('countries*','states*','cities*','currencies*') ? 'true' : 'false' }}">
-                    <i class="fas fa-globe"></i> Geography
+                    <i class="fas fa-globe"></i> {{ __('Geography') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <ul class="collapse submenu {{ request()->is('countries*','states*','cities*','currencies*') ? 'show' : '' }}" id="menuGeo">
@@ -682,7 +683,7 @@
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuNotifications"
                     aria-expanded="{{ request()->routeIs('notification-templates.*','reminders.*') || request()->is('email-logs*','stock-histories*') ? 'true' : 'false' }}">
-                    <i class="fas fa-bell"></i> Notifications
+                    <i class="fas fa-bell"></i> {{ __('Notifications') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <ul class="collapse submenu {{ request()->routeIs('notification-templates.*','reminders.*') || request()->is('email-logs*','stock-histories*') ? 'show' : '' }}" id="menuNotifications">
@@ -699,7 +700,7 @@
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuUsers"
                     aria-expanded="{{ request()->routeIs('users.*','roles.*','activity-logs.*') || request()->is('notes*') ? 'true' : 'false' }}">
-                    <i class="fas fa-user-shield"></i> Users & Security
+                    <i class="fas fa-user-shield"></i> {{ __('Users & Security') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <ul class="collapse submenu {{ request()->routeIs('users.*','roles.*','activity-logs.*') || request()->is('notes*') ? 'show' : '' }}" id="menuUsers">
@@ -717,7 +718,7 @@
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuSettings"
                     aria-expanded="{{ request()->routeIs('settings.*','custom-fields.*','payment-gateways.*','2fa.*','printers.*','invoice-schemes.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-cog"></i> Settings
+                    <i class="fas fa-cog"></i> {{ __('Settings') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <ul class="collapse submenu {{ request()->routeIs('settings.*','custom-fields.*','payment-gateways.*','2fa.*','printers.*','invoice-schemes.*') ? 'show' : '' }}" id="menuSettings">
@@ -745,17 +746,17 @@
             <div class="d-none d-md-flex align-items-center gap-1">
                 @can('booking.view')
                 <a href="{{ route('bookings.index') }}" class="btn btn-outline-primary btn-sm" title="Booking Baru" style="font-size:0.75rem;">
-                    <i class="fas fa-calendar-plus me-1"></i>Booking
+                    <i class="fas fa-calendar-plus me-1"></i>{{ __('Booking') }}
                 </a>
                 @endcan
                 @can('service.view')
                 <a href="{{ route('services.create') }}" class="btn btn-outline-primary btn-sm" title="Job Card Baru" style="font-size:0.75rem;">
-                    <i class="fas fa-clipboard-check me-1"></i>Job Card
+                    <i class="fas fa-clipboard-check me-1"></i>{{ __('Job Card') }}
                 </a>
                 @endcan
                 @can('invoice.view')
                 <a href="{{ route('invoices.create') }}" class="btn btn-outline-primary btn-sm" title="Invoice Baru" style="font-size:0.75rem;">
-                    <i class="fas fa-file-invoice me-1"></i>Invoice
+                    <i class="fas fa-file-invoice me-1"></i>{{ __('Invoice') }}
                 </a>
                 @endcan
             </div>
@@ -843,17 +844,43 @@
         @endif
 
         <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" title="Language / Bahasa">
+                <i class="fas fa-globe me-1"></i>{{ strtoupper(app()->getLocale()) }}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" style="min-width:190px;">
+                <li>
+                    <form method="POST" action="{{ route('locale.update') }}">
+                        @csrf
+                        <input type="hidden" name="locale" value="id">
+                        <button type="submit" class="dropdown-item {{ app()->getLocale() === 'id' ? 'active' : '' }}">
+                            🇮🇩 Bahasa Indonesia
+                        </button>
+                    </form>
+                </li>
+                <li>
+                    <form method="POST" action="{{ route('locale.update') }}">
+                        @csrf
+                        <input type="hidden" name="locale" value="en">
+                        <button type="submit" class="dropdown-item {{ app()->getLocale() === 'en' ? 'active' : '' }}">
+                            🇬🇧 English
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+
+        <div class="dropdown">
             <button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">
                 <i class="fas fa-user-circle me-1"></i> {{ auth()->user()?->name ?? 'Admin' }}
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
-                <li><a href="#" class="dropdown-item"><i class="fas fa-user me-2"></i>Profile</a></li>
-                <li><a href="#" class="dropdown-item"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                <li><a href="#" class="dropdown-item"><i class="fas fa-user me-2"></i>{{ __('Profile') }}</a></li>
+                <li><a href="#" class="dropdown-item"><i class="fas fa-cog me-2"></i>{{ __('Settings') }}</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+                        <button class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>{{ __('Logout') }}</button>
                     </form>
                 </li>
             </ul>
@@ -863,7 +890,7 @@
     <nav class="topbar" style="left: 0 !important;">
         <span class="tenant-name"><i class="fas fa-wrench me-2"></i>{{ config('app.name') }}</span>
         <a href="{{ route('login') }}" class="btn btn-primary btn-sm">
-            <i class="fas fa-sign-in-alt me-1"></i>Login
+            <i class="fas fa-sign-in-alt me-1"></i>{{ __('Login') }}
         </a>
     </nav>
 @endauth

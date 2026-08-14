@@ -1,6 +1,9 @@
 @php
-    $accentColor = app(\App\Services\SettingsService::class)->get('invoice_accent_color', '#2563eb');
-    $font = app(\App\Services\SettingsService::class)->get('invoice_font', 'Inter');
+    $settingsService = app(\App\Services\SettingsService::class);
+    $accentColor = $settingsService->get('invoice_accent_color', '#2563eb');
+    $font = $settingsService->get('invoice_font', 'Inter');
+    $invoiceSections = $settingsService->getInvoiceSections();
+    $vehicle = $invoice->vehicle ?? $invoice->service?->vehicle ?? $invoice->sale?->vehicle;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -40,121 +43,130 @@
 </head>
 <body>
 
-<div class="header">
-    <div class="logo">
-        @if(!empty($settings['logo']) && file_exists(public_path('storage/' . $settings['logo'])))
-            <img src="{{ public_path('storage/' . $settings['logo']) }}" style="max-width:70px;max-height:70px;">
-        @else
-            &#x1F527;
-        @endif
-    </div>
-    <div class="info">
-        <h2>{{ $settings['name'] ?? config('app.name') }}</h2>
-        <p>{{ $settings['address'] ?? 'Jl. Bengkel No. 1' }} | Telp: {{ $settings['phone'] ?? '-' }}</p>
-        <p>Email: {{ $settings['email'] ?? '-' }} | NPWP: {{ $settings['tax_id'] ?? '-' }}</p>
-    </div>
-    <div class="invoice-title">
-        <h3>INVOICE</h3>
-        <div style="font-size:14px;color:{{ $accentColor }};font-weight:bold;">{{ $invoice->invoice_number }}</div>
-    </div>
-</div>
-
-<table class="body-table">
-    <tr>
-        <td width="55%">
-            <div class="section-title">Kepada / Pelanggan</div>
-            <div class="value"><strong>{{ $invoice->customer->name ?? '-' }}</strong></div>
-            <div class="value">{{ $invoice->customer->phone ?? '' }}</div>
-            <div class="value" style="font-size:11px;">{{ $invoice->customer->address ?? '' }}</div>
-        </td>
-        <td width="45%">
-            <table style="width:100%">
-                <tr><td class="section-title" width="35%">Tgl Invoice</td><td class="value">{{ $invoice->invoice_date->format('d M Y') }}</td></tr>
-                @if($invoice->due_date)<tr><td class="section-title">Berlaku Sampai</td><td class="value"><strong>{{ \Carbon\Carbon::parse($invoice->due_date)->format('d M Y') }}</strong></td></tr>@endif
-                <tr><td class="section-title">Tipe</td><td class="value">{{ ucfirst($invoice->invoice_type) }}</td></tr>
-                <tr><td class="section-title">Status</td><td class="value">
-                    @if ($invoice->status === 'full_paid') <span class="status-badge status-lunas">LUNAS</span>
-                    @elseif ($invoice->status === 'half_paid') <span class="status-badge status-sebagian">DIBAYAR SEBAGIAN</span>
-                    @else <span class="status-badge status-belum">BELUM DIBAYAR</span>
-                    @endif
-                </td></tr>
-            </table>
-        </td>
-    </tr>
-</table>
-
-@php $vehicle = $invoice->vehicle ?? $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
-<table class="vehicle-info" style="width:100%">
-    <tr>
-        <td class="section-title">Jenis Kendaraan</td>
-        <td class="section-title">No. Plat</td>
-        <td class="section-title">Tahun</td>
-        <td class="section-title">KM</td>
-        <td class="section-title">No. Service</td>
-    </tr>
-    <tr>
-        <td class="value"><strong>{{ $vehicle->model_name ?? '-' }}</strong></td>
-        <td class="value"><strong>{{ $vehicle->number_plate ?? '-' }}</strong></td>
-        <td class="value">{{ $vehicle->model_year ?? '-' }}</td>
-        <td class="value">{{ number_format($invoice->service?->jobcardDetail?->odometer_in ?? $vehicle->odometer ?? 0, 0, ',', '.') }}</td>
-        <td class="value">{{ $invoice->service?->job_no ?? '-' }}</td>
-    </tr>
-</table>
-
-<table class="items">
-    <thead>
-        <tr>
-            <th width="5%">#</th>
-            <th width="45%">Deskripsi</th>
-            <th width="10%" class="text-center">Qty</th>
-            <th width="20%" class="text-end">Harga Satuan</th>
-            <th width="20%" class="text-end">Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach ($invoice->items as $idx => $item)
+@foreach ($invoiceSections as $section)
+    @if ($section === 'company')
+        <div class="header">
+            <div class="logo">
+                @if(!empty($settings['logo']) && file_exists(public_path('storage/' . $settings['logo'])))
+                    <img src="{{ public_path('storage/' . $settings['logo']) }}" style="max-width:70px;max-height:70px;">
+                @else
+                    &#x1F527;
+                @endif
+            </div>
+            <div class="info">
+                <h2>{{ $settings['name'] ?? config('app.name') }}</h2>
+                <p>{{ $settings['address'] ?? 'Jl. Bengkel No. 1' }} | Telp: {{ $settings['phone'] ?? '-' }}</p>
+                <p>Email: {{ $settings['email'] ?? '-' }} | NPWP: {{ $settings['tax_id'] ?? '-' }}</p>
+            </div>
+            <div class="invoice-title">
+                <h3>INVOICE</h3>
+                <div style="font-size:14px;color:{{ $accentColor }};font-weight:bold;">{{ $invoice->invoice_number }}</div>
+            </div>
+        </div>
+    @elseif ($section === 'customer')
+        <table class="body-table">
             <tr>
-                <td>{{ $idx + 1 }}</td>
-                <td>{{ $item->description }}</td>
-                <td class="text-center">{{ $item->quantity }}</td>
-                <td class="text-end">@money($item->unit_price)</td>
-                <td class="text-end">@money($item->total_price)</td>
+                <td width="55%">
+                    <div class="section-title">Kepada / Pelanggan</div>
+                    <div class="value"><strong>{{ $invoice->customer->name ?? '-' }}</strong></div>
+                    <div class="value">{{ $invoice->customer->phone ?? '' }}</div>
+                    <div class="value" style="font-size:11px;">{{ $invoice->customer->address ?? '' }}</div>
+                </td>
+                <td width="45%">
+                    <table style="width:100%">
+                        <tr><td class="section-title" width="35%">Tgl Invoice</td><td class="value">{{ $invoice->invoice_date->format('d M Y') }}</td></tr>
+                        @if($invoice->due_date)<tr><td class="section-title">Berlaku Sampai</td><td class="value"><strong>{{ \Carbon\Carbon::parse($invoice->due_date)->format('d M Y') }}</strong></td></tr>@endif
+                        <tr><td class="section-title">Tipe</td><td class="value">{{ ucfirst($invoice->invoice_type) }}</td></tr>
+                        <tr><td class="section-title">Status</td><td class="value">
+                            @if ($invoice->status === 'full_paid') <span class="status-badge status-lunas">LUNAS</span>
+                            @elseif ($invoice->status === 'half_paid') <span class="status-badge status-sebagian">DIBAYAR SEBAGIAN</span>
+                            @else <span class="status-badge status-belum">BELUM DIBAYAR</span>
+                            @endif
+                        </td></tr>
+                    </table>
+                </td>
             </tr>
-        @endforeach
-    </tbody>
-</table>
+        </table>
 
-<div class="totals">
-    <table>
-        <tr><td width="65%" class="text-end">Subtotal</td><td width="35%" class="text-end">@money($invoice->subtotal)</td></tr>
-        @if($invoice->discount > 0)<tr><td class="text-end">Diskon{{ $invoice->discount_type === 'percent' ? ' ' . $invoice->discount_percent . '%' : '' }}</td><td class="text-end">- @money($invoice->discount)</td></tr>@endif
-        @if($invoice->tax_amount > 0)<tr><td class="text-end">Pajak</td><td class="text-end">@money($invoice->tax_amount)</td></tr>@endif
-        <tr class="total-row"><td class="text-end">Grand Total</td><td class="text-end">@money($invoice->grand_total)</td></tr>
-        @if($totalPaid > 0)<tr><td class="text-end">Total Dibayar</td><td class="text-end">@money($totalPaid)</td></tr>@endif
-        @if($remaining > 0)<tr class="total-row"><td class="text-end">Sisa Pembayaran</td><td class="text-end">@money($remaining)</td></tr>@endif
-    </table>
-</div>
-
-@if ($invoice->paymentRecords->count() > 0)
-    <h4 style="margin-top: 20px; font-size: 13px;">Riwayat Pembayaran</h4>
-    <table class="items">
-        <thead><tr><th>Tanggal</th><th>Metode</th><th class="text-end">Jumlah</th><th>Ref</th></tr></thead>
-        <tbody>
-            @foreach ($invoice->paymentRecords as $p)
-                <tr><td>{{ $p->payment_date->format('d M Y') }}</td><td>{{ $p->paymentMethod?->name }}</td><td class="text-end">@money($p->amount)</td><td>{{ $p->reference_number }}</td></tr>
-            @endforeach
-        </tbody>
-    </table>
-@endif
-
-<div class="footer">
-    <strong>Terima kasih atas kepercayaan Anda!</strong><br>
-    @if($invoice->notes){{ $invoice->notes }}<br>@endif
-    Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.<br>
-    {{ $settings['name'] ?? config('app.name') }} &mdash; {{ $settings['phone'] ?? '' }} &mdash; {{ $settings['address'] ?? '' }}
-    @if(!empty($settings['bank_account']))<br>Rekening: {{ $settings['bank_account'] }}@endif
-    @if(($settings['qris_available'] ?? '0') == '1') | QRIS Tersedia @endif
-</div>
+        <table class="vehicle-info" style="width:100%">
+            <tr>
+                <td class="section-title">Jenis Kendaraan</td>
+                <td class="section-title">No. Plat</td>
+                <td class="section-title">Tahun</td>
+                <td class="section-title">KM</td>
+                <td class="section-title">No. Service</td>
+            </tr>
+            <tr>
+                <td class="value"><strong>{{ $vehicle->model_name ?? '-' }}</strong></td>
+                <td class="value"><strong>{{ $vehicle->number_plate ?? '-' }}</strong></td>
+                <td class="value">{{ $vehicle->model_year ?? '-' }}</td>
+                <td class="value">{{ number_format($invoice->service?->jobcardDetail?->odometer_in ?? $vehicle->odometer ?? 0, 0, ',', '.') }}</td>
+                <td class="value">{{ $invoice->service?->job_no ?? '-' }}</td>
+            </tr>
+        </table>
+    @elseif ($section === 'items')
+        <table class="items">
+            <thead>
+                <tr>
+                    <th width="5%">#</th>
+                    <th width="45%">Deskripsi</th>
+                    <th width="10%" class="text-center">Qty</th>
+                    <th width="20%" class="text-end">Harga Satuan</th>
+                    <th width="20%" class="text-end">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($invoice->items as $idx => $item)
+                    <tr>
+                        <td>{{ $idx + 1 }}</td>
+                        <td>{{ $item->description }}</td>
+                        <td class="text-center">{{ $item->quantity }}</td>
+                        <td class="text-end">@money($item->unit_price)</td>
+                        <td class="text-end">@money($item->total_price)</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @elseif ($section === 'totals')
+        <div class="totals">
+            <table>
+                <tr><td width="65%" class="text-end">Subtotal</td><td width="35%" class="text-end">@money($invoice->subtotal)</td></tr>
+                @if($invoice->discount > 0)<tr><td class="text-end">Diskon{{ $invoice->discount_type === 'percent' ? ' ' . $invoice->discount_percent . '%' : '' }}</td><td class="text-end">- @money($invoice->discount)</td></tr>@endif
+                @if($invoice->tax_amount > 0)<tr><td class="text-end">Pajak</td><td class="text-end">@money($invoice->tax_amount)</td></tr>@endif
+                <tr class="total-row"><td class="text-end">Grand Total</td><td class="text-end">@money($invoice->grand_total)</td></tr>
+                @if($totalPaid > 0)<tr><td class="text-end">Total Dibayar</td><td class="text-end">@money($totalPaid)</td></tr>@endif
+                @if($remaining > 0)<tr class="total-row"><td class="text-end">Sisa Pembayaran</td><td class="text-end">@money($remaining)</td></tr>@endif
+            </table>
+        </div>
+    @elseif ($section === 'payments')
+        @if ($invoice->paymentRecords->count() > 0)
+            <h4 style="margin-top: 20px; font-size: 13px;">Riwayat Pembayaran</h4>
+            <table class="items">
+                <thead><tr><th>Tanggal</th><th>Metode</th><th class="text-end">Jumlah</th><th>Ref</th></tr></thead>
+                <tbody>
+                    @foreach ($invoice->paymentRecords as $p)
+                        <tr><td>{{ $p->payment_date->format('d M Y') }}</td><td>{{ $p->paymentMethod?->name }}</td><td class="text-end">@money($p->amount)</td><td>{{ $p->reference_number }}</td></tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+    @elseif ($section === 'notes')
+        @if ($invoice->notes)
+            <div style="margin-top: 15px;">
+                <div class="section-title">Catatan</div>
+                <div class="value">{{ $invoice->notes }}</div>
+            </div>
+        @endif
+    @elseif ($section === 'footer')
+        <div class="footer">
+            <strong>Terima kasih atas kepercayaan Anda!</strong><br>
+            Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.<br>
+            {{ $settings['name'] ?? config('app.name') }} &mdash; {{ $settings['phone'] ?? '' }} &mdash; {{ $settings['address'] ?? '' }}
+            @if(!empty($settings['bank_account']))<br>Rekening: {{ $settings['bank_account'] }}@endif
+            @if(($settings['qris_available'] ?? '0') == '1') | QRIS Tersedia @endif
+        </div>
+    @endif
+@endforeach
 
 </body>
 </html>

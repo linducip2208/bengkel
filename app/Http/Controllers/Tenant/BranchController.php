@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -22,7 +23,8 @@ class BranchController extends Controller
 
     public function create()
     {
-        return view('branches.create');
+        $companies = Company::orderBy('name')->get();
+        return view('branches.create', compact('companies'));
     }
 
     public function store(Request $request)
@@ -33,12 +35,14 @@ class BranchController extends Controller
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:30',
             'email' => 'nullable|email|max:255',
+            'company_id' => 'nullable|exists:companies,id',
             'is_active' => 'nullable|boolean',
         ]);
 
         Branch::create([
             'name' => $validated['name'],
             'code' => strtoupper($validated['code']),
+            'company_id' => $validated['company_id'] ?? null,
             'address' => $validated['address'] ?? null,
             'phone' => $validated['phone'] ?? null,
             'email' => $validated['email'] ?? null,
@@ -56,7 +60,8 @@ class BranchController extends Controller
 
     public function edit(Branch $branch)
     {
-        return view('branches.edit', compact('branch'));
+        $companies = Company::orderBy('name')->get();
+        return view('branches.edit', compact('branch', 'companies'));
     }
 
     public function update(Request $request, Branch $branch)
@@ -67,12 +72,14 @@ class BranchController extends Controller
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:30',
             'email' => 'nullable|email|max:255',
+            'company_id' => 'nullable|exists:companies,id',
             'is_active' => 'nullable|boolean',
         ]);
 
         $branch->update([
             'name' => $validated['name'],
             'code' => strtoupper($validated['code']),
+            'company_id' => $validated['company_id'] ?? null,
             'address' => $validated['address'] ?? null,
             'phone' => $validated['phone'] ?? null,
             'email' => $validated['email'] ?? null,

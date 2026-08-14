@@ -14,6 +14,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Set application locale from session (defaults to config locale = id fallback)
+        if (!$this->app->runningInConsole() && session()->has('locale')) {
+            app()->setLocale(session('locale'));
+        }
+
         Paginator::defaultView('partials.pagination');
 
         \Illuminate\Support\Facades\Blade::directive('money', function ($expression) {
