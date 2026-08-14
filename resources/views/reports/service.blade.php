@@ -76,6 +76,33 @@ Service Report - {{ config('app.name') }}
 </div>
 
 <div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <h4>@money($report['total_revenue'] ?? 0)</h4>
+                <p class="text-muted">Total Estimasi (Charge)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-danger">
+            <div class="card-body text-center">
+                <h4>@money($report['total_actual_cost'] ?? 0)</h4>
+                <p class="text-muted">Total Biaya Aktual</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card {{ ($report['total_variance'] ?? 0) >= 0 ? 'border-success' : 'border-danger' }}">
+            <div class="card-body text-center">
+                <h4 class="{{ ($report['total_variance'] ?? 0) >= 0 ? 'text-success' : 'text-danger' }}">@money($report['total_variance'] ?? 0)</h4>
+                <p class="text-muted">Variance (Actual - Estimasi)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
     <div class="col-md-6">
         <div class="card"><div class="card-header"><strong>Revenue per Day</strong></div><div class="card-body"><canvas id="serviceDateChart" height="80"></canvas></div></div>
     </div>
@@ -130,6 +157,30 @@ Service Report - {{ config('app.name') }}
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header"><strong>Estimasi vs Actual (Variance)</strong></div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-striped mb-0">
+                <thead><tr><th>Job No</th><th>Customer</th><th>Estimasi</th><th>Actual</th><th>Variance</th></tr></thead>
+                <tbody>
+                    @forelse($report['services'] ?? [] as $s)
+                    <tr>
+                        <td>{{ $s->job_no ?? '-' }}</td>
+                        <td>{{ $s->customer?->name ?? '-' }}</td>
+                        <td>@money($s->charge ?? 0)</td>
+                        <td>@money($s->actual_cost ?? 0)</td>
+                        <td class="{{ $s->cost_variance >= 0 ? 'text-success' : 'text-danger' }}">@money($s->cost_variance)</td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="5" class="text-center">No data</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

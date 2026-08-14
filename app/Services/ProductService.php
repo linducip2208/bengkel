@@ -13,7 +13,7 @@ class ProductService
     public function index(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         return Product::query()
-            ->with(['productType', 'unit', 'supplier', 'stockRecord'])
+            ->with(['productType', 'unit', 'supplier', 'stockRecord', 'reservations'])
             ->when($filters['search'] ?? null, function ($q, $search) {
                 $q->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")

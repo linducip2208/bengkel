@@ -90,6 +90,11 @@
                         {{ $product->current_stock }}
                     </h2>
                     <small class="text-muted">Stok Saat Ini</small>
+                    @if($product->reserved_quantity > 0)
+                        <br>
+                        <span class="badge bg-warning text-dark mt-1">Reservasi: {{ $product->reserved_quantity }}</span>
+                        <br><small class="text-muted">Tersedia: {{ $product->available_stock }}</small>
+                    @endif
                 </div>
                 <hr>
                 <table class="table table-sm table-borderless mb-0">

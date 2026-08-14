@@ -117,6 +117,9 @@
                         @else
                             <span class="badge bg-success">{{ $product->current_stock }}</span>
                         @endif
+                        @if($product->reserved_quantity > 0)
+                            <br><small class="text-muted" title="Stok direservasi">reservasi: {{ $product->reserved_quantity }}</small>
+                        @endif
                     </td>
                     <td>{{ $product->supplier?->name ?? '-' }}</td>
                     <td class="text-center">

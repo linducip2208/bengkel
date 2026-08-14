@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable([
     'service_id', 'user_id', 'role',
     'commission_pct', 'commission_amt', 'paid_at', 'paid_by', 'notes',
+    'started_at', 'finished_at',
 ])]
 class ServiceTechnician extends Model
 {
@@ -22,6 +23,8 @@ class ServiceTechnician extends Model
             'commission_pct' => 'decimal:2',
             'commission_amt' => 'decimal:2',
             'paid_at' => 'datetime',
+            'started_at' => 'datetime',
+            'finished_at' => 'datetime',
         ];
     }
 
@@ -48,5 +51,16 @@ class ServiceTechnician extends Model
     public function scopePaid($query)
     {
         return $query->whereNotNull('paid_at');
+    }
+
+    public function getDurationMinutesAttribute(): ?int
+    {
+        if ($this->started_at && $this->finished_at) {
+            return (int) $this->started_at->diffInMinutes($this->finished_at);
+        }
+        if ($this->started_at && !$this->finished_at) {
+            return (int) $this->started_at->diffInMinutes(now());
+        }
+        return null;
     }
 }

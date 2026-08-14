@@ -82,6 +82,34 @@ class Product extends Model
         return $this->hasMany(PurchaseItem::class);
     }
 
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(PartReservation::class);
+    }
+
+    public function reservedQuantity(): float
+    {
+        if ($this->relationLoaded('reservations')) {
+            return (float) $this->reservations
+                ->where('status', 'reserved')
+                ->sum('quantity');
+        }
+
+        return (float) $this->reservations()
+            ->where('status', 'reserved')
+            ->sum('quantity');
+    }
+
+    public function getReservedQuantityAttribute(): float
+    {
+        return $this->reservedQuantity();
+    }
+
+    public function getAvailableStockAttribute(): float
+    {
+        return max(0, (float) $this->current_stock - $this->reserved_quantity);
+    }
+
     public function getCurrentStockAttribute(): int
     {
         return $this->stockRecord?->quantity ?? 0;

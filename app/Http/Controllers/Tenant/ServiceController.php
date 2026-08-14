@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Models\Service;
 use App\Services\ServiceService;
 use Illuminate\Http\Request;
 
@@ -23,6 +24,25 @@ class ServiceController extends Controller
     public function uploadImage(Request $request, $id) { return $this->service->uploadImage($request, $id); }
     public function searchCustomers(Request $request) { return $this->service->searchCustomers($request); }
     public function vehiclesByCustomer($customer) { return $this->service->vehiclesByCustomer($customer); }
+
+    public function printNextServiceSticker(Service $service)
+    {
+        $service->load(['customer', 'vehicle.vehicleBrand', 'vehicle.vehicleType', 'repairCategory', 'jobcardDetail']);
+
+        $companyName = config('app.name');
+        $nextServiceDate = $service->jobcardDetail?->next_service_date;
+        $nextServiceKm = $service->jobcardDetail?->next_service_km;
+
+        if (!$nextServiceDate || !$nextServiceKm) {
+            $calculated = app(\App\Services\JobcardService::class)->calculateNextService($service);
+            $nextServiceDate = $nextServiceDate ?? $calculated['next_service_date'] ?? null;
+            $nextServiceKm = $nextServiceKm ?? $calculated['next_service_km'] ?? null;
+        }
+
+        return view('services.next-service-sticker', compact(
+            'service', 'companyName', 'nextServiceDate', 'nextServiceKm'
+        ));
+    }
 
     public function history(Request $request)
     {

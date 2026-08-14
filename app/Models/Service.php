@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['customer_id', 'vehicle_id', 'repair_category_id', 'title', 'description', 'service_date', 'charge', 'estimated_hours', 'started_at', 'completed_at', 'done_status', 'workflow_status', 'checked_in_at', 'qc_passed_at', 'mot_status', 'is_quotation', 'is_approved', 'created_by', 'branch_id', 'job_no', 'assign_to', 'inspected_at', 'approved_at', 'invoiced_at', 'paid_at', 'released_at', 'cancelled_at', 'cancel_reason'])]
+#[Fillable(['customer_id', 'vehicle_id', 'repair_category_id', 'title', 'description', 'service_date', 'charge', 'actual_cost', 'estimated_hours', 'started_at', 'completed_at', 'done_status', 'workflow_status', 'checked_in_at', 'qc_passed_at', 'mot_status', 'is_quotation', 'is_approved', 'created_by', 'branch_id', 'job_no', 'assign_to', 'service_advisor_id', 'inspected_at', 'approved_at', 'invoiced_at', 'paid_at', 'released_at', 'cancelled_at', 'cancel_reason'])]
 class Service extends Model
 {
     use HasFactory, SoftDeletes, HasBranchScope;
@@ -22,6 +22,7 @@ class Service extends Model
         return [
             'service_date' => 'datetime',
             'charge' => 'decimal:2',
+            'actual_cost' => 'decimal:2',
             'estimated_hours' => 'decimal:1',
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
@@ -59,6 +60,11 @@ class Service extends Model
         return $this->hasOne(JobcardDetail::class);
     }
 
+    public function serviceAdvisor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'service_advisor_id');
+    }
+
     public function serviceObservationPoints(): HasMany
     {
         return $this->hasMany(ServiceObservationPoint::class);
@@ -92,6 +98,16 @@ class Service extends Model
     public function invoice(): HasOne
     {
         return $this->hasOne(Invoice::class);
+    }
+
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(PartReservation::class);
+    }
+
+    public function getCostVarianceAttribute(): float
+    {
+        return (float) ($this->actual_cost ?? 0) - (float) ($this->charge ?? 0);
     }
 
     public function getStatusLabelAttribute(): string

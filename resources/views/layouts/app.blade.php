@@ -455,14 +455,14 @@
             @endcan
 
             {{-- 2. OPERATIONS --}}
-            @canany(['company.view','branch.view','booking.view','service.view','customer.view','vehicle.view','gate-pass.view'])
+            @canany(['company.view','branch.view','booking.view','service.view','customer.view','vehicle.view','gate-pass.view','fleet-contract.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuOperations"
-                    aria-expanded="{{ request()->is('companies*','branches*','holidays*','washbays*','business-hours*') || request()->routeIs('bookings.*','services.*','jobcards.*','customers.*','vehicles.*','gate-passes.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->is('companies*','branches*','holidays*','washbays*','business-hours*') || request()->routeIs('bookings.*','services.*','jobcards.*','customers.*','vehicles.*','gate-passes.*','fleet-contracts.*') ? 'true' : 'false' }}">
                     <i class="fas fa-cogs"></i> {{ __('Operations') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->is('companies*','branches*','holidays*','washbays*','business-hours*') || request()->routeIs('bookings.*','services.*','jobcards.*','customers.*','vehicles.*','gate-passes.*') ? 'show' : '' }}" id="menuOperations">
+                <ul class="collapse submenu {{ request()->is('companies*','branches*','holidays*','washbays*','business-hours*') || request()->routeIs('bookings.*','services.*','jobcards.*','customers.*','vehicles.*','gate-passes.*','fleet-contracts.*') ? 'show' : '' }}" id="menuOperations">
                     @can('company.view')<li><a href="{{ route('companies.index') }}" class="nav-link {{ request()->is('companies*') ? 'active' : '' }}"><i class="fas fa-city me-1"></i> Companies</a></li>@endcan
                     @can('branch.view')<li><a href="{{ route('branches.index') }}" class="nav-link {{ request()->is('branches*') ? 'active' : '' }}"><i class="fas fa-store-alt me-1"></i> Branches</a></li>@endcan
                     @can('holiday.view')<li><a href="{{ route('holidays.index') }}" class="nav-link {{ request()->is('holidays*') ? 'active' : '' }}"><i class="fas fa-calendar-times me-1"></i> Holidays</a></li>@endcan
@@ -475,6 +475,7 @@
                     @can('vehicle.view')<li><a href="{{ route('vehicles.index') }}" class="nav-link {{ request()->routeIs('vehicles.*') ? 'active' : '' }}"><i class="fas fa-car me-1"></i> Vehicles</a></li>@endcan
                     @can('customer.view')<li><a href="{{ route('customers.index') }}" class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}"><i class="fas fa-users me-1"></i> Customers</a></li>@endcan
                     @can('customer-group.view')<li><a href="{{ route('customer-groups.index') }}" class="nav-link {{ request()->is('customer-groups*') ? 'active' : '' }}"><i class="fas fa-layer-group me-1"></i> Customer Groups</a></li>@endcan
+                    @can('fleet-contract.view')<li><a href="{{ route('fleet-contracts.index') }}" class="nav-link {{ request()->routeIs('fleet-contracts.*') ? 'active' : '' }}"><i class="fas fa-file-signature me-1"></i> Kontrak Fleet</a></li>@endcan
                 </ul>
             </li>
             @endcanany
@@ -570,19 +571,20 @@
             @endcanany
 
             {{-- 8. WARRANTY --}}
-            @can('warranty.view')
+            @canany(['warranty.view','insurance-claim.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuWarranty"
-                    aria-expanded="{{ request()->routeIs('warranty-claims.*','recalls.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('warranty-claims.*','recalls.*','insurance-claims.*') ? 'true' : 'false' }}">
                     <i class="fas fa-shield-alt"></i> {{ __('Warranty') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('warranty-claims.*','recalls.*') ? 'show' : '' }}" id="menuWarranty">
-                    <li><a href="{{ route('warranty-claims.index') }}" class="nav-link {{ request()->routeIs('warranty-claims.*') ? 'active' : '' }}"><i class="fas fa-shield-alt me-1"></i> Warranty Claims</a></li>
+                <ul class="collapse submenu {{ request()->routeIs('warranty-claims.*','recalls.*','insurance-claims.*') ? 'show' : '' }}" id="menuWarranty">
+                    @can('warranty.view')<li><a href="{{ route('warranty-claims.index') }}" class="nav-link {{ request()->routeIs('warranty-claims.*') ? 'active' : '' }}"><i class="fas fa-shield-alt me-1"></i> Warranty Claims</a></li>@endcan
                     <li><a href="{{ route('recalls.index') }}" class="nav-link {{ request()->routeIs('recalls.*') ? 'active' : '' }}"><i class="fas fa-exclamation-triangle me-1"></i> Recalls</a></li>
+                    @can('insurance-claim.view')<li><a href="{{ route('insurance-claims.index') }}" class="nav-link {{ request()->routeIs('insurance-claims.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar me-1"></i> Klaim Asuransi</a></li>@endcan
                 </ul>
             </li>
-            @endcan
+            @endcanany
 
             {{-- 9. FINANCE & ACCOUNTING --}}
             @canany(['income.view','expense.view','petty-cash.view','finance-coa.view','finance-journal.view'])

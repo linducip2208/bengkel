@@ -32,6 +32,9 @@
         <a href="{{ route('reports.service-pdf', $service) }}" class="btn btn-outline-danger btn-sm">
             <i class="fas fa-file-pdf me-1"></i> Laporan
         </a>
+        <a href="{{ route('services.sticker', $service) }}" class="btn btn-outline-primary btn-sm" target="_blank">
+            <i class="fas fa-sticky-note me-1"></i> Stiker
+        </a>
         <a href="{{ route('services.index') }}" class="btn btn-outline-secondary btn-sm">
             <i class="fas fa-arrow-left me-1"></i> Kembali
         </a>
@@ -45,6 +48,7 @@
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-photos"><i class="fas fa-images me-1"></i>Foto</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-checkout"><i class="fas fa-clipboard-check me-1"></i>Checkout</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-invoice"><i class="fas fa-file-invoice me-1"></i>Invoice</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-reservations"><i class="fas fa-boxes me-1"></i>Reservasi Parts</button></li>
 </ul>
 
 <div class="tab-content">
@@ -62,6 +66,7 @@
                         - {{ $service->vehicle?->vehicleBrand?->vehicle_brand ?? '' }} {{ $service->vehicle?->model_name ?? '' }}
                     </td></tr>
                     <tr><td class="text-muted">Kategori</td><td>{{ $service->repairCategory?->repair_category_name ?? '-' }}</td></tr>
+                    <tr><td class="text-muted">Service Advisor</td><td>{{ $service->serviceAdvisor?->name ?? '-' }}</td></tr>
                     <tr><td class="text-muted">Judul</td><td>{{ $service->title }}</td></tr>
                     <tr><td class="text-muted">Tanggal</td><td>{{ $service->service_date->format('d M Y H:i') }}</td></tr>
                     <tr><td class="text-muted">Status</td><td>
@@ -87,6 +92,58 @@
                         @endforeach
                     </td></tr>
                 </table>
+
+                <h6 class="border-bottom pb-2 mt-3"><i class="fas fa-stopwatch me-2"></i>Timer Kerja Teknisi</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Teknisi</th>
+                                <th>Mulai</th>
+                                <th>Selesai</th>
+                                <th class="text-center">Durasi</th>
+                                <th class="text-end">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($service->serviceTechnicians as $st)
+                            <tr>
+                                <td>{{ $st->user?->name ?? '-' }}</td>
+                                <td>{{ $st->started_at?->format('d/m/Y H:i') ?? '-' }}</td>
+                                <td>{{ $st->finished_at?->format('d/m/Y H:i') ?? '-' }}</td>
+                                <td class="text-center">
+                                    @if($st->duration_minutes !== null)
+                                        @if($st->finished_at)
+                                            <span class="badge bg-success">{{ $st->duration_minutes }} mnt</span>
+                                        @else
+                                            <span class="badge bg-warning text-dark">{{ $st->duration_minutes }} mnt (berjalan)</span>
+                                        @endif
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td class="text-end">
+                                    @if(!$st->started_at)
+                                        <form action="{{ route('service-technicians.start', $st) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button class="btn btn-sm btn-outline-success"><i class="fas fa-play me-1"></i> Mulai</button>
+                                        </form>
+                                    @elseif(!$st->finished_at)
+                                        <form action="{{ route('service-technicians.finish', $st) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button class="btn btn-sm btn-outline-danger"><i class="fas fa-stop me-1"></i> Selesai</button>
+                                        </form>
+                                    @else
+                                        <span class="text-muted small">Selesai</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="5" class="text-center text-muted py-3">Belum ada teknisi ditugaskan.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
 
                 @if($service->description)
                 <h6 class="border-bottom pb-2 mt-3">Deskripsi</h6>
@@ -378,6 +435,104 @@
                     <p class="text-muted">Belum ada invoice untuk servis ini.</p>
                 </div>
                 @endif
+            </div>
+        </div>
+    </div>
+    {{-- Tab 7: Reservasi Parts --}}
+    <div class="tab-pane fade" id="tab-reservations">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-boxes me-2"></i>Reservasi Sparepart</h6>
+
+                <form action="{{ route('services.reservations.store', $service) }}" method="POST" class="row g-2 align-items-end mb-4">
+                    @csrf
+                    <div class="col-md-4">
+                        <label class="form-label">Sparepart</label>
+                        <select name="product_id" class="form-select form-select-sm" required>
+                            <option value="">-- Pilih Sparepart --</option>
+                            @foreach($products as $p)
+                            @php $avail = $p->current_stock - ($reservedMap[$p->id] ?? 0); @endphp
+                            <option value="{{ $p->id }}">{{ $p->name }} (tersedia: {{ $avail }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Qty</label>
+                        <input type="number" name="quantity" step="0.01" min="0.01" class="form-control form-control-sm" value="{{ old('quantity') }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Catatan</label>
+                        <input type="text" name="notes" class="form-control form-control-sm" value="{{ old('notes') }}" placeholder="Opsional...">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-sm btn-danger w-100">
+                            <i class="fas fa-lock me-1"></i> Reserve
+                        </button>
+                    </div>
+                </form>
+
+                @if($errors->any())
+                <div class="alert alert-danger py-2">
+                    <ul class="mb-0">
+                        @foreach($errors->all() as $e)
+                            <li>{{ $e }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sparepart</th>
+                                <th class="text-center">Qty</th>
+                                <th>Direservasi Oleh</th>
+                                <th>Status</th>
+                                <th>Catatan</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($reservations as $r)
+                            <tr>
+                                <td>
+                                    <small class="text-muted">{{ $r->product?->product_no ?? '-' }}</small><br>
+                                    <strong>{{ $r->product?->name ?? '-' }}</strong>
+                                </td>
+                                <td class="text-center">{{ $r->quantity }}</td>
+                                <td>{{ $r->reserver?->name ?? '-' }}</td>
+                                <td>
+                                    @if($r->status === 'reserved')
+                                        <span class="badge bg-warning text-dark">Reserved</span>
+                                    @elseif($r->status === 'consumed')
+                                        <span class="badge bg-success">Consumed</span>
+                                    @else
+                                        <span class="badge bg-secondary">Released</span>
+                                    @endif
+                                </td>
+                                <td><small class="text-muted">{{ $r->notes ?: '-' }}</small></td>
+                                <td class="text-center">
+                                    @if($r->status === 'reserved')
+                                    <form action="{{ route('services.reservations.consume', $r) }}" method="POST" class="d-inline" onsubmit="return confirm('Tandai parts ini dipakai dan kurangi stok?')">
+                                        @csrf
+                                        <button class="btn btn-sm btn-success" title="Pakai / Konsumsi"><i class="fas fa-check"></i></button>
+                                    </form>
+                                    <form action="{{ route('services.reservations.release', $r) }}" method="POST" class="d-inline" onsubmit="return confirm('Lepas reservasi ini?')">
+                                        @csrf
+                                        <button class="btn btn-sm btn-outline-secondary" title="Lepas"><i class="fas fa-undo"></i></button>
+                                    </form>
+                                    @else
+                                    <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="6" class="text-center text-muted py-3">Belum ada reservasi sparepart.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

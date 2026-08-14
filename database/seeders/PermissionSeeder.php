@@ -40,6 +40,8 @@ class PermissionSeeder extends Seeder
         'blog'            => ['view','create','edit','delete'],
         'campaign'        => ['view','send'],
         'warranty'        => ['view','create','edit','delete'],
+        'insurance-claim' => ['view','create','edit','delete'],
+        'fleet-contract'  => ['view','create','edit','delete'],
         'subcontractor'   => ['view','create','edit','delete'],
         'commission'      => ['view','edit','report'],
         'report'          => ['view','export'],
@@ -126,7 +128,22 @@ class PermissionSeeder extends Seeder
             'subcontractor.view',
         ]);
 
-        $this->command->info('  Created 5 roles: super_admin, admin, manager, kasir, mekanik.');
+        // service_advisor: front-office + booking + service monitoring (no create/delete)
+        $serviceAdvisor = Role::firstOrCreate(['name' => 'service_advisor', 'guard_name' => 'web']);
+        $serviceAdvisor->syncPermissions([
+            'dashboard.view',
+            'service.view','service.edit','service.complete','service.checkout',
+            'service-package.view',
+            'jobcard.view','jobcard.print',
+            'customer.view','customer.create',
+            'vehicle.view','vehicle.create',
+            'booking.view','booking.create',
+            'gate-pass.view','gate-pass.create',
+            'reminder.view','reminder.create',
+            'report.view',
+        ]);
+
+        $this->command->info('  Created 6 roles: super_admin, admin, manager, kasir, mekanik, service_advisor.');
 
         // Assign roles — syncRoles ensures only the intended role is active
         $adminUser = \App\Models\User::firstOrCreate(['email' => 'admin@bengkel.test'], ['name' => 'Administrator', 'password' => bcrypt('password'), 'is_active' => true]);
@@ -140,6 +157,7 @@ class PermissionSeeder extends Seeder
         \App\Models\User::firstOrCreate(['email' => 'manager@bengkel.test'], ['name' => 'Manager Cabang', 'password' => bcrypt('password'), 'is_active' => true])->syncRoles('manager');
         \App\Models\User::firstOrCreate(['email' => 'kasir@bengkel.test'], ['name' => 'Kasir Counter', 'password' => bcrypt('password'), 'is_active' => true])->syncRoles('kasir');
         \App\Models\User::firstOrCreate(['email' => 'kasir2@bengkel.test'], ['name' => 'Kasir 2', 'password' => bcrypt('password'), 'is_active' => true])->syncRoles('kasir');
+        \App\Models\User::firstOrCreate(['email' => 'sa@bengkel.test'], ['name' => 'Service Advisor', 'password' => bcrypt('password'), 'is_active' => true])->syncRoles('service_advisor');
 
         $this->command->info('  Demo users ready: admin / manager / kasir / teknisi / sales @bengkel.test');
     }

@@ -20,6 +20,7 @@ class ServiceRequest extends FormRequest
             'done_status' => 'nullable|integer|in:0,1,2',
             'assign_to' => 'nullable|array',
             'assign_to.*' => 'exists:users,id',
+            'service_advisor_id' => 'nullable|exists:users,id',
             'products' => 'nullable|array',
             'products.*.product_id' => 'required_with:products|exists:products,id',
             'products.*.product_name' => 'required|string|max:255',

@@ -34,6 +34,7 @@ use App\Http\Controllers\Tenant\NoteController;
 use App\Http\Controllers\Tenant\NotificationTemplateController;
 use App\Http\Controllers\Tenant\ObservationPointController;
 use App\Http\Controllers\Tenant\ObservationTypeController;
+use App\Http\Controllers\Tenant\PartReservationController;
 use App\Http\Controllers\Tenant\PaymentController;
 use App\Http\Controllers\Tenant\PaymentMethodController;
 use App\Http\Controllers\Tenant\PosController;
@@ -240,6 +241,12 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::get('/services/customers/search', [ServiceController::class, 'searchCustomers'])->name('services.customers.search');
     Route::get('/services/vehicles-by-customer/{customer}', [ServiceController::class, 'vehiclesByCustomer'])->name('services.vehicles-by-customer');
     Route::get('/services/history', [ServiceController::class, 'history'])->name('services.history');
+    Route::get('/services/{service}/sticker', [ServiceController::class, 'printNextServiceSticker'])->name('services.sticker');
+
+    // --- Parts Reservation ---
+    Route::post('/services/{service}/reservations', [PartReservationController::class, 'store'])->name('services.reservations.store');
+    Route::post('/services/reservations/{reservation}/release', [PartReservationController::class, 'release'])->name('services.reservations.release');
+    Route::post('/services/reservations/{reservation}/consume', [PartReservationController::class, 'consume'])->name('services.reservations.consume');
 
     // --- Vehicles custom routes (before resource) ---
     Route::post('/vehicles/{vehicle}/upload-image', [VehicleController::class, 'uploadImage'])->name('vehicles.upload-image');
@@ -401,6 +408,10 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::put('/commissions/{serviceTechnician}/mark-paid', [CommissionController::class, 'markPaid'])->name('commissions.markPaid');
     Route::post('/commissions/mark-paid-batch', [CommissionController::class, 'markPaidBatch'])->name('commissions.markPaidBatch');
 
+    // --- HRM: Timer kerja teknisi (start/finish per job) ---
+    Route::post('/service-technicians/{serviceTechnician}/start', [CommissionController::class, 'startJob'])->name('service-technicians.start');
+    Route::post('/service-technicians/{serviceTechnician}/finish', [CommissionController::class, 'finishJob'])->name('service-technicians.finish');
+
     // --- HRM: Attendance & Salary ---
     Route::get('/hrm/attendance', [\App\Http\Controllers\Tenant\HrmController::class, 'attendanceIndex'])->name('hrm.attendance');
     Route::post('/hrm/clock-in', [\App\Http\Controllers\Tenant\HrmController::class, 'clockIn'])->name('hrm.clock-in');
@@ -447,6 +458,21 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::get('/warranty-claims/{warrantyClaim}/edit', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'edit'])->name('warranty-claims.edit');
     Route::put('/warranty-claims/{warrantyClaim}', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'update'])->name('warranty-claims.update');
     Route::delete('/warranty-claims/{warrantyClaim}', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'destroy'])->name('warranty-claims.destroy');
+
+    // --- Insurance Claims (Klaim Asuransi) ---
+    Route::get('/insurance-claims', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'index'])->name('insurance-claims.index');
+    Route::get('/insurance-claims/create', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'create'])->name('insurance-claims.create');
+    Route::post('/insurance-claims', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'store'])->name('insurance-claims.store');
+    Route::get('/insurance-claims/{insuranceClaim}', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'show'])->name('insurance-claims.show');
+    Route::put('/insurance-claims/{insuranceClaim}', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'update'])->name('insurance-claims.update');
+    Route::post('/insurance-claims/{insuranceClaim}/approve', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'approve'])->name('insurance-claims.approve');
+    Route::post('/insurance-claims/{insuranceClaim}/reject', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'reject'])->name('insurance-claims.reject');
+    Route::post('/insurance-claims/{insuranceClaim}/mark-paid', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'markPaid'])->name('insurance-claims.mark-paid');
+    Route::delete('/insurance-claims/{insuranceClaim}', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'destroy'])->name('insurance-claims.destroy');
+
+    // --- Fleet Contracts (Kontrak Fleet) ---
+    Route::get('/fleet-contracts/due', [\App\Http\Controllers\Tenant\FleetContractController::class, 'dueVehicles'])->name('fleet-contracts.due');
+    Route::resource('fleet-contracts', \App\Http\Controllers\Tenant\FleetContractController::class);
 
     // --- Payment Gateway (generic adapter, configurable) ---
     Route::resource('payment-gateways', \App\Http\Controllers\Tenant\PaymentGatewayController::class)->except(['show'])->middleware('role:super_admin|admin');

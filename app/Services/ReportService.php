@@ -34,6 +34,8 @@ class ReportService
 
         $totalServices = $services->count();
         $totalRevenue = $services->sum('charge');
+        $totalActualCost = $services->sum('actual_cost');
+        $totalVariance = (float) $totalActualCost - (float) $totalRevenue;
         $avgValue = $totalServices > 0 ? $totalRevenue / $totalServices : 0;
 
         $byDate = $services->groupBy(fn($s) => \Carbon\Carbon::parse($s->service_date)->format('Y-m-d'))
@@ -54,6 +56,8 @@ class ReportService
             'services' => $services,
             'total_services' => $totalServices,
             'total_revenue' => $totalRevenue,
+            'total_actual_cost' => $totalActualCost,
+            'total_variance' => $totalVariance,
             'avg_value' => $avgValue,
             'by_date' => $byDate,
             'by_technician' => $byTechnician,

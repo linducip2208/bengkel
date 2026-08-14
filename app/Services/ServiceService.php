@@ -51,8 +51,9 @@ class ServiceService extends BaseService
     {
         $repairCategories = RepairCategory::orderBy('repair_category_name')->get();
         $technicians = User::role('mekanik')->get();
+        $serviceAdvisors = User::role(['service_advisor', 'mekanik'])->orderBy('name')->get();
 
-        return view('services.create', compact('repairCategories', 'technicians'));
+        return view('services.create', compact('repairCategories', 'technicians', 'serviceAdvisors'));
     }
 
     public function store(Request $request)
@@ -76,6 +77,7 @@ class ServiceService extends BaseService
             $validated['job_no'] = $this->generateJobNo();
             $validated['done_status'] = $validated['done_status'] ?? 1;
             $validated['created_by'] = auth()->id();
+            $validated['service_advisor_id'] = $validated['service_advisor_id'] ?? null;
             if (($validated['done_status'] ?? 0) >= 1) {
                 $validated['started_at'] = $validated['started_at'] ?? now();
             }
@@ -118,6 +120,7 @@ class ServiceService extends BaseService
             'repairCategory', 'technicians', 'jobcardDetail',
             'serviceObservationPoints.observationPoint.observationType',
             'images', 'checkoutResults.checkoutCategory', 'invoice',
+            'serviceAdvisor', 'serviceTechnicians.user',
         ])->findOrFail($id);
 
         $nextService = $service->jobcardDetail
@@ -144,7 +147,22 @@ class ServiceService extends BaseService
                 ];
             });
 
-        return view('services.show', compact('service', 'nextService', 'partsUsed'));
+        $reservations = $service->reservations()
+            ->with('product', 'reserver')
+            ->latest()
+            ->get();
+
+        $products = Product::with(['productType', 'unit', 'stockRecord'])
+            ->orderBy('name')
+            ->get();
+
+        $reservedMap = \App\Models\PartReservation::whereIn('product_id', $products->pluck('id'))
+            ->where('status', 'reserved')
+            ->groupBy('product_id')
+            ->selectRaw('product_id, SUM(quantity) as total')
+            ->pluck('total', 'product_id');
+
+        return view('services.show', compact('service', 'nextService', 'partsUsed', 'reservations', 'products', 'reservedMap'));
     }
 
     public function edit($id)
@@ -152,10 +170,11 @@ class ServiceService extends BaseService
         $service = Service::with(['technicians'])->findOrFail($id);
         $repairCategories = RepairCategory::orderBy('repair_category_name')->get();
         $technicians = User::role('mekanik')->get();
+        $serviceAdvisors = User::role(['service_advisor', 'mekanik'])->orderBy('name')->get();
         $selectedCustomer = $service->customer;
         $selectedVehicle = $service->vehicle;
 
-        return view('services.edit', compact('service', 'repairCategories', 'technicians', 'selectedCustomer', 'selectedVehicle'));
+        return view('services.edit', compact('service', 'repairCategories', 'technicians', 'serviceAdvisors', 'selectedCustomer', 'selectedVehicle'));
     }
 
     public function update(Request $request, $id)
@@ -166,6 +185,7 @@ class ServiceService extends BaseService
         DB::transaction(function () use ($service, $validated) {
             $technicianIds = $validated['assign_to'] ?? [];
             unset($validated['assign_to']);
+            $validated['service_advisor_id'] = $validated['service_advisor_id'] ?? null;
 
             $service->update($validated);
 
@@ -266,6 +286,8 @@ class ServiceService extends BaseService
                 'invoice_type' => 'service',
                 'created_by' => auth()->id(),
             ]);
+
+            $service->update(['actual_cost' => $invoice->grand_total]);
 
             $invoice->items()->create([
                 'description' => 'Servis: ' . ($service->repairCategory?->repair_category_name ?? 'Perbaikan'),

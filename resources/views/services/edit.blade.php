@@ -89,6 +89,19 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label">Service Advisor</label>
+                        <select name="service_advisor_id" class="form-select @error('service_advisor_id') is-invalid @enderror">
+                            <option value="">-- Pilih Service Advisor --</option>
+                            @foreach($serviceAdvisors as $sa)
+                                <option value="{{ $sa->id }}" {{ old('service_advisor_id', $service->service_advisor_id) == $sa->id ? 'selected' : '' }}>
+                                    {{ $sa->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('service_advisor_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label">Teknisi</label>
                         <div class="row">
                             @foreach($technicians as $tech)

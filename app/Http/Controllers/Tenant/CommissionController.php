@@ -52,6 +52,27 @@ class CommissionController extends Controller
         return view('commissions.index', compact('rows', 'summary', 'technicians'));
     }
 
+    public function startJob(ServiceTechnician $serviceTechnician)
+    {
+        if ($serviceTechnician->started_at) {
+            return back()->with('error', 'Pekerjaan teknisi ini sudah dimulai.');
+        }
+        $serviceTechnician->update(['started_at' => now()]);
+        return back()->with('success', 'Timer teknisi dimulai.');
+    }
+
+    public function finishJob(ServiceTechnician $serviceTechnician)
+    {
+        if (!$serviceTechnician->started_at) {
+            return back()->with('error', 'Pekerjaan belum dimulai.');
+        }
+        if ($serviceTechnician->finished_at) {
+            return back()->with('error', 'Pekerjaan teknisi ini sudah selesai.');
+        }
+        $serviceTechnician->update(['finished_at' => now()]);
+        return back()->with('success', 'Timer teknisi dihentikan.');
+    }
+
     public function markPaid(Request $request, ServiceTechnician $serviceTechnician)
     {
         if ($serviceTechnician->paid_at) {
