@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Branch;
 use App\Models\RepairCategory;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class BookingController extends Controller
@@ -14,7 +15,8 @@ class BookingController extends Controller
     {
         $branches = Branch::where('is_active', true)->orderBy('name')->get();
         $categories = RepairCategory::where('is_active', true)->orderBy('repair_category_name')->get();
-        return view('public.booking-form', compact('branches', 'categories'));
+        $technicians = User::role('mekanik')->where('is_active', true)->orderBy('name')->get();
+        return view('public.booking-form', compact('branches', 'categories', 'technicians'));
     }
 
     public function publicStore(Request $request)
@@ -28,9 +30,16 @@ class BookingController extends Controller
             'vehicle_brand' => 'nullable|string|max:50',
             'vehicle_model' => 'nullable|string|max:100',
             'repair_category_id' => 'nullable|exists:repair_categories,id',
+            'technician_id' => 'nullable|exists:users,id',
             'booking_at' => 'required|date|after:now',
             'complaint' => 'nullable|string|max:1000',
         ]);
+
+        $validated['technician_id'] = $validated['technician_id'] ?? null;
+
+        if ($validated['technician_id'] && Booking::technicianIsBusy($validated['technician_id'], $validated['booking_at'])) {
+            return back()->withInput()->with('warning', 'Teknisi pilihan sudah memiliki booking/service pada tanggal tersebut. Silakan pilih teknisi lain atau ubah jadwal.');
+        }
 
         Booking::withoutGlobalScopes()->create($validated + ['status' => 'pending']);
 
@@ -40,8 +49,9 @@ class BookingController extends Controller
     /** Admin */
     public function adminIndex(Request $request)
     {
-        $query = Booking::with('customer', 'service');
+        $query = Booking::with('customer', 'service', 'technician');
         if ($request->filled('status')) $query->where('status', $request->status);
+        if ($request->filled('technician_id')) $query->where('technician_id', $request->technician_id);
         if ($request->filled('date_from')) $query->whereDate('booking_at', '>=', $request->date_from);
         if ($request->filled('date_to')) $query->whereDate('booking_at', '<=', $request->date_to);
         $bookings = $query->latest('booking_at')->paginate(20)->withQueryString();
@@ -52,7 +62,9 @@ class BookingController extends Controller
             'this_week' => Booking::whereBetween('booking_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
         ];
 
-        return view('bookings.index', compact('bookings', 'summary'));
+        $technicians = User::role(['mekanik', 'service_advisor'])->orderBy('name')->get();
+
+        return view('bookings.index', compact('bookings', 'summary', 'technicians'));
     }
 
     public function adminUpdate(Request $request, Booking $booking)
@@ -60,7 +72,14 @@ class BookingController extends Controller
         $validated = $request->validate([
             'status' => 'required|in:pending,confirmed,in_progress,done,cancelled',
             'admin_notes' => 'nullable|string',
+            'technician_id' => 'nullable|exists:users,id',
         ]);
+        $validated['technician_id'] = $validated['technician_id'] ?? null;
+
+        if ($validated['technician_id'] && Booking::technicianIsBusy($validated['technician_id'], $booking->booking_at, $booking->id)) {
+            return back()->with('warning', 'Teknisi sudah memiliki booking/service pada tanggal tersebut.');
+        }
+
         $booking->update($validated);
         return back()->with('success', 'Status booking diperbarui.');
     }
@@ -129,8 +148,8 @@ class BookingController extends Controller
     {
         $start = request('start', now()->startOfMonth()->toDateString());
         $end = request('end', now()->endOfMonth()->toDateString());
-        $bookings = Booking::whereBetween('booking_at', [$start, $end])->get()->map(fn($b) => [
-            'id' => $b->id, 'title' => ($b->name ?? $b->customer->name ?? 'Booking') . ' - ' . ($b->vehicle_plate ?? ''),
+        $bookings = Booking::with('technician')->whereBetween('booking_at', [$start, $end])->get()->map(fn($b) => [
+            'id' => $b->id, 'title' => ($b->technician?->name ? $b->technician->name.' - ' : '').($b->name ?? $b->customer->name ?? 'Booking').' - '.($b->vehicle_plate ?? ''),
             'start' => $b->booking_at->format('Y-m-d\TH:i'), 'backgroundColor' => $b->status === 'confirmed' ? '#10b981' : '#f59e0b', 'url' => route('bookings.index'),
         ]);
         $services = Service::with('customer')->whereBetween('service_date', [$start, $end])->get()->map(fn($s) => [

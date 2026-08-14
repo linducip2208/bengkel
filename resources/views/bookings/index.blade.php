@@ -21,12 +21,16 @@
             <option value="done" {{ request('status') === 'done' ? 'selected' : '' }}>Selesai</option>
             <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Batal</option>
         </select></div>
+        <div class="col-md-2"><select name="technician_id" class="form-select">
+            <option value="">Semua Teknisi</option>
+            @foreach($technicians as $t)<option value="{{ $t->id }}" {{ request('technician_id') == $t->id ? 'selected' : '' }}>{{ $t->name }}</option>@endforeach
+        </select></div>
         <div class="col-md-2"><input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control"></div>
         <div class="col-md-2"><input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control"></div>
         <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel"></i> Filter</button></div>
     </form>
     <table class="table table-hover align-middle">
-        <thead class="table-light"><tr><th>Tanggal</th><th>Customer</th><th>Kontak</th><th>Kendaraan</th><th>Keluhan</th><th>Status</th><th>Aksi</th></tr></thead>
+        <thead class="table-light"><tr><th>Tanggal</th><th>Customer</th><th>Kontak</th><th>Kendaraan</th><th>Keluhan</th><th>Teknisi</th><th>Status</th><th>Aksi</th></tr></thead>
         <tbody>
             @forelse($bookings as $b)
             <tr>
@@ -35,9 +39,14 @@
                 <td><a href="https://wa.me/{{ preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $b->phone)) }}" target="_blank">{{ $b->phone }}</a><br><small class="text-muted">{{ $b->email }}</small></td>
                 <td>{{ $b->vehicle_plate }}<br><small class="text-muted">{{ $b->vehicle_brand }} {{ $b->vehicle_model }}</small></td>
                 <td><small>{{ Str::limit($b->complaint, 80) }}</small></td>
+                <td>{{ $b->technician?->name ?? '<span class="text-muted">—</span>' }}</td>
                 <td>
                     <form action="{{ route('bookings.update', $b) }}" method="POST" class="d-inline">
                         @csrf @method('PUT')
+                        <select name="technician_id" class="form-select form-select-sm mb-1" onchange="this.form.submit()" style="width: 130px;">
+                            <option value="">— Teknisi —</option>
+                            @foreach($technicians as $t)<option value="{{ $t->id }}" {{ $b->technician_id == $t->id ? 'selected' : '' }}>{{ $t->name }}</option>@endforeach
+                        </select>
                         <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" style="width: 130px;">
                             <option value="pending" {{ $b->status === 'pending' ? 'selected' : '' }}>Pending</option>
                             <option value="confirmed" {{ $b->status === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
@@ -62,7 +71,7 @@
                     </form>
                 </td>
             </tr>
-            @empty<tr><td colspan="7" class="text-center text-muted py-3">Belum ada booking.</td></tr>@endforelse
+            @empty<tr><td colspan="8" class="text-center text-muted py-3">Belum ada booking.</td></tr>@endforelse
         </tbody>
     </table>
     {{ $bookings->links() }}

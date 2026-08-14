@@ -242,6 +242,7 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::get('/services/vehicles-by-customer/{customer}', [ServiceController::class, 'vehiclesByCustomer'])->name('services.vehicles-by-customer');
     Route::get('/services/history', [ServiceController::class, 'history'])->name('services.history');
     Route::get('/services/{service}/sticker', [ServiceController::class, 'printNextServiceSticker'])->name('services.sticker');
+    Route::get('/services/{service}/condition-report', [ServiceController::class, 'printConditionReport'])->name('services.condition-report');
 
     // --- Parts Reservation ---
     Route::post('/services/{service}/reservations', [PartReservationController::class, 'store'])->name('services.reservations.store');

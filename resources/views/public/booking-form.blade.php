@@ -26,6 +26,9 @@
             @if($errors->any())
                 <div class="alert alert-danger">{{ $errors->first() }}</div>
             @endif
+            @if(session('warning'))
+                <div class="alert alert-warning">{{ session('warning') }}</div>
+            @endif
             <form method="POST" action="{{ route('public.booking.store') }}">
                 @csrf
                 <div class="row g-3">
@@ -69,6 +72,13 @@
                         <select name="repair_category_id" class="form-select">
                             <option value="">— Pilih jenis service —</option>
                             @foreach($categories as $c)<option value="{{ $c->id }}" {{ old('repair_category_id') == $c->id ? 'selected' : '' }}>{{ $c->repair_category_name }}</option>@endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Teknisi Pilihan <small class="text-muted">(opsional)</small></label>
+                        <select name="technician_id" class="form-select">
+                            <option value="">— Otomatis / belum memilih —</option>
+                            @foreach($technicians as $t)<option value="{{ $t->id }}" {{ old('technician_id') == $t->id ? 'selected' : '' }}>{{ $t->name }}</option>@endforeach
                         </select>
                     </div>
                     <div class="col-12">

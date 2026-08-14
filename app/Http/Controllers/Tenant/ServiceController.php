@@ -44,6 +44,25 @@ class ServiceController extends Controller
         ));
     }
 
+    public function printConditionReport(Service $service)
+    {
+        $service->load([
+            'customer',
+            'vehicle.vehicleBrand',
+            'vehicle.vehicleType',
+            'serviceAdvisor',
+            'technicians',
+            'jobcardDetail',
+            'serviceObservationPoints.observationPoint.observationType',
+            'images',
+        ]);
+
+        return view('services.condition-report', [
+            'service' => $service,
+            'companyName' => config('app.name'),
+        ]);
+    }
+
     public function history(Request $request)
     {
         $services = \App\Models\Service::with(['customer', 'vehicle', 'repairCategory', 'technicians'])

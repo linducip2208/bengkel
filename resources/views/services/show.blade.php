@@ -35,6 +35,9 @@
         <a href="{{ route('services.sticker', $service) }}" class="btn btn-outline-primary btn-sm" target="_blank">
             <i class="fas fa-sticky-note me-1"></i> Stiker
         </a>
+        <a href="{{ route('services.condition-report', $service) }}" class="btn btn-outline-success btn-sm" target="_blank">
+            <i class="fas fa-clipboard-check me-1"></i> Kondisi
+        </a>
         <a href="{{ route('services.index') }}" class="btn btn-outline-secondary btn-sm">
             <i class="fas fa-arrow-left me-1"></i> Kembali
         </a>
