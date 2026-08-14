@@ -72,8 +72,11 @@ use App\Http\Controllers\Tenant\VehicleController;
 use App\Http\Controllers\Tenant\VehicleTypeController;
 use App\Http\Controllers\Tenant\WashbayController;
 use App\Http\Controllers\Tenant\BankAccountController;
+use App\Http\Controllers\Tenant\BankReconciliationController;
+use App\Http\Controllers\Tenant\BudgetController;
 use App\Http\Controllers\Tenant\InvoiceSchemeController;
 use App\Http\Controllers\Tenant\PrinterController;
+use App\Http\Controllers\Tenant\SupplierClaimController;
 
 // Auth routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -221,6 +224,8 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::resource('printers', PrinterController::class)->except(['show']);
     Route::resource('invoice-schemes', InvoiceSchemeController::class)->except(['show']);
     Route::resource('bank-accounts', BankAccountController::class)->except(['show']);
+    Route::resource('bank-reconciliations', BankReconciliationController::class)->only(['index', 'create', 'store', 'show']);
+    Route::resource('budgets', BudgetController::class)->except(['show']);
 
     // --- Jobcards (non-resource) ---
     Route::get('/jobcards', [JobcardController::class, 'index'])->name('jobcards.index');
@@ -495,6 +500,16 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::post('/insurance-claims/{insuranceClaim}/reject', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'reject'])->name('insurance-claims.reject');
     Route::post('/insurance-claims/{insuranceClaim}/mark-paid', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'markPaid'])->name('insurance-claims.mark-paid');
     Route::delete('/insurance-claims/{insuranceClaim}', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'destroy'])->name('insurance-claims.destroy');
+
+    // --- Supplier Claims (Klaim garansi ke supplier) ---
+    Route::get('/supplier-claims', [SupplierClaimController::class, 'index'])->name('supplier-claims.index');
+    Route::get('/supplier-claims/create', [SupplierClaimController::class, 'create'])->name('supplier-claims.create');
+    Route::post('/supplier-claims', [SupplierClaimController::class, 'store'])->name('supplier-claims.store');
+    Route::get('/supplier-claims/{supplierClaim}', [SupplierClaimController::class, 'show'])->name('supplier-claims.show');
+    Route::post('/supplier-claims/{supplierClaim}/approve', [SupplierClaimController::class, 'approve'])->name('supplier-claims.approve');
+    Route::post('/supplier-claims/{supplierClaim}/reject', [SupplierClaimController::class, 'reject'])->name('supplier-claims.reject');
+    Route::post('/supplier-claims/{supplierClaim}/mark-paid', [SupplierClaimController::class, 'markPaid'])->name('supplier-claims.mark-paid');
+    Route::delete('/supplier-claims/{supplierClaim}', [SupplierClaimController::class, 'destroy'])->name('supplier-claims.destroy');
 
     // --- Fleet Contracts (Kontrak Fleet) ---
     Route::get('/fleet-contracts/due', [\App\Http\Controllers\Tenant\FleetContractController::class, 'dueVehicles'])->name('fleet-contracts.due');

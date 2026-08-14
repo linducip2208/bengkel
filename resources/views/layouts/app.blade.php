@@ -575,14 +575,15 @@
             @canany(['warranty.view','insurance-claim.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuWarranty"
-                    aria-expanded="{{ request()->routeIs('warranty-claims.*','recalls.*','insurance-claims.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('warranty-claims.*','recalls.*','insurance-claims.*','supplier-claims.*') ? 'true' : 'false' }}">
                     <i class="fas fa-shield-alt"></i> {{ __('Warranty') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('warranty-claims.*','recalls.*','insurance-claims.*') ? 'show' : '' }}" id="menuWarranty">
+                <ul class="collapse submenu {{ request()->routeIs('warranty-claims.*','recalls.*','insurance-claims.*','supplier-claims.*') ? 'show' : '' }}" id="menuWarranty">
                     @can('warranty.view')<li><a href="{{ route('warranty-claims.index') }}" class="nav-link {{ request()->routeIs('warranty-claims.*') ? 'active' : '' }}"><i class="fas fa-shield-alt me-1"></i> Warranty Claims</a></li>@endcan
                     <li><a href="{{ route('recalls.index') }}" class="nav-link {{ request()->routeIs('recalls.*') ? 'active' : '' }}"><i class="fas fa-exclamation-triangle me-1"></i> Recalls</a></li>
                     @can('insurance-claim.view')<li><a href="{{ route('insurance-claims.index') }}" class="nav-link {{ request()->routeIs('insurance-claims.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar me-1"></i> Klaim Asuransi</a></li>@endcan
+                    <li><a href="{{ route('supplier-claims.index') }}" class="nav-link {{ request()->routeIs('supplier-claims.*') ? 'active' : '' }}"><i class="fas fa-hand-holding-usd me-1"></i> Klaim Supplier</a></li>
                 </ul>
             </li>
             @endcanany
@@ -591,17 +592,19 @@
             @canany(['income.view','expense.view','petty-cash.view','finance-coa.view','finance-journal.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuFinance"
-                    aria-expanded="{{ request()->routeIs('incomes.*','expenses.*','petty-cash.*','finance.*','bank-accounts.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('incomes.*','expenses.*','petty-cash.*','finance.*','bank-accounts.*','bank-reconciliations.*','budgets.*') ? 'true' : 'false' }}">
                     <i class="fas fa-chart-line"></i> {{ __('Finance & Accounting') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('incomes.*','expenses.*','petty-cash.*','finance.*','bank-accounts.*') ? 'show' : '' }}" id="menuFinance">
+                <ul class="collapse submenu {{ request()->routeIs('incomes.*','expenses.*','petty-cash.*','finance.*','bank-accounts.*','bank-reconciliations.*','budgets.*') ? 'show' : '' }}" id="menuFinance">
                     @can('income.view')<li><a href="{{ route('incomes.index') }}" class="nav-link {{ request()->routeIs('incomes.*') ? 'active' : '' }}"><i class="fas fa-arrow-up me-1 text-success"></i> Income</a></li>@endcan
                     @can('expense.view')<li><a href="{{ route('expenses.index') }}" class="nav-link {{ request()->routeIs('expenses.*') ? 'active' : '' }}"><i class="fas fa-arrow-down me-1 text-danger"></i> Expenses</a></li>@endcan
                     @can('petty-cash.view')<li><a href="{{ route('petty-cash.index') }}" class="nav-link {{ request()->routeIs('petty-cash.*') ? 'active' : '' }}"><i class="fas fa-wallet me-1"></i> Petty Cash</a></li>@endcan
                     @can('finance-coa.view')<li><a href="{{ route('finance.coa') }}" class="nav-link {{ request()->routeIs('finance.coa*') ? 'active' : '' }}"><i class="fas fa-list-ol me-1"></i> Chart of Accounts</a></li>@endcan
                     @can('finance-journal.view')<li><a href="{{ route('finance.journal') }}" class="nav-link {{ request()->routeIs('finance.journal*') ? 'active' : '' }}"><i class="fas fa-book me-1"></i> Journal Entries</a></li>@endcan
                     <li><a href="{{ route('bank-accounts.index') }}" class="nav-link {{ request()->routeIs('bank-accounts.*') ? 'active' : '' }}"><i class="fas fa-university me-1"></i> Bank Accounts</a></li>
+                    <li><a href="{{ route('bank-reconciliations.index') }}" class="nav-link {{ request()->routeIs('bank-reconciliations.*') ? 'active' : '' }}"><i class="fas fa-balance-scale me-1"></i> Bank Reconciliation</a></li>
+                    <li><a href="{{ route('budgets.index') }}" class="nav-link {{ request()->routeIs('budgets.*') ? 'active' : '' }}"><i class="fas fa-chart-pie me-1"></i> Budget</a></li>
                 </ul>
             </li>
             @endcanany
