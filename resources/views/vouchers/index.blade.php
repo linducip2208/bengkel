@@ -15,6 +15,7 @@
         </select></div>
         <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel"></i></button></div>
     </form>
+    <div class="table-responsive">
     <table class="table table-hover align-middle">
         <thead class="table-light"><tr><th>Code</th><th>Nama</th><th>Type</th><th class="text-end">Nilai</th><th>Min</th><th>Pakai</th><th>Berlaku</th><th>Status</th><th>Aksi</th></tr></thead>
         <tbody>
@@ -39,6 +40,7 @@
             @empty<tr><td colspan="9" class="text-center text-muted py-3">Belum ada voucher.</td></tr>@endforelse
         </tbody>
     </table>
+    </div>
     {{ $vouchers->links() }}
 </div></div>
 @endsection

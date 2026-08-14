@@ -13,6 +13,7 @@
         <div class="col-md-2"><input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control"></div>
         <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel"></i></button></div>
     </form>
+    <div class="table-responsive">
     <table class="table table-hover align-middle small">
         <thead class="table-light"><tr><th>Waktu</th><th>User</th><th>Event</th><th>Target</th><th>Deskripsi</th><th>IP</th></tr></thead>
         <tbody>
@@ -28,6 +29,7 @@
             @empty<tr><td colspan="6" class="text-center text-muted py-3">Belum ada activity log.</td></tr>@endforelse
         </tbody>
     </table>
+    </div>
     {{ $logs->links() }}
 </div></div>
 @endsection

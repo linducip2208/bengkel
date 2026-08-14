@@ -27,6 +27,7 @@
         <div class="col-md-2"><input type="number" name="year" class="form-control" value="{{ request('year', $year) }}"></div>
         <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel"></i></button></div>
     </form>
+    <div class="table-responsive">
     <table class="table table-hover align-middle">
         <thead class="table-light"><tr><th>Karyawan</th><th>Hadir/Absen</th><th class="text-end">Gaji Pokok</th><th class="text-end">Komisi</th><th class="text-end">Net</th><th>Status</th><th>Aksi</th></tr></thead>
         <tbody>
@@ -48,5 +49,6 @@
             @empty<tr><td colspan="7" class="text-center text-muted py-3">Belum ada gaji untuk periode ini. Klik <em>Generate</em> di atas.</td></tr>@endforelse
         </tbody>
     </table>
+    </div>
 </div></div>
 @endsection

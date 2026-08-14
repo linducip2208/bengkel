@@ -16,6 +16,7 @@
         </select></div>
         <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel"></i></button></div>
     </form>
+    <div class="table-responsive">
     <table class="table table-hover align-middle">
         <thead class="table-light"><tr><th>Tgl Klaim</th><th>Customer</th><th>Produk</th><th>Invoice</th><th>Keluhan</th><th>Status</th><th>Aksi</th></tr></thead>
         <tbody>
@@ -45,6 +46,7 @@
             @empty<tr><td colspan="7" class="text-center text-muted py-3">Belum ada klaim.</td></tr>@endforelse
         </tbody>
     </table>
+    </div>
     {{ $claims->links() }}
 </div></div>
 @endsection

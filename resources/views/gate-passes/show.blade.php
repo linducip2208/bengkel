@@ -22,12 +22,14 @@
         <div class="card mb-3">
             <div class="card-header"><strong>Vehicle & Customer</strong></div>
             <div class="card-body">
+                <div class="table-responsive">
                 <table class="table table-sm mb-0">
                     <tr><th style="width:150px">License Plate</th><td>{{ $gatePass->vehicle->number_plate ?? '-' }}</td></tr>
                     <tr><th>Model</th><td>{{ $gatePass->vehicle->model_name ?? '-' }} ({{ $gatePass->vehicle->model_year ?? '-' }})</td></tr>
                     <tr><th>Customer</th><td>{{ $gatePass->vehicle->customer->name ?? $gatePass->customer->name ?? '-' }}</td></tr>
                     <tr><th>Customer Phone</th><td>{{ $gatePass->vehicle->customer->phone ?? $gatePass->customer->phone ?? '-' }}</td></tr>
                 </table>
+                </div>
             </div>
         </div>
     </div>
@@ -35,6 +37,7 @@
         <div class="card mb-3">
             <div class="card-header"><strong>Gate Pass Details</strong></div>
             <div class="card-body">
+                <div class="table-responsive">
                 <table class="table table-sm mb-0">
                     <tr><th style="width:150px">Status</th><td>
                         @if($gatePass->status === 'in')
@@ -49,6 +52,7 @@
                     <tr><th>Driver</th><td>{{ $gatePass->driver_name ?: '-' }}</td></tr>
                     <tr><th>Driver Phone</th><td>{{ $gatePass->driver_phone ?: '-' }}</td></tr>
                 </table>
+                </div>
             </div>
         </div>
     </div>

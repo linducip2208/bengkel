@@ -33,11 +33,13 @@
                         <div>{{ $sale->sale_date->format('d M Y') }}</div>
                     </div>
                 </div>
+                <div class="table-responsive">
                 <table class="table table-borderless mb-0">
                     <tr><td width="150"><strong>No. Penjualan</strong></td><td>{{ $sale->sales_no }}</td></tr>
                     <tr><td><strong>Pelanggan</strong></td><td>{{ $sale->customer->name ?? 'Walk-in' }}</td></tr>
                     <tr><td><strong>Total</strong></td><td><strong>@money($sale->grand_total)</strong></td></tr>
                 </table>
+                </div>
                 @if ($sale->notes)
                     <hr>
                     <small class="text-muted">Catatan:</small>
@@ -49,6 +51,7 @@
         <div class="card">
             <div class="card-header"><strong>Item Sparepart</strong></div>
             <div class="card-body p-0">
+                <div class="table-responsive">
                 <table class="table table-sm mb-0">
                     <thead class="table-light">
                         <tr>
@@ -77,6 +80,7 @@
                         </tr>
                     </tfoot>
                 </table>
+                </div>
             </div>
         </div>
     </div>
@@ -86,6 +90,7 @@
             <div class="card-header"><strong>Invoice Terkait</strong></div>
             <div class="card-body p-0">
                 @if ($sale->invoices->count() > 0)
+                    <div class="table-responsive">
                     <table class="table table-sm mb-0">
                         <thead class="table-light"><tr><th>No. Invoice</th><th>Status</th><th class="text-end">Total</th></tr></thead>
                         <tbody>
@@ -102,6 +107,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
                 @else
                     <div class="p-3 text-muted text-center">Belum ada invoice.</div>
                 @endif

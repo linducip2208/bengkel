@@ -6,6 +6,7 @@
     <a href="{{ route('warehouses.transfers.create') }}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Transfer Baru</a>
 </div>
 <div class="card"><div class="card-body p-0">
+<div class="table-responsive">
 <table class="table table-hover mb-0"><thead><tr><th>No Transfer</th><th>Dari</th><th>Ke</th><th>Status</th><th>Tanggal</th></tr></thead><tbody>
     @forelse($transfers as $tf)
     <tr>
@@ -18,6 +19,6 @@
     @empty
     <tr><td colspan="5" class="text-center py-3 text-muted">Belum ada transfer.</td></tr>
     @endforelse
-</tbody></table></div></div>
+</tbody></table></div></div></div>
 {{ $transfers->links() }}
 @endsection

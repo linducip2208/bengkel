@@ -28,6 +28,7 @@
         <div class="card mb-3">
             <div class="card-header"><strong>Informasi Reminder</strong></div>
             <div class="card-body">
+                <div class="table-responsive">
                 <table class="table table-sm table-borderless mb-0">
                     <tr>
                         <td width="150" class="text-muted">Type</td>
@@ -52,6 +53,7 @@
                         </td>
                     </tr>
                 </table>
+                </div>
             </div>
         </div>
     </div>
@@ -59,6 +61,7 @@
         <div class="card mb-3">
             <div class="card-header"><strong>Customer & Vehicle</strong></div>
             <div class="card-body">
+                <div class="table-responsive">
                 <table class="table table-sm table-borderless mb-0">
                     <tr>
                         <td width="150" class="text-muted">Customer</td>
@@ -77,6 +80,7 @@
                         <td>{{ $reminder->vehicle->model_name ?? '-' }}</td>
                     </tr>
                 </table>
+                </div>
             </div>
         </div>
     </div>

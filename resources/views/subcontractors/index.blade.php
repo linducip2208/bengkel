@@ -6,6 +6,7 @@
     <a href="{{ route('subcontractors.create') }}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Tambah</a>
 </div>
 <div class="card"><div class="card-body p-0">
+    <div class="table-responsive">
     <table class="table table-hover mb-0">
         <thead class="table-light"><tr><th>Nama</th><th>Telepon</th><th>Spesialisasi</th><th class="text-end">Aksi</th></tr></thead>
         <tbody>
@@ -27,6 +28,7 @@
             @endforelse
         </tbody>
     </table>
+    </div>
 </div></div>
 <div class="d-flex justify-content-end mt-3">{{ $subcontractors->links() }}</div>
 @endsection

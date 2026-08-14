@@ -18,6 +18,7 @@
 @if(session('error'))<div class="alert alert-danger">{{ session('error') }}</div>@endif
 
 <div class="card"><div class="card-body">
+    <div class="table-responsive">
     <table class="table table-hover align-middle">
         <thead class="table-light"><tr><th>Nama</th><th>Format</th><th>Base URL</th><th>Mode</th><th>Default</th><th>Status</th><th>Aksi</th></tr></thead>
         <tbody>
@@ -40,6 +41,7 @@
             @empty<tr><td colspan="7" class="text-center text-muted py-4">Belum ada Payment Gateway. <a href="{{ route('payment-gateways.create') }}">Setup yang pertama</a>.</td></tr>@endforelse
         </tbody>
     </table>
+    </div>
 </div></div>
 
 <div class="card mt-3 bg-light"><div class="card-body small">

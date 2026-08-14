@@ -6,6 +6,7 @@
     <a href="{{ route('finance.journal.create') }}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Buat Jurnal</a>
 </div>
 <div class="card"><div class="card-body p-0">
+<div class="table-responsive">
 <table class="table table-hover mb-0"><thead><tr><th>No</th><th>Tanggal</th><th>Deskripsi</th><th class="text-end">Total Debit</th><th class="text-end">Total Kredit</th></tr></thead><tbody>
 @forelse($entries as $e)
 <tr>
@@ -15,6 +16,6 @@
 @empty
 <tr><td colspan="5" class="text-center py-3 text-muted">Belum ada jurnal.</td></tr>
 @endforelse
-</tbody></table></div></div>
+</tbody></table></div></div></div>
 {{ $entries->links() }}
 @endsection

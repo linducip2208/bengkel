@@ -26,6 +26,7 @@
 </div>
 
 <div class="card"><div class="card-body p-0">
+<div class="table-responsive">
 <table class="table table-hover mb-0">
     <thead class="table-light"><tr><th>Teknisi</th><th class="text-center">Job</th><th class="text-end">Revenue</th><th class="text-end">Avg Durasi</th><th class="text-end">Avg/Job</th></tr></thead>
     <tbody>
@@ -42,6 +43,7 @@
         @endforelse
     </tbody>
 </table>
+</div>
 </div></div>
 @push('scripts')
 <script>

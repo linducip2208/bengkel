@@ -87,6 +87,7 @@
             </div>
         </div>
         <div class="card-body p-0">
+            <div class="table-responsive">
             <table class="table table-bordered mb-0" id="itemsTable">
                 <thead class="table-light">
                     <tr>
@@ -139,6 +140,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 
@@ -196,8 +198,10 @@
             </div>
             <div class="modal-body">
                 <input type="text" id="productSearchInput" class="form-control mb-2" placeholder="Cari produk...">
+                <div class="table-responsive">
                 <table class="table table-hover table-sm"><thead><tr><th>Kode</th><th>Nama</th><th class="text-end">Stok</th><th class="text-end">Harga</th><th></th></tr></thead>
                 <tbody id="productTableBody"><tr><td colspan="5" class="text-center text-muted">Ketik untuk mencari...</td></tr></tbody></table>
+                </div>
             </div>
         </div>
     </div>
@@ -216,6 +220,7 @@
                 @if($packages->isEmpty())
                 <div class="text-center text-muted py-4"><p>Belum ada paket service.</p></div>
                 @else
+                <div class="table-responsive">
                 <table class="table table-hover table-sm">
                     <thead><tr><th>Nama Paket</th><th class="text-end">Harga</th><th></th></tr></thead>
                     <tbody>
@@ -227,6 +232,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
                 @endif
             </div>
         </div>

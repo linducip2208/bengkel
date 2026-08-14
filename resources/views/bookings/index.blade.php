@@ -29,6 +29,7 @@
         <div class="col-md-2"><input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control"></div>
         <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel"></i> Filter</button></div>
     </form>
+    <div class="table-responsive">
     <table class="table table-hover align-middle">
         <thead class="table-light"><tr><th>Tanggal</th><th>Customer</th><th>Kontak</th><th>Kendaraan</th><th>Keluhan</th><th>Teknisi</th><th>Status</th><th>Aksi</th></tr></thead>
         <tbody>
@@ -74,6 +75,7 @@
             @empty<tr><td colspan="8" class="text-center text-muted py-3">Belum ada booking.</td></tr>@endforelse
         </tbody>
     </table>
+    </div>
     {{ $bookings->links() }}
 </div></div>
 @endsection

@@ -28,6 +28,7 @@
     </div>
 </div>
 
+<div class="table-responsive">
 <table class="table table-hover align-middle">
     <thead class="table-light">
         <tr>
@@ -73,5 +74,6 @@
         @endforelse
     </tbody>
 </table>
+</div>
 {{ $sales->links() }}
 @endsection

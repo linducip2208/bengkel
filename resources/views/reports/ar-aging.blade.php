@@ -45,6 +45,7 @@
 
 <div class="card">
     <div class="card-body p-0">
+        <div class="table-responsive">
         <table class="table table-striped mb-0 table-sm">
             <thead class="table-light">
                 <tr><th>Invoice</th><th>Customer</th><th>Tgl Invoice</th><th>Jatuh Tempo</th><th>Overdue</th><th class="text-end">Sisa</th><th>Age Group</th></tr>
@@ -65,6 +66,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 @endsection

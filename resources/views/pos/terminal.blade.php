@@ -22,6 +22,10 @@
     .cart-summary .grand { font-size: 1.4rem; font-weight: 800; color: #1e40af; padding-top: 0.5rem; border-top: 1px solid #d1d5db; }
     .pos-search { font-size: 1.05rem; padding: 0.75rem; }
     .keypad-btn { width: 100%; padding: 0.5rem; font-weight: 600; }
+    @media (max-width: 768px) {
+        .pos-grid { grid-template-columns: 1fr; height: auto; }
+        .pos-products { max-height: 50vh; }
+    }
 </style>
 @endpush
 @section('content')

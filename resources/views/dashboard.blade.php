@@ -317,6 +317,7 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
                 <a href="{{ route('services.index') }}" class="btn btn-sm btn-outline-primary">View All</a>
             </div>
             <div class="card-body p-0">
+                <div class="table-responsive">
                 <table class="table table-striped mb-0">
                     <thead>
                         <tr><th>Job No</th><th>Customer</th><th>Vehicle</th><th>Status</th></tr>
@@ -334,6 +335,7 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>
@@ -343,6 +345,7 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
         <div class="card">
             <div class="card-header"><h6 class="mb-0">Upcoming Services (Next 7 Days)</h6></div>
             <div class="card-body p-0">
+                <div class="table-responsive">
                 <table class="table table-striped mb-0">
                     <thead>
                         <tr><th>Job No</th><th>Customer</th><th>Vehicle</th><th>Date</th></tr>
@@ -360,6 +363,7 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>

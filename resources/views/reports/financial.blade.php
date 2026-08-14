@@ -75,6 +75,7 @@ Financial Report - {{ config('app.name') }}
 
 <div class="card">
     <div class="card-body p-0">
+        <div class="table-responsive">
         <table class="table table-striped mb-0">
             <thead>
                 <tr><th>Month</th><th>Income</th><th>Expense</th><th>Paid Invoices</th><th>Profit/Loss</th></tr>
@@ -95,6 +96,7 @@ Financial Report - {{ config('app.name') }}
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 @endsection

@@ -144,6 +144,7 @@
                     <div class="col-3"><small class="text-muted">No. Service</small><div>{{ $invoice->service?->job_no ?? '-' }}</div></div>
                 </div>
 
+                <div class="table-responsive">
                 <table class="table table-bordered mt-3">
                     <thead class="table-light">
                         <tr>
@@ -219,6 +220,7 @@
                         </tr>
                     </tfoot>
                 </table>
+                </div>
 
                 @if ($invoice->notes)
                     <div class="mt-2"><small class="text-muted">Catatan:</small> {{ $invoice->notes }}</div>
@@ -260,6 +262,7 @@
             <div class="card-header"><strong>Riwayat Pembayaran</strong></div>
             <div class="card-body p-0">
                 @if ($invoice->paymentRecords->count() > 0)
+                    <div class="table-responsive">
                     <table class="table table-sm mb-0">
                         <thead class="table-light">
                             <tr>
@@ -278,6 +281,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
                 @else
                     <div class="p-3 text-muted text-center">Belum ada pembayaran.</div>
                 @endif

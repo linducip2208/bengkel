@@ -8,6 +8,7 @@
 <div class="card"><div class="card-body">
     <div class="row mb-3">
         <div class="col-md-6">
+            <div class="table-responsive">
             <table class="table table-sm table-borderless">
                 <tr><td style="width:120px;"><strong>Customer</strong></td><td>{{ $warrantyClaim->customer?->name ?? '-' }}</td></tr>
                 <tr><td><strong>Produk</strong></td><td>{{ $warrantyClaim->invoiceItem?->product?->name ?? $warrantyClaim->invoiceItem?->description ?? '-' }}</td></tr>
@@ -15,6 +16,7 @@
                 <tr><td><strong>Tgl Klaim</strong></td><td>{{ $warrantyClaim->claim_date->format('d M Y') }}</td></tr>
                 <tr><td><strong>Keluhan</strong></td><td>{{ $warrantyClaim->complaint }}</td></tr>
             </table>
+            </div>
         </div>
     </div>
     <hr>

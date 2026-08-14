@@ -6,6 +6,7 @@
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTokenModal"><i class="fas fa-plus me-1"></i>Generate Token</button>
 </div>
 <div class="card"><div class="card-body p-0">
+<div class="table-responsive">
 <table class="table table-hover mb-0"><thead><tr><th>Nama</th><th>Token</th><th>Last Used</th><th>Expires</th><th></th></tr></thead><tbody>
 @forelse(auth()->user()->tokens as $token)
 <tr>
@@ -22,7 +23,7 @@
 @empty
 <tr><td colspan="5" class="text-center py-3 text-muted">Belum ada API token.</td></tr>
 @endforelse
-</tbody></table></div></div>
+</tbody></table></div></div></div>
 
 <div class="modal fade" id="createTokenModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
 <form method="POST" action="{{ url('/admin/api-tokens') }}">

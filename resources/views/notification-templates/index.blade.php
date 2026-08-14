@@ -12,6 +12,7 @@ Notification Templates - {{ config('app.name') }}
 
 <div class="card">
     <div class="card-body p-0">
+        <div class="table-responsive">
         <table class="table table-striped mb-0">
             <thead>
                 <tr>
@@ -55,6 +56,7 @@ Notification Templates - {{ config('app.name') }}
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 <div class="mt-2">{{ $templates->links() }}</div>

@@ -23,6 +23,7 @@
 </div>
 <div class="card">
     <div class="card-body p-0">
+        <div class="table-responsive">
         <table class="table table-hover mb-0">
             <thead class="table-light"><tr><th>Kode</th><th>Nama</th><th>Kategori</th><th>Status</th><th>Maintenance</th><th class="text-end">Aksi</th></tr></thead>
             <tbody>
@@ -57,6 +58,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 <div class="d-flex justify-content-end mt-3">{{ $equipment->links() }}</div>

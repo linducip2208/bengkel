@@ -11,6 +11,7 @@
         <div class="card h-100">
             <div class="card-header"><strong>Informasi Klaim</strong></div>
             <div class="card-body">
+                <div class="table-responsive">
                 <table class="table table-sm table-borderless mb-0">
                     <tr><td style="width:150px;">No. Klaim</td><td><code>{{ $supplierClaim->claim_number }}</code></td></tr>
                     <tr><td>Supplier</td><td>{{ $supplierClaim->supplier?->name ?? '-' }}</td></tr>
@@ -23,6 +24,7 @@
                         <span class="badge bg-{{ $badges[$supplierClaim->status] ?? 'secondary' }}">{{ ucfirst($supplierClaim->status) }}</span>
                     </td></tr>
                 </table>
+                </div>
             </div>
         </div>
     </div>
@@ -30,11 +32,13 @@
         <div class="card h-100">
             <div class="card-header"><strong>Nilai</strong></div>
             <div class="card-body">
+                <div class="table-responsive">
                 <table class="table table-sm table-borderless mb-0">
                     <tr><td style="width:150px;">Kuantitas</td><td>{{ number_format((float) $supplierClaim->quantity, 0, ',', '.') }}</td></tr>
                     <tr><td>Nilai Klaim</td><td>@money($supplierClaim->claim_amount)</td></tr>
                     <tr><td>Dibuat</td><td>{{ $supplierClaim->created_at?->format('d M Y H:i') }}</td></tr>
                 </table>
+                </div>
             </div>
         </div>
     </div>

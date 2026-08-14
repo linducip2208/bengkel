@@ -26,6 +26,7 @@
 
 <div class="card">
     <div class="card-body p-0">
+        <div class="table-responsive">
         <table class="table table-striped mb-0">
             <thead><tr><th>#</th><th>Product</th><th>Category</th><th>Qty Used</th><th>Unit Cost</th><th class="text-end">Total Cost</th></tr></thead>
             <tbody>
@@ -44,6 +45,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 @endsection

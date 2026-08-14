@@ -28,6 +28,7 @@
                 </a>
             </div>
             <div class="card-body p-0">
+                <div class="table-responsive">
                 <table class="table mb-0">
                     <thead class="table-light">
                         <tr><th>Hari</th><th>Buka</th><th>Tutup</th><th>Status</th><th></th></tr>
@@ -55,6 +56,7 @@
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>
@@ -68,6 +70,7 @@
                 </a>
             </div>
             <div class="card-body p-0">
+                <div class="table-responsive">
                 <table class="table mb-0">
                     <thead class="table-light">
                         <tr><th>Tanggal</th><th>Nama</th><th>Berulang</th><th></th></tr>
@@ -94,6 +97,7 @@
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
 
@@ -105,6 +109,7 @@
                 </a>
             </div>
             <div class="card-body p-0">
+                <div class="table-responsive">
                 <table class="table mb-0">
                     <thead class="table-light">
                         <tr><th>Nama</th><th>Status</th><th>Service Aktif</th><th></th></tr>
@@ -134,6 +139,7 @@
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>

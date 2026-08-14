@@ -84,6 +84,7 @@
             </div>
         </div>
         <div class="card-body p-0">
+            <div class="table-responsive">
             <table class="table table-bordered mb-0" id="itemsTable">
                 <thead class="table-light">
                     <tr>
@@ -127,6 +128,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
         <div class="card-footer">
             <small class="text-muted"><i class="bi bi-info-circle"></i> Gunakan tombol <i class="bi bi-box"></i> Sparepart untuk menambah dari Inventory, atau <i class="bi bi-wrench"></i> Jasa untuk input jasa service.</small>
@@ -186,12 +188,14 @@
                 <div class="mb-3">
                     <input type="text" id="productSearchInput" class="form-control" placeholder="Cari nama produk / kode...">
                 </div>
+                <div class="table-responsive">
                 <table class="table table-hover table-sm" id="productTable">
                     <thead><tr><th>Kode</th><th>Nama Produk</th><th class="text-end">Stok</th><th class="text-end">Harga Jual</th><th></th></tr></thead>
                     <tbody id="productTableBody">
                         <tr><td colspan="5" class="text-center text-muted">Ketik untuk mencari produk...</td></tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>
@@ -213,6 +217,7 @@
                         <p class="mt-2">Belum ada paket service. <br><a href="{{ route('service-packages.index') }}" target="_blank">Tambah paket service di sini</a></p>
                     </div>
                 @else
+                <div class="table-responsive">
                 <table class="table table-hover table-sm">
                     <thead><tr><th>Nama Paket</th><th class="text-end">Estimasi</th><th class="text-end">Harga</th><th></th></tr></thead>
                     <tbody>
@@ -234,6 +239,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
                 @endif
                 <div class="mt-2 text-center">
                     <a href="{{ route('service-packages.index') }}" target="_blank" class="text-decoration-none">

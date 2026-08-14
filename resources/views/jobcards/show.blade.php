@@ -20,6 +20,7 @@
         <div class="card">
             <div class="card-body">
                 <h6 class="border-bottom pb-2">Informasi Jobcard</h6>
+                <div class="table-responsive">
                 <table class="table table-borderless table-sm">
                     <tr><td class="text-muted" width="180">Job No</td><td><strong>{{ $service->job_no }}</strong></td></tr>
                     <tr><td class="text-muted">Pelanggan</td><td>{{ $service->customer->name ?? '-' }}</td></tr>
@@ -28,9 +29,11 @@
                     <tr><td class="text-muted">Judul</td><td>{{ $service->title }}</td></tr>
                     <tr><td class="text-muted">Tanggal Servis</td><td>{{ $service->service_date->format('d M Y H:i') }}</td></tr>
                 </table>
+                </div>
 
                 @if($service->jobcardDetail)
                 <h6 class="border-bottom pb-2 mt-3">Detail Jobcard</h6>
+                <div class="table-responsive">
                 <table class="table table-borderless table-sm">
                     <tr><td class="text-muted" width="180">Odometer Masuk</td><td>{{ number_format($service->jobcardDetail->odometer_in, 0, ',', '.') }} km</td></tr>
                     <tr><td class="text-muted">Tanggal Masuk</td><td>{{ $service->jobcardDetail->in_date?->format('d M Y H:i') }}</td></tr>
@@ -41,9 +44,11 @@
                     <tr><td class="text-muted">Tanggal Keluar</td><td>{{ $service->jobcardDetail->out_date?->format('d M Y H:i') }}</td></tr>
                     @endif
                 </table>
+                </div>
 
                 @if($nextService['next_service_date'] || $nextService['next_service_km'])
                 <h6 class="border-bottom pb-2 mt-3">Rekomendasi Servis Berikutnya</h6>
+                <div class="table-responsive">
                 <table class="table table-borderless table-sm">
                     @if($nextService['next_service_date'])
                     <tr><td class="text-muted" width="180">Tanggal</td><td>{{ \Carbon\Carbon::parse($nextService['next_service_date'])->format('d M Y') }}</td></tr>
@@ -52,6 +57,7 @@
                     <tr><td class="text-muted">KM</td><td>{{ number_format($nextService['next_service_km'], 0, ',', '.') }} km</td></tr>
                     @endif
                 </table>
+                </div>
                 @endif
                 @endif
 

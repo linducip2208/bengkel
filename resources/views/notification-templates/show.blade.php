@@ -21,6 +21,7 @@
 <div class="card mb-3">
     <div class="card-header"><strong>Informasi Template</strong></div>
     <div class="card-body">
+        <div class="table-responsive">
         <table class="table table-sm table-borderless mb-0">
             <tr>
                 <td width="150" class="text-muted">Name</td>
@@ -51,6 +52,7 @@
                 </td>
             </tr>
         </table>
+        </div>
     </div>
 </div>
 

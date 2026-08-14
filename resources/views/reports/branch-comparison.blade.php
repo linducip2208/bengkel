@@ -26,6 +26,7 @@
 
 <div class="card">
     <div class="card-body p-0">
+        <div class="table-responsive">
         <table class="table table-striped mb-0">
             <thead><tr><th>Branch</th><th>Service Count</th><th>Service Revenue</th><th>POS Count</th><th>POS Revenue</th><th class="text-end">Total Revenue</th></tr></thead>
             <tbody>
@@ -43,6 +44,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 @endsection

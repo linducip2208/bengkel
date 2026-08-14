@@ -58,6 +58,7 @@ Sales Report - {{ config('app.name') }}
 <div class="card">
     <div class="card-header"><strong>Sales by Date</strong></div>
     <div class="card-body p-0">
+        <div class="table-responsive">
         <table class="table table-striped mb-0">
             <thead><tr><th>Date</th><th>Count</th><th>Revenue</th></tr></thead>
             <tbody>
@@ -72,6 +73,7 @@ Sales Report - {{ config('app.name') }}
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 @endsection

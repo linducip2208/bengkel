@@ -13,6 +13,7 @@
         <div class="card">
             <div class="card-header"><strong>Informasi Klaim</strong></div>
             <div class="card-body">
+                <div class="table-responsive">
                 <table class="table table-sm table-borderless mb-0">
                     <tr><td style="width:130px;">Status</td><td>
                         @php
@@ -24,6 +25,7 @@
                     <tr><td>Customer</td><td>{{ $warrantyClaim->customer?->name ?? '-' }}</td></tr>
                     <tr><td>Invoice</td><td><code>{{ $warrantyClaim->invoiceItem?->invoice?->invoice_number }}</code></td></tr>
                 </table>
+                </div>
             </div>
         </div>
     </div>
@@ -31,12 +33,14 @@
         <div class="card">
             <div class="card-header"><strong>Produk</strong></div>
             <div class="card-body">
+                <div class="table-responsive">
                 <table class="table table-sm table-borderless mb-0">
                     <tr><td style="width:130px;">Produk</td><td>{{ $warrantyClaim->invoiceItem?->product?->name ?? $warrantyClaim->invoiceItem?->description ?? '-' }}</td></tr>
                     <tr><td>Garansi</td><td>{{ $warrantyClaim->invoiceItem?->product?->warranty_months ?? 0 }} bulan</td></tr>
                     <tr><td>Harga</td><td>@money($warrantyClaim->invoiceItem?->unit_price ?? 0)</td></tr>
                     <tr><td>Qty</td><td>{{ $warrantyClaim->invoiceItem?->quantity ?? '-' }}</td></tr>
                 </table>
+                </div>
             </div>
         </div>
     </div>

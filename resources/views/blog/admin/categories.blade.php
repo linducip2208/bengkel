@@ -29,6 +29,7 @@
     <div class="col-md-7">
         <div class="card">
             <div class="card-body p-0">
+                <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead class="table-light"><tr><th>Nama</th><th>Deskripsi</th><th></th></tr></thead>
                     <tbody>
@@ -48,6 +49,7 @@
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>

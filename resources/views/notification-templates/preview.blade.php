@@ -29,6 +29,7 @@
 <div class="card mt-3 bg-light">
     <div class="card-body">
         <h6>Variables Used in Preview:</h6>
+        <div class="table-responsive">
         <table class="table table-sm mb-0">
             <tr><td><code>{customer_name}</code></td><td>Ahmad Fauzi</td></tr>
             <tr><td><code>{vehicle_plate}</code></td><td>B 1234 XYZ</td></tr>
@@ -40,6 +41,7 @@
             <tr><td><code>{workshop_name}</code></td><td>{{ config('app.name') }}</td></tr>
             <tr><td><code>{workshop_phone}</code></td><td>0812-3456-7890</td></tr>
         </table>
+        </div>
     </div>
 </div>
 @endsection

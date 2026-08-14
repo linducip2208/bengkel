@@ -13,6 +13,7 @@
         <div class="card h-100">
             <div class="card-header"><strong>Informasi Klaim</strong></div>
             <div class="card-body">
+                <div class="table-responsive">
                 <table class="table table-sm table-borderless mb-0">
                     <tr><td style="width:150px;">No. Klaim</td><td><code>{{ $insuranceClaim->claim_number }}</code></td></tr>
                     <tr><td>Status</td><td>
@@ -26,6 +27,7 @@
                     <tr><td>Kendaraan</td><td>{{ $insuranceClaim->vehicle?->number_plate ?? '-' }}</td></tr>
                     <tr><td>Service</td><td>{{ $insuranceClaim->service?->job_no ?? '-' }}</td></tr>
                 </table>
+                </div>
             </div>
         </div>
     </div>
@@ -33,12 +35,14 @@
         <div class="card h-100">
             <div class="card-header"><strong>Polis &amp; Nilai</strong></div>
             <div class="card-body">
+                <div class="table-responsive">
                 <table class="table table-sm table-borderless mb-0">
                     <tr><td style="width:150px;">Asuransi</td><td>{{ $insuranceClaim->insurance_company ?? '-' }}</td></tr>
                     <tr><td>No. Polis</td><td>{{ $insuranceClaim->policy_number ?? '-' }}</td></tr>
                     <tr><td>Estimasi</td><td>@money($insuranceClaim->estimated_amount ?? 0)</td></tr>
                     <tr><td>Disetujui</td><td>@money($insuranceClaim->approved_amount ?? 0)</td></tr>
                 </table>
+                </div>
             </div>
         </div>
     </div>

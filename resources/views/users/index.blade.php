@@ -17,6 +17,7 @@
         <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari nama / email...">
         <button class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
     </div></form>
+    <div class="table-responsive">
     <table class="table table-hover align-middle">
         <thead class="table-light"><tr><th>Nama</th><th>Email</th><th>Role</th><th>Status</th><th>Last Login</th><th>2FA</th><th>Aksi</th></tr></thead>
         <tbody>
@@ -60,6 +61,7 @@
             @empty<tr><td colspan="7" class="text-center text-muted py-3">Belum ada user.</td></tr>@endforelse
         </tbody>
     </table>
+    </div>
     {{ $users->links() }}
 </div></div>
 

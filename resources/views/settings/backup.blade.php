@@ -21,6 +21,7 @@
 
 @php $files = glob(storage_path('app/backups/*.sql')); rsort($files); @endphp
 <div class="card"><div class="card-header"><strong>Riwayat Backup</strong></div><div class="card-body p-0">
+<div class="table-responsive">
 <table class="table table-hover mb-0"><thead><tr><th>File</th><th>Ukuran</th><th>Tanggal</th><th></th></tr></thead><tbody>
     @forelse(array_slice($files, 0, 20) as $f)
     <tr>
@@ -32,5 +33,5 @@
     @empty
     <tr><td colspan="4" class="text-center py-3 text-muted">Belum ada file backup.</td></tr>
     @endforelse
-</tbody></table></div></div>
+</tbody></table></div></div></div>
 @endsection

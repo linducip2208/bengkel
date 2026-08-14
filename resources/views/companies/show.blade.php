@@ -33,6 +33,7 @@
 <div class="card">
     <div class="card-header"><strong><i class="fas fa-store-alt me-1"></i>Daftar Cabang</strong></div>
     <div class="card-body p-0">
+        <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
@@ -64,6 +65,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 @endsection

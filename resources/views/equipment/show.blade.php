@@ -8,6 +8,7 @@
 <div class="row">
     <div class="col-md-6">
         <div class="card mb-3"><div class="card-body">
+            <div class="table-responsive">
             <table class="table table-sm mb-0">
                 <tr><td class="text-muted">Kode</td><td>{{ $equipment->code ?? '-' }}</td></tr>
                 <tr><td class="text-muted">Kategori</td><td>{{ $equipment->category }}</td></tr>
@@ -16,6 +17,7 @@
                 <tr><td class="text-muted">Tanggal Beli</td><td>{{ $equipment->purchase_date?->format('d M Y') ?? '-' }}</td></tr>
                 <tr><td class="text-muted">Next Maintenance</td><td class="{{ $equipment->is_due_maintenance ? 'text-danger fw-bold' : '' }}">{{ $equipment->next_maintenance_date?->format('d M Y') ?? '-' }}</td></tr>
             </table>
+            </div>
         </div></div>
     </div>
     <div class="col-md-6">

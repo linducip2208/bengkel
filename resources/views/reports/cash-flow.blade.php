@@ -26,6 +26,7 @@
 
 <div class="card">
     <div class="card-body p-0">
+        <div class="table-responsive">
         <table class="table table-striped table-sm mb-0">
             <thead><tr><th>Tanggal</th><th class="text-end">Kas Masuk</th><th class="text-end">Kas Keluar</th><th class="text-end">Net</th></tr></thead>
             <tbody>
@@ -41,6 +42,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 @endsection

@@ -30,6 +30,7 @@
 
 <div class="card"><div class="card-body">
     <h6 class="mb-3">Histori Transaksi Poin</h6>
+    <div class="table-responsive">
     <table class="table table-sm">
         <thead class="table-light"><tr><th>Tanggal</th><th>Tipe</th><th>Deskripsi</th><th class="text-end">Poin</th><th>By</th></tr></thead>
         <tbody>
@@ -51,6 +52,7 @@
             @empty<tr><td colspan="5" class="text-center text-muted py-3">Belum ada transaksi poin.</td></tr>@endforelse
         </tbody>
     </table>
+    </div>
     <div class="no-print">{{ $transactions->links() }}</div>
 </div></div>
 @endsection

@@ -16,6 +16,7 @@
 
 <div class="card">
     <div class="card-body">
+        <div class="table-responsive">
         <table class="table table-sm table-borderless mb-0">
             <tr>
                 <td width="180" class="text-muted">Label</td>
@@ -48,6 +49,7 @@
             </tr>
             @endif
         </table>
+        </div>
     </div>
 </div>
 

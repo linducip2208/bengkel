@@ -11,6 +11,7 @@
         <div class="card h-100">
             <div class="card-header"><strong>Informasi</strong></div>
             <div class="card-body">
+                <div class="table-responsive">
                 <table class="table table-sm table-borderless mb-0">
                     <tr><td style="width:160px;">Rekening</td><td>{{ $bankReconciliation->bankAccount?->name ?? '-' }} ({{ $bankReconciliation->bankAccount?->bank_name ?? '-' }})</td></tr>
                     <tr><td>No. Rekening</td><td>{{ $bankReconciliation->bankAccount?->account_number ?? '-' }}</td></tr>
@@ -18,6 +19,7 @@
                     <tr><td>Status</td><td><span class="badge bg-{{ $bankReconciliation->status === 'completed' ? 'success' : 'secondary' }}">{{ ucfirst($bankReconciliation->status) }}</span></td></tr>
                     <tr><td>Dibuat Oleh</td><td>{{ $bankReconciliation->creator?->name ?? '-' }}</td></tr>
                 </table>
+                </div>
             </div>
         </div>
     </div>
@@ -25,6 +27,7 @@
         <div class="card h-100">
             <div class="card-header"><strong>Perhitungan</strong></div>
             <div class="card-body">
+                <div class="table-responsive">
                 <table class="table table-sm mb-0">
                     <tr><td>Saldo Awal</td><td class="text-end">@money($bankReconciliation->opening_balance)</td></tr>
                     <tr><td>Total Income (+)</td><td class="text-end text-success">@money($income)</td></tr>
@@ -36,6 +39,7 @@
                         <td class="text-end {{ ($bankReconciliation->difference ?? 0) == 0 ? 'text-success' : 'text-danger' }}"><strong>@money($bankReconciliation->difference)</strong></td>
                     </tr>
                 </table>
+                </div>
             </div>
         </div>
     </div>

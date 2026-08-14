@@ -9,13 +9,14 @@
 @foreach($types as $key=>$label)
     @if(($accounts[$key] ?? collect())->count())
     <div class="card mb-3"><div class="card-header"><strong>{{ $label }}</strong></div><div class="card-body p-0">
+    <div class="table-responsive">
     <table class="table table-sm mb-0"><thead><tr><th>Kode</th><th>Nama Akun</th><th></th></tr></thead><tbody>
         @foreach($accounts[$key] as $acc)
         <tr><td><code>{{ $acc->code }}</code></td><td>{{ $acc->name }}</td><td>
             <form action="{{ route('finance.coa.destroy', $acc) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus?')">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button></form>
         </td></tr>
         @endforeach
-    </tbody></table></div></div>
+    </tbody></table></div></div></div>
     @endif
 @endforeach
 @endsection

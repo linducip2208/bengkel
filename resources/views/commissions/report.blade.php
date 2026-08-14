@@ -12,6 +12,7 @@
             <div class="col-md-3"><input type="date" name="date_to" value="{{ $to }}" class="form-control"></div>
             <div class="col-md-2"><button class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i>Filter</button></div>
         </form>
+        <div class="table-responsive">
         <table class="table table-hover">
             <thead class="table-light"><tr><th>#</th><th>Teknisi</th><th class="text-end">Service Selesai</th><th class="text-end">Total Komisi</th><th class="text-end">Belum Dibayar</th><th class="text-end">Sudah Dibayar</th></tr></thead>
             <tbody>
@@ -40,6 +41,7 @@
             </tfoot>
             @endif
         </table>
+        </div>
     </div>
 </div>
 @endsection

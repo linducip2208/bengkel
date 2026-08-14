@@ -38,6 +38,7 @@
         </select></div>
         <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel"></i></button></div>
     </form>
+    <div class="table-responsive">
     <table class="table table-hover align-middle">
         <thead class="table-light"><tr><th>Customer</th><th>HP</th><th>Total Service</th><th>Tier</th><th class="text-end">Poin</th><th>Aksi</th></tr></thead>
         <tbody>
@@ -56,6 +57,7 @@
             @empty<tr><td colspan="6" class="text-center text-muted py-3">Belum ada customer.</td></tr>@endforelse
         </tbody>
     </table>
+    </div>
     {{ $customers->links() }}
 </div></div>
 @endsection

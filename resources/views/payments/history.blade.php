@@ -15,6 +15,7 @@
 </div>
 
 @if ($invoice->paymentRecords->count() > 0)
+    <div class="table-responsive">
     <table class="table table-bordered">
         <thead class="table-light">
             <tr>
@@ -46,6 +47,7 @@
             </tr>
         </tfoot>
     </table>
+    </div>
 @else
     <div class="text-center py-4 text-muted">Belum ada pembayaran.</div>
 @endif
