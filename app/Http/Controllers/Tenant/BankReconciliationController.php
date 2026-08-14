@@ -47,10 +47,12 @@ class BankReconciliationController extends Controller
         $openingBalance = (float) $bankAccount->opening_balance;
 
         $income = (float) Income::query()
+            ->where('bank_account_id', $bankAccount->id)
             ->whereBetween('income_date', [$startDate, $endDate])
             ->sum('amount');
 
         $expense = (float) Expense::query()
+            ->where('bank_account_id', $bankAccount->id)
             ->whereBetween('expense_date', [$startDate, $endDate])
             ->sum('amount');
 
@@ -80,10 +82,12 @@ class BankReconciliationController extends Controller
         $bankReconciliation->load(['bankAccount', 'creator']);
 
         $income = (float) Income::query()
+            ->where('bank_account_id', $bankReconciliation->bank_account_id)
             ->whereBetween('income_date', [$bankReconciliation->start_date->toDateString(), $bankReconciliation->end_date->toDateString()])
             ->sum('amount');
 
         $expense = (float) Expense::query()
+            ->where('bank_account_id', $bankReconciliation->bank_account_id)
             ->whereBetween('expense_date', [$bankReconciliation->start_date->toDateString(), $bankReconciliation->end_date->toDateString()])
             ->sum('amount');
 

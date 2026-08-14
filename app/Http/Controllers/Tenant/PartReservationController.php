@@ -16,12 +16,12 @@ class PartReservationController extends Controller
     {
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|numeric|min:0.01',
+            'quantity' => 'required|integer|min:1',
             'notes' => 'nullable|string|max:255',
         ]);
 
         $product = Product::findOrFail($validated['product_id']);
-        $quantity = (float) $validated['quantity'];
+        $quantity = (int) $validated['quantity'];
         $available = $this->availableStock($product);
 
         if ($available < $quantity) {
@@ -62,7 +62,7 @@ class PartReservationController extends Controller
         DB::transaction(function () use ($reservation) {
             app(ProductService::class)->useInService(
                 $reservation->product,
-                (int) round($reservation->quantity),
+                (int) $reservation->quantity,
                 $reservation->service_id
             );
 
@@ -72,8 +72,8 @@ class PartReservationController extends Controller
         return back()->with('success', 'Parts dipakai dan stok dikurangi.');
     }
 
-    private function availableStock(Product $product): float
+    private function availableStock(Product $product): int
     {
-        return max(0, (float) $product->current_stock - (float) $product->reservedQuantity());
+        return max(0, (int) $product->current_stock - (int) $product->reservedQuantity());
     }
 }

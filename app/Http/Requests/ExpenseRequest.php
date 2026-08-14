@@ -12,6 +12,7 @@ class ExpenseRequest extends FormRequest
             'amount' => ['required', 'numeric', 'min:1'],
             'expense_date' => ['required', 'date'],
             'label' => ['required', 'string', 'max:255'],
+            'bank_account_id' => ['nullable', 'exists:bank_accounts,id'],
             'description' => ['nullable', 'string'],
         ];
     }

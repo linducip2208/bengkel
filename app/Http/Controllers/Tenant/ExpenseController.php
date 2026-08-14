@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ExpenseRequest;
+use App\Models\BankAccount;
 use App\Models\Expense;
 use App\Services\ExpenseService;
 use Illuminate\Http\RedirectResponse;
@@ -37,7 +38,9 @@ class ExpenseController extends Controller
 
     public function create(): View
     {
-        return view('expenses.create');
+        $bankAccounts = BankAccount::where('is_active', true)->orderBy('name')->get();
+
+        return view('expenses.create', compact('bankAccounts'));
     }
 
     public function store(ExpenseRequest $request): RedirectResponse
@@ -55,7 +58,9 @@ class ExpenseController extends Controller
 
     public function edit(Expense $expense): View
     {
-        return view('expenses.edit', compact('expense'));
+        $bankAccounts = BankAccount::where('is_active', true)->orderBy('name')->get();
+
+        return view('expenses.edit', compact('expense', 'bankAccounts'));
     }
 
     public function update(ExpenseRequest $request, Expense $expense): RedirectResponse

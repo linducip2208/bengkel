@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\IncomeRequest;
+use App\Models\BankAccount;
 use App\Models\Customer;
 use App\Models\Income;
 use App\Models\PaymentMethod;
@@ -52,8 +53,9 @@ class IncomeController extends Controller
     {
         $customers = Customer::orderBy('name')->get();
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
+        $bankAccounts = BankAccount::where('is_active', true)->orderBy('name')->get();
 
-        return view('incomes.create', compact('customers', 'paymentMethods'));
+        return view('incomes.create', compact('customers', 'paymentMethods', 'bankAccounts'));
     }
 
     public function store(IncomeRequest $request): RedirectResponse
@@ -73,8 +75,9 @@ class IncomeController extends Controller
     {
         $customers = Customer::orderBy('name')->get();
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
+        $bankAccounts = BankAccount::where('is_active', true)->orderBy('name')->get();
 
-        return view('incomes.edit', compact('income', 'customers', 'paymentMethods'));
+        return view('incomes.edit', compact('income', 'customers', 'paymentMethods', 'bankAccounts'));
     }
 
     public function update(IncomeRequest $request, Income $income): RedirectResponse

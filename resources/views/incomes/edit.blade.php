@@ -44,6 +44,16 @@
             @error('payment_method_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
         <div class="col-md-4">
+            <label class="form-label">Rekening Bank</label>
+            <select name="bank_account_id" class="form-select @error('bank_account_id') is-invalid @enderror">
+                <option value="">Pilih (opsional)</option>
+                @foreach ($bankAccounts as $ba)
+                    <option value="{{ $ba->id }}" {{ old('bank_account_id', $income->bank_account_id) == $ba->id ? 'selected' : '' }}>{{ $ba->bank_name }} — {{ $ba->account_number }}</option>
+                @endforeach
+            </select>
+            @error('bank_account_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+        <div class="col-md-4">
             <label class="form-label">No. Invoice</label>
             <input type="text" name="invoice_number" class="form-control @error('invoice_number') is-invalid @enderror" value="{{ old('invoice_number', $income->invoice_number) }}">
             @error('invoice_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
