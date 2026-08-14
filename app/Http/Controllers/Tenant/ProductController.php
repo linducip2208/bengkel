@@ -8,9 +8,13 @@ use App\Imports\ProductsImport;
 use App\Models\Product;
 use App\Models\ProductType;
 use App\Models\ProductUnit;
+use App\Models\PurchaseOrder;
 use App\Models\Supplier;
+use App\Models\SupplierPrice;
 use App\Services\ProductService;
+use App\Services\ReportService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
@@ -206,5 +210,77 @@ class ProductController extends Controller
         });
 
         return response()->json($products);
+    }
+
+    public function reorderSuggestions()
+    {
+        $suggestions = app(ReportService::class)->getReorderSuggestions();
+
+        return view('products.reorder', compact('suggestions'));
+    }
+
+    public function createReorderPo(Request $request)
+    {
+        $request->validate([
+            'product_id' => ['required', 'exists:products,id'],
+        ]);
+
+        $product = Product::with('stockRecord')->findOrFail($request->product_id);
+
+        $cheapest = SupplierPrice::with('supplier')
+            ->where('product_id', $product->id)
+            ->where('is_active', true)
+            ->orderBy('price')
+            ->first();
+
+        if (!$cheapest) {
+            return back()->with('error', 'Tidak ada harga supplier untuk produk ini.');
+        }
+
+        $stockRecord = $product->stockRecord;
+        $minStock = $stockRecord?->minimum_stock ?? 5;
+        $currentStock = $stockRecord?->quantity ?? 0;
+        $quantity = max(($minStock * 2) - $currentStock, 1);
+
+        $unitPrice = (float) $cheapest->price;
+
+        $purchaseOrder = DB::transaction(function () use ($product, $cheapest, $quantity, $unitPrice) {
+            $purchaseOrder = PurchaseOrder::create([
+                'po_number' => $this->generatePoNumber(),
+                'supplier_id' => $cheapest->supplier_id,
+                'branch_id' => $product->branch_id,
+                'order_date' => now()->toDateString(),
+                'status' => 'draft',
+                'subtotal' => $unitPrice * $quantity,
+                'tax_amount' => 0,
+                'grand_total' => $unitPrice * $quantity,
+                'notes' => 'Auto PO dari rekomendasi reorder.',
+                'created_by' => auth()->id(),
+            ]);
+
+            $purchaseOrder->items()->create([
+                'product_id' => $product->id,
+                'description' => $product->name,
+                'quantity' => $quantity,
+                'unit_price' => $unitPrice,
+                'total_price' => $unitPrice * $quantity,
+            ]);
+
+            return $purchaseOrder;
+        });
+
+        return redirect()->route('purchase-orders.show', $purchaseOrder)
+            ->with('success', 'Draft purchase order ' . $purchaseOrder->po_number . ' dibuat otomatis dengan supplier termurah.');
+    }
+
+    private function generatePoNumber(): string
+    {
+        $prefix = 'PO-' . date('Ymd');
+        $last = PurchaseOrder::where('po_number', 'like', $prefix . '%')
+            ->orderByDesc('id')
+            ->first();
+        $next = $last ? (int) substr($last->po_number, -4) + 1 : 1;
+
+        return $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
     }
 }

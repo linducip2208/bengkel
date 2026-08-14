@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['customer_id', 'vehicle_id', 'repair_category_id', 'title', 'description', 'service_date', 'charge', 'actual_cost', 'estimated_hours', 'started_at', 'completed_at', 'done_status', 'workflow_status', 'checked_in_at', 'qc_passed_at', 'mot_status', 'is_quotation', 'is_approved', 'created_by', 'branch_id', 'job_no', 'assign_to', 'service_advisor_id', 'inspected_at', 'approved_at', 'invoiced_at', 'paid_at', 'released_at', 'cancelled_at', 'cancel_reason'])]
+#[Fillable(['customer_id', 'vehicle_id', 'repair_category_id', 'title', 'description', 'service_date', 'charge', 'actual_cost', 'estimated_hours', 'started_at', 'completed_at', 'done_status', 'workflow_status', 'checked_in_at', 'qc_passed_at', 'mot_status', 'is_quotation', 'is_approved', 'created_by', 'branch_id', 'job_no', 'approval_token', 'repeat_of', 'assign_to', 'service_advisor_id', 'inspected_at', 'approved_at', 'invoiced_at', 'paid_at', 'released_at', 'cancelled_at', 'cancel_reason', 'survey_token'])]
 class Service extends Model
 {
     use HasFactory, SoftDeletes, HasBranchScope;
@@ -195,5 +195,67 @@ class Service extends Model
             return false;
         }
         return now()->diffInHours($this->started_at) > $this->estimated_hours;
+    }
+
+    public function repeatOf(): BelongsTo
+    {
+        return $this->belongsTo(Service::class, 'repeat_of');
+    }
+
+    public function getOrCreateApprovalToken(): string
+    {
+        if (!empty($this->approval_token)) {
+            return $this->approval_token;
+        }
+
+        $this->approval_token = $this->generateUniqueApprovalToken();
+        $this->save();
+
+        return $this->approval_token;
+    }
+
+    protected function generateUniqueApprovalToken(): string
+    {
+        do {
+            $token = \Illuminate\Support\Str::random(32);
+        } while (static::withoutGlobalScopes()->where('approval_token', $token)->exists());
+
+        return $token;
+    }
+
+    public function detectRepeatJob(): ?Service
+    {
+        if (!$this->vehicle_id) {
+            return null;
+        }
+
+        $cutoff = now()->subDays(30);
+
+        return static::withoutGlobalScopes()
+            ->where('vehicle_id', $this->vehicle_id)
+            ->where('id', '!=', $this->id)
+            ->where('done_status', 2)
+            ->where('completed_at', '>=', $cutoff)
+            ->where(function ($q) {
+                $q->where('repair_category_id', $this->repair_category_id);
+                if ($this->title) {
+                    $q->orWhere('title', 'like', '%' . $this->title . '%');
+                }
+                if ($this->description) {
+                    $q->orWhere('description', 'like', '%' . $this->description . '%');
+                }
+            })
+            ->orderBy('completed_at', 'desc')
+            ->first();
+    }
+
+    public function isRepeatJob(): bool
+    {
+        return $this->detectRepeatJob() !== null;
+    }
+
+    public function getIsRepeatJobAttribute(): bool
+    {
+        return $this->repeat_of !== null;
     }
 }

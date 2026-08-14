@@ -64,6 +64,7 @@ use App\Http\Controllers\Tenant\StockAdjustmentController;
 use App\Http\Controllers\Tenant\StockHistoryController;
 use App\Http\Controllers\Tenant\SubcontractorController;
 use App\Http\Controllers\Tenant\SupplierController;
+use App\Http\Controllers\Tenant\TechnicianSkillController;
 use App\Http\Controllers\Tenant\TaxGroupController;
 use App\Http\Controllers\Tenant\TaxRateController;
 use App\Http\Controllers\Tenant\VehicleBrandController;
@@ -86,8 +87,18 @@ Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update
 Route::get('/track/{token}', [\App\Http\Controllers\TrackingController::class, 'show'])->name('public.tracking');
 Route::post('/track/{token}/review', [\App\Http\Controllers\TrackingController::class, 'review'])->name('public.tracking.review');
 
+// Public NPS survey (post-service rating, token-based, no auth)
+Route::get('/survey/{token}', [\App\Http\Controllers\PublicSurveyController::class, 'show'])->name('survey.show');
+Route::post('/survey/{token}', [\App\Http\Controllers\PublicSurveyController::class, 'store'])->name('survey.store');
+
 // Public shareable invoice link (token-based, no auth)
 Route::get('/invoice/{token}', [\App\Http\Controllers\PublicInvoiceController::class, 'show'])->name('public.invoice');
+
+// Public service estimate approval (token-based, no auth)
+Route::get('/approve/{token}', [\App\Http\Controllers\ApprovalController::class, 'showApprove'])->name('public.approval.approve');
+Route::post('/approve/{token}', [\App\Http\Controllers\ApprovalController::class, 'approve'])->name('public.approval.approve.store');
+Route::get('/reject/{token}', [\App\Http\Controllers\ApprovalController::class, 'showReject'])->name('public.approval.reject');
+Route::post('/reject/{token}', [\App\Http\Controllers\ApprovalController::class, 'reject'])->name('public.approval.reject.store');
 
 // Payment Gateway webhook callback (PUBLIC — gateway POST tanpa session)
 Route::any('/payment/callback/{token}', [\App\Http\Controllers\Tenant\PaymentGatewayController::class, 'callback'])->name('payment.callback');
@@ -241,8 +252,10 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::get('/services/customers/search', [ServiceController::class, 'searchCustomers'])->name('services.customers.search');
     Route::get('/services/vehicles-by-customer/{customer}', [ServiceController::class, 'vehiclesByCustomer'])->name('services.vehicles-by-customer');
     Route::get('/services/history', [ServiceController::class, 'history'])->name('services.history');
+    Route::post('/services/{service}/survey-link', [ServiceController::class, 'surveyLink'])->name('services.survey-link');
     Route::get('/services/{service}/sticker', [ServiceController::class, 'printNextServiceSticker'])->name('services.sticker');
     Route::get('/services/{service}/condition-report', [ServiceController::class, 'printConditionReport'])->name('services.condition-report');
+    Route::get('/services/{service}/send-wa', [ServiceController::class, 'sendWA'])->name('services.sendWA');
 
     // --- Parts Reservation ---
     Route::post('/services/{service}/reservations', [PartReservationController::class, 'store'])->name('services.reservations.store');
@@ -268,6 +281,8 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::get('/print/invoice/{invoice}/raw', [\App\Http\Controllers\Tenant\PrintController::class, 'rawData'])->name('print.raw');
 
     // --- Products custom routes (before resource) ---
+    Route::get('/products/reorder', [ProductController::class, 'reorderSuggestions'])->name('products.reorder');
+    Route::post('/products/reorder/create-po', [ProductController::class, 'createReorderPo'])->name('products.reorder.po');
     Route::get('/products/import', [ProductController::class, 'importForm'])->name('products.import-form');
     Route::post('/products/import', [ProductController::class, 'import'])->name('products.import');
     Route::match(['get', 'post'], '/products/stock-opname', [ProductController::class, 'stockOpname'])->name('products.stock-opname');
@@ -422,6 +437,12 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::get('/hrm/salary/{salary}/slip', [\App\Http\Controllers\Tenant\HrmController::class, 'salarySlip'])->name('hrm.salary.slip');
     Route::put('/hrm/salary/{salary}/mark-paid', [\App\Http\Controllers\Tenant\HrmController::class, 'salaryMarkPaid'])->name('hrm.salary.mark-paid');
 
+    // --- HRM: Skill Matrix Teknisi ---
+    Route::get('/technician-skills', [TechnicianSkillController::class, 'index'])->name('technician-skills.index');
+    Route::post('/technician-skills', [TechnicianSkillController::class, 'store'])->name('technician-skills.store');
+    Route::put('/technician-skills/{skill}', [TechnicianSkillController::class, 'update'])->name('technician-skills.update');
+    Route::delete('/technician-skills/{skill}', [TechnicianSkillController::class, 'destroy'])->name('technician-skills.destroy');
+
     // --- HRM: Leaves / Cuti ---
     Route::get('/hrm/leaves', [\App\Http\Controllers\Tenant\LeaveController::class, 'index'])->name('hrm.leaves.index');
     Route::post('/hrm/leaves', [\App\Http\Controllers\Tenant\LeaveController::class, 'store'])->name('hrm.leaves.store');
@@ -441,6 +462,10 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
         Route::get('/prices', [PosController::class, 'prices'])->name('prices');
         Route::post('/checkout', [PosController::class, 'checkout'])->name('checkout');
         Route::get('/receipt/{invoice}', [PosController::class, 'receipt'])->name('receipt');
+        Route::post('/hold', [PosController::class, 'hold'])->name('hold');
+        Route::get('/held', [PosController::class, 'heldList'])->name('held');
+        Route::get('/held/{held}', [PosController::class, 'recall'])->name('recall');
+        Route::delete('/held/{held}', [PosController::class, 'releaseHeld'])->name('release');
     });
 
     // --- Review & Warranty ---

@@ -25,6 +25,20 @@ class ServiceController extends Controller
     public function searchCustomers(Request $request) { return $this->service->searchCustomers($request); }
     public function vehiclesByCustomer($customer) { return $this->service->vehiclesByCustomer($customer); }
 
+    public function surveyLink(Service $service)
+    {
+        if (!$service->survey_token) {
+            $service->update(['survey_token' => \Illuminate\Support\Str::random(32)]);
+        }
+
+        $url = route('survey.show', $service->survey_token);
+
+        return response()->json([
+            'url' => $url,
+            'wa' => 'https://wa.me/?text=' . urlencode('Mohon beri rating untuk service Anda: ' . $url),
+        ]);
+    }
+
     public function printNextServiceSticker(Service $service)
     {
         $service->load(['customer', 'vehicle.vehicleBrand', 'vehicle.vehicleType', 'repairCategory', 'jobcardDetail']);
@@ -61,6 +75,36 @@ class ServiceController extends Controller
             'service' => $service,
             'companyName' => config('app.name'),
         ]);
+    }
+
+    public function sendWA(Service $service)
+    {
+        $phone = $service->customer?->phone;
+        if (!$phone) {
+            return redirect()->back()->with('error', 'Nomor WA pelanggan tidak tersedia.');
+        }
+
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+        if (substr($phone, 0, 1) === '0') {
+            $phone = '62' . substr($phone, 1);
+        }
+
+        $token = $service->getOrCreateApprovalToken();
+        $approveUrl = url('/approve/' . $token);
+        $rejectUrl = url('/reject/' . $token);
+
+        $message = "Halo {$service->customer->name}, mohon persetujuan estimasi servis:\n"
+            . "*{$service->job_no}*\n"
+            . "Kendaraan: {$service->vehicle?->number_plate}\n"
+            . "Keluhan: {$service->title}\n"
+            . "Estimasi biaya: Rp " . number_format($service->charge ?? 0, 0, ',', '.') . "\n\n"
+            . "Setujui: {$approveUrl}\n"
+            . "Tolak: {$rejectUrl}\n\n"
+            . "Terima kasih.";
+
+        $url = "https://wa.me/{$phone}?text=" . urlencode($message);
+
+        return redirect()->away($url);
     }
 
     public function history(Request $request)

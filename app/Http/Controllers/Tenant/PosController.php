@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\CashDenomination;
 use App\Models\Customer;
+use App\Models\HeldPosTransaction;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\PaymentMethod;
@@ -422,5 +423,89 @@ class PosController extends Controller
         $invoice->load(['items.product', 'customer', 'paymentRecords.paymentMethod', 'posSession.user', 'voucherUsages.voucher']);
         $change = max($invoice->amount_received - $invoice->grand_total, 0);
         return view('pos.receipt', compact('invoice', 'change'));
+    }
+
+    /**
+     * Tahan (suspend) transaksi POS — simpan item keranjang sebagai JSON.
+     */
+    public function hold(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'session_id' => 'nullable|exists:pos_sessions,id',
+            'customer_id' => 'nullable|exists:customers,id',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.name' => 'nullable|string|max:255',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.discount' => 'nullable|numeric|min:0',
+            'items.*.discount_type' => 'nullable|in:fixed,percent',
+            'discount' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $held = HeldPosTransaction::create([
+            'session_id' => $validated['session_id'] ?? null,
+            'user_id' => auth()->id(),
+            'customer_id' => $validated['customer_id'] ?? null,
+            'items' => array_values($validated['items']),
+            'discount' => $validated['discount'] ?? 0,
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Transaksi ditahan.',
+            'held_id' => $held->id,
+        ]);
+    }
+
+    /**
+     * Recall transaksi yang ditahan — kembalikan item sebagai JSON.
+     */
+    public function recall(HeldPosTransaction $held): JsonResponse
+    {
+        return response()->json([
+            'ok' => true,
+            'held' => [
+                'id' => $held->id,
+                'items' => $held->items,
+                'discount' => (float) $held->discount,
+                'customer_id' => $held->customer_id,
+                'notes' => $held->notes,
+                'created_at' => $held->created_at?->format('d M H:i'),
+            ],
+        ]);
+    }
+
+    /**
+     * Hapus transaksi yang ditahan.
+     */
+    public function releaseHeld(HeldPosTransaction $held): JsonResponse
+    {
+        $held->delete();
+
+        return response()->json(['ok' => true, 'message' => 'Transaksi ditahan dihapus.']);
+    }
+
+    /**
+     * Daftar transaksi yang ditahan (untuk modal Recall).
+     */
+    public function heldList(): JsonResponse
+    {
+        $helds = HeldPosTransaction::with('customer')
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->get()
+            ->map(fn ($h) => [
+                'id' => $h->id,
+                'customer' => $h->customer?->name ?? 'Walk-in',
+                'items_count' => count($h->items ?? []),
+                'discount' => (float) $h->discount,
+                'notes' => $h->notes,
+                'created_at' => $h->created_at?->format('d M H:i'),
+            ]);
+
+        return response()->json(['ok' => true, 'helds' => $helds]);
     }
 }

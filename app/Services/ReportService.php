@@ -11,6 +11,7 @@ use App\Models\Sale;
 use App\Models\Service;
 use App\Models\StockHistory;
 use App\Models\StockRecord;
+use App\Models\SupplierPrice;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -217,6 +218,45 @@ class ReportService
             ->sortByDesc('suggested_reorder')
             ->values()
             ->toArray();
+    }
+
+    public function getReorderSuggestions(): array
+    {
+        $records = StockRecord::with(['product'])
+            ->where('quantity', '<=', DB::raw('COALESCE(minimum_stock, 5)'))
+            ->where('quantity', '>=', 0)
+            ->get();
+
+        $productIds = $records->pluck('product_id')->filter()->unique()->values();
+
+        $prices = SupplierPrice::with('supplier')
+            ->whereIn('product_id', $productIds)
+            ->where('is_active', true)
+            ->orderBy('price')
+            ->get()
+            ->groupBy('product_id');
+
+        return $records->map(function ($record) use ($prices) {
+            $minStock = $record->minimum_stock ?? 5;
+            $suggestedReorder = max(($minStock * 2) - $record->quantity, 0);
+
+            $cheapest = $prices->get($record->product_id)?->first();
+
+            return [
+                'product_id' => $record->product_id,
+                'product_name' => $record->product?->name ?? 'Unknown',
+                'sku' => $record->product?->product_no ?? '-',
+                'current_stock' => $record->quantity,
+                'minimum_stock' => $minStock,
+                'suggested_reorder' => $suggestedReorder,
+                'cheapest_supplier_id' => $cheapest?->supplier_id,
+                'cheapest_supplier_name' => $cheapest?->supplier?->name ?? '-',
+                'cheapest_price' => $cheapest?->price ?? 0,
+            ];
+        })
+        ->sortByDesc('suggested_reorder')
+        ->values()
+        ->toArray();
     }
 
     public function getDashboardStats(): array

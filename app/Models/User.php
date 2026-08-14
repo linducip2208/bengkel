@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -31,5 +32,10 @@ class User extends Authenticatable
     public function dashboardConfig(): HasOne
     {
         return $this->hasOne(DashboardConfig::class);
+    }
+
+    public function skills(): HasMany
+    {
+        return $this->hasMany(TechnicianSkill::class);
     }
 }

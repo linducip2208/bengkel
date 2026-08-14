@@ -31,6 +31,9 @@
         <span class="badge bg-success ms-2">Sesi Buka — {{ $session->opened_at->format('d M H:i') }}</span>
     </h5>
     <div>
+        <button type="button" class="btn btn-outline-primary" id="recallBtn">
+            <i class="bi bi-clock-history me-1"></i>Recall
+        </button>
         <a href="{{ route('pos.closeForm', $session) }}" class="btn btn-warning">
             <i class="bi bi-lock me-1"></i>Tutup Sesi
         </a>
@@ -110,7 +113,27 @@
             <button type="submit" class="btn btn-success btn-lg w-100 mt-2" id="payBtn" disabled>
                 <i class="bi bi-check2-circle me-1"></i>Bayar & Cetak Struk
             </button>
+            <button type="button" class="btn btn-outline-warning w-100 mt-1" id="holdBtn">
+                <i class="bi bi-pause-circle me-1"></i>Tahan (Hold)
+            </button>
         </form>
+    </div>
+</div>
+
+{{-- Modal Recall Transaksi Ditahan --}}
+<div class="modal fade" id="heldModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title"><i class="bi bi-clock-history me-1"></i>Transaksi Ditahan</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="heldList" class="list-group list-group-flush">
+                    <div class="text-center text-muted py-3 small">Memuat...</div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -295,6 +318,120 @@
                 }
             });
         } catch (e) {}
+    });
+
+    // --- Hold / Recall ---
+    const holdBtn = document.getElementById('holdBtn');
+    const recallBtn = document.getElementById('recallBtn');
+    const heldModalEl = document.getElementById('heldModal');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const recallBase = '{{ route("pos.recall", ["held" => "__ID__"]) }}';
+    const releaseBase = '{{ route("pos.release", ["held" => "__ID__"]) }}';
+
+    function cartToPayload() {
+        return Object.keys(cart).map(id => ({
+            product_id: cart[id].id,
+            name: cart[id].name,
+            quantity: cart[id].quantity,
+            unit_price: cart[id].price,
+            discount: cart[id].discount || 0,
+            discount_type: 'fixed',
+        }));
+    }
+
+    holdBtn?.addEventListener('click', () => {
+        const payload = cartToPayload();
+        if (payload.length === 0) { alert('Keranjang kosong.'); return; }
+        holdBtn.disabled = true;
+        fetch('{{ route("pos.hold") }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json'},
+            body: JSON.stringify({
+                session_id: '{{ $session->id }}',
+                customer_id: customerSelect?.value || null,
+                items: payload,
+                discount: discountInput.value || 0,
+            }),
+        }).then(r => r.json()).then(d => {
+            if (d.ok) {
+                Object.keys(cart).forEach(id => delete cart[id]);
+                discountInput.value = 0;
+                voucherCode.value = ''; voucherId.value = ''; voucherDiscount.value = '0'; voucherInfo.style.display = 'none';
+                amountPaidInput.value = 0;
+                render();
+                alert(d.message || 'Transaksi ditahan.');
+            } else {
+                alert('Gagal menahan transaksi.');
+            }
+        }).catch(() => alert('Gagal menahan transaksi.'))
+          .finally(() => { holdBtn.disabled = false; });
+    });
+
+    function loadHeldList() {
+        const listEl = document.getElementById('heldList');
+        fetch('{{ route("pos.held") }}')
+            .then(r => r.json())
+            .then(d => {
+                const helds = d.helds || [];
+                if (helds.length === 0) {
+                    listEl.innerHTML = '<div class="text-center text-muted py-3 small">Tidak ada transaksi ditahan.</div>';
+                    return;
+                }
+                listEl.innerHTML = '';
+                helds.forEach(h => {
+                    const el = document.createElement('div');
+                    el.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    el.innerHTML = `
+                        <div>
+                            <strong>${h.customer}</strong>
+                            <div class="small text-muted">${h.items_count} item • Diskon ${fmt(h.discount)}</div>
+                            <div class="small text-muted">${h.created_at}${h.notes ? ' • ' + h.notes : ''}</div>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary" data-recall="${h.id}">Recall</button>
+                            <button class="btn btn-sm btn-outline-danger" data-release="${h.id}"><i class="bi bi-trash"></i></button>
+                        </div>`;
+                    listEl.appendChild(el);
+                });
+            })
+            .catch(() => { listEl.innerHTML = '<div class="text-center text-muted py-3 small">Gagal memuat.</div>'; });
+    }
+
+    recallBtn?.addEventListener('click', () => {
+        loadHeldList();
+        bootstrap.Modal.getOrCreateInstance(heldModalEl).show();
+    });
+
+    document.getElementById('heldList').addEventListener('click', (e) => {
+        const recallId = e.target.closest('[data-recall]')?.dataset.recall;
+        const releaseId = e.target.closest('[data-release]')?.dataset.release;
+        if (recallId) {
+            fetch(recallBase.replace('__ID__', recallId))
+                .then(r => r.json())
+                .then(d => {
+                    const held = d.held;
+                    held.items.forEach(it => {
+                        cart[it.product_id] = {
+                            id: it.product_id,
+                            name: it.name || ('Produk #' + it.product_id),
+                            price: parseFloat(it.unit_price),
+                            quantity: parseInt(it.quantity, 10),
+                            stock: 999999,
+                            discount: parseFloat(it.discount || 0),
+                        };
+                    });
+                    discountInput.value = held.discount || 0;
+                    if (held.customer_id && customerSelect) customerSelect.value = held.customer_id;
+                    render();
+                    bootstrap.Modal.getOrCreateInstance(heldModalEl).hide();
+                });
+        } else if (releaseId) {
+            if (!confirm('Hapus transaksi ditahan ini?')) return;
+            fetch(releaseBase.replace('__ID__', releaseId), {
+                method: 'DELETE',
+                headers: {'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json'},
+            }).then(() => loadHeldList());
+        }
     });
 
     // Update render() to include voucher discount in grand total

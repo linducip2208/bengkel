@@ -117,6 +117,9 @@
                             <span class="badge bg-{{ $service->status_color }} bg-opacity-10 text-{{ $service->status_color }} rounded-pill px-3">
                                 {{ $service->status_label }}
                             </span>
+                            @if($service->is_repeat_job)
+                                <span class="badge bg-danger ms-1">⚠️ Repeat</span>
+                            @endif
                         </td>
                         <td>
                             @foreach($service->technicians as $tech)

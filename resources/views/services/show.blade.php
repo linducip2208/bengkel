@@ -29,6 +29,9 @@
         <a href="{{ route('services.edit', $service) }}" class="btn btn-warning btn-sm">
             <i class="fas fa-edit me-1"></i> Edit
         </a>
+        <a href="{{ route('services.sendWA', $service) }}" class="btn btn-outline-success btn-sm" target="_blank" title="Kirim estimasi & link approval via WhatsApp">
+            <i class="fab fa-whatsapp me-1"></i> Kirim Estimasi WA
+        </a>
         <a href="{{ route('reports.service-pdf', $service) }}" class="btn btn-outline-danger btn-sm">
             <i class="fas fa-file-pdf me-1"></i> Laporan
         </a>
@@ -38,6 +41,11 @@
         <a href="{{ route('services.condition-report', $service) }}" class="btn btn-outline-success btn-sm" target="_blank">
             <i class="fas fa-clipboard-check me-1"></i> Kondisi
         </a>
+        @if($ws >= 12)
+        <button type="button" class="btn btn-outline-info btn-sm" id="surveyBtn">
+            <i class="fas fa-star me-1"></i> Kirim Survey
+        </button>
+        @endif
         <a href="{{ route('services.index') }}" class="btn btn-outline-secondary btn-sm">
             <i class="fas fa-arrow-left me-1"></i> Kembali
         </a>
@@ -76,6 +84,9 @@
                         <span class="badge bg-{{ $service->status_color }} bg-opacity-10 text-{{ $service->status_color }} rounded-pill px-3">
                             {{ $service->status_label }}
                         </span>
+                        @if($service->is_repeat_job)
+                            <span class="badge bg-danger ms-1">⚠️ Repeat Job</span>
+                        @endif
                     </td></tr>
                     <tr><td class="text-muted">Durasi</td><td>
                         <span class="fw-bold {{ $service->is_overdue && !$service->completed_at ? 'text-danger' : '' }}">
@@ -540,4 +551,55 @@
         </div>
     </div>
 </div>
+
+{{-- Modal Link Survey --}}
+<div class="modal fade" id="surveyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title"><i class="fas fa-star text-warning me-1"></i>Link Survey NPS</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label small">URL Survey</label>
+                <div class="input-group">
+                    <input type="text" id="surveyUrl" class="form-control" readonly>
+                    <button class="btn btn-outline-secondary" id="copySurveyUrl" title="Salin"><i class="fas fa-copy"></i></button>
+                </div>
+                <a href="#" id="surveyWaLink" target="_blank" class="btn btn-success w-100 mt-3">
+                    <i class="fab fa-whatsapp me-1"></i>Kirim via WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const btn = document.getElementById('surveyBtn');
+    if (!btn) return;
+    btn.addEventListener('click', async () => {
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        btn.disabled = true;
+        try {
+            const res = await fetch('{{ route("services.survey-link", $service) }}', {
+                method: 'POST',
+                headers: {'X-CSRF-TOKEN': csrf, 'Accept': 'application/json'},
+            });
+            const data = await res.json();
+            document.getElementById('surveyUrl').value = data.url;
+            document.getElementById('surveyWaLink').href = data.wa;
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('surveyModal')).show();
+        } catch (e) {
+            alert('Gagal membuat link survey.');
+        }
+        btn.disabled = false;
+    });
+    document.getElementById('copySurveyUrl')?.addEventListener('click', () => {
+        const el = document.getElementById('surveyUrl');
+        el.select();
+        navigator.clipboard?.writeText(el.value).then(() => alert('Link disalin!'));
+    });
+})();
+</script>
 @endsection

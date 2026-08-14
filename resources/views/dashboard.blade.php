@@ -263,6 +263,9 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
         <a href="{{ route('reports.stock') }}" class="btn btn-sm btn-outline-danger">
             <i class="fas fa-chart-bar me-1"></i> Laporan Stok
         </a>
+        <a href="{{ route('products.reorder') }}" class="btn btn-sm btn-primary">
+            <i class="fas fa-cart-plus me-1"></i> Buat PO Otomatis
+        </a>
     </div>
 </div>
 @endif

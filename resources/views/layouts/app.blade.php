@@ -540,14 +540,15 @@
             @canany(['commission.view','hrm.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuTechnicians"
-                    aria-expanded="{{ request()->routeIs('commissions.*','hrm.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('commissions.*','hrm.*','technician-skills.*') ? 'true' : 'false' }}">
                     <i class="fas fa-user-cog"></i> {{ __('Technicians') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('commissions.*','hrm.*') ? 'show' : '' }}" id="menuTechnicians">
+                <ul class="collapse submenu {{ request()->routeIs('commissions.*','hrm.*','technician-skills.*') ? 'show' : '' }}" id="menuTechnicians">
                     @can('commission.view')<li><a href="{{ route('commissions.index') }}" class="nav-link {{ request()->routeIs('commissions.index','commissions.markPaid*') ? 'active' : '' }}"><i class="fas fa-hand-holding-usd me-1"></i> Commissions</a></li>@endcan
                     @can('commission.report')<li><a href="{{ route('commissions.report') }}" class="nav-link {{ request()->routeIs('commissions.report') ? 'active' : '' }}"><i class="fas fa-file-invoice me-1"></i> Commission Report</a></li>@endcan
                     <li><a href="{{ route('hrm.leaves.index') }}" class="nav-link {{ request()->routeIs('hrm.leaves.*') ? 'active' : '' }}"><i class="fas fa-calendar-alt me-1"></i> Leave / Permission</a></li>
+                    <li><a href="{{ route('technician-skills.index') }}" class="nav-link {{ request()->routeIs('technician-skills.*') ? 'active' : '' }}"><i class="fas fa-clipboard-list me-1"></i> Skill Matrix</a></li>
                 </ul>
             </li>
             @endcanany

@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ServiceService extends BaseService
 {
@@ -86,6 +87,11 @@ class ServiceService extends BaseService
             unset($validated['assign_to']);
 
             $service = Service::create($validated);
+
+            $repeat = $service->detectRepeatJob();
+            if ($repeat) {
+                $service->update(['repeat_of' => $repeat->id]);
+            }
 
             if (!empty($technicianIds)) {
                 $service->technicians()->sync($technicianIds);
@@ -226,6 +232,7 @@ class ServiceService extends BaseService
                 'done_status' => 2,
                 'workflow_status' => 12,
                 'completed_at' => now(),
+                'survey_token' => $service->survey_token ?? Str::random(32),
             ]);
 
             if ($service->jobcardDetail) {
@@ -318,6 +325,7 @@ class ServiceService extends BaseService
         $this->notifyCustomer($service, 'service-completed', [
             'service' => $service,
             'workshop_name' => config('app.name'),
+            'survey_link' => route('survey.show', $service->survey_token),
         ]);
 
         // Auto-generate next service reminder
