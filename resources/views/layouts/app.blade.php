@@ -43,8 +43,9 @@
         }
         .card { background: var(--card-bg); border-color: var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
         .card-header, .modal-content { background: var(--card-bg); border-color: var(--border); }
-        .table { color: var(--text); }
-        .table-light { background: rgba(0,0,0,0.03); }
+        .table { color: var(--text); --bs-table-color: var(--text); --bs-table-bg: var(--card-bg); --bs-table-striped-bg: rgba(0,0,0,0.02); --bs-table-hover-bg: rgba(0,0,0,0.04); }
+        .table-light { background: var(--card-bg); color: var(--text); --bs-table-color: var(--text); --bs-table-bg: rgba(0,0,0,0.03); --bs-table-border-color: var(--border); }
+        .table thead th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.04em; }
         .text-muted { color: var(--text-muted) !important; }
         .form-control, .form-select { background: var(--card-bg); color: var(--text); border-color: var(--border); }
 
