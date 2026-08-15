@@ -12,6 +12,16 @@ class PaymentService extends BaseService
 {
     public function process(Invoice $invoice, array $data): PaymentRecord
     {
+        // Guard overpayment — jangan izinkan bayar melebihi sisa tagihan
+        $alreadyPaid = (float) $invoice->paid_amount;
+        $remaining = (float) $invoice->grand_total - $alreadyPaid;
+        if ($remaining <= 0) {
+            throw new \RuntimeException('Invoice sudah lunas, tidak ada sisa tagihan.');
+        }
+        if ((float) $data['amount'] > $remaining) {
+            throw new \RuntimeException('Jumlah pembayaran melebihi sisa tagihan (sisa: ' . number_format($remaining, 0, ',', '.') . ').');
+        }
+
         $data['created_by'] = auth()->id() ?? 1;
         $payment = $invoice->paymentRecords()->create($data);
 

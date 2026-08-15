@@ -19,7 +19,11 @@ class PaymentController extends Controller
     public function store(PaymentRequest $request): RedirectResponse
     {
         $invoice = Invoice::findOrFail($request->route('invoice'));
-        $this->paymentService->process($invoice, $request->validated());
+        try {
+            $this->paymentService->process($invoice, $request->validated());
+        } catch (\RuntimeException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
 
         return redirect()->route('invoices.show', $invoice)
             ->with('success', 'Pembayaran berhasil dicatat.');

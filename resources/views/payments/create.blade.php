@@ -23,7 +23,7 @@
             </div>
             <div class="col-4">
                 <small class="text-muted">Sudah Dibayar</small>
-                <div>@money($invoice->paymentRecords->sum('amount'))</div>
+                <div>@money($invoice->paid_amount)</div>
             </div>
             <div class="col-4">
                 <small class="text-muted">Sisa</small>
@@ -39,7 +39,7 @@
     <div class="row g-3 mb-3">
         <div class="col-md-6">
             <label class="form-label">Jumlah Pembayaran *</label>
-            <input type="number" name="amount" class="form-control @error('amount') is-invalid @enderror" value="{{ old('amount', $remaining) }}" min="1" step="1" required>
+            <input type="number" name="amount" class="form-control @error('amount') is-invalid @enderror" value="{{ old('amount', $remaining) }}" min="1" max="{{ $remaining }}" step="1" required>
             @error('amount') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
         <div class="col-md-6">
