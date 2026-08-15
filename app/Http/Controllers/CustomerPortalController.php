@@ -79,7 +79,7 @@ class CustomerPortalController extends Controller
             ->with(['items.product', 'paymentRecords.paymentMethod', 'voucherUsages.voucher'])
             ->findOrFail($id);
 
-        $totalPaid = $invoice->paymentRecords->sum('amount');
+        $totalPaid = (float) $invoice->paid_amount;
         $remaining = max($invoice->grand_total - $totalPaid, 0);
 
         return view('public.customer-invoice', compact('customer', 'invoice', 'totalPaid', 'remaining'));

@@ -347,7 +347,7 @@ class DatabaseSeeder extends Seeder
             $isPaid = $service->done_status >= 2;
             $invoiceNum = 'INV-2026-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT);
 
-            Invoice::create([
+            $invoice = Invoice::create([
                 'invoice_number' => $invoiceNum,
                 'customer_id' => $service->customer_id,
                 'service_id' => $service->id,
@@ -361,6 +361,16 @@ class DatabaseSeeder extends Seeder
                 'invoice_type' => 'service',
                 'created_by' => 1,
             ]);
+
+            if ($isPaid) {
+                $invoice->paymentRecords()->create([
+                    'payment_method_id' => $invoice->payment_method_id,
+                    'amount' => $service->charge,
+                    'payment_date' => $invoice->invoice_date,
+                    'reference_number' => $invoice->invoice_number,
+                    'notes' => 'Pembayaran lunas',
+                ]);
+            }
         }
     }
 

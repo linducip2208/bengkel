@@ -29,7 +29,7 @@ class PaymentController extends Controller
     {
         $invoice->load(['customer', 'paymentRecords']);
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
-        $totalPaid = $invoice->paymentRecords->sum('amount');
+        $totalPaid = (float) $invoice->paid_amount;
         $remaining = max($invoice->grand_total - $totalPaid, 0);
 
         return view('payments.create', compact('invoice', 'paymentMethods', 'remaining'));

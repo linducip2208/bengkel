@@ -15,7 +15,7 @@ class PublicInvoiceController extends Controller
             ->where('public_token', $token)
             ->firstOrFail();
 
-        $totalPaid = $invoice->paymentRecords->sum('amount');
+        $totalPaid = (float) $invoice->paid_amount;
         $remaining = max((float) $invoice->grand_total - $totalPaid, 0);
 
         $settingsService = app(SettingsService::class);
