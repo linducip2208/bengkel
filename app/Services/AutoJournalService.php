@@ -26,7 +26,7 @@ class AutoJournalService
         DB::transaction(function () use ($payment, $invoice) {
             $cashAccount = $this->getDefaultAccount('asset', 'Cash');
             $bankAccount = $this->getDefaultAccount('asset', 'Bank');
-            $revenueAccount = $this->getDefaultAccount('revenue', 'Service Revenue');
+            $revenueAccount = $this->getDefaultAccount('income', 'Service Revenue');
 
             $debitAccount = $cashAccount;
             $description = 'Pembayaran tunai invoice ' . ($invoice->invoice_number ?? '#'.$invoice->id);
@@ -155,7 +155,7 @@ class AutoJournalService
         $defaults = [
             'asset' => ['Cash' => '1000', 'Bank' => '1010', 'Accounts Receivable' => '1100', 'Inventory' => '1200'],
             'liability' => ['Accounts Payable' => '2000'],
-            'revenue' => ['Service Revenue' => '4000', 'Parts Revenue' => '4100'],
+            'income' => ['Service Revenue' => '4000', 'Parts Revenue' => '4100'],
             'expense' => ['General Expense' => '5000', 'Cost of Goods Sold' => '5100'],
             'equity' => ['Equity' => '3000'],
         ];

@@ -314,7 +314,7 @@ class ReportController extends Controller
             $start = $filters['start_date'] ?? now()->startOfYear()->toDateString();
             $end = $filters['end_date'] ?? now()->toDateString();
 
-            $revenueAccounts = \App\Models\ChartOfAccount::where('type', 'revenue')->where('is_active', true)->get();
+            $revenueAccounts = \App\Models\ChartOfAccount::where('type', 'income')->where('is_active', true)->get();
             $cogsAccounts = \App\Models\ChartOfAccount::whereIn('name', ['Cost of Goods Sold', 'COGS'])
                 ->orWhere('code', '5100')
                 ->where('is_active', true)
@@ -549,7 +549,7 @@ class ReportController extends Controller
         $start = $request->get('start_date', now()->startOfYear()->toDateString());
         $end = $request->get('end_date', now()->toDateString());
 
-        $revenueAccounts = \App\Models\ChartOfAccount::where('type', 'revenue')->where('is_active', true)->get();
+        $revenueAccounts = \App\Models\ChartOfAccount::where('type', 'income')->where('is_active', true)->get();
         $cogsAccounts = \App\Models\ChartOfAccount::whereIn('name', ['Cost of Goods Sold', 'COGS'])
             ->orWhere('code', '5100')
             ->where('is_active', true)
@@ -629,7 +629,7 @@ class ReportController extends Controller
         $totalEquity = $equityAccounts->sum('balance');
 
         $startOfYear = now()->startOfYear()->toDateString();
-        $pnlRevenue = \App\Models\JournalEntryLine::whereHas('account', fn($q) => $q->where('type', 'revenue'))
+        $pnlRevenue = \App\Models\JournalEntryLine::whereHas('account', fn($q) => $q->where('type', 'income'))
             ->whereHas('journalEntry', fn($q) => $q->whereBetween('entry_date', [$startOfYear, $endDate]))
             ->sum('credit');
         $pnlExpense = \App\Models\JournalEntryLine::whereHas('account', fn($q) => $q->whereIn('type', ['expense']))
@@ -724,7 +724,7 @@ class ReportController extends Controller
         $start = $filters['start_date'] ?? now()->startOfYear()->toDateString();
         $end = $filters['end_date'] ?? now()->toDateString();
 
-        $revenueAccounts = \App\Models\ChartOfAccount::where('type', 'revenue')->where('is_active', true)->get();
+        $revenueAccounts = \App\Models\ChartOfAccount::where('type', 'income')->where('is_active', true)->get();
         $cogsAccounts = \App\Models\ChartOfAccount::whereIn('name', ['Cost of Goods Sold', 'COGS'])
             ->orWhere('code', '5100')
             ->where('is_active', true)
