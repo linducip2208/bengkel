@@ -3,57 +3,77 @@
 <section class="content">
     <h2>{{ $context ?? ucwords(str_replace('-', ' ', $slug)) }}</h2>
 
-    <p>{{ config('app.name') }} adalah bengkel mobil profesional yang melayani berbagai kebutuhan perawatan dan perbaikan kendaraan di Indonesia.@if($cityName) Kami hadir di area <strong>{{ $cityName }}</strong> dan sekitarnya.@endif Dengan teknisi berpengalaman dan peralatan modern, kami siap memberikan layanan terbaik untuk kendaraan Anda.</p>
+    <p><strong>ERP Bengkel Indonesia</strong> (ERP Repair Car Indonesia) adalah aplikasi bengkel standard Indonesia berbasis web (web based) yang dirancang untuk mengelola seluruh operasional bengkel mobil & motor dalam satu sistem.@if($cityName) Tersedia untuk area <strong>{{ $cityName }}</strong> dan seluruh Indonesia.@endif Full source code Laravel + MySQL, harga mulai <strong>Rp 6.000.000</strong>.</p>
 
     @if($serviceName || $brandName || $cityName)
-    <h3>Layanan Kami</h3>
+    <h3>Fitur Utama</h3>
     <ul>
-        @if($serviceName)<li><strong>{{ $serviceName }}</strong> — layanan profesional dengan garansi</li>@endif
-        @if($brandName)<li>Spesialis mobil <strong>{{ $brandName }}</strong></li>@endif
-        @if($cityName)<li>Melayani area <strong>{{ $cityName }}</strong> dan sekitarnya</li>@endif
+        @if($serviceName)<li><strong>{{ $serviceName }}</strong> — modul lengkap, siap pakai</li>@endif
+        @if($brandName)<li>Dukungan multi-cabang & multi-gudang untuk {{ $brandName }}</li>@endif
+        @if($cityName)<li>Tersedia untuk <strong>{{ $cityName }}</strong> dan seluruh Indonesia</li>@endif
         @if($priceLabel)<li>Harga mulai <strong>{{ $priceLabel }}</strong></li>@endif
-        @if(($yearLabel ?? 0) > 2000)<li>Tersedia tahun <strong>{{ $yearLabel }}</strong></li>@endif
+        <li><strong>Web Based</strong> — akses dari HP/PC/tablet, tanpa install</li>
     </ul>
     @endif
 
-    <h3>Mengapa Memilih {{ config('app.name') }}?</h3>
-    <p>Kami mengutamakan kualitas, transparansi harga, dan kepuasan pelanggan. Setiap pekerjaan dikerjakan oleh teknisi bersertifikat menggunakan sparepart genuine atau OEM berkualitas. Kami memberikan garansi untuk setiap service yang kami lakukan.</p>
-    <p>Dengan sistem manajemen bengkel modern, kami mencatat setiap riwayat service kendaraan Anda sehingga perawatan menjadi lebih terencana dan efisien. Booking online tersedia 24 jam melalui website kami.</p>
+    <h3>Kenapa Pilih ERP Bengkel Indonesia?</h3>
+    <p>ERP Bengkel Indonesia adalah aplikasi bengkel standard Indonesia paling lengkap: service/jobcard 13-status workflow, POS kasir, inventory multi-gudang, invoice & pembayaran, akuntansi otomatis, teknisi & komisi, warranty, CRM & loyalty, booking online, dan 13+ laporan.</p>
+    <p>Dibangun dengan Laravel (PHP) + MySQL, <strong>web based</strong> sehingga bisa diakses dari mana saja. Full source code — Anda bebas modifikasi, rebrand, atau jual kembali (whitelabel).</p>
+
+    <h3>Modul Lengkap</h3>
+    <ul>
+        <li>Dashboard & 13-status service workflow</li>
+        <li>POS Kasir + sesi + hitung uang fisik</li>
+        <li>Inventory multi-gudang + stock adjustment + transfer</li>
+        <li>Invoice, payment, DP, cicil, retur</li>
+        <li>Akuntansi otomatis (COA, journal, GL, P&L, balance sheet)</li>
+        <li>Teknisi, komisi, skill matrix, cuti</li>
+        <li>Warranty, klaim asuransi, klaim supplier, recall</li>
+        <li>CRM: voucher, loyalty poin, blog, campaign</li>
+        <li>Booking online + customer portal + API mobile</li>
+    </ul>
 </section>
 
 @if($isSourceCode)
 <div class="sc-cta">
-    <h3>Beli Source Code Aplikasi Bengkel</h3>
-    <p>Aplikasi bengkel full source code Laravel — siap pakai, bisa custom, gratis demo. Dapatkan sekarang!</p>
-    <a href="https://wa.me/6281234567890?text=Halo%2C%20saya%20tertarik%20source%20code%20aplikasi%20bengkel" class="btn">Chat WhatsApp Sekarang</a>
-    <p style="font-size:0.85rem;margin-top:0.75rem">Harga terjangkau &middot; Source code lengkap &middot; Bisa request custom fitur</p>
+    <h3>Beli Aplikasi Bengkel Standard Indonesia (ERP)</h3>
+    <p>ERP Bengkel Indonesia — web based, full source code Laravel, harga mulai Rp 6.000.000. Siap pakai, bisa custom, gratis demo.</p>
+    <a href="https://wa.me/6281296052010?text=Halo%2C%20saya%20tertarik%20ERP%20Bengkel%20Indonesia" class="btn">Chat WhatsApp 081296052010</a>
+    <p style="font-size:0.85rem;margin-top:0.75rem">Harga mulai Rp 6.000.000 &middot; Full source code &middot; Web based &middot; Bisa whitelabel</p>
+</div>
+@else
+<div class="sc-cta">
+    <h3>Dapatkan ERP Bengkel Indonesia Sekarang</h3>
+    <p>Aplikasi bengkel standard Indonesia, web based, full source code. Harga mulai Rp 6.000.000.</p>
+    <a href="https://wa.me/6281296052010?text=Halo%2C%20saya%20tertarik%20ERP%20Bengkel%20Indonesia" class="btn">Chat WhatsApp 081296052010</a>
+    <p style="font-size:0.85rem;margin-top:0.75rem">Web based &middot; Full source code &middot; Harga mulai Rp 6.000.000</p>
 </div>
 @endif
 
 <section class="content">
     <h3>Frequently Asked Questions</h3>
     <div class="faq-item">
-        <strong>Apa layanan unggulan {{ config('app.name') }}?</strong>
-        <p>Kami melayani {{ $serviceName ?? 'semua jenis perawatan dan perbaikan mobil' }}, dari servis berkala, ganti oli, tune-up, body repair, hingga overhaul mesin. Semua dikerjakan teknisi profesional.</p>
+        <strong>Apa itu ERP Bengkel Indonesia?</strong>
+        <p>ERP Bengkel Indonesia (ERP Repair Car Indonesia) adalah aplikasi bengkel standard Indonesia berbasis web untuk mengelola service, inventory, POS, invoice, akuntansi, teknisi, warranty, dan laporan dalam satu sistem. Full source code Laravel + MySQL.</p>
     </div>
     <div class="faq-item">
-        <strong>@if($cityName)Apakah melayani area {{ $cityName }}?@else Apakah bisa booking online?@endif</strong>
-        <p>@if($cityName)Ya, {{ config('app.name') }} melayani area {{ $cityName }} dan sekitarnya. @endif Booking online tersedia 24 jam. Hubungi WhatsApp kami atau kunjungi bengkel langsung untuk konsultasi gratis.</p>
+        <strong>Berapa harga aplikasi bengkel ini?</strong>
+        <p>Harga mulai <strong>Rp 6.000.000</strong> untuk full source code, web based, siap pakai. Bisa request custom fitur. Hubungi WhatsApp 081296052010 untuk demo gratis.</p>
     </div>
     <div class="faq-item">
-        <strong>Berapa biaya {{ $serviceName ?? 'service' }}?</strong>
-        <p>Biaya bervariasi tergantung jenis kendaraan dan tingkat kerusakan.@if($priceLabel) Harga mulai dari <strong>{{ $priceLabel }}</strong>.@else Kami memberikan estimasi transparan sebelum pekerjaan dimulai, tanpa biaya tersembunyi.@endif</p>
+        <strong>Apakah web based?</strong>
+        <p>Ya, ERP Bengkel Indonesia sepenuhnya <strong>web based</strong> — bisa diakses dari HP, PC, atau tablet melalui browser tanpa perlu install aplikasi.</p>
     </div>
     @if($isSourceCode)
     <div class="faq-item">
-        <strong>Bagaimana cara beli source code aplikasi bengkel?</strong>
-        <p>Hubungi WhatsApp kami untuk demo dan pricing. Source code lengkap Laravel + MySQL, bisa di-custom sesuai kebutuhan. Harga terjangkau, cocok untuk startup bengkel atau pengembang software.</p>
+        <strong>Bagaimana cara beli source code?</strong>
+        <p>Hubungi WhatsApp 081296052010 untuk demo & pricing. Source code lengkap Laravel + MySQL, bisa di-custom, di-rebrand, atau di-whitelabel sesuai kebutuhan bisnis Anda.</p>
     </div>
     @endif
 </section>
 
 <section class="content">
-    <h3>Layanan Terkait</h3>
+    <h3>Fitur Terkait</h3>
     <ul>
         @foreach($relatedServices as $svc)
         <li><a href="{{ url('/' . $svc['slug'] . ($cityName ? '-' . $city : '')) }}">{{ $svc['name'] }}</a></li>

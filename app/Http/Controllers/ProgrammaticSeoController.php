@@ -255,23 +255,29 @@ class ProgrammaticSeoController extends Controller
             || str_contains($slug, 'download-') || str_contains($slug, 'paket-');
 
         if ($isSourceCode) {
-            $metaTitle = "Source Code {$context} — Aplikasi Bengkel Terbaik";
-            $metaDescription = "Beli source code aplikasi bengkel {$context}. Full source code Laravel, siap pakai, bisa custom. Dapatkan sekarang dengan harga terjangkau.";
+            $metaTitle = "{$context} — ERP Bengkel Indonesia (Web Based)";
+            $metaDescription = "Beli {$context} — ERP Bengkel Indonesia, aplikasi bengkel standard Indonesia web based. Full source code Laravel, harga mulai Rp 6.000.000, siap pakai & bisa custom. WhatsApp 081296052010.";
         } elseif ($serviceName || $cityName) {
-            $metaTitle = "{$context} — Aplikasi Bengkel Terbaik";
-            $metaDescription = "Butuh {$context}? Aplikasi Bengkel Terbaik melayani {$serviceName} profesional dengan teknisi berpengalaman dan harga bersaing. Hubungi kami sekarang.";
+            $metaTitle = "{$context} — ERP Bengkel Indonesia";
+            $metaDescription = "Butuh {$context}? ERP Bengkel Indonesia — aplikasi bengkel standard, web based, harga mulai Rp 6.000.000. Hubungi WhatsApp 081296052010.";
         } else {
-            $metaTitle = "Aplikasi Bengkel Terbaik — {$slug}";
-            $metaDescription = "Aplikasi Bengkel Terbaik: layanan bengkel mobil profesional, service, perawatan, dan perbaikan kendaraan. Terpercaya dan berpengalaman.";
+            $metaTitle = "ERP Bengkel Indonesia — {$slug}";
+            $metaDescription = "ERP Bengkel Indonesia / ERP Repair Car Indonesia — aplikasi bengkel standard, web based, harga mulai Rp 6.000.000. WhatsApp 081296052010.";
         }
 
         $jsonLd = [
             '@context' => 'https://schema.org',
-            '@type' => 'LocalBusiness',
-            'name' => "Aplikasi Bengkel Terbaik " . ($cityName ? "- {$cityName}" : ''),
+            '@type' => 'SoftwareApplication',
+            'name' => 'ERP Bengkel Indonesia' . ($cityName ? " - {$cityName}" : ''),
             'description' => $metaDescription,
-            'address' => $cityName ? ['@type' => 'PostalAddress', 'addressLocality' => $cityName, 'addressCountry' => 'ID'] : null,
-            'priceRange' => $priceLabel ?? 'Rp 100rb - Rp 50jt',
+            'applicationCategory' => 'BusinessApplication',
+            'operatingSystem' => 'Web Browser (Web Based)',
+            'offers' => [
+                '@type' => 'Offer',
+                'price' => '6000000',
+                'priceCurrency' => 'IDR',
+                'description' => 'Harga mulai Rp 6.000.000 (full source code, web based)',
+            ],
             'areaServed' => $cityName ?? 'Indonesia',
         ];
 
@@ -470,21 +476,21 @@ class ProgrammaticSeoController extends Controller
                 'best_biz' => 'Top 10 Werkstatten {city}',
             ],
             default => [
-                'city_title' => 'Bengkel Mobil Terbaik di {city} — Servis Profesional',
-                'city_desc' => 'Cari bengkel mobil terpercaya di {city}? Teknisi berpengalaman, sparepart original, harga transparan. Servis berkala, AC, mesin, rem & lainnya.',
-                'city_biz' => 'Bengkel Mobil Terbaik {city}',
-                'kel_title' => 'Bengkel Mobil di {kelurahan}, {city} — Servis Terdekat',
-                'kel_desc' => 'Butuh servis mobil di area {kelurahan}, {city}? Bengkel profesional dengan pengerjaan cepat, harga terjangkau, dan garansi semua pekerjaan.',
-                'kel_biz' => 'Bengkel {kelurahan} {city}',
-                'brand_title' => 'Bengkel {brand} {city} — Spesialis Servis {brand}',
-                'brand_desc' => 'Bengkel spesialis {brand} di {city}. Teknisi ahli, sparepart original OEM, perawatan rutin dan perbaikan besar semua tipe {brand}.',
-                'brand_biz' => 'Bengkel Spesialis {brand} {city}',
-                'svc_title' => '{service} di {city} — Jasa Profesional',
-                'svc_desc' => 'Jasa {service} profesional di {city}. Pengerjaan cepat, bergaransi. Booking online atau kunjungi bengkel kami sekarang.',
-                'svc_biz' => '{service} {city}',
-                'best_title' => '10 Bengkel Mobil Terbaik di {city} — Rekomendasi Ahli',
-                'best_desc' => 'Temukan bengkel mobil terbaik di {city}. Bandingkan harga, baca review, dan pilih mekanik terpercaya untuk kendaraan Anda.',
-                'best_biz' => '10 Bengkel Terbaik {city}',
+                'city_title' => 'ERP Bengkel Indonesia di {city} — Aplikasi Bengkel Standard (Web Based)',
+                'city_desc' => 'ERP Bengkel Indonesia / ERP Repair Car Indonesia untuk {city}. Aplikasi bengkel standard Indonesia, web based, harga mulai Rp 6.000.000. WhatsApp 081296052010.',
+                'city_biz' => 'ERP Bengkel Indonesia {city}',
+                'kel_title' => 'Aplikasi Bengkel Standard {kelurahan}, {city} — ERP Web Based',
+                'kel_desc' => 'Aplikasi bengkel standard Indonesia untuk {kelurahan}, {city}. ERP bengkel web based, full source code, harga mulai Rp 6.000.000. WhatsApp 081296052010.',
+                'kel_biz' => 'ERP Bengkel {kelurahan} {city}',
+                'brand_title' => 'ERP Bengkel {brand} Indonesia — Software Bengkel Web Based',
+                'brand_desc' => 'ERP Bengkel {brand} Indonesia — aplikasi bengkel standard, web based, full source code Laravel, harga mulai Rp 6.000.000. WhatsApp 081296052010.',
+                'brand_biz' => 'ERP Bengkel {brand} Indonesia',
+                'svc_title' => '{service} — ERP Bengkel Indonesia (Aplikasi Standard)',
+                'svc_desc' => 'ERP Bengkel Indonesia untuk {service}. Aplikasi bengkel standard, web based, harga mulai Rp 6.000.000. WhatsApp 081296052010.',
+                'svc_biz' => 'ERP Bengkel {service} Indonesia',
+                'best_title' => '10 Aplikasi Bengkel Standard Indonesia Terbaik — ERP Web Based',
+                'best_desc' => 'Temukan aplikasi bengkel standard Indonesia terbaik. ERP bengkel web based, full source code, harga mulai Rp 6.000.000. WhatsApp 081296052010.',
+                'best_biz' => '10 ERP Bengkel Indonesia Terbaik',
             ],
         };
     }

@@ -73,23 +73,24 @@ class SeoData
     ];
 
     // ==================================================================
-    // FITUR / KEYWORD SOURCE CODE
+    // FITUR / KEYWORD SOURCE CODE (ERP Bengkel Indonesia)
     // ==================================================================
 
     public const SOURCE_CODE_KEYWORDS = [
-        'aplikasi-bengkel','software-bengkel','sistem-informasi-bengkel','program-bengkel',
-        'erp-bengkel','aplikasi-service-motor','software-bengkel-mobil','aplikasi-manajemen-bengkel',
-        'source-code-aplikasi-bengkel','source-code-bengkel','download-source-code-bengkel',
-        'aplikasi-kasir-bengkel','aplikasi-inventory-bengkel','aplikasi-admin-bengkel',
+        'aplikasi-bengkel-standard-indonesia','erp-bengkel-indonesia','erp-repair-car-indonesia',
+        'aplikasi-bengkel-indonesia','software-bengkel-indonesia','sistem-erp-bengkel',
+        'aplikasi-manajemen-bengkel','erp-bengkel-web-based','aplikasi-bengkel-web',
+        'software-manajemen-bengkel','aplikasi-kasir-bengkel','aplikasi-service-bengkel',
+        'erp-bengkel-mobil-indonesia','program-bengkel-indonesia','sistem-informasi-bengkel',
     ];
 
     public const SC_MODIFIERS = [
         'terbaik','murah','lengkap','gratis-demo','full-source-code',
-        'laravel','php','siap-pakai','whitelabel','bisa-custom',
+        'laravel','php','siap-pakai','whitelabel','bisa-custom','web-based',
     ];
 
     public const SC_PRICE_RANGES = [
-        '500rb','1jt','2jt','3jt','5jt','7jt','10jt','15jt','gratis','open-source',
+        '6jt','7jt','8jt','10jt','15jt','20jt','paket-lengkap','source-code',
     ];
 
     public const SC_ACTIONS = [

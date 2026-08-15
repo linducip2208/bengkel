@@ -64,7 +64,7 @@
     </footer>
 
 <x-whatsapp-cta
-    message="Halo {{ config('app.name') }}, saya butuh informasi bengkel."
-    label="Chat WhatsApp" />
+    message="Halo, saya tertarik ERP Bengkel Indonesia — aplikasi bengkel standard, web based. Mohon info demo & harga."
+    label="Chat WhatsApp 081296052010" />
 </body>
 </html>
