@@ -57,6 +57,10 @@ class DatabaseSeeder extends Seeder
         $this->seedObservationPoints();
         $this->seedInspectionPointsLibrary();
         $this->seedCheckoutCategories();
+        $this->seedChartOfAccounts();
+        $this->seedBankAccounts();
+        $this->seedVouchers();
+        $this->seedTechnicianSkills();
 
         $this->command->info('Database seeded successfully!');
     }
@@ -528,6 +532,74 @@ class DatabaseSeeder extends Seeder
 
         foreach ($categories as $cat) {
             CheckoutCategory::firstOrCreate(['category_name' => $cat]);
+        }
+    }
+
+    private function seedChartOfAccounts(): void
+    {
+        $accounts = [
+            // Asset
+            ['code' => '1000', 'name' => 'Cash', 'type' => 'asset'],
+            ['code' => '1010', 'name' => 'Bank', 'type' => 'asset'],
+            ['code' => '1100', 'name' => 'Accounts Receivable', 'type' => 'asset'],
+            ['code' => '1200', 'name' => 'Inventory', 'type' => 'asset'],
+            // Liability
+            ['code' => '2000', 'name' => 'Accounts Payable', 'type' => 'liability'],
+            // Equity
+            ['code' => '3000', 'name' => 'Equity', 'type' => 'equity'],
+            // Income
+            ['code' => '4000', 'name' => 'Service Revenue', 'type' => 'income'],
+            ['code' => '4100', 'name' => 'Parts Revenue', 'type' => 'income'],
+            // Expense
+            ['code' => '5000', 'name' => 'General Expense', 'type' => 'expense'],
+            ['code' => '5100', 'name' => 'Cost of Goods Sold', 'type' => 'expense'],
+        ];
+
+        foreach ($accounts as $acc) {
+            \App\Models\ChartOfAccount::firstOrCreate(['code' => $acc['code']], $acc);
+        }
+    }
+
+    private function seedBankAccounts(): void
+    {
+        $accounts = [
+            ['name' => 'Kas Utama', 'bank_name' => 'Cash', 'account_number' => '-', 'account_holder' => 'Bengkel', 'opening_balance' => 1000000, 'current_balance' => 1000000],
+            ['name' => 'BCA', 'bank_name' => 'BCA', 'account_number' => '1234567890', 'account_holder' => 'Bengkel', 'opening_balance' => 5000000, 'current_balance' => 5000000],
+        ];
+
+        foreach ($accounts as $acc) {
+            \App\Models\BankAccount::firstOrCreate(['account_number' => $acc['account_number']], $acc);
+        }
+    }
+
+    private function seedVouchers(): void
+    {
+        $vouchers = [
+            ['code' => 'WELCOME10', 'name' => 'Diskon 10% Pelanggan Baru', 'type' => 'percent', 'value' => 10, 'min_purchase' => 0, 'max_discount' => 100000, 'valid_until' => now()->addMonths(3)->toDateString()],
+            ['code' => 'HEMAT50', 'name' => 'Potongan Rp 50.000', 'type' => 'fixed', 'value' => 50000, 'min_purchase' => 250000, 'max_discount' => 50000, 'valid_until' => now()->addMonths(6)->toDateString()],
+        ];
+
+        foreach ($vouchers as $v) {
+            \App\Models\Voucher::firstOrCreate(['code' => $v['code']], $v + ['usage_limit' => 100, 'used_count' => 0, 'valid_from' => now()->toDateString(), 'is_active' => true]);
+        }
+    }
+
+    private function seedTechnicianSkills(): void
+    {
+        $tech = User::where('email', 'teknisi@bengkel.test')->first();
+        if (!$tech) return;
+
+        $skills = [
+            ['skill' => 'Engine', 'level' => 'expert'],
+            ['skill' => 'Electrical', 'level' => 'intermediate'],
+            ['skill' => 'Brake & Suspension', 'level' => 'expert'],
+        ];
+
+        foreach ($skills as $s) {
+            \App\Models\TechnicianSkill::firstOrCreate(
+                ['user_id' => $tech->id, 'skill' => $s['skill']],
+                ['level' => $s['level']]
+            );
         }
     }
 }
