@@ -71,7 +71,7 @@ class InvoiceController extends Controller
     public function show(Invoice $invoice): View
     {
         $invoice->load(['items', 'customer', 'vehicle', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod', 'paymentMethod']);
-        $totalPaid = $invoice->paymentRecords->sum('amount');
+        $totalPaid = (float) $invoice->paid_amount;
         $remaining = max($invoice->grand_total - $totalPaid, 0);
         $settings = app(\App\Services\SettingsService::class)->getCompanyInfo();
 
@@ -130,7 +130,7 @@ class InvoiceController extends Controller
         [$view, $paperSize, $template] = $this->resolveTemplateView($request->get('template'));
 
         $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
-        $totalPaid = $invoice->paymentRecords->sum('amount');
+        $totalPaid = (float) $invoice->paid_amount;
         $remaining = max($invoice->grand_total - $totalPaid, 0);
         $settings = app(\App\Services\SettingsService::class)->getCompanyInfo();
 
@@ -156,7 +156,7 @@ class InvoiceController extends Controller
         $view = $previews[$template] ?? $previews['modern'];
 
         $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
-        $totalPaid = $invoice->paymentRecords->sum('amount');
+        $totalPaid = (float) $invoice->paid_amount;
         $remaining = max($invoice->grand_total - $totalPaid, 0);
         $settings = app(\App\Services\SettingsService::class)->getCompanyInfo();
 
@@ -173,7 +173,7 @@ class InvoiceController extends Controller
                 ->with('error', 'Customer tidak punya alamat email.');
         }
 
-        $totalPaid = $invoice->paymentRecords->sum('amount');
+        $totalPaid = (float) $invoice->paid_amount;
         $remaining = max($invoice->grand_total - $totalPaid, 0);
 
         try {

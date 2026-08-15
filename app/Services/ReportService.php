@@ -13,6 +13,7 @@ use App\Models\StockHistory;
 use App\Models\StockRecord;
 use App\Models\SupplierPrice;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
 
 class ReportService
