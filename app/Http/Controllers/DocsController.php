@@ -659,6 +659,128 @@ class DocsController extends Controller
                     ['type' => 'screenshot', 'file' => 'report-technician.png', 'label' => 'Technician Report', 'url' => '/admin/reports/technician', 'caption' => 'Laporan produktivitas teknisi.'],
                 ],
             ],
+            [
+                'slug'  => 'flow-booking',
+                'icon'  => 'fa-calendar-check',
+                'title' => '24. Data Flow: Booking → Service',
+                'lead'  => 'Alur booking online — dari customer pesan jadwal sampai dikonversi jadi service.',
+                'body'  => [
+                    ['type' => 'note', 'text' => '<b>Alur:</b> Customer booking (nama/HP/kendaraan/jadwal/kategori) → Status Pending → Admin konfirmasi → Convert → Service + Customer + Vehicle (auto)'],
+                    ['type' => 'ol', 'items' => [
+                        'Customer isi <b>Booking Form</b> (public) — nama, HP, plat, kendaraan, jadwal, kategori service.',
+                        'Booking masuk <b>status Pending</b>, muncul di daftar admin + kalender.',
+                        'Admin <b>konfirmasi</b> → status Confirmed (bisa assign teknisi + cek ketersediaan).',
+                        '<b>Convert ke Service</b> → otomatis buat <b>Customer</b> (by HP) + <b>Vehicle</b> (by plat) + <b>Service</b> (kategori & keluhan dibawa).',
+                        'Lanjut ke workflow 13-status normal (Check-in → dst).',
+                    ]],
+                    ['type' => 'screenshot', 'file' => 'booking-list.png', 'label' => 'Booking List', 'url' => '/admin/bookings', 'caption' => 'Daftar booking — konfirmasi, assign teknisi, convert ke service.'],
+                    ['type' => 'screenshot', 'file' => 'customer-list.png', 'label' => 'Customer (auto)', 'url' => '/admin/customers', 'caption' => 'Customer otomatis terbuat dari booking (by nomor HP).'],
+                ],
+            ],
+            [
+                'slug'  => 'flow-requisition',
+                'icon'  => 'fa-clipboard-list',
+                'title' => '25. Data Flow: Purchase Requisition → PO',
+                'lead'  => 'Alur permintaan pembelian internal — dari teknisi butuh parts sampai jadi purchase order.',
+                'body'  => [
+                    ['type' => 'note', 'text' => '<b>Alur:</b> Teknisi butuh parts → Requisition (draft) → Submit → Manager Approve/Reject → Convert → Purchase Order → Mark Received → Stok bertambah'],
+                    ['type' => 'ol', 'items' => [
+                        'Teknisi/staff buat <b>Purchase Requisition</b> (parts yang dibutuhkan + qty).',
+                        'Submit → status <b>submitted</b> (menunggu approval).',
+                        'Manager <b>approve</b> (atau reject dengan alasan) → status <b>approved</b>.',
+                        '<b>Convert</b> → otomatis buat <b>Purchase Order</b> ke supplier (item + harga beli).',
+                        'PO <b>Mark Received</b> → stok bertambah + journal otomatis.',
+                    ]],
+                    ['type' => 'screenshot', 'file' => 'purchase-requisition-list.png', 'label' => 'Purchase Requisitions', 'url' => '/admin/purchase-requisitions', 'caption' => 'Permintaan pembelian internal — approval workflow.'],
+                    ['type' => 'screenshot', 'file' => 'purchase-list.png', 'label' => 'Purchase Orders', 'url' => '/admin/purchases', 'caption' => 'PO dari requisition → received → stok bertambah.'],
+                ],
+            ],
+            [
+                'slug'  => 'flow-return',
+                'icon'  => 'fa-rotate-left',
+                'title' => '26. Data Flow: Retur (Penjualan & Pembelian)',
+                'lead'  => 'Alur retur — barang balik ke stok baik dari customer maupun ke supplier.',
+                'body'  => [
+                    ['type' => 'note', 'text' => '<b>Sell Return (customer):</b> Customer retur barang → Sell Return + item → Stok bertambah + StockHistory (sell_return) + Refund<br><b>Purchase Return (supplier):</b> Barang dikembalikan ke supplier → Stok berkurang + StockHistory (return)'],
+                    ['type' => 'ol', 'items' => [
+                        '<b>Sell Return</b>: customer kembalikan sparepart yang dibeli → pilih sale/invoice/barang.',
+                        'Stok otomatis <b>bertambah kembali</b> + StockHistory (type sell_return) + refund dihitung.',
+                        '<b>Purchase Return</b>: barang cacat dikembalikan ke supplier → stok berkurang.',
+                        'StockHistory (type return) mencatat kedua arah untuk audit.',
+                    ]],
+                    ['type' => 'screenshot', 'file' => 'sell-return-list.png', 'label' => 'Sell Returns', 'url' => '/admin/sell-returns', 'caption' => 'Retur dari customer — stok balik + refund.'],
+                    ['type' => 'screenshot', 'file' => 'purchase-return.png', 'label' => 'Purchase Returns', 'url' => '/admin/purchases/return', 'caption' => 'Retur ke supplier — stok berkurang + history.'],
+                ],
+            ],
+            [
+                'slug'  => 'flow-fleet',
+                'icon'  => 'fa-truck-fast',
+                'title' => '27. Data Flow: Fleet Contract',
+                'lead'  => 'Alur kontrak servis rutin perusahaan/fleet — interval servis + deteksi jatuh tempo.',
+                'body'  => [
+                    ['type' => 'note', 'text' => '<b>Alur:</b> Buat Fleet Contract (customer + interval servis) → Daftarkan kendaraan → Sistem deteksi jatuh tempo (last service + interval) → Buat service/booking'],
+                    ['type' => 'ol', 'items' => [
+                        'Buat <b>Fleet Contract</b> untuk perusahaan (interval servis: hari & KM).',
+                        'Daftarkan <b>kendaraan</b> yang terikat kontrak.',
+                        'Sistem <b>deteksi jatuh tempo</b> — kendaraan yang sudah waktunya servis berdasarkan last service + interval.',
+                        'Buat <b>service/booking</b> untuk kendaraan yang jatuh tempo.',
+                    ]],
+                    ['type' => 'screenshot', 'file' => 'fleet-contract-list.png', 'label' => 'Fleet Contracts', 'url' => '/admin/fleet-contracts', 'caption' => 'Kontrak fleet — interval servis, daftar kendaraan, deteksi jatuh tempo.'],
+                ],
+            ],
+            [
+                'slug'  => 'flow-voucher',
+                'icon'  => 'fa-ticket',
+                'title' => '28. Data Flow: Voucher & Loyalty',
+                'lead'  => 'Alur promo & poin — dari buat voucher sampai dipakai, plus loyalty poin otomatis.',
+                'body'  => [
+                    ['type' => 'note', 'text' => '<b>Voucher:</b> Buat voucher (diskon/persen, min transaksi, masa berlaku) → Customer masukkan kode di POS → Validasi → Diskon + VoucherUsage<br><b>Loyalty:</b> Invoice lunas → Poin otomatis (1 poin / Rp 1.000) → Tier naik (bronze→platinum)'],
+                    ['type' => 'ol', 'items' => [
+                        'Buat <b>Voucher</b> — kode, diskon (persen/fixed), min pembelian, masa berlaku, kuota.',
+                        'Customer pakai kode di <b>POS</b> → validasi → diskon diterapkan + VoucherUsage tercatat.',
+                        '<b>Loyalty</b>: tiap invoice lunas → poin otomatis ke customer.',
+                        'Tier membership naik otomatis (bronze → silver → gold → platinum) berdasarkan total poin.',
+                    ]],
+                    ['type' => 'screenshot', 'file' => 'voucher-list.png', 'label' => 'Vouchers', 'url' => '/admin/vouchers', 'caption' => 'Voucher promo — kode, diskon, masa berlaku, kuota.'],
+                    ['type' => 'screenshot', 'file' => 'loyalty-list.png', 'label' => 'Loyalty', 'url' => '/admin/loyalty', 'caption' => 'Loyalty poin & tier membership customer.'],
+                ],
+            ],
+            [
+                'slug'  => 'flow-notification',
+                'icon'  => 'fa-bell-concierge',
+                'title' => '29. Data Flow: Notifikasi & Reminder',
+                'lead'  => 'Alur notifikasi multi-channel — dari template sampai terkirim via WA/Email/SMS.',
+                'body'  => [
+                    ['type' => 'note', 'text' => '<b>Alur:</b> Buat Template (variabel) → Event trigger (service ready/payment/reminder) → Queue (notification_queue) → Scheduler proses tiap 5 menit → Kirim WA/Email/SMS → Log'],
+                    ['type' => 'ol', 'items' => [
+                        'Buat <b>Notification Template</b> dengan variabel ({customer_name}, {plate}, {next_service_date}).',
+                        'Event memicu notifikasi: service ready, invoice dibuat, reminder service, approval estimasi.',
+                        'Notifikasi masuk <b>queue</b> → diproses scheduler tiap 5 menit.',
+                        'Kirim via <b>WhatsApp / Email / SMS</b> sesuai channel template.',
+                        'Semua tercatat di <b>Notification Log</b> (status sent/failed).',
+                    ]],
+                    ['type' => 'screenshot', 'file' => 'notification-templates.png', 'label' => 'Templates', 'url' => '/admin/notification-templates', 'caption' => 'Template notifikasi multi-channel.'],
+                    ['type' => 'screenshot', 'file' => 'reminder-list.png', 'label' => 'Reminders', 'url' => '/admin/reminders', 'caption' => 'Reminder service otomatis — H-7, H-3, H-1.'],
+                ],
+            ],
+            [
+                'slug'  => 'flow-bank',
+                'icon'  => 'fa-building-columns',
+                'title' => '30. Data Flow: Bank & Budget',
+                'lead'  => 'Alur rekonsiliasi bank & anggaran — cocokkan saldo sistem vs riil, kontrol pengeluaran.',
+                'body'  => [
+                    ['type' => 'note', 'text' => '<b>Bank Recon:</b> Bank Account → Rekonsiliasi (saldo awal + income − expense) → Bandingkan statement → Selisih<br><b>Budget:</b> Set budget (kategori/periode/cabang) → Sistem bandingkan realisasi vs anggaran → Variance'],
+                    ['type' => 'ol', 'items' => [
+                        'Buat <b>Bank Account</b> (rekening + saldo awal).',
+                        '<b>Rekonsiliasi</b>: sistem hitung saldo akhir (saldo awal + income − expense) vs saldo statement → selisih.',
+                        '<b>Budget</b>: set anggaran per kategori (revenue/expense) per periode per cabang.',
+                        'Sistem bandingkan <b>realisasi</b> (Income/Expense) vs <b>anggaran</b> → variance terkontrol.',
+                    ]],
+                    ['type' => 'screenshot', 'file' => 'bank-account-list.png', 'label' => 'Bank Accounts', 'url' => '/admin/bank-accounts', 'caption' => 'Rekening bank — saldo, jenis rekening.'],
+                    ['type' => 'screenshot', 'file' => 'bank-reconciliation-list.png', 'label' => 'Bank Reconciliation', 'url' => '/admin/bank-reconciliations', 'caption' => 'Rekonsiliasi bank — saldo sistem vs statement.'],
+                    ['type' => 'screenshot', 'file' => 'budget-list.png', 'label' => 'Budgets', 'url' => '/admin/budgets', 'caption' => 'Anggaran — realisasi vs anggaran per periode.'],
+                ],
+            ],
         ];
     }
 }
