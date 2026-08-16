@@ -38,4 +38,17 @@ class User extends Authenticatable
     {
         return $this->hasMany(TechnicianSkill::class);
     }
+
+    /**
+     * Query builder untuk staff bengkel (mekanik + service_advisor).
+     * Fallback ke mekanik saja jika role service_advisor belum di-seed.
+     */
+    public static function workshopStaffQuery()
+    {
+        try {
+            return static::role(['mekanik', 'service_advisor']);
+        } catch (\Spatie\Permission\Exceptions\RoleDoesNotExist $e) {
+            return static::role('mekanik');
+        }
+    }
 }

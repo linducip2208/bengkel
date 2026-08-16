@@ -25,7 +25,7 @@ class Booking extends Model
 
     public static function technicianAvailability($date): array
     {
-        $technicians = User::role(['mekanik', 'service_advisor'])->where('is_active', true)->orderBy('name')->get();
+        $technicians = User::workshopStaffQuery()->where('is_active', true)->orderBy('name')->get();
 
         $busy = static::withoutGlobalScopes()
             ->whereDate('booking_at', \Carbon\Carbon::parse($date)->toDateString())

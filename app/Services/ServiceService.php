@@ -52,7 +52,7 @@ class ServiceService extends BaseService
     {
         $repairCategories = RepairCategory::orderBy('repair_category_name')->get();
         $technicians = User::role('mekanik')->get();
-        $serviceAdvisors = User::role(['service_advisor', 'mekanik'])->orderBy('name')->get();
+        $serviceAdvisors = User::workshopStaffQuery()->orderBy('name')->get();
 
         return view('services.create', compact('repairCategories', 'technicians', 'serviceAdvisors'));
     }
@@ -176,7 +176,7 @@ class ServiceService extends BaseService
         $service = Service::with(['technicians'])->findOrFail($id);
         $repairCategories = RepairCategory::orderBy('repair_category_name')->get();
         $technicians = User::role('mekanik')->get();
-        $serviceAdvisors = User::role(['service_advisor', 'mekanik'])->orderBy('name')->get();
+        $serviceAdvisors = User::workshopStaffQuery()->orderBy('name')->get();
         $selectedCustomer = $service->customer;
         $selectedVehicle = $service->vehicle;
 
