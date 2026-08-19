@@ -158,13 +158,22 @@ class ProductsImport implements ToModel, WithHeadingRow, SkipsOnError
     protected function generateProductNo(): string
     {
         $prefix = 'PRD-' . date('Ym');
-        $last = Product::withTrashed()
-            ->withoutGlobalScopes()
-            ->where('product_no', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->first();
-        $next = $last ? (int) substr($last->product_no, -4) + 1 : 1;
 
-        return $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+        for ($attempt = 0; $attempt < 10; $attempt++) {
+            $last = Product::withTrashed()
+                ->withoutGlobalScopes()
+                ->where('product_no', 'like', $prefix . '%')
+                ->orderByDesc('id')
+                ->first();
+            $next = $last ? (int) substr($last->product_no, -4) + 1 : 1;
+            $candidate = $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+
+            $exists = Product::withTrashed()->withoutGlobalScopes()->where('product_no', $candidate)->exists();
+            if (! $exists) {
+                return $candidate;
+            }
+        }
+
+        return $prefix . '-' . str_pad(mt_rand(9000, 9999), 4, '0', STR_PAD_LEFT);
     }
 }

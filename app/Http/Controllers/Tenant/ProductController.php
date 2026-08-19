@@ -40,8 +40,10 @@ class ProductController extends Controller
         $productTypes = ProductType::orderBy('type')->get();
         $units = ProductUnit::orderBy('name')->get();
         $suppliers = Supplier::orderBy('name')->get();
-        $nextProductNo = 'PRD-' . date('Ym') . '-' . str_pad(
-            Product::withTrashed()->where('product_no', 'like', 'PRD-' . date('Ym') . '%')->count() + 1,
+        $prefix = 'PRD-' . date('Ym');
+        $lastProduct = Product::withTrashed()->where('product_no', 'like', $prefix . '%')->orderByDesc('id')->first();
+        $nextProductNo = $prefix . '-' . str_pad(
+            $lastProduct ? (int) substr($lastProduct->product_no, -4) + 1 : 1,
             4, '0', STR_PAD_LEFT
         );
 
