@@ -60,6 +60,7 @@
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-checkout"><i class="fas fa-clipboard-check me-1"></i>Checkout</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-invoice"><i class="fas fa-file-invoice me-1"></i>Invoice</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-reservations"><i class="fas fa-boxes me-1"></i>Reservasi Parts</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-history"><i class="fas fa-clock-rotate-left me-1"></i>Riwayat</button></li>
 </ul>
 
 <div class="tab-content">
@@ -100,6 +101,11 @@
                         @endif
                     </td></tr>
                     <tr><td class="text-muted">Biaya</td><td><strong>@include('partials.rupiah', ['amount' => $service->charge])</strong></td></tr>
+                    <tr><td class="text-muted">Tagihan</td><td>
+                        Invoice <strong>@include('partials.rupiah', ['amount' => $financialSummary['invoiced']])</strong> ·
+                        Dibayar <strong class="text-success">@include('partials.rupiah', ['amount' => $financialSummary['paid']])</strong> ·
+                        Sisa <strong class="{{ $financialSummary['outstanding'] > 0 ? 'text-danger' : 'text-success' }}">@include('partials.rupiah', ['amount' => $financialSummary['outstanding']])</strong>
+                    </td></tr>
                     <tr><td class="text-muted">Teknisi</td><td>
                         @foreach($service->technicians as $tech)
                             <span class="badge bg-light text-dark me-1">{{ $tech->name }}</span>
@@ -549,6 +555,23 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    {{-- Tab 8: Immutable audit history --}}
+    <div class="tab-pane fade" id="tab-history">
+        <div class="card"><div class="card-body">
+            <h6 class="border-bottom pb-2"><i class="fas fa-timeline me-2"></i>Audit Timeline Work Order</h6>
+            <div class="table-responsive"><table class="table table-sm align-middle">
+                <thead><tr><th>Waktu</th><th>Aksi</th><th>Deskripsi</th><th>User</th><th>Source</th></tr></thead>
+                <tbody>
+                @forelse($service->activityLogs->sortByDesc('created_at') as $log)
+                    <tr><td class="text-muted">{{ $log->created_at?->format('d/m/Y H:i:s') }}</td><td><span class="badge bg-primary">{{ $log->event }}</span></td><td>{{ $log->description }}</td><td>{{ $log->user?->name ?? 'System' }}</td><td>{{ $log->ip ?? 'internal' }}</td></tr>
+                @empty
+                    <tr><td colspan="5" class="text-center text-muted py-3">Belum ada aktivitas tercatat.</td></tr>
+                @endforelse
+                </tbody>
+            </table></div>
+        </div></div>
     </div>
 </div>
 

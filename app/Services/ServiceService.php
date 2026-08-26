@@ -137,6 +137,7 @@ class ServiceService extends BaseService
             'serviceObservationPoints.observationPoint.observationType',
             'images', 'checkoutResults.checkoutCategory', 'invoice',
             'serviceAdvisor', 'serviceTechnicians.user',
+            'activityLogs.user',
         ])->findOrFail($id);
 
         $nextService = $service->jobcardDetail
@@ -178,7 +179,16 @@ class ServiceService extends BaseService
             ->selectRaw('product_id, SUM(quantity) as total')
             ->pluck('total', 'product_id');
 
-        return view('services.show', compact('service', 'nextService', 'partsUsed', 'reservations', 'products', 'reservedMap'));
+        $invoice = Invoice::query()->where('service_id', $service->id)->first();
+        $paidAmount = $invoice ? (float) $invoice->paymentRecords()->sum('amount') : 0.0;
+        $financialSummary = [
+            'estimated' => (float) ($service->charge ?? 0),
+            'invoiced' => (float) ($invoice ? $invoice->grand_total : 0),
+            'paid' => $paidAmount,
+            'outstanding' => max(0, (float) ($invoice ? $invoice->grand_total : 0) - $paidAmount),
+        ];
+
+        return view('services.show', compact('service', 'nextService', 'partsUsed', 'reservations', 'products', 'reservedMap', 'financialSummary'));
     }
 
     public function edit($id)

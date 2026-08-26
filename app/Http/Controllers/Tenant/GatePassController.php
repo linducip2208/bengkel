@@ -41,6 +41,14 @@ class GatePassController extends Controller
         ]);
 
         $vehicle = Vehicle::find($validated['vehicle_id']);
+        if (! empty($validated['service_id'])) {
+            $service = Service::findOrFail($validated['service_id']);
+            if ((int) $service->workflow_status < 8 || ! $service->qc_passed_at) {
+                return back()->withInput()->withErrors([
+                    'service_id' => 'Kendaraan hanya dapat dibuatkan gate pass setelah QC lulus dan status Ready.',
+                ]);
+            }
+        }
         $validated['customer_id'] = $vehicle->customer_id;
         $validated['gate_pass_no'] = DocumentNumberService::generate(DocumentNumberService::GATE_PASSES, 'GP', 'Ymd', 4);
         $validated['status'] = 'in';
