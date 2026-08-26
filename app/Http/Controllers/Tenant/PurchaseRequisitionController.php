@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Branch;
-use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequisition;
+use App\Services\DocumentNumberService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -59,7 +59,7 @@ class PurchaseRequisitionController extends Controller
         ActivityLog::record('purchase-requisition.create', $requisition, "Permintaan pembelian {$requisition->requisition_number} dibuat");
 
         return redirect()->route('purchase-requisitions.show', $requisition)
-            ->with('success', 'Permintaan pembelian ' . $requisition->requisition_number . ' berhasil dibuat.');
+            ->with('success', 'Permintaan pembelian '.$requisition->requisition_number.' berhasil dibuat.');
     }
 
     public function show(PurchaseRequisition $purchaseRequisition)
@@ -71,7 +71,7 @@ class PurchaseRequisitionController extends Controller
 
     public function destroy(PurchaseRequisition $purchaseRequisition)
     {
-        if (!in_array($purchaseRequisition->status, ['draft', 'rejected'])) {
+        if (! in_array($purchaseRequisition->status, ['draft', 'rejected'])) {
             return redirect()->route('purchase-requisitions.index')
                 ->with('error', 'Hanya permintaan dengan status Draft/Ditolak yang dapat dihapus.');
         }
@@ -155,15 +155,15 @@ class PurchaseRequisitionController extends Controller
             ->filter()
             ->first();
 
-        if (!$supplierId) {
+        if (! $supplierId) {
             return redirect()->route('purchase-requisitions.show', $purchaseRequisition)
                 ->with('error', 'Tidak dapat menentukan supplier. Pastikan produk pada item terkait memiliki supplier.');
         }
 
         $purchaseOrder = DB::transaction(function () use ($purchaseRequisition, $supplierId) {
-            $subtotal = (float) $purchaseRequisition->items->sum(function ($item) {
+            $subtotal = round((float) $purchaseRequisition->items->sum(function ($item) {
                 return (float) $item->quantity * (float) ($item->product->cost_price ?? 0);
-            });
+            }), 2);
 
             $purchaseOrder = PurchaseOrder::create([
                 'po_number' => $this->generatePoNumber(),
@@ -174,7 +174,7 @@ class PurchaseRequisitionController extends Controller
                 'subtotal' => $subtotal,
                 'tax_amount' => 0,
                 'grand_total' => $subtotal,
-                'notes' => 'Dikonversi dari permintaan pembelian #' . $purchaseRequisition->requisition_number,
+                'notes' => 'Dikonversi dari permintaan pembelian #'.$purchaseRequisition->requisition_number,
                 'created_by' => auth()->id(),
             ]);
 
@@ -185,8 +185,8 @@ class PurchaseRequisitionController extends Controller
                     'product_id' => $item->product_id,
                     'description' => $item->product?->name,
                     'quantity' => $item->quantity,
-                    'unit_price' => $unitPrice,
-                    'total_price' => (float) $item->quantity * $unitPrice,
+                    'unit_price' => round($unitPrice, 2),
+                    'total_price' => round((float) $item->quantity * $unitPrice, 2),
                 ]);
             }
 
@@ -198,7 +198,7 @@ class PurchaseRequisitionController extends Controller
         ActivityLog::record('purchase-requisition.convert', $purchaseRequisition, "Permintaan pembelian {$purchaseRequisition->requisition_number} dikonversi ke PO {$purchaseOrder->po_number}");
 
         return redirect()->route('purchase-orders.show', $purchaseOrder)
-            ->with('success', 'Permintaan pembelian berhasil dikonversi menjadi purchase order ' . $purchaseOrder->po_number . '.');
+            ->with('success', 'Permintaan pembelian berhasil dikonversi menjadi purchase order '.$purchaseOrder->po_number.'.');
     }
 
     private function validateData(Request $request): array
@@ -226,23 +226,11 @@ class PurchaseRequisitionController extends Controller
 
     private function generateNumber(): string
     {
-        $prefix = 'REQ-' . date('Ymd');
-        $last = PurchaseRequisition::where('requisition_number', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->first();
-        $next = $last ? (int) substr($last->requisition_number, -4) + 1 : 1;
-
-        return $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+        return DocumentNumberService::generate(DocumentNumberService::REQUISITIONS, 'REQ', 'Ymd', 4);
     }
 
     private function generatePoNumber(): string
     {
-        $prefix = 'PO-' . date('Ymd');
-        $last = PurchaseOrder::where('po_number', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->first();
-        $next = $last ? (int) substr($last->po_number, -4) + 1 : 1;
-
-        return $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+        return DocumentNumberService::generate(DocumentNumberService::PURCHASE_ORDERS, 'PO', 'Ymd', 4);
     }
 }

@@ -18,6 +18,8 @@ class PaymentController extends Controller
 
     public function store(PaymentRequest $request): RedirectResponse
     {
+        $this->authorize('payments.process');
+
         $invoice = Invoice::findOrFail($request->route('invoice'));
         try {
             $this->paymentService->process($invoice, $request->validated());

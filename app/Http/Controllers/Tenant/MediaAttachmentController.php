@@ -30,7 +30,9 @@ class MediaAttachmentController extends Controller
         $attachable = $class::findOrFail($validated['attachable_id']);
 
         $file = $request->file('file');
-        $path = $file->store('attachments', 'public');
+        // Business documents live on the PRIVATE disk — never web-readable
+        // without authentication. Download goes through attachments.download.
+        $path = $file->store('attachments', 'local');
 
         $attachable->mediaAttachments()->create([
             'name' => $validated['name'] ?: $file->getClientOriginalName(),
@@ -43,9 +45,35 @@ class MediaAttachmentController extends Controller
         return back()->with('success', 'Dokumen berhasil diunggah.');
     }
 
+    /**
+     * Authenticated download. Legacy files uploaded to the public disk keep
+     * working; new uploads are streamed from local storage.
+     */
+    public function download(MediaAttachment $media)
+    {
+        if (Storage::disk('local')->exists($media->file_path)) {
+            return Storage::disk('local')->download($media->file_path, $media->name);
+        }
+
+        abort_unless(Storage::disk('public')->exists($media->file_path), 404, 'Berkas tidak ditemukan.');
+
+        return Storage::disk('public')->download($media->file_path, $media->name);
+    }
+
     public function destroy(MediaAttachment $media)
     {
-        Storage::disk('public')->delete($media->file_path);
+        // Only the uploader or a supervisor may delete documents (IDOR guard).
+        $isUploader = (int) $media->uploaded_by === (int) auth()->id();
+        $isSupervisor = auth()->user()?->hasAnyRole(['super_admin', 'admin', 'manager']);
+
+        abort_unless($isUploader || $isSupervisor, 403, 'Anda tidak berhak menghapus dokumen ini.');
+
+        foreach (['local', 'public'] as $disk) {
+            if (Storage::disk($disk)->exists($media->file_path)) {
+                Storage::disk($disk)->delete($media->file_path);
+                break;
+            }
+        }
         $media->delete();
 
         return back()->with('success', 'Dokumen dihapus.');

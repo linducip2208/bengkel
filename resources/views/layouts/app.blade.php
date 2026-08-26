@@ -219,8 +219,13 @@
                 padding: 1rem;
             }
             .topbar .tenant-name { display: none; }
-            .topbar { padding: 0 0.75rem; }
-            .topbar .form-select-sm { max-width: 120px; font-size: 0.8rem; }
+            .topbar { padding: 0 0.5rem; gap: 0.25rem; }
+            .topbar > div.d-flex { gap: 0.25rem !important; flex-wrap: nowrap; min-width: 0; }
+            .topbar .btn-sm { padding: 0.25rem 0.5rem; }
+            .topbar .form-select-sm { max-width: 92px; font-size: 0.75rem; }
+            .topbar form small { display: none; }
+            .topbar .user-name { display: none; }
+            .topbar .dropdown-toggle::after { margin-left: 0.15em; }
             .card { border-radius: 8px; }
             .card-body { padding: 1rem; }
         }
@@ -877,7 +882,7 @@
 
         <div class="dropdown">
             <button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">
-                <i class="fas fa-user-circle me-1"></i> {{ auth()->user()?->name ?? 'Admin' }}
+                <i class="fas fa-user-circle"></i><span class="user-name">&nbsp;{{ auth()->user()?->name ?? 'Admin' }}</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
                 <li><a href="#" class="dropdown-item"><i class="fas fa-user me-2"></i>{{ __('Profile') }}</a></li>

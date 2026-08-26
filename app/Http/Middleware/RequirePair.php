@@ -23,10 +23,11 @@ class RequirePair
         }
 
         $domain = strtolower($request->getHost());
-        $data   = $this->client->verify($domain);
+        $data = $this->client->verify($domain);
 
         if ($data) {
             $request->attributes->set('license', $data);
+
             return $next($request);
         }
 
@@ -36,35 +37,68 @@ class RequirePair
 
     private function shouldBypass(Request $request): bool
     {
-        $path = '/' . ltrim($request->path(), '/');
+        $path = '/'.ltrim($request->path(), '/');
 
         // Always allow the wizard itself
-        if (str_starts_with($path, '/__pair')) return true;
+        if (str_starts_with($path, '/__pair')) {
+            return true;
+        }
 
         // Health check / debug
-        if ($path === '/up') return true;
-        if (str_starts_with($path, '/_debugbar')) return true;
+        if ($path === '/up') {
+            return true;
+        }
+        if (str_starts_with($path, '/_debugbar')) {
+            return true;
+        }
 
         // Public-facing & SEO surfaces (boleh diakses sebelum license aktif)
-        if ($path === '/docs' || str_starts_with($path, '/docs/')) return true;
-        if ($path === '/sitemap.xml') return true;
-        if ($path === '/robots.txt') return true;
-        if (str_starts_with($path, '/best/')) return true;
-        if (str_starts_with($path, '/alternatives-to/')) return true;
-        if (str_starts_with($path, '/compare/')) return true;
-        if ($path === '/login' || $path === '/logout') return true;
+        if ($path === '/docs' || str_starts_with($path, '/docs/')) {
+            return true;
+        }
+        if ($path === '/blog' || str_starts_with($path, '/blog/')) {
+            return true;
+        }
+        if ($path === '/sitemap.xml') {
+            return true;
+        }
+        if ($path === '/robots.txt') {
+            return true;
+        }
+        if (str_starts_with($path, '/best/')) {
+            return true;
+        }
+        if (str_starts_with($path, '/alternatives-to/')) {
+            return true;
+        }
+        if (str_starts_with($path, '/compare/')) {
+            return true;
+        }
+        if ($path === '/login' || $path === '/logout') {
+            return true;
+        }
         // Public Booking & Customer Portal
-        if ($path === '/booking' || str_starts_with($path, '/booking')) return true;
-        if (str_starts_with($path, '/customer/')) return true;
+        if ($path === '/booking' || str_starts_with($path, '/booking')) {
+            return true;
+        }
+        if (str_starts_with($path, '/customer/')) {
+            return true;
+        }
         // Payment gateway webhook (POST dari PG, no session)
-        if (str_starts_with($path, '/payment/callback/')) return true;
+        if (str_starts_with($path, '/payment/callback/')) {
+            return true;
+        }
         // Public tracking service link (token-based)
-        if (str_starts_with($path, '/track/')) return true;
+        if (str_starts_with($path, '/track/')) {
+            return true;
+        }
 
         // Localhost dev bypass
         if (config('license.dev_bypass') && app()->environment('local')) {
             $host = $request->getHost();
-            if ($this->isDevHost($host)) return true;
+            if ($this->isDevHost($host)) {
+                return true;
+            }
         }
 
         return false;

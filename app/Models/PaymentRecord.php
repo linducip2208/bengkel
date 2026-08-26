@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['invoice_id', 'payment_method_id', 'amount', 'payment_date', 'reference_number', 'notes', 'created_by'])]
+#[Fillable(['invoice_id', 'payment_method_id', 'amount', 'payment_date', 'reference_number', 'notes', 'idempotency_key', 'created_by'])]
 class PaymentRecord extends Model
 {
     use HasFactory, SoftDeletes;

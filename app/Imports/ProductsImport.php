@@ -6,13 +6,14 @@ use App\Models\Product;
 use App\Models\ProductType;
 use App\Models\ProductUnit;
 use App\Models\StockRecord;
+use App\Services\DocumentNumberService;
 use Maatwebsite\Excel\Concerns\RemembersRowNumber;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Throwable;
 
-class ProductsImport implements ToModel, WithHeadingRow, SkipsOnError
+class ProductsImport implements SkipsOnError, ToModel, WithHeadingRow
 {
     use RemembersRowNumber;
 
@@ -62,7 +63,7 @@ class ProductsImport implements ToModel, WithHeadingRow, SkipsOnError
 
             return $product;
         } catch (Throwable $e) {
-            $this->errors[] = 'Baris ' . ($this->getRowNumber() ?? '?') . ': ' . $e->getMessage();
+            $this->errors[] = 'Baris '.($this->getRowNumber() ?? '?').': '.$e->getMessage();
 
             return null;
         }
@@ -70,7 +71,7 @@ class ProductsImport implements ToModel, WithHeadingRow, SkipsOnError
 
     public function onError(Throwable $e)
     {
-        $this->errors[] = 'Baris ' . ($this->getRowNumber() ?? '?') . ': ' . $e->getMessage();
+        $this->errors[] = 'Baris '.($this->getRowNumber() ?? '?').': '.$e->getMessage();
     }
 
     protected function resolveProductType(array $row): ?int
@@ -157,23 +158,6 @@ class ProductsImport implements ToModel, WithHeadingRow, SkipsOnError
 
     protected function generateProductNo(): string
     {
-        $prefix = 'PRD-' . date('Ym');
-
-        for ($attempt = 0; $attempt < 10; $attempt++) {
-            $last = Product::withTrashed()
-                ->withoutGlobalScopes()
-                ->where('product_no', 'like', $prefix . '%')
-                ->orderByDesc('id')
-                ->first();
-            $next = $last ? (int) substr($last->product_no, -4) + 1 : 1;
-            $candidate = $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
-
-            $exists = Product::withTrashed()->withoutGlobalScopes()->where('product_no', $candidate)->exists();
-            if (! $exists) {
-                return $candidate;
-            }
-        }
-
-        return $prefix . '-' . str_pad(mt_rand(9000, 9999), 4, '0', STR_PAD_LEFT);
+        return DocumentNumberService::generate(DocumentNumberService::PRODUCTS, 'PRD', 'Ym', 4);
     }
 }

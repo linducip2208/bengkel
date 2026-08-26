@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
 use App\Models\GatePass;
 use App\Models\Service;
 use App\Models\Vehicle;
+use App\Services\DocumentNumberService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
@@ -42,7 +42,7 @@ class GatePassController extends Controller
 
         $vehicle = Vehicle::find($validated['vehicle_id']);
         $validated['customer_id'] = $vehicle->customer_id;
-        $validated['gate_pass_no'] = 'GP-' . date('Ymd') . '-' . str_pad(GatePass::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
+        $validated['gate_pass_no'] = DocumentNumberService::generate(DocumentNumberService::GATE_PASSES, 'GP', 'Ymd', 4);
         $validated['status'] = 'in';
         $validated['created_by'] = auth()->id();
 
@@ -55,6 +55,7 @@ class GatePassController extends Controller
     public function show(GatePass $gatePass)
     {
         $gatePass->load(['vehicle.customer', 'service']);
+
         return view('gate-passes.show', compact('gatePass'));
     }
 
@@ -62,6 +63,7 @@ class GatePassController extends Controller
     {
         $vehicles = Vehicle::with('customer')->orderBy('number_plate')->get();
         $services = Service::with('customer')->whereIn('done_status', [0, 1])->latest()->get();
+
         return view('gate-passes.edit', compact('gatePass', 'vehicles', 'services'));
     }
 
@@ -92,6 +94,7 @@ class GatePassController extends Controller
     {
         $gatePass->load(['vehicle.customer', 'service']);
         $pdf = Pdf::loadView('gate-passes.print', compact('gatePass'));
+
         return $pdf->download("gate-pass-{$gatePass->gate_pass_no}.pdf");
     }
 

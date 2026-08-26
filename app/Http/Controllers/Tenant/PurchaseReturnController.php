@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Purchase;
 use App\Models\PurchaseHistoryRecord;
-use App\Models\StockHistory;
-use App\Models\StockRecord;
+use App\Models\Supplier;
+use App\Services\AutoJournalService;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -18,7 +20,7 @@ class PurchaseReturnController extends Controller
             ->with(['supplier', 'items'])
             ->where('status', 'received')
             ->when($request->filled('search'), function ($q) use ($request) {
-                $q->where('purchase_no', 'like', '%' . $request->search . '%');
+                $q->where('purchase_no', 'like', '%'.$request->search.'%');
             })
             ->when($request->filled('supplier_id'), function ($q) use ($request) {
                 $q->where('supplier_id', $request->supplier_id);
@@ -28,7 +30,7 @@ class PurchaseReturnController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        $suppliers = \App\Models\Supplier::orderBy('name')->get();
+        $suppliers = Supplier::orderBy('name')->get();
 
         return view('purchases.return-index', compact('purchases', 'suppliers'));
     }
@@ -59,76 +61,73 @@ class PurchaseReturnController extends Controller
             'return_reason' => ['required', 'string', 'max:500'],
         ]);
 
-        DB::transaction(function () use ($purchase, $validated) {
-            $returnedAny = false;
+        // Sort for deterministic stock-lock order.
+        usort($validated['return_items'], fn ($a, $b) => $a['product_id'] <=> $b['product_id']);
 
-            foreach ($validated['return_items'] as $returnItem) {
-                $productId = $returnItem['product_id'];
-                $returnQty = (int) $returnItem['quantity'];
-
-                $purchaseItem = $purchase->items()->where('product_id', $productId)->first();
-                if (!$purchaseItem) {
-                    continue;
+        try {
+            $returnedAny = DB::transaction(function () use ($purchase, $validated) {
+                // Lock + re-check status so a concurrent second submit aborts.
+                $locked = Purchase::query()->whereKey($purchase->id)->lockForUpdate()->first();
+                if ($locked->status !== 'received') {
+                    throw new \RuntimeException('Purchase order ini sudah tidak dapat diretur.');
                 }
 
-                $maxReturn = $purchaseItem->quantity;
-                if ($returnQty > $maxReturn) {
-                    $returnQty = $maxReturn;
+                $returnedAny = false;
+                $returnedValue = 0.0;
+
+                foreach ($validated['return_items'] as $returnItem) {
+                    $productId = (int) $returnItem['product_id'];
+                    $returnQty = (int) $returnItem['quantity'];
+
+                    $purchaseItem = $locked->items()->where('product_id', $productId)->first();
+                    if (! $purchaseItem) {
+                        continue;
+                    }
+
+                    $maxReturn = (int) $purchaseItem->quantity;
+                    $returnQty = min($returnQty, $maxReturn);
+                    if ($returnQty <= 0) {
+                        continue;
+                    }
+
+                    StockService::decrement(
+                        $productId,
+                        $returnQty,
+                        'return',
+                        'Retur PO #'.$locked->purchase_no.': '.$validated['return_reason'],
+                        Purchase::class,
+                        $locked->id,
+                    );
+
+                    $returnedValue += (float) $purchaseItem->unit_price * $returnQty;
+                    $returnedAny = true;
                 }
-                if ($returnQty <= 0) {
-                    continue;
+
+                if ($returnedAny) {
+                    $locked->update(['status' => 'returned']);
+
+                    PurchaseHistoryRecord::create([
+                        'purchase_id' => $locked->id,
+                        'status' => 'returned',
+                        'notes' => 'Retur diproses: '.$validated['return_reason'],
+                        'changed_at' => now(),
+                    ]);
+
+                    // Reverse the inventory/AP posting of the original receive.
+                    app(AutoJournalService::class)->journalPurchaseReturn($locked, round($returnedValue, 2));
                 }
 
-                $product = \App\Models\Product::find($productId);
-                if (!$product) {
-                    continue;
-                }
+                return $returnedAny;
+            });
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
-                $stockRecord = StockRecord::firstOrCreate(
-                    ['product_id' => $productId],
-                    [
-                        'supplier_id' => $product->supplier_id,
-                        'quantity' => 0,
-                        'minimum_stock' => 0,
-                        'rack_location' => null,
-                    ]
-                );
-
-                $previousStock = $stockRecord->quantity;
-                $newStock = max(0, $previousStock - $returnQty);
-
-                $stockRecord->update(['quantity' => $newStock]);
-
-                StockHistory::create([
-                    'product_id' => $productId,
-                    'quantity_change' => -$returnQty,
-                    'previous_stock' => $previousStock,
-                    'new_stock' => $newStock,
-                    'type' => 'return',
-                    'reference_type' => Purchase::class,
-                    'reference_id' => $purchase->id,
-                    'reason' => 'Retur PO #' . $purchase->purchase_no . ': ' . $validated['return_reason'],
-                    'user_id' => auth()->id(),
-                ]);
-
-                $returnedAny = true;
-            }
-
-            if ($returnedAny) {
-                $purchase->update(['status' => 'returned']);
-
-                PurchaseHistoryRecord::create([
-                    'purchase_id' => $purchase->id,
-                    'status' => 'returned',
-                    'notes' => 'Retur diproses: ' . $validated['return_reason'],
-                    'changed_at' => now(),
-                ]);
-            }
-        });
-
-        if (!$returnedAny) {
+        if (! $returnedAny) {
             return back()->with('error', 'Tidak ada item yang valid untuk diretur.');
         }
+
+        ActivityLog::record('purchase.return', $purchase, "Retur pembelian {$purchase->purchase_no}");
 
         return redirect()->route('purchases.return.index')
             ->with('success', 'Retur pembelian berhasil diproses.');

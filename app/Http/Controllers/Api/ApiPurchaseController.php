@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PurchaseResource;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
+use App\Services\AutoJournalService;
+use App\Services\DocumentNumberService;
+use App\Services\StockService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -49,14 +52,16 @@ class ApiPurchaseController extends Controller
         ]);
 
         $purchase = DB::transaction(function () use ($validated) {
-            $totalAmount = collect($validated['items'])->sum(fn($i) => $i['quantity'] * $i['unit_price']);
+            $totalAmount = round(collect($validated['items'])->sum(fn ($i) => (float) $i['quantity'] * (float) $i['unit_price']), 2);
 
             $purchase = Purchase::create([
+                'purchase_no' => DocumentNumberService::generate(DocumentNumberService::PURCHASES, 'PO', 'Ymd', 4),
                 'supplier_id' => $validated['supplier_id'],
                 'purchase_date' => $validated['purchase_date'],
                 'total_amount' => $totalAmount,
                 'notes' => $validated['notes'] ?? null,
                 'status' => 'ordered',
+                'created_by' => auth()->id(),
             ]);
 
             foreach ($validated['items'] as $itemData) {
@@ -64,8 +69,8 @@ class ApiPurchaseController extends Controller
                     'purchase_id' => $purchase->id,
                     'product_id' => $itemData['product_id'],
                     'quantity' => $itemData['quantity'],
-                    'unit_price' => $itemData['unit_price'],
-                    'total_price' => $itemData['quantity'] * $itemData['unit_price'],
+                    'unit_price' => round((float) $itemData['unit_price'], 2),
+                    'total_price' => round((float) $itemData['quantity'] * (float) $itemData['unit_price'], 2),
                 ]);
             }
 
@@ -97,23 +102,36 @@ class ApiPurchaseController extends Controller
 
     public function markReceived(Purchase $purchase): JsonResponse
     {
-        if ($purchase->status === 'received') {
-            return response()->json(['message' => 'Purchase already received.'], 422);
+        try {
+            DB::transaction(function () use ($purchase) {
+                // Guard + lock inside the transaction: concurrent double-submit aborts.
+                $locked = Purchase::query()->whereKey($purchase->id)->lockForUpdate()->first();
+                if ($locked->status === 'received') {
+                    throw new \RuntimeException('already_received');
+                }
+
+                foreach ($locked->items as $item) {
+                    StockService::increment(
+                        (int) $item->product_id,
+                        (float) $item->quantity,
+                        'purchase',
+                        "PO #{$locked->purchase_no}",
+                        Purchase::class,
+                        $locked->id,
+                    );
+                }
+
+                $locked->update(['status' => 'received']);
+
+                app(AutoJournalService::class)->journalPurchase($locked);
+            });
+        } catch (\RuntimeException $e) {
+            if ($e->getMessage() === 'already_received') {
+                return response()->json(['message' => 'Purchase already received.'], 422);
+            }
+            throw $e;
         }
 
-        DB::transaction(function () use ($purchase) {
-            foreach ($purchase->items as $item) {
-                $product = \App\Models\Product::find($item->product_id);
-                if ($product) {
-                    $product->increment('current_stock', $item->quantity);
-                }
-            }
-
-            $purchase->update([
-                'status' => 'received',
-            ]);
-        });
-
-        return response()->json(new PurchaseResource($purchase->load('items')));
+        return response()->json(new PurchaseResource($purchase->fresh('items')));
     }
 }

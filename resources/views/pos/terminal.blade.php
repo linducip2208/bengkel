@@ -68,6 +68,7 @@
         <form action="{{ route('pos.checkout') }}" method="POST" id="checkoutForm">
             @csrf
             <input type="hidden" name="session_id" value="{{ $session->id }}">
+            <input type="hidden" name="idempotency_key" value="{{ \Illuminate\Support\Str::uuid() }}">
 
             <div class="mb-2">
                 <select name="customer_id" class="form-select form-select-sm">

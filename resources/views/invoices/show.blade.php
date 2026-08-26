@@ -287,6 +287,17 @@
                 @endif
             </div>
         </div>
+
+        @if ($invoice->payment_proof)
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>Bukti Pembayaran (upload customer)</strong>
+                    <a href="{{ route('invoices.payment-proof', $invoice) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye me-1"></i>Lihat
+                    </a>
+                </div>
+            </div>
+        @endif
     </div>
 </div>
 @push('styles')

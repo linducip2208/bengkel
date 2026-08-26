@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Models\Product;
+use App\Models\Service;
 use App\Models\StockHistory;
 use App\Models\StockRecord;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ProductService
@@ -67,7 +69,7 @@ class ProductService
             ]);
 
             if ($initialStock > 0) {
-                $this->recordStockHistory($product, $initialStock, 0, $initialStock, 'initial', 'Stok awal saat pembuatan produk');
+                StockService::increment($product->id, $initialStock, 'initial', 'Stok awal saat pembuatan produk');
             }
 
             return $product->load(['productType', 'unit', 'supplier', 'stockRecord']);
@@ -88,7 +90,7 @@ class ProductService
 
         $product->update($data);
 
-        if (!empty($stockData) && $product->stockRecord) {
+        if (! empty($stockData) && $product->stockRecord) {
             $product->stockRecord->update($stockData);
         }
 
@@ -97,56 +99,32 @@ class ProductService
 
     public function adjustStock(Product $product, int $quantity, string $reason): StockHistory
     {
-        return DB::transaction(function () use ($product, $quantity, $reason) {
-            $stockRecord = $this->getOrCreateStockRecord($product);
-            $previousStock = $stockRecord->quantity;
-            $newStock = $previousStock + $quantity;
-
-            $stockRecord->update(['quantity' => $newStock]);
-
-            $type = $quantity > 0 ? 'adjustment_add' : 'adjustment_reduce';
-
-            return $this->recordStockHistory($product, $quantity, $previousStock, $newStock, $type, $reason);
-        });
+        return StockService::adjust(
+            $product->id,
+            $quantity,
+            $quantity >= 0 ? 'adjustment_add' : 'adjustment_reduce',
+            $reason,
+        );
     }
 
-    public function setStock(Product $product, int $newStock, string $reason): StockHistory
+    public function setStock(Product $product, int $newStock, string $reason): ?StockHistory
     {
-        return DB::transaction(function () use ($product, $newStock, $reason) {
-            $stockRecord = $this->getOrCreateStockRecord($product);
-            $previousStock = $stockRecord->quantity;
-            $quantityChange = $newStock - $previousStock;
-
-            $stockRecord->update(['quantity' => $newStock]);
-
-            return $this->recordStockHistory($product, $quantityChange, $previousStock, $newStock, 'opname', $reason);
-        });
+        return StockService::set($product->id, $newStock, 'opname', $reason);
     }
 
     public function useInService(Product $product, int $quantity, ?int $serviceId = null): void
     {
-        DB::transaction(function () use ($product, $quantity, $serviceId) {
-            $stockRecord = $this->getOrCreateStockRecord($product);
-
-            if ($stockRecord->quantity < $quantity) {
-                throw new \RuntimeException("Stok \"{$product->name}\" tidak cukup: tersedia {$stockRecord->quantity}, dibutuhkan {$quantity}.");
-            }
-
-            $previousStock = $stockRecord->quantity;
-            $newStock = $previousStock - $quantity;
-
-            $stockRecord->update(['quantity' => $newStock]);
-
-            $this->recordStockHistory(
-                $product, -$quantity, $previousStock, $newStock, 'usage',
-                'Digunakan dalam servis',
-                $serviceId ? \App\Models\Service::class : null,
-                $serviceId
-            );
-        });
+        StockService::decrement(
+            $product->id,
+            $quantity,
+            'usage',
+            'Digunakan dalam servis',
+            $serviceId ? Service::class : null,
+            $serviceId,
+        );
     }
 
-    public function getLowStock(): \Illuminate\Support\Collection
+    public function getLowStock(): Collection
     {
         return Product::whereHas('stockRecord', function ($q) {
             $q->whereColumn('quantity', '<=', 'minimum_stock');
@@ -169,7 +147,7 @@ class ProductService
                         'unit_id' => $row['unit_id'],
                         'supplier_id' => $row['supplier_id'] ?? null,
                         'price' => (float) str_replace(',', '', $row['price']),
-                        'cost_price' => !empty($row['cost_price']) ? (float) str_replace(',', '', $row['cost_price']) : null,
+                        'cost_price' => ! empty($row['cost_price']) ? (float) str_replace(',', '', $row['cost_price']) : null,
                         'warranty' => $row['warranty'] ?? null,
                         'description' => $row['description'] ?? null,
                     ]);
@@ -184,7 +162,7 @@ class ProductService
 
                     $imported++;
                 } catch (\Exception $e) {
-                    $errors[] = "Baris " . ($index + 1) . ": " . $e->getMessage();
+                    $errors[] = 'Baris '.($index + 1).': '.$e->getMessage();
                 }
             }
         });
@@ -192,62 +170,8 @@ class ProductService
         return ['imported' => $imported, 'errors' => $errors];
     }
 
-    private function getOrCreateStockRecord(Product $product): StockRecord
-    {
-        if ($product->stockRecord) {
-            return $product->stockRecord;
-        }
-
-        return StockRecord::create([
-            'product_id' => $product->id,
-            'supplier_id' => $product->supplier_id,
-            'quantity' => 0,
-            'minimum_stock' => 0,
-            'rack_location' => null,
-        ]);
-    }
-
-    private function recordStockHistory(
-        Product $product,
-        int $quantityChange,
-        int $previousStock,
-        int $newStock,
-        string $type,
-        ?string $reason = null,
-        ?string $referenceType = null,
-        ?int $referenceId = null
-    ): StockHistory {
-        return StockHistory::create([
-            'product_id' => $product->id,
-            'quantity_change' => $quantityChange,
-            'previous_stock' => $previousStock,
-            'new_stock' => $newStock,
-            'type' => $type,
-            'reason' => $reason,
-            'reference_type' => $referenceType,
-            'reference_id' => $referenceId,
-            'user_id' => auth()->id(),
-        ]);
-    }
-
     private function generateProductNo(): string
     {
-        $prefix = 'PRD-' . date('Ym');
-
-        for ($attempt = 0; $attempt < 10; $attempt++) {
-            $last = Product::withTrashed()
-                ->where('product_no', 'like', $prefix . '%')
-                ->orderByDesc('id')
-                ->first();
-            $next = $last ? (int) substr($last->product_no, -4) + 1 : 1;
-            $candidate = $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
-
-            $exists = Product::withTrashed()->where('product_no', $candidate)->exists();
-            if (! $exists) {
-                return $candidate;
-            }
-        }
-
-        return $prefix . '-' . str_pad(mt_rand(9000, 9999), 4, '0', STR_PAD_LEFT);
+        return DocumentNumberService::generate(DocumentNumberService::PRODUCTS, 'PRD', 'Ym', 4);
     }
 }

@@ -3,19 +3,28 @@
 namespace App\Services;
 
 use App\Http\Requests\ServiceRequest;
+use App\Models\ActivityLog;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\PartReservation;
 use App\Models\Product;
+use App\Models\Reminder;
 use App\Models\RepairCategory;
 use App\Models\Service;
+use App\Models\ServiceTechnician;
+use App\Models\StockHistory;
 use App\Models\User;
-use App\Services\ProductService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ServiceService extends BaseService
 {
+    // Valid forward workflow transitions. Terminal/cancelled states reject everything.
+    public const WORKFLOW_TERMINAL = 12;
+
     public function index(Request $request)
     {
         $services = Service::with(['customer', 'vehicle', 'repairCategory', 'technicians'])
@@ -33,10 +42,10 @@ class ServiceService extends BaseService
                 $q->whereDate('service_date', '<=', $request->date_to);
             })
             ->when($request->filled('customer_search'), function ($q) use ($request) {
-                $q->whereHas('customer', fn($c) => $c->where('name', 'like', '%' . $request->customer_search . '%'));
+                $q->whereHas('customer', fn ($c) => $c->where('name', 'like', '%'.$request->customer_search.'%'));
             })
             ->when($request->filled('technician'), function ($q) use ($request) {
-                $q->whereHas('technicians', fn($t) => $t->where('users.id', $request->technician));
+                $q->whereHas('technicians', fn ($t) => $t->where('users.id', $request->technician));
             })
             ->latest()
             ->paginate(15)
@@ -59,14 +68,14 @@ class ServiceService extends BaseService
 
     public function store(Request $request)
     {
-        $validated = \App\Http\Requests\ServiceRequest::createFrom($request)->validated();
+        $validated = ServiceRequest::createFrom($request)->validated();
 
         // Conflict detection: check technician availability
         $warnings = [];
         $techIds = $validated['assign_to'] ?? [];
-        if (!empty($techIds) && !empty($validated['service_date'])) {
-            $conflicts = \App\Models\ServiceTechnician::whereIn('user_id', $techIds)
-                ->whereHas('service', fn($q) => $q->whereDate('service_date', \Carbon\Carbon::parse($validated['service_date'])->toDateString())->where('done_status', '<', 2))
+        if (! empty($techIds) && ! empty($validated['service_date'])) {
+            $conflicts = ServiceTechnician::whereIn('user_id', $techIds)
+                ->whereHas('service', fn ($q) => $q->whereDate('service_date', Carbon::parse($validated['service_date'])->toDateString())->where('done_status', '<', 2))
                 ->with('user')->get();
             if ($conflicts->isNotEmpty()) {
                 $names = $conflicts->pluck('user.name')->unique()->implode(', ');
@@ -93,7 +102,7 @@ class ServiceService extends BaseService
                 $service->update(['repeat_of' => $repeat->id]);
             }
 
-            if (!empty($technicianIds)) {
+            if (! empty($technicianIds)) {
                 $service->technicians()->sync($technicianIds);
                 $service->update(['assign_to' => $technicianIds[0]]);
                 $this->calculateCommissions($service, $technicianIds);
@@ -112,7 +121,8 @@ class ServiceService extends BaseService
             return $service;
         });
 
-        \App\Models\ActivityLog::record('service.create', $service, "Service {$service->job_no} dibuat");
+        ActivityLog::record('service.create', $service, "Service {$service->job_no} dibuat");
+
         return redirect()
             ->route('services.show', $service)
             ->with('success', 'Servis berhasil dibuat.')
@@ -133,8 +143,8 @@ class ServiceService extends BaseService
             ? app(JobcardService::class)->calculateNextService($service)
             : null;
 
-        $partsUsed = \App\Models\StockHistory::with('product')
-            ->where('reference_type', \App\Models\Service::class)
+        $partsUsed = StockHistory::with('product')
+            ->where('reference_type', Service::class)
             ->where('reference_id', $service->id)
             ->where('type', 'usage')
             ->get()
@@ -162,7 +172,7 @@ class ServiceService extends BaseService
             ->orderBy('name')
             ->get();
 
-        $reservedMap = \App\Models\PartReservation::whereIn('product_id', $products->pluck('id'))
+        $reservedMap = PartReservation::whereIn('product_id', $products->pluck('id'))
             ->where('status', 'reserved')
             ->groupBy('product_id')
             ->selectRaw('product_id, SUM(quantity) as total')
@@ -186,7 +196,7 @@ class ServiceService extends BaseService
     public function update(Request $request, $id)
     {
         $service = Service::findOrFail($id);
-        $validated = \App\Http\Requests\ServiceRequest::createFrom($request)->validated();
+        $validated = ServiceRequest::createFrom($request)->validated();
 
         DB::transaction(function () use ($service, $validated) {
             $technicianIds = $validated['assign_to'] ?? [];
@@ -195,7 +205,7 @@ class ServiceService extends BaseService
 
             $service->update($validated);
 
-            if (!empty($technicianIds)) {
+            if (! empty($technicianIds)) {
                 $service->technicians()->sync($technicianIds);
                 $service->update(['assign_to' => $technicianIds[0]]);
                 app(static::class)->calculateCommissions($service, $technicianIds);
@@ -205,7 +215,8 @@ class ServiceService extends BaseService
             }
         });
 
-        \App\Models\ActivityLog::record('service.update', $service, "Service {$service->job_no} diperbarui");
+        ActivityLog::record('service.update', $service, "Service {$service->job_no} diperbarui");
+
         return redirect()
             ->route('services.show', $service)
             ->with('success', 'Servis berhasil diperbarui.');
@@ -215,9 +226,37 @@ class ServiceService extends BaseService
     {
         $service = Service::findOrFail($id);
         $jobNo = $service->job_no;
-        $service->delete();
 
-        \App\Models\ActivityLog::record('service.delete', null, "Service {$jobNo} dihapus");
+        if ($service->invoice) {
+            return redirect()
+                ->route('services.show', $service)
+                ->with('error', 'Servis sudah memiliki invoice — batalkan/void invoice terlebih dahulu sebelum menghapus servis.');
+        }
+
+        DB::transaction(function () use ($service) {
+            // Return consumed parts to inventory (reversal keeps audit history).
+            $usages = StockHistory::where('reference_type', Service::class)
+                ->where('reference_id', $service->id)
+                ->where('type', 'usage')
+                ->get();
+
+            foreach ($usages as $usage) {
+                StockService::increment(
+                    $usage->product_id,
+                    abs((float) $usage->quantity_change),
+                    'usage_restore',
+                    "Pembatalan servis {$service->job_no}",
+                    Service::class,
+                    $service->id,
+                );
+            }
+
+            $service->reservations()->where('status', 'reserved')->update(['status' => 'released']);
+            $service->delete();
+        });
+
+        ActivityLog::record('service.delete', null, "Service {$jobNo} dihapus");
+
         return redirect()
             ->route('services.index')
             ->with('success', 'Servis berhasil dihapus.');
@@ -227,30 +266,46 @@ class ServiceService extends BaseService
     {
         $service = Service::findOrFail($id);
 
-        DB::transaction(function () use ($service) {
-            $service->update([
+        $result = DB::transaction(function () use ($service) {
+            // Lock the row: a concurrent double-click re-reads state and
+            // short-circuits instead of creating a second invoice.
+            $locked = Service::query()->whereKey($service->id)->lockForUpdate()->first();
+
+            if ($locked->cancelled_at) {
+                return ['error' => 'Servis ini sudah dibatalkan dan tidak bisa diselesaikan.'];
+            }
+
+            if ($locked->done_status >= 2 || $locked->workflow_status >= 12) {
+                $existing = Invoice::where('service_id', $locked->id)->first();
+                if ($existing) {
+                    return ['already' => true, 'invoice' => $existing];
+                }
+            }
+
+            $locked->update([
                 'done_status' => 2,
                 'workflow_status' => 12,
                 'completed_at' => now(),
-                'survey_token' => $service->survey_token ?? Str::random(32),
+                'invoiced_at' => now(),
+                'survey_token' => $locked->survey_token ?? Str::random(32),
             ]);
 
-            if ($service->jobcardDetail) {
-                $service->jobcardDetail->update([
+            if ($locked->jobcardDetail) {
+                $locked->jobcardDetail->update([
                     'out_date' => now(),
                     'done_status' => 2,
                 ]);
             }
 
-            if ($service->jobcardDetail?->odometer_out) {
-                $service->vehicle->update(['odometer' => $service->jobcardDetail->odometer_out]);
+            if ($locked->jobcardDetail?->odometer_out && $locked->vehicle) {
+                $locked->vehicle->update(['odometer' => $locked->jobcardDetail->odometer_out]);
             }
 
             $invoiceNumber = app(InvoiceService::class)->generateInvoiceNumber();
 
             // Calculate product costs used during service
-            $productCosts = \App\Models\StockHistory::where('reference_type', \App\Models\Service::class)
-                ->where('reference_id', $service->id)
+            $productCosts = StockHistory::where('reference_type', Service::class)
+                ->where('reference_id', $locked->id)
                 ->where('type', 'usage')
                 ->get();
             $partsTotal = 0;
@@ -264,13 +319,13 @@ class ServiceService extends BaseService
                 foreach ($productCosts as $sh) {
                     $product = $products[$sh->product_id] ?? null;
                     if ($product) {
-                        $qty = abs($sh->quantity_change);
-                        $price = $product->price ?? 0;
-                        $lineTotal = $qty * $price;
+                        $qty = abs((float) $sh->quantity_change);
+                        $price = (float) ($product->price ?? 0);
+                        $lineTotal = round($qty * $price, 2);
                         $partsTotal += $lineTotal;
                         $invoiceItems[] = [
                             'product_id' => $product->id,
-                            'description' => 'Parts: ' . $product->name,
+                            'description' => 'Parts: '.$product->name,
                             'quantity' => $qty,
                             'unit_price' => $price,
                             'total_price' => $lineTotal,
@@ -279,59 +334,88 @@ class ServiceService extends BaseService
                 }
             }
 
-            $totalAmount = ($service->charge ?? 0) + $partsTotal;
+            $totalAmount = round(($locked->charge ?? 0) + $partsTotal, 2);
 
             $invoice = Invoice::create([
                 'invoice_number' => $invoiceNumber,
-                'customer_id' => $service->customer_id,
-                'service_id' => $service->id,
-                'vehicle_id' => $service->vehicle_id,
+                'customer_id' => $locked->customer_id,
+                'service_id' => $locked->id,
+                'vehicle_id' => $locked->vehicle_id,
                 'payment_status' => 0,
                 'total_amount' => $totalAmount,
                 'grand_total' => $totalAmount,
                 'invoice_date' => now(),
                 'invoice_type' => 'service',
                 'created_by' => auth()->id(),
+                'branch_id' => $locked->branch_id,
             ]);
 
-            $service->update(['actual_cost' => $invoice->grand_total]);
+            $locked->update(['actual_cost' => $invoice->grand_total]);
 
-            $invoice->items()->create([
-                'description' => 'Servis: ' . ($service->repairCategory?->repair_category_name ?? 'Perbaikan'),
-                'quantity' => 1,
-                'unit_price' => $service->charge,
-                'total_price' => $service->charge,
-            ]);
+            if ((float) $locked->charge > 0) {
+                $invoice->items()->create([
+                    'description' => 'Servis: '.($locked->repairCategory?->repair_category_name ?? 'Perbaikan'),
+                    'quantity' => 1,
+                    'unit_price' => $locked->charge,
+                    'total_price' => round((float) $locked->charge, 2),
+                ]);
+            }
 
             foreach ($invoiceItems as $item) {
                 $invoice->items()->create($item);
             }
 
+            // Accrual accounting: AR + revenue split + COGS for parts.
+            try {
+                app(AutoJournalService::class)->journalInvoiceIssued($invoice);
+            } catch (\Throwable $e) {
+                Log::error("Service completion auto-journal: {$e->getMessage()}");
+
+                throw $e;
+            }
+
             foreach ($productCosts as $sh) {
-                \App\Models\StockHistory::create([
+                StockHistory::create([
                     'product_id' => $sh->product_id,
                     'quantity_change' => 0,
                     'previous_stock' => $sh->new_stock,
                     'new_stock' => $sh->new_stock,
                     'type' => 'invoice',
-                    'reason' => 'Tercatat di Invoice #' . $invoiceNumber,
-                    'reference_type' => \App\Models\Invoice::class,
+                    'reason' => 'Tercatat di Invoice #'.$invoiceNumber,
+                    'reference_type' => Invoice::class,
                     'reference_id' => $invoice->id,
                     'user_id' => auth()->id() ?? 1,
                 ]);
             }
+
+            return ['invoice' => $invoice];
         });
 
-        $this->notifyCustomer($service, 'service-completed', [
-            'service' => $service,
-            'workshop_name' => config('app.name'),
-            'survey_link' => route('survey.show', $service->survey_token),
-        ]);
+        if (isset($result['error'])) {
+            return back()->with('error', $result['error']);
+        }
+
+        if (! empty($result['already'])) {
+            return redirect()
+                ->route('services.show', $service)
+                ->with('info', 'Servis sudah selesai sebelumnya — tidak ada invoice baru.');
+        }
+
+        // Reload stamps written inside the transaction (survey_token etc).
+        $service = $service->fresh();
+
+        if ($service->customer) {
+            $this->notifyCustomer($service, 'service-completed', [
+                'service' => $service,
+                'workshop_name' => config('app.name'),
+                'survey_link' => $service->survey_token ? route('survey.show', $service->survey_token) : null,
+            ]);
+        }
 
         // Auto-generate next service reminder
         $this->createNextServiceReminder($service);
 
-        \App\Models\ActivityLog::record('service.complete', $service, "Service {$service->job_no} selesai");
+        ActivityLog::record('service.complete', $service, "Service {$service->job_no} selesai");
 
         return redirect()
             ->route('services.show', $service)
@@ -341,6 +425,14 @@ class ServiceService extends BaseService
     public function startService($id)
     {
         $service = Service::findOrFail($id);
+
+        if ($service->workflow_status >= 12 || $service->cancelled_at) {
+            return back()->with('error', 'Servis sudah selesai/dibatalkan — tidak bisa dimulai ulang.');
+        }
+        if (! in_array((int) $service->workflow_status, [0, 1], true)) {
+            return back()->with('error', 'Servis sudah melewati tahap check-in (status: '.$service->status_label.').');
+        }
+
         $service->update([
             'done_status' => 1,
             'workflow_status' => 1,
@@ -353,41 +445,60 @@ class ServiceService extends BaseService
             'workshop_name' => config('app.name'),
         ]);
 
-        \App\Models\ActivityLog::record('service.start', $service, "Service {$service->job_no} dimulai");
+        ActivityLog::record('service.start', $service, "Service {$service->job_no} dimulai");
+
         return back()->with('success', 'Servis dimulai. Timer berjalan.');
     }
 
     public function advanceWorkflow($id)
     {
         $service = Service::findOrFail($id);
-        $nextStatus = ($service->workflow_status ?? 0) + 1;
-        if ($nextStatus > 12) $nextStatus = 12;
 
+        if ($service->cancelled_at) {
+            return back()->with('error', 'Servis sudah dibatalkan.');
+        }
+        if ((int) $service->workflow_status >= 12) {
+            return back()->with('error', 'Servis sudah selesai — tidak ada tahap berikutnya.');
+        }
+
+        $nextStatus = min((int) $service->workflow_status + 1, 12);
         $data = ['workflow_status' => $nextStatus];
 
         switch ($nextStatus) {
-            case 1: $data['checked_in_at'] = now(); break;
-            case 2: $data['inspected_at'] = now(); break;
+            case 1: $data['checked_in_at'] = $service->checked_in_at ?? now();
+                break;
+            case 2: $data['inspected_at'] = now();
+                break;
             case 4:
                 $data['approved_at'] = now();
                 $data['is_approved'] = true;
                 break;
-            case 5: $data['started_at'] = $data['started_at'] ?? now(); break;
-            case 7: $data['qc_passed_at'] = now(); break;
-            case 9: $data['invoiced_at'] = now(); break;
-            case 10: $data['paid_at'] = now(); break;
-            case 11: $data['released_at'] = now(); break;
-            case 12: $data['completed_at'] = now(); break;
+            case 5: $data['started_at'] = $data['started_at'] ?? now();
+                break;
+            case 7:
+                $data['qc_passed_at'] = now();
+                // QC passed implies work finished.
+                $data['done_status'] = max((int) $service->done_status, 2);
+                break;
+            case 9: $data['invoiced_at'] = now();
+                break;
+            case 10: $data['paid_at'] = now();
+                break;
+            case 11: $data['released_at'] = now();
+                break;
+            case 12: $data['completed_at'] = now();
+                break;
         }
 
         $service->update($data);
 
         $labels = [
-            0=>'Booked',1=>'Checked In',2=>'Inspection',3=>'Waiting Approval',
-            4=>'Approved',5=>'In Progress',6=>'Waiting Parts',7=>'QC',
-            8=>'Ready',9=>'Invoiced',10=>'Paid',11=>'Released',12=>'Completed'
+            0 => 'Booked', 1 => 'Checked In', 2 => 'Inspection', 3 => 'Waiting Approval',
+            4 => 'Approved', 5 => 'In Progress', 6 => 'Waiting Parts', 7 => 'QC',
+            8 => 'Ready', 9 => 'Invoiced', 10 => 'Paid', 11 => 'Released', 12 => 'Completed',
         ];
-        return back()->with('success', 'Status: ' . $labels[$nextStatus]);
+
+        return back()->with('success', 'Status: '.$labels[$nextStatus]);
     }
 
     public function uploadImage(Request $request, $id)
@@ -400,7 +511,7 @@ class ServiceService extends BaseService
             'caption' => 'nullable|string|max:255',
         ]);
 
-        $path = $request->file('image')->store('service-images/' . $service->id, 'public');
+        $path = $request->file('image')->store('service-images/'.$service->id, 'public');
 
         $service->images()->create([
             'image_path' => $path,
@@ -414,8 +525,8 @@ class ServiceService extends BaseService
     public function searchCustomers(Request $request)
     {
         $customers = Customer::withoutBranchScope()
-            ->where(fn($q) => $q->where('name', 'like', '%' . $request->q . '%')
-                ->orWhere('phone', 'like', '%' . $request->q . '%'))
+            ->where(fn ($q) => $q->where('name', 'like', '%'.$request->q.'%')
+                ->orWhere('phone', 'like', '%'.$request->q.'%'))
             ->limit(20)
             ->get(['id', 'name', 'phone']);
 
@@ -435,35 +546,24 @@ class ServiceService extends BaseService
 
     public function generateJobNo(): string
     {
-        $prefix = 'BP-' . now()->format('Ymd') . '-';
-        $latest = Service::withTrashed()
-            ->where('job_no', 'like', $prefix . '%')
-            ->orderBy('job_no', 'desc')
-            ->first();
-
-        if ($latest) {
-            $lastNumber = (int) substr($latest->job_no, -3);
-            $nextNumber = $lastNumber + 1;
-        } else {
-            $nextNumber = 1;
-        }
-
-        return $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+        return DocumentNumberService::generate(DocumentNumberService::SERVICES, 'BP', 'Ymd', 3);
     }
 
     public function calculateCommissions(Service $service, array $technicianIds): void
     {
         $charge = (float) ($service->charge ?? 0);
-        if ($charge <= 0 || empty($technicianIds)) return;
+        if ($charge <= 0 || empty($technicianIds)) {
+            return;
+        }
 
         $settings = app(SettingsService::class);
         $defaultPct = (float) ($settings->get('commission_default_pct', 10));
         $share = round($charge * $defaultPct / 100 / count($technicianIds), 2);
 
         foreach ($technicianIds as $uid) {
-            $pivot = \App\Models\ServiceTechnician::where('service_id', $service->id)
+            $pivot = ServiceTechnician::where('service_id', $service->id)
                 ->where('user_id', $uid)->first();
-            if ($pivot && !$pivot->commission_amt) {
+            if ($pivot && ! $pivot->commission_amt) {
                 $pivot->update(['commission_pct' => $defaultPct, 'commission_amt' => $share]);
             }
         }
@@ -492,11 +592,11 @@ class ServiceService extends BaseService
                 $description = "Estimated next service at {$nextOdometer} km based on current odometer reading ({$jobcardDetail->odometer_out} km)";
             }
 
-            \App\Models\Reminder::create([
+            Reminder::create([
                 'customer_id' => $service->customer_id,
                 'vehicle_id' => $service->vehicle_id,
                 'service_id' => $service->id,
-                'title' => 'Next Service Reminder for ' . ($vehicle?->number_plate ?? 'Vehicle #' . $service->vehicle_id),
+                'title' => 'Next Service Reminder for '.($vehicle?->number_plate ?? 'Vehicle #'.$service->vehicle_id),
                 'description' => $description,
                 'reminder_date' => $remindAt,
                 'reminder_type' => 'service',
@@ -505,18 +605,20 @@ class ServiceService extends BaseService
                 'created_by' => auth()->id(),
             ]);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning("Next service reminder failed for service {$service->id}: {$e->getMessage()}");
+            Log::warning("Next service reminder failed for service {$service->id}: {$e->getMessage()}");
         }
     }
 
     private function notifyCustomer(Service $service, string $templateSlug, array $data): void
     {
         $customer = $service->customer;
-        if (!$customer || (!$customer->email && !$customer->phone)) return;
+        if (! $customer || (! $customer->email && ! $customer->phone)) {
+            return;
+        }
         try {
             app(NotificationService::class)->send($templateSlug, $customer, $data);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning("Notify failed for service {$service->id}: {$e->getMessage()}");
+            Log::warning("Notify failed for service {$service->id}: {$e->getMessage()}");
         }
     }
 }

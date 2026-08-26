@@ -2,11 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Booking;
 use App\Models\Branch;
+use App\Models\Customer;
+use App\Models\FuelType;
 use App\Models\RepairCategory;
 use App\Models\User;
+use App\Models\Vehicle;
+use App\Models\VehicleBrand;
+use App\Models\VehicleType;
+use App\Services\ServiceService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
@@ -16,6 +24,7 @@ class BookingController extends Controller
         $branches = Branch::where('is_active', true)->orderBy('name')->get();
         $categories = RepairCategory::where('is_active', true)->orderBy('repair_category_name')->get();
         $technicians = User::role('mekanik')->where('is_active', true)->orderBy('name')->get();
+
         return view('public.booking-form', compact('branches', 'categories', 'technicians'));
     }
 
@@ -50,10 +59,18 @@ class BookingController extends Controller
     public function adminIndex(Request $request)
     {
         $query = Booking::with('customer', 'service', 'technician');
-        if ($request->filled('status')) $query->where('status', $request->status);
-        if ($request->filled('technician_id')) $query->where('technician_id', $request->technician_id);
-        if ($request->filled('date_from')) $query->whereDate('booking_at', '>=', $request->date_from);
-        if ($request->filled('date_to')) $query->whereDate('booking_at', '<=', $request->date_to);
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('technician_id')) {
+            $query->where('technician_id', $request->technician_id);
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('booking_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('booking_at', '<=', $request->date_to);
+        }
         $bookings = $query->latest('booking_at')->paginate(20)->withQueryString();
 
         $summary = [
@@ -81,81 +98,137 @@ class BookingController extends Controller
         }
 
         $booking->update($validated);
+
         return back()->with('success', 'Status booking diperbarui.');
     }
 
     public function adminDestroy(Booking $booking)
     {
         $booking->delete();
+
         return back()->with('success', 'Booking dihapus.');
     }
 
     public function convertToService(Booking $booking)
     {
-        if ($booking->status !== 'pending' && $booking->status !== 'confirmed') {
-            return back()->with('error', 'Hanya booking dengan status pending/confirmed yang bisa dikonversi.');
-        }
-        if ($booking->service_id) {
-            return back()->with('error', 'Booking ini sudah dikonversi ke service.');
-        }
+        try {
+            return DB::transaction(function () use ($booking) {
+                // Lock + re-check: concurrent double-click converts once only.
+                $locked = Booking::query()->whereKey($booking->id)->lockForUpdate()->first();
 
-        // Find or create customer by phone
-        $customer = \App\Models\Customer::withoutGlobalScopes()->firstOrCreate(
-            ['phone' => $booking->phone],
-            ['name' => $booking->name, 'email' => $booking->email]
-        );
+                if ($locked->status !== 'pending' && $locked->status !== 'confirmed') {
+                    return back()->with('error', 'Hanya booking dengan status pending/confirmed yang bisa dikonversi.');
+                }
+                if ($locked->service_id) {
+                    return back()->with('error', 'Booking ini sudah dikonversi ke service.');
+                }
 
-        // Create vehicle if plate is provided
-        $vehicle = null;
-        if ($booking->vehicle_plate) {
-            $vehicle = \App\Models\Vehicle::withoutGlobalScopes()->firstOrCreate(
-                ['number_plate' => $booking->vehicle_plate, 'customer_id' => $customer->id],
-                [
+                // Find or create customer by phone
+                $customer = Customer::withoutGlobalScopes()->firstOrCreate(
+                    ['phone' => $locked->phone],
+                    ['name' => $locked->name, 'email' => $locked->email]
+                );
+
+                // services.vehicle_id is NOT NULL: reuse the customer's first
+                // matching vehicle or register one from the booking.
+                $vehicle = null;
+                if ($locked->vehicle_plate) {
+                    $vehicle = Vehicle::withoutGlobalScopes()->firstOrCreate(
+                        ['number_plate' => $locked->vehicle_plate, 'customer_id' => $customer->id],
+                        [
+                            'customer_id' => $customer->id,
+                            'number_plate' => $locked->vehicle_plate,
+                            'model_name' => trim(($locked->vehicle_brand ?: '').' '.($locked->vehicle_model ?: '')) ?: null,
+                        ]
+                    );
+                } else {
+                    $vehicle = Vehicle::withoutGlobalScopes()
+                        ->where('customer_id', $customer->id)
+                        ->first();
+                    if (! $vehicle) {
+                        // Minimal placeholder so the job card can be opened;
+                        // the service advisor completes it at check-in.
+                        $fuelId = FuelType::query()->value('id');
+                        $typeId = VehicleType::query()->value('id');
+                        $brand = $typeId ? VehicleBrand::where('vehicle_type_id', $typeId)->value('id') : null;
+
+                        if (! $typeId || ! $brand || ! $fuelId) {
+                            throw new \RuntimeException('Data master kendaraan (tipe/merek/bahan bakar) belum lengkap — lengkapi terlebih dahulu.');
+                        }
+
+                        $vehicle = Vehicle::create([
+                            'customer_id' => $customer->id,
+                            'vehicle_type_id' => $typeId,
+                            'vehicle_brand_id' => $brand,
+                            'fuel_type_id' => $fuelId,
+                            'number_plate' => 'PLAT-BELUM-DISET-'.$locked->id,
+                            'model_name' => trim(($locked->vehicle_brand ?: '').' '.($locked->vehicle_model ?: '')) ?: 'Belum diisi',
+                        ]);
+                    }
+                }
+
+                // services.repair_category_id is NOT NULL: fall back to a
+                // general category instead of crashing on un-categorized bookings.
+                $repairCategoryId = $locked->repair_category_id
+                    ?? RepairCategory::query()->value('id');
+                if (! $repairCategoryId) {
+                    $repairCategoryId = RepairCategory::create([
+                        'repair_category_name' => 'Lain-lain',
+                        'slug' => 'lain-lain',
+                        'is_active' => true,
+                    ])->id;
+                }
+
+                // Create service
+                $jobNo = app(ServiceService::class)->generateJobNo();
+                $service = \App\Models\Service::create([
+                    'job_no' => $jobNo,
                     'customer_id' => $customer->id,
-                    'number_plate' => $booking->vehicle_plate,
-                    'model_name' => ($booking->vehicle_brand ?: '') . ' ' . ($booking->vehicle_model ?: ''),
-                ]
-            );
+                    'vehicle_id' => $vehicle->id,
+                    'repair_category_id' => $repairCategoryId,
+                    'service_date' => $locked->booking_at,
+                    'description' => $locked->complaint,
+                    'title' => $locked->complaint ?: 'Servis dari booking',
+                    'done_status' => 0,
+                    'workflow_status' => 0,
+                    'created_by' => auth()->id() ?? 1,
+                    'branch_id' => $locked->branch_id,
+                ]);
+
+                $locked->update([
+                    'customer_id' => $customer->id,
+                    'service_id' => $service->id,
+                    'status' => 'confirmed',
+                ]);
+
+                ActivityLog::record('booking.convert', $locked, "Booking dikonversi ke Service {$jobNo}");
+
+                return redirect()->route('services.show', $service)
+                    ->with('success', 'Booking berhasil dikonversi ke Service #'.$jobNo);
+            });
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        // Create service
-        $jobNo = app(\App\Services\ServiceService::class)->generateJobNo();
-        $service = \App\Models\Service::create([
-            'job_no' => $jobNo,
-            'customer_id' => $customer->id,
-            'vehicle_id' => $vehicle?->id,
-            'repair_category_id' => $booking->repair_category_id,
-            'service_date' => $booking->booking_at,
-            'description' => $booking->complaint,
-            'done_status' => 0,
-            'created_by' => auth()->id() ?? 1,
-            'branch_id' => $booking->branch_id,
-        ]);
-
-        $booking->update([
-            'customer_id' => $customer->id,
-            'service_id' => $service->id,
-            'status' => 'confirmed',
-        ]);
-
-        return redirect()->route('services.show', $service)
-            ->with('success', 'Booking berhasil dikonversi ke Service #' . $jobNo);
     }
 
-    public function calendar() { return view('bookings.calendar'); }
+    public function calendar()
+    {
+        return view('bookings.calendar');
+    }
 
     public function calendarEvents()
     {
         $start = request('start', now()->startOfMonth()->toDateString());
         $end = request('end', now()->endOfMonth()->toDateString());
-        $bookings = Booking::with('technician')->whereBetween('booking_at', [$start, $end])->get()->map(fn($b) => [
+        $bookings = Booking::with('technician')->whereBetween('booking_at', [$start, $end])->get()->map(fn ($b) => [
             'id' => $b->id, 'title' => ($b->technician?->name ? $b->technician->name.' - ' : '').($b->name ?? $b->customer->name ?? 'Booking').' - '.($b->vehicle_plate ?? ''),
             'start' => $b->booking_at->format('Y-m-d\TH:i'), 'backgroundColor' => $b->status === 'confirmed' ? '#10b981' : '#f59e0b', 'url' => route('bookings.index'),
         ]);
-        $services = Service::with('customer')->whereBetween('service_date', [$start, $end])->get()->map(fn($s) => [
+        $services = Service::with('customer')->whereBetween('service_date', [$start, $end])->get()->map(fn ($s) => [
             'id' => 'svc-'.$s->id, 'title' => '🔧 '.($s->customer->name ?? 'Service').' - '.$s->title,
             'start' => $s->service_date->format('Y-m-d\TH:i'), 'backgroundColor' => '#3b82f6', 'url' => route('services.show', $s),
         ]);
+
         return response()->json($bookings->concat($services));
     }
 }

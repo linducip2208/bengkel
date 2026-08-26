@@ -1,82 +1,108 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\TwoFactorController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\CustomerPortalController;
+use App\Http\Controllers\DashboardController as TenantDashboardController;
 use App\Http\Controllers\DocsController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ObservationController;
 use App\Http\Controllers\ProgrammaticSeoController;
+use App\Http\Controllers\PublicInvoiceController;
+use App\Http\Controllers\PublicSurveyController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\Tenant\ActivityLogController;
+use App\Http\Controllers\Tenant\BankAccountController;
+use App\Http\Controllers\Tenant\BankReconciliationController;
+use App\Http\Controllers\Tenant\BlogController;
 use App\Http\Controllers\Tenant\BranchController;
+use App\Http\Controllers\Tenant\BudgetController;
 use App\Http\Controllers\Tenant\BusinessHourController;
-use App\Http\Controllers\Tenant\CompanyController;
+use App\Http\Controllers\Tenant\CampaignController;
 use App\Http\Controllers\Tenant\CheckoutCategoryController;
 use App\Http\Controllers\Tenant\CityController;
 use App\Http\Controllers\Tenant\ColorController;
 use App\Http\Controllers\Tenant\CommissionController;
+use App\Http\Controllers\Tenant\CompanyController;
 use App\Http\Controllers\Tenant\CountryController;
 use App\Http\Controllers\Tenant\CurrencyController;
 use App\Http\Controllers\Tenant\CustomerController;
+use App\Http\Controllers\Tenant\CustomerGroupController;
 use App\Http\Controllers\Tenant\CustomFieldController;
-use App\Http\Controllers\DashboardController as TenantDashboardController;
 use App\Http\Controllers\Tenant\EmailLogController;
 use App\Http\Controllers\Tenant\EquipmentController;
 use App\Http\Controllers\Tenant\ExpenseController;
+use App\Http\Controllers\Tenant\FleetContractController;
 use App\Http\Controllers\Tenant\FuelTypeController;
 use App\Http\Controllers\Tenant\GatePassController;
 use App\Http\Controllers\Tenant\HolidayController;
+use App\Http\Controllers\Tenant\HrmController;
 use App\Http\Controllers\Tenant\IncomeController;
 use App\Http\Controllers\Tenant\InspectionPointController;
+use App\Http\Controllers\Tenant\InsuranceClaimController;
 use App\Http\Controllers\Tenant\InvoiceController;
+use App\Http\Controllers\Tenant\InvoiceSchemeController;
 use App\Http\Controllers\Tenant\JobcardController;
+use App\Http\Controllers\Tenant\JournalController;
+use App\Http\Controllers\Tenant\LeaveController;
+use App\Http\Controllers\Tenant\LoyaltyController;
+use App\Http\Controllers\Tenant\MediaAttachmentController;
 use App\Http\Controllers\Tenant\NoteController;
 use App\Http\Controllers\Tenant\NotificationTemplateController;
 use App\Http\Controllers\Tenant\ObservationPointController;
 use App\Http\Controllers\Tenant\ObservationTypeController;
 use App\Http\Controllers\Tenant\PartReservationController;
 use App\Http\Controllers\Tenant\PaymentController;
+use App\Http\Controllers\Tenant\PaymentGatewayController;
 use App\Http\Controllers\Tenant\PaymentMethodController;
+use App\Http\Controllers\Tenant\PettyCashController;
 use App\Http\Controllers\Tenant\PosController;
-use App\Http\Controllers\Tenant\LoyaltyController;
-use App\Http\Controllers\Tenant\MediaAttachmentController;
-use App\Http\Controllers\Tenant\VoucherController;
+use App\Http\Controllers\Tenant\PrintController;
+use App\Http\Controllers\Tenant\PrinterController;
 use App\Http\Controllers\Tenant\ProductController;
-use App\Http\Controllers\Tenant\ProductVariationController;
 use App\Http\Controllers\Tenant\ProductTypeController;
 use App\Http\Controllers\Tenant\ProductUnitController;
+use App\Http\Controllers\Tenant\ProductVariationController;
 use App\Http\Controllers\Tenant\PurchaseController;
 use App\Http\Controllers\Tenant\PurchaseOrderController;
-use App\Http\Controllers\Tenant\PurchaseReturnController;
 use App\Http\Controllers\Tenant\PurchaseRequisitionController;
-use App\Http\Controllers\Tenant\SellReturnController;
+use App\Http\Controllers\Tenant\PurchaseReturnController;
 use App\Http\Controllers\Tenant\RecallController;
 use App\Http\Controllers\Tenant\ReminderController;
 use App\Http\Controllers\Tenant\RepairCategoryController;
 use App\Http\Controllers\Tenant\ReportController;
+use App\Http\Controllers\Tenant\ReviewController;
+use App\Http\Controllers\Tenant\RoleController;
 use App\Http\Controllers\Tenant\SearchController;
+use App\Http\Controllers\Tenant\SellingPriceGroupController;
+use App\Http\Controllers\Tenant\SellReturnController;
 use App\Http\Controllers\Tenant\ServiceController;
 use App\Http\Controllers\Tenant\ServicePackageController;
-use App\Http\Controllers\Tenant\SellingPriceGroupController;
 use App\Http\Controllers\Tenant\SettingsController;
 use App\Http\Controllers\Tenant\StateController;
 use App\Http\Controllers\Tenant\StockAdjustmentController;
 use App\Http\Controllers\Tenant\StockHistoryController;
 use App\Http\Controllers\Tenant\SubcontractorController;
+use App\Http\Controllers\Tenant\SupplierClaimController;
 use App\Http\Controllers\Tenant\SupplierController;
-use App\Http\Controllers\Tenant\TechnicianSkillController;
 use App\Http\Controllers\Tenant\TaxGroupController;
 use App\Http\Controllers\Tenant\TaxRateController;
+use App\Http\Controllers\Tenant\TechnicianSkillController;
 use App\Http\Controllers\Tenant\VehicleBrandController;
 use App\Http\Controllers\Tenant\VehicleController;
 use App\Http\Controllers\Tenant\VehicleTypeController;
+use App\Http\Controllers\Tenant\VoucherController;
+use App\Http\Controllers\Tenant\WarehouseController;
+use App\Http\Controllers\Tenant\WarrantyClaimController;
 use App\Http\Controllers\Tenant\WashbayController;
-use App\Http\Controllers\Tenant\BankAccountController;
-use App\Http\Controllers\Tenant\BankReconciliationController;
-use App\Http\Controllers\Tenant\BudgetController;
-use App\Http\Controllers\Tenant\InvoiceSchemeController;
-use App\Http\Controllers\Tenant\PrinterController;
-use App\Http\Controllers\Tenant\SupplierClaimController;
+use App\Http\Controllers\TrackingController;
+use App\Models\BlogCategory;
+use App\Models\BlogPost;
+use App\Services\ReportService;
+use Illuminate\Support\Facades\Route;
 
 // Auth routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -87,42 +113,42 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
 
 // Public tracking service (token-based, no auth)
-Route::get('/track/{token}', [\App\Http\Controllers\TrackingController::class, 'show'])->name('public.tracking');
-Route::post('/track/{token}/review', [\App\Http\Controllers\TrackingController::class, 'review'])->name('public.tracking.review');
+Route::get('/track/{token}', [TrackingController::class, 'show'])->name('public.tracking');
+Route::post('/track/{token}/review', [TrackingController::class, 'review'])->name('public.tracking.review');
 
 // Public NPS survey (post-service rating, token-based, no auth)
-Route::get('/survey/{token}', [\App\Http\Controllers\PublicSurveyController::class, 'show'])->name('survey.show');
-Route::post('/survey/{token}', [\App\Http\Controllers\PublicSurveyController::class, 'store'])->name('survey.store');
+Route::get('/survey/{token}', [PublicSurveyController::class, 'show'])->name('survey.show');
+Route::post('/survey/{token}', [PublicSurveyController::class, 'store'])->name('survey.store');
 
 // Public shareable invoice link (token-based, no auth)
-Route::get('/invoice/{token}', [\App\Http\Controllers\PublicInvoiceController::class, 'show'])->name('public.invoice');
+Route::get('/invoice/{token}', [PublicInvoiceController::class, 'show'])->name('public.invoice');
 
 // Public service estimate approval (token-based, no auth)
-Route::get('/approve/{token}', [\App\Http\Controllers\ApprovalController::class, 'showApprove'])->name('public.approval.approve');
-Route::post('/approve/{token}', [\App\Http\Controllers\ApprovalController::class, 'approve'])->name('public.approval.approve.store');
-Route::get('/reject/{token}', [\App\Http\Controllers\ApprovalController::class, 'showReject'])->name('public.approval.reject');
-Route::post('/reject/{token}', [\App\Http\Controllers\ApprovalController::class, 'reject'])->name('public.approval.reject.store');
+Route::get('/approve/{token}', [ApprovalController::class, 'showApprove'])->name('public.approval.approve');
+Route::post('/approve/{token}', [ApprovalController::class, 'approve'])->name('public.approval.approve.store');
+Route::get('/reject/{token}', [ApprovalController::class, 'showReject'])->name('public.approval.reject');
+Route::post('/reject/{token}', [ApprovalController::class, 'reject'])->name('public.approval.reject.store');
 
 // Payment Gateway webhook callback (PUBLIC — gateway POST tanpa session)
-Route::any('/payment/callback/{token}', [\App\Http\Controllers\Tenant\PaymentGatewayController::class, 'callback'])->name('payment.callback');
+Route::any('/payment/callback/{token}', [PaymentGatewayController::class, 'callback'])->name('payment.callback');
 
 // 2FA challenge (post-login)
-Route::get('/2fa/challenge', [\App\Http\Controllers\Auth\TwoFactorController::class, 'showChallenge'])->name('2fa.challenge');
-Route::post('/2fa/verify', [\App\Http\Controllers\Auth\TwoFactorController::class, 'verify'])->name('2fa.verify')->middleware('throttle:10,1');
+Route::get('/2fa/challenge', [TwoFactorController::class, 'showChallenge'])->name('2fa.challenge');
+Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])->name('2fa.verify')->middleware('throttle:10,1');
 
 // Public Booking Online (no auth)
-Route::get('/booking', [\App\Http\Controllers\BookingController::class, 'publicForm'])->name('public.booking');
-Route::post('/booking', [\App\Http\Controllers\BookingController::class, 'publicStore'])->name('public.booking.store')->middleware('throttle:10,1');
+Route::get('/booking', [BookingController::class, 'publicForm'])->name('public.booking');
+Route::post('/booking', [BookingController::class, 'publicStore'])->name('public.booking.store')->middleware('throttle:10,1');
 
 // Customer Portal (separate auth via session)
-    Route::get('/customer/login', [\App\Http\Controllers\CustomerPortalController::class, 'loginForm'])->name('customer.login');
-    Route::post('/customer/login', [\App\Http\Controllers\CustomerPortalController::class, 'login'])->middleware('throttle:10,1');
-    Route::get('/customer/dashboard', [\App\Http\Controllers\CustomerPortalController::class, 'dashboard'])->name('customer.dashboard');
-    Route::get('/customer/invoice/{id}', [\App\Http\Controllers\CustomerPortalController::class, 'invoiceDetail'])->name('customer.invoice');
-    Route::get('/customer/service/{id}', [\App\Http\Controllers\CustomerPortalController::class, 'serviceDetail'])->name('customer.service');
-    Route::post('/customer/invoice/{id}/upload-payment', [\App\Http\Controllers\CustomerPortalController::class, 'uploadPayment'])->name('customer.upload-payment');
-    Route::post('/customer/change-password', [\App\Http\Controllers\CustomerPortalController::class, 'changePassword'])->name('customer.change-password');
-    Route::post('/customer/logout', [\App\Http\Controllers\CustomerPortalController::class, 'logout'])->name('customer.logout');
+Route::get('/customer/login', [CustomerPortalController::class, 'loginForm'])->name('customer.login');
+Route::post('/customer/login', [CustomerPortalController::class, 'login'])->name('customer.login.submit')->middleware('throttle:10,1');
+Route::get('/customer/dashboard', [CustomerPortalController::class, 'dashboard'])->name('customer.dashboard');
+Route::get('/customer/invoice/{id}', [CustomerPortalController::class, 'invoiceDetail'])->name('customer.invoice');
+Route::get('/customer/service/{id}', [CustomerPortalController::class, 'serviceDetail'])->name('customer.service');
+Route::post('/customer/invoice/{id}/upload-payment', [CustomerPortalController::class, 'uploadPayment'])->name('customer.upload-payment');
+Route::post('/customer/change-password', [CustomerPortalController::class, 'changePassword'])->name('customer.change-password');
+Route::post('/customer/logout', [CustomerPortalController::class, 'logout'])->name('customer.logout');
 
 // Public SEO pages
 Route::get('/best/{category}', [ProgrammaticSeoController::class, 'bestService'])->name('seo.best');
@@ -133,29 +159,57 @@ Route::get('/compare/{a}-vs-{b}', [ProgrammaticSeoController::class, 'compareSer
 // Multilingual PSEO routes (ID / EN / DE)
 foreach (['id', 'en', 'de'] as $lang) {
     Route::prefix($lang)->group(function () use ($lang) {
-        Route::get('/bengkel-{city}', [\App\Http\Controllers\ProgrammaticSeoController::class, 'cityLanding'])->name("seo.{$lang}.city");
-        Route::get('/bengkel-{city}/{kelurahan}', [\App\Http\Controllers\ProgrammaticSeoController::class, 'kelurahanLanding'])->name("seo.{$lang}.kelurahan");
-        Route::get('/bengkel-{brand}-{city}', [\App\Http\Controllers\ProgrammaticSeoController::class, 'brandCityLanding'])->name("seo.{$lang}.brand-city");
-        Route::get('/service-{service}-{city}', [\App\Http\Controllers\ProgrammaticSeoController::class, 'serviceCityLanding'])->name("seo.{$lang}.service-city");
-        Route::get('/bengkel-terbaik-{city}', [\App\Http\Controllers\ProgrammaticSeoController::class, 'bestCityLanding'])->name("seo.{$lang}.best-city");
+        Route::get('/bengkel-{city}', [ProgrammaticSeoController::class, 'cityLanding'])->name("seo.{$lang}.city");
+        Route::get('/bengkel-{city}/{kelurahan}', [ProgrammaticSeoController::class, 'kelurahanLanding'])->name("seo.{$lang}.kelurahan");
+        Route::get('/bengkel-{brand}-{city}', [ProgrammaticSeoController::class, 'brandCityLanding'])->name("seo.{$lang}.brand-city");
+        Route::get('/service-{service}-{city}', [ProgrammaticSeoController::class, 'serviceCityLanding'])->name("seo.{$lang}.service-city");
+        Route::get('/bengkel-terbaik-{city}', [ProgrammaticSeoController::class, 'bestCityLanding'])->name("seo.{$lang}.best-city");
     });
 }
 
 // Blog public
 Route::get('/blog', function () {
-    $articles = [];
-    if (class_exists(\App\Models\BlogPost::class)) {
-        $articles = \App\Models\BlogPost::published()->orderBy('published_at', 'desc')->limit(12)->get();
+    $appName = config('app.name');
+    $articles = collect();
+    $categories = collect();
+    $recent = collect();
+
+    if (class_exists(BlogPost::class)) {
+        $articles = BlogPost::published()->orderBy('published_at', 'desc')->limit(24)->get();
+        $recent = BlogPost::published()->orderBy('published_at', 'desc')->limit(5)->get();
     }
+    if (class_exists(BlogCategory::class)) {
+        $categories = BlogCategory::orderBy('name')->get();
+    }
+
+    $metaTitle = "Blog {$appName} — Tips & Berita Otomotif";
+    $metaDescription = "Baca tips perawatan mobil, berita otomotif, dan panduan service dari {$appName}.";
+    $jsonLd = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Blog',
+        'name' => "Blog {$appName}",
+        'url' => url('/blog'),
+        'inLanguage' => 'id-ID',
+        'blogPost' => $articles->map(fn ($p) => [
+            '@type' => 'BlogPosting',
+            'headline' => $p->title,
+            'url' => url('/blog/'.$p->slug),
+            'datePublished' => optional($p->published_at ?? $p->created_at)->toIso8601String(),
+        ])->all(),
+    ];
+
     return view('seo.blog-list', [
-        'metaTitle' => 'Blog Aplikasi Bengkel Terbaik — Tips & Berita Otomotif',
-        'metaDescription' => 'Baca tips perawatan mobil, berita otomotif, dan panduan service dari Aplikasi Bengkel Terbaik.',
-        'jsonLd' => ['@context'=>'https://schema.org','@type'=>'Blog','name'=>'Blog Aplikasi Bengkel Terbaik'],
+        'metaTitle' => $metaTitle,
+        'metaDescription' => $metaDescription,
+        'jsonLd' => $jsonLd,
         'articles' => $articles,
+        'categories' => $categories,
+        'recent' => $recent,
     ]);
 })->name('blog.index');
+Route::get('/blog/category/{slug}', [ProgrammaticSeoController::class, 'blogCategory'])->name('blog.category');
+Route::get('/blog/feed.xml', [BlogController::class, 'rss'])->name('blog.rss');
 Route::get('/blog/{slug}', [ProgrammaticSeoController::class, 'blogArticle'])->name('seo.blog');
-Route::get('/blog/feed.xml', [\App\Http\Controllers\Tenant\BlogController::class, 'rss'])->name('blog.rss');
 
 // Sitemap
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
@@ -170,10 +224,11 @@ Route::get('/docs/{slug}', [DocsController::class, 'show'])->name('docs.show');
 Route::redirect('/admin', '/')->name('admin');
 
 // Landing page (public) — guest lihat welcome, user login langsung ke dashboard
-Route::get('/', function (\App\Services\ReportService $reportService) {
+Route::get('/', function (ReportService $reportService) {
     if (auth()->check()) {
         return app(TenantDashboardController::class)->index($reportService);
     }
+
     return view('welcome');
 })->name('dashboard');
 
@@ -188,6 +243,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/dashboard/config', [TenantDashboardController::class, 'saveConfig'])->name('dashboard.config.save');
 
     // --- Media / Document attachments ---
+    Route::get('/media/{media}/download', [MediaAttachmentController::class, 'download'])->name('attachments.download');
     Route::post('/media', [MediaAttachmentController::class, 'store'])->name('media.store');
     Route::delete('/media/{media}', [MediaAttachmentController::class, 'destroy'])->name('media.destroy');
 
@@ -199,26 +255,27 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/financial', [ReportController::class, 'financialReport'])->name('reports.financial');
     Route::get('/reports/technician', [ReportController::class, 'technicianPerformance'])->name('reports.technician');
     Route::get('/reports/customer-lifetime', [ReportController::class, 'customerLifetime'])->name('reports.customer-lifetime');
-    Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
-    Route::get('/reports/export-excel', [ReportController::class, 'exportExcel'])->name('reports.export-excel');
+    Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf')->middleware('role:super_admin|admin|manager');
+    Route::get('/reports/export-excel', [ReportController::class, 'exportExcel'])->name('reports.export-excel')->middleware('role:super_admin|admin|manager');
     Route::get('/reports/service/{service}/pdf', [ReportController::class, 'serviceReportPdf'])->name('reports.service-pdf');
     Route::get('/reports/ar-aging', [ReportController::class, 'arAging'])->name('reports.ar-aging');
     Route::get('/reports/parts-usage', [ReportController::class, 'partsUsage'])->name('reports.parts-usage');
     Route::get('/reports/branch-comparison', [ReportController::class, 'branchComparison'])->name('reports.branch-comparison');
     Route::get('/reports/cash-flow', [ReportController::class, 'cashFlow'])->name('reports.cash-flow');
-Route::get('/reports/general-ledger', [ReportController::class, 'generalLedger'])->name('reports.general-ledger')->middleware('role:super_admin|admin|manager');
-Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss'])->name('reports.profit-loss')->middleware('role:super_admin|admin|manager');
-Route::get('/reports/balance-sheet', [ReportController::class, 'balanceSheet'])->name('reports.balance-sheet')->middleware('role:super_admin|admin|manager');
+    Route::get('/reports/general-ledger', [ReportController::class, 'generalLedger'])->name('reports.general-ledger')->middleware('role:super_admin|admin|manager');
+    Route::get('/reports/trial-balance', [ReportController::class, 'trialBalance'])->name('reports.trial-balance')->middleware('role:super_admin|admin|manager');
+    Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss'])->name('reports.profit-loss')->middleware('role:super_admin|admin|manager');
+    Route::get('/reports/balance-sheet', [ReportController::class, 'balanceSheet'])->name('reports.balance-sheet')->middleware('role:super_admin|admin|manager');
 
     // --- Settings ---
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index')->middleware('role:super_admin|admin');
-    Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
-    Route::put('/settings', [SettingsController::class, 'update']);
-Route::get('/settings/backup', [SettingsController::class, 'backupPage'])->name('settings.backup-page')->middleware('role:super_admin|admin');
-Route::post('/settings/backup', [SettingsController::class, 'backup'])->name('settings.backup')->middleware('role:super_admin|admin');
-Route::get('/settings/backup/download', [SettingsController::class, 'backupDownload'])->name('settings.backup-download')->middleware('role:super_admin|admin');
-    Route::post('/settings/cache-clear', [SettingsController::class, 'cacheClear'])->name('settings.cache-clear');
-    Route::post('/settings/optimize', [SettingsController::class, 'optimize'])->name('settings.optimize');
+    Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update')->middleware('role:super_admin|admin');
+    Route::put('/settings', [SettingsController::class, 'update'])->middleware('role:super_admin|admin');
+    Route::get('/settings/backup', [SettingsController::class, 'backupPage'])->name('settings.backup-page')->middleware('role:super_admin|admin');
+    Route::post('/settings/backup', [SettingsController::class, 'backup'])->name('settings.backup')->middleware('role:super_admin|admin');
+    Route::get('/settings/backup/download', [SettingsController::class, 'backupDownload'])->name('settings.backup-download')->middleware('role:super_admin|admin');
+    Route::post('/settings/cache-clear', [SettingsController::class, 'cacheClear'])->name('settings.cache-clear')->middleware('role:super_admin|admin');
+    Route::post('/settings/optimize', [SettingsController::class, 'optimize'])->name('settings.optimize')->middleware('role:super_admin|admin');
 
     // --- Printer, Numbering & Bank Accounts ---
     Route::resource('printers', PrinterController::class)->except(['show']);
@@ -239,6 +296,7 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::get('/invoices/{invoice}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
     Route::post('/invoices/{invoice}/payments', [PaymentController::class, 'store'])->name('payments.store');
     Route::get('/invoices/{invoice}/payments/history', [PaymentController::class, 'history'])->name('payments.history');
+    Route::get('/invoices/{invoice}/payment-proof', [InvoiceController::class, 'paymentProof'])->name('invoices.payment-proof')->middleware('role:super_admin|admin|manager');
 
     // --- Observations ---
     Route::get('/observations/{service}/checklist', [ObservationController::class, 'checklist'])->name('observations.checklist');
@@ -280,10 +338,10 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::post('/invoices/{invoice}/share', [InvoiceController::class, 'share'])->name('invoices.share');
 
     // --- Thermal Print ---
-    Route::post('/invoices/{invoice}/print', [\App\Http\Controllers\Tenant\PrintController::class, 'invoice'])->name('print.invoice');
-    Route::post('/services/{service}/print-jobcard', [\App\Http\Controllers\Tenant\PrintController::class, 'jobcard'])->name('print.jobcard');
-    Route::post('/pos/open-drawer', [\App\Http\Controllers\Tenant\PrintController::class, 'openDrawer'])->name('print.open-drawer');
-    Route::get('/print/invoice/{invoice}/raw', [\App\Http\Controllers\Tenant\PrintController::class, 'rawData'])->name('print.raw');
+    Route::post('/invoices/{invoice}/print', [PrintController::class, 'invoice'])->name('print.invoice');
+    Route::post('/services/{service}/print-jobcard', [PrintController::class, 'jobcard'])->name('print.jobcard');
+    Route::post('/pos/open-drawer', [PrintController::class, 'openDrawer'])->name('print.open-drawer');
+    Route::get('/print/invoice/{invoice}/raw', [PrintController::class, 'rawData'])->name('print.raw');
 
     // --- Products custom routes (before resource) ---
     Route::get('/products/reorder', [ProductController::class, 'reorderSuggestions'])->name('products.reorder');
@@ -303,8 +361,9 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::get('/stock-adjustments', [StockAdjustmentController::class, 'index'])->name('stock-adjustments.index');
     Route::get('/stock-adjustments/create', [StockAdjustmentController::class, 'create'])->name('stock-adjustments.create');
     Route::post('/stock-adjustments', [StockAdjustmentController::class, 'store'])->name('stock-adjustments.store');
-    Route::post('/stock-adjustments/{adjustment}/approve', [StockAdjustmentController::class, 'approve'])->name('stock-adjustments.approve');
-    Route::post('/stock-adjustments/{adjustment}/reject', [StockAdjustmentController::class, 'reject'])->name('stock-adjustments.reject');
+    // Approval is separated from request creation (segregation of duties).
+    Route::post('/stock-adjustments/{adjustment}/approve', [StockAdjustmentController::class, 'approve'])->name('stock-adjustments.approve')->middleware('role:super_admin|admin|manager');
+    Route::post('/stock-adjustments/{adjustment}/reject', [StockAdjustmentController::class, 'reject'])->name('stock-adjustments.reject')->middleware('role:super_admin|admin|manager');
 
     // --- Purchases custom routes (before resource) ---
     Route::post('/purchases/{purchase}/mark-received', [PurchaseController::class, 'markReceived'])->name('purchases.mark-received');
@@ -405,19 +464,19 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
 
     // --- Booking Customer (admin) ---
-    Route::get('/bookings/calendar', [\App\Http\Controllers\BookingController::class, 'calendar'])->name('bookings.calendar');
-    Route::get('/bookings/calendar/events', [\App\Http\Controllers\BookingController::class, 'calendarEvents'])->name('bookings.calendar.events');
-    Route::get('/bookings', [\App\Http\Controllers\BookingController::class, 'adminIndex'])->name('bookings.index');
-    Route::put('/bookings/{booking}', [\App\Http\Controllers\BookingController::class, 'adminUpdate'])->name('bookings.update');
-    Route::delete('/bookings/{booking}', [\App\Http\Controllers\BookingController::class, 'adminDestroy'])->name('bookings.destroy');
-    Route::post('/bookings/{booking}/convert', [\App\Http\Controllers\BookingController::class, 'convertToService'])->name('bookings.convert');
+    Route::get('/bookings/calendar', [BookingController::class, 'calendar'])->name('bookings.calendar');
+    Route::get('/bookings/calendar/events', [BookingController::class, 'calendarEvents'])->name('bookings.calendar.events');
+    Route::get('/bookings', [BookingController::class, 'adminIndex'])->name('bookings.index');
+    Route::put('/bookings/{booking}', [BookingController::class, 'adminUpdate'])->name('bookings.update');
+    Route::delete('/bookings/{booking}', [BookingController::class, 'adminDestroy'])->name('bookings.destroy');
+    Route::post('/bookings/{booking}/convert', [BookingController::class, 'convertToService'])->name('bookings.convert');
 
     // --- Marketing: Voucher & Loyalty ---
     Route::resource('vouchers', VoucherController::class)->except(['show']);
     Route::post('/vouchers-validate', [VoucherController::class, 'validateCode'])->name('vouchers.validate');
-    Route::get('/marketing/campaign', [\App\Http\Controllers\Tenant\CampaignController::class, 'index'])->name('marketing.campaign');
-    Route::post('/marketing/campaign', [\App\Http\Controllers\Tenant\CampaignController::class, 'send'])->name('marketing.campaign.send');
-    Route::get('/marketing/campaign/search', [\App\Http\Controllers\Tenant\CampaignController::class, 'searchCustomers'])->name('marketing.campaign.search');
+    Route::get('/marketing/campaign', [CampaignController::class, 'index'])->name('marketing.campaign');
+    Route::post('/marketing/campaign', [CampaignController::class, 'send'])->name('marketing.campaign.send');
+    Route::get('/marketing/campaign/search', [CampaignController::class, 'searchCustomers'])->name('marketing.campaign.search');
 
     Route::get('/loyalty', [LoyaltyController::class, 'index'])->name('loyalty.index');
     Route::get('/loyalty/{customer}', [LoyaltyController::class, 'show'])->name('loyalty.show');
@@ -434,13 +493,13 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::post('/service-technicians/{serviceTechnician}/finish', [CommissionController::class, 'finishJob'])->name('service-technicians.finish');
 
     // --- HRM: Attendance & Salary ---
-    Route::get('/hrm/attendance', [\App\Http\Controllers\Tenant\HrmController::class, 'attendanceIndex'])->name('hrm.attendance');
-    Route::post('/hrm/clock-in', [\App\Http\Controllers\Tenant\HrmController::class, 'clockIn'])->name('hrm.clock-in');
-    Route::post('/hrm/clock-out', [\App\Http\Controllers\Tenant\HrmController::class, 'clockOut'])->name('hrm.clock-out');
-    Route::get('/hrm/salary', [\App\Http\Controllers\Tenant\HrmController::class, 'salaryIndex'])->name('hrm.salary');
-    Route::post('/hrm/salary/generate', [\App\Http\Controllers\Tenant\HrmController::class, 'salaryGenerate'])->name('hrm.salary.generate');
-    Route::get('/hrm/salary/{salary}/slip', [\App\Http\Controllers\Tenant\HrmController::class, 'salarySlip'])->name('hrm.salary.slip');
-    Route::put('/hrm/salary/{salary}/mark-paid', [\App\Http\Controllers\Tenant\HrmController::class, 'salaryMarkPaid'])->name('hrm.salary.mark-paid');
+    Route::get('/hrm/attendance', [HrmController::class, 'attendanceIndex'])->name('hrm.attendance');
+    Route::post('/hrm/clock-in', [HrmController::class, 'clockIn'])->name('hrm.clock-in');
+    Route::post('/hrm/clock-out', [HrmController::class, 'clockOut'])->name('hrm.clock-out');
+    Route::get('/hrm/salary', [HrmController::class, 'salaryIndex'])->name('hrm.salary');
+    Route::post('/hrm/salary/generate', [HrmController::class, 'salaryGenerate'])->name('hrm.salary.generate');
+    Route::get('/hrm/salary/{salary}/slip', [HrmController::class, 'salarySlip'])->name('hrm.salary.slip');
+    Route::put('/hrm/salary/{salary}/mark-paid', [HrmController::class, 'salaryMarkPaid'])->name('hrm.salary.mark-paid');
 
     // --- HRM: Skill Matrix Teknisi ---
     Route::get('/technician-skills', [TechnicianSkillController::class, 'index'])->name('technician-skills.index');
@@ -449,11 +508,11 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::delete('/technician-skills/{skill}', [TechnicianSkillController::class, 'destroy'])->name('technician-skills.destroy');
 
     // --- HRM: Leaves / Cuti ---
-    Route::get('/hrm/leaves', [\App\Http\Controllers\Tenant\LeaveController::class, 'index'])->name('hrm.leaves.index');
-    Route::post('/hrm/leaves', [\App\Http\Controllers\Tenant\LeaveController::class, 'store'])->name('hrm.leaves.store');
-    Route::post('/hrm/leaves/{leave}/approve', [\App\Http\Controllers\Tenant\LeaveController::class, 'approve'])->name('hrm.leaves.approve');
-    Route::post('/hrm/leaves/{leave}/reject', [\App\Http\Controllers\Tenant\LeaveController::class, 'reject'])->name('hrm.leaves.reject');
-    Route::delete('/hrm/leaves/{leave}', [\App\Http\Controllers\Tenant\LeaveController::class, 'destroy'])->name('hrm.leaves.destroy');
+    Route::get('/hrm/leaves', [LeaveController::class, 'index'])->name('hrm.leaves.index');
+    Route::post('/hrm/leaves', [LeaveController::class, 'store'])->name('hrm.leaves.store');
+    Route::post('/hrm/leaves/{leave}/approve', [LeaveController::class, 'approve'])->name('hrm.leaves.approve');
+    Route::post('/hrm/leaves/{leave}/reject', [LeaveController::class, 'reject'])->name('hrm.leaves.reject');
+    Route::delete('/hrm/leaves/{leave}', [LeaveController::class, 'destroy'])->name('hrm.leaves.destroy');
 
     // --- POS Kasir (Retail Module) ---
     Route::prefix('pos')->name('pos.')->group(function () {
@@ -474,32 +533,32 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     });
 
     // --- Review & Warranty ---
-    Route::get('/reviews', [\App\Http\Controllers\Tenant\ReviewController::class, 'index'])->name('reviews.index');
-    Route::put('/reviews/{review}/publish', [\App\Http\Controllers\Tenant\ReviewController::class, 'publish'])->name('reviews.publish');
-    Route::put('/reviews/{review}/unpublish', [\App\Http\Controllers\Tenant\ReviewController::class, 'unpublish'])->name('reviews.unpublish');
-    Route::put('/reviews/{review}/reply', [\App\Http\Controllers\Tenant\ReviewController::class, 'reply'])->name('reviews.reply');
-    Route::delete('/reviews/{review}', [\App\Http\Controllers\Tenant\ReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
+    Route::put('/reviews/{review}/publish', [ReviewController::class, 'publish'])->name('reviews.publish');
+    Route::put('/reviews/{review}/unpublish', [ReviewController::class, 'unpublish'])->name('reviews.unpublish');
+    Route::put('/reviews/{review}/reply', [ReviewController::class, 'reply'])->name('reviews.reply');
+    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
 
     Route::resource('recalls', RecallController::class)->except(['show']);
 
-    Route::get('/warranty-claims', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'index'])->name('warranty-claims.index');
-    Route::get('/warranty-claims/create', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'create'])->name('warranty-claims.create');
-    Route::post('/warranty-claims', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'store'])->name('warranty-claims.store');
-    Route::get('/warranty-claims/{warrantyClaim}', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'show'])->name('warranty-claims.show');
-    Route::get('/warranty-claims/{warrantyClaim}/edit', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'edit'])->name('warranty-claims.edit');
-    Route::put('/warranty-claims/{warrantyClaim}', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'update'])->name('warranty-claims.update');
-    Route::delete('/warranty-claims/{warrantyClaim}', [\App\Http\Controllers\Tenant\WarrantyClaimController::class, 'destroy'])->name('warranty-claims.destroy');
+    Route::get('/warranty-claims', [WarrantyClaimController::class, 'index'])->name('warranty-claims.index');
+    Route::get('/warranty-claims/create', [WarrantyClaimController::class, 'create'])->name('warranty-claims.create');
+    Route::post('/warranty-claims', [WarrantyClaimController::class, 'store'])->name('warranty-claims.store');
+    Route::get('/warranty-claims/{warrantyClaim}', [WarrantyClaimController::class, 'show'])->name('warranty-claims.show');
+    Route::get('/warranty-claims/{warrantyClaim}/edit', [WarrantyClaimController::class, 'edit'])->name('warranty-claims.edit');
+    Route::put('/warranty-claims/{warrantyClaim}', [WarrantyClaimController::class, 'update'])->name('warranty-claims.update');
+    Route::delete('/warranty-claims/{warrantyClaim}', [WarrantyClaimController::class, 'destroy'])->name('warranty-claims.destroy');
 
     // --- Insurance Claims (Klaim Asuransi) ---
-    Route::get('/insurance-claims', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'index'])->name('insurance-claims.index');
-    Route::get('/insurance-claims/create', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'create'])->name('insurance-claims.create');
-    Route::post('/insurance-claims', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'store'])->name('insurance-claims.store');
-    Route::get('/insurance-claims/{insuranceClaim}', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'show'])->name('insurance-claims.show');
-    Route::put('/insurance-claims/{insuranceClaim}', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'update'])->name('insurance-claims.update');
-    Route::post('/insurance-claims/{insuranceClaim}/approve', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'approve'])->name('insurance-claims.approve');
-    Route::post('/insurance-claims/{insuranceClaim}/reject', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'reject'])->name('insurance-claims.reject');
-    Route::post('/insurance-claims/{insuranceClaim}/mark-paid', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'markPaid'])->name('insurance-claims.mark-paid');
-    Route::delete('/insurance-claims/{insuranceClaim}', [\App\Http\Controllers\Tenant\InsuranceClaimController::class, 'destroy'])->name('insurance-claims.destroy');
+    Route::get('/insurance-claims', [InsuranceClaimController::class, 'index'])->name('insurance-claims.index');
+    Route::get('/insurance-claims/create', [InsuranceClaimController::class, 'create'])->name('insurance-claims.create');
+    Route::post('/insurance-claims', [InsuranceClaimController::class, 'store'])->name('insurance-claims.store');
+    Route::get('/insurance-claims/{insuranceClaim}', [InsuranceClaimController::class, 'show'])->name('insurance-claims.show');
+    Route::put('/insurance-claims/{insuranceClaim}', [InsuranceClaimController::class, 'update'])->name('insurance-claims.update');
+    Route::post('/insurance-claims/{insuranceClaim}/approve', [InsuranceClaimController::class, 'approve'])->name('insurance-claims.approve');
+    Route::post('/insurance-claims/{insuranceClaim}/reject', [InsuranceClaimController::class, 'reject'])->name('insurance-claims.reject');
+    Route::post('/insurance-claims/{insuranceClaim}/mark-paid', [InsuranceClaimController::class, 'markPaid'])->name('insurance-claims.mark-paid');
+    Route::delete('/insurance-claims/{insuranceClaim}', [InsuranceClaimController::class, 'destroy'])->name('insurance-claims.destroy');
 
     // --- Supplier Claims (Klaim garansi ke supplier) ---
     Route::get('/supplier-claims', [SupplierClaimController::class, 'index'])->name('supplier-claims.index');
@@ -512,35 +571,35 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::delete('/supplier-claims/{supplierClaim}', [SupplierClaimController::class, 'destroy'])->name('supplier-claims.destroy');
 
     // --- Fleet Contracts (Kontrak Fleet) ---
-    Route::get('/fleet-contracts/due', [\App\Http\Controllers\Tenant\FleetContractController::class, 'dueVehicles'])->name('fleet-contracts.due');
-    Route::resource('fleet-contracts', \App\Http\Controllers\Tenant\FleetContractController::class);
+    Route::get('/fleet-contracts/due', [FleetContractController::class, 'dueVehicles'])->name('fleet-contracts.due');
+    Route::resource('fleet-contracts', FleetContractController::class);
 
     // --- Payment Gateway (generic adapter, configurable) ---
-    Route::resource('payment-gateways', \App\Http\Controllers\Tenant\PaymentGatewayController::class)->except(['show'])->middleware('role:super_admin|admin');
-    Route::post('/invoices/{invoice}/generate-payment-link', [\App\Http\Controllers\Tenant\PaymentGatewayController::class, 'generateLink'])->name('invoices.generate-payment-link');
+    Route::resource('payment-gateways', PaymentGatewayController::class)->except(['show'])->middleware('role:super_admin|admin');
+    Route::post('/invoices/{invoice}/generate-payment-link', [PaymentGatewayController::class, 'generateLink'])->name('invoices.generate-payment-link');
 
     // --- User & Role Management ---
-    Route::get('/users', [\App\Http\Controllers\Tenant\RoleController::class, 'userIndex'])->name('users.index')->middleware('role:super_admin|admin');
-    Route::post('/users', [\App\Http\Controllers\Tenant\RoleController::class, 'userStore'])->name('users.store');
-    Route::put('/users/{user}', [\App\Http\Controllers\Tenant\RoleController::class, 'userUpdate'])->name('users.update');
-    Route::delete('/users/{user}', [\App\Http\Controllers\Tenant\RoleController::class, 'userDestroy'])->name('users.destroy');
-    Route::get('/users/api-tokens', [\App\Http\Controllers\Tenant\RoleController::class, 'apiTokens'])->name('users.api-tokens');
-    Route::post('/users/api-tokens', [\App\Http\Controllers\Tenant\RoleController::class, 'createToken'])->name('users.create-token');
-    Route::delete('/admin/api-tokens/{token}', [\App\Http\Controllers\Tenant\RoleController::class, 'revokeToken'])->name('admin.revoke-token');
-    Route::get('/roles', [\App\Http\Controllers\Tenant\RoleController::class, 'roleIndex'])->name('roles.index')->middleware('role:super_admin|admin');
-    Route::post('/roles', [\App\Http\Controllers\Tenant\RoleController::class, 'roleStore'])->name('roles.store');
-    Route::put('/roles/{role}', [\App\Http\Controllers\Tenant\RoleController::class, 'roleUpdate'])->name('roles.update');
-    Route::delete('/roles/{role}', [\App\Http\Controllers\Tenant\RoleController::class, 'roleDestroy'])->name('roles.destroy');
+    Route::get('/users', [RoleController::class, 'userIndex'])->name('users.index')->middleware('role:super_admin|admin');
+    Route::post('/users', [RoleController::class, 'userStore'])->name('users.store')->middleware('role:super_admin|admin');
+    Route::put('/users/{user}', [RoleController::class, 'userUpdate'])->name('users.update')->middleware('role:super_admin|admin');
+    Route::delete('/users/{user}', [RoleController::class, 'userDestroy'])->name('users.destroy')->middleware('role:super_admin|admin');
+    Route::get('/users/api-tokens', [RoleController::class, 'apiTokens'])->name('users.api-tokens')->middleware('role:super_admin|admin');
+    Route::post('/users/api-tokens', [RoleController::class, 'createToken'])->name('users.create-token')->middleware('role:super_admin|admin');
+    Route::delete('/admin/api-tokens/{token}', [RoleController::class, 'revokeToken'])->name('admin.revoke-token')->middleware('role:super_admin|admin');
+    Route::get('/roles', [RoleController::class, 'roleIndex'])->name('roles.index')->middleware('role:super_admin|admin');
+    Route::post('/roles', [RoleController::class, 'roleStore'])->name('roles.store')->middleware('role:super_admin');
+    Route::put('/roles/{role}', [RoleController::class, 'roleUpdate'])->name('roles.update')->middleware('role:super_admin');
+    Route::delete('/roles/{role}', [RoleController::class, 'roleDestroy'])->name('roles.destroy')->middleware('role:super_admin');
 
     // --- Activity Log + Petty Cash + 2FA ---
-    Route::get('/activity-logs', [\App\Http\Controllers\Tenant\ActivityLogController::class, 'index'])->name('activity-logs.index');
-    Route::get('/petty-cash', [\App\Http\Controllers\Tenant\PettyCashController::class, 'index'])->name('petty-cash.index');
-    Route::post('/petty-cash', [\App\Http\Controllers\Tenant\PettyCashController::class, 'store'])->name('petty-cash.store');
-    Route::delete('/petty-cash/{pettyCash}', [\App\Http\Controllers\Tenant\PettyCashController::class, 'destroy'])->name('petty-cash.destroy');
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index')->middleware('role:super_admin|admin|manager');
+    Route::get('/petty-cash', [PettyCashController::class, 'index'])->name('petty-cash.index');
+    Route::post('/petty-cash', [PettyCashController::class, 'store'])->name('petty-cash.store');
+    Route::delete('/petty-cash/{pettyCash}', [PettyCashController::class, 'destroy'])->name('petty-cash.destroy');
 
-    Route::get('/2fa/enable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'enableForm'])->name('2fa.enable.form');
-    Route::post('/2fa/enable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'enable'])->name('2fa.enable');
-    Route::post('/2fa/disable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'disable'])->name('2fa.disable');
+    Route::get('/2fa/enable', [TwoFactorController::class, 'enableForm'])->name('2fa.enable.form');
+    Route::post('/2fa/enable', [TwoFactorController::class, 'enable'])->name('2fa.enable');
+    Route::post('/2fa/disable', [TwoFactorController::class, 'disable'])->name('2fa.disable');
 
     // --- Audit Trail ---
     Route::get('/stock-histories', [StockHistoryController::class, 'index'])->name('stock-histories.index');
@@ -559,24 +618,24 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
     Route::get('/service-packages/{servicePackage}/json', [ServicePackageController::class, 'getJson'])->name('service-packages.json');
 
     // --- Warehouse ---
-    Route::resource('warehouses', \App\Http\Controllers\Tenant\WarehouseController::class);
-    Route::get('/stock-transfers', [\App\Http\Controllers\Tenant\WarehouseController::class, 'transferIndex'])->name('warehouses.transfers');
-    Route::get('/stock-transfers/create', [\App\Http\Controllers\Tenant\WarehouseController::class, 'transferCreate'])->name('warehouses.transfers.create');
-    Route::post('/stock-transfers', [\App\Http\Controllers\Tenant\WarehouseController::class, 'transferStore'])->name('warehouses.transfers.store');
+    Route::resource('warehouses', WarehouseController::class);
+    Route::get('/stock-transfers', [WarehouseController::class, 'transferIndex'])->name('warehouses.transfers');
+    Route::get('/stock-transfers/create', [WarehouseController::class, 'transferCreate'])->name('warehouses.transfers.create');
+    Route::post('/stock-transfers', [WarehouseController::class, 'transferStore'])->name('warehouses.transfers.store');
 
     // --- Finance / Accounting ---
     Route::prefix('finance')->middleware('role:super_admin|admin|manager')->name('finance.')->group(function () {
-        Route::get('/coa', [\App\Http\Controllers\Tenant\JournalController::class, 'coaIndex'])->name('coa');
-        Route::get('/coa/create', [\App\Http\Controllers\Tenant\JournalController::class, 'coaCreate'])->name('coa.create');
-        Route::post('/coa', [\App\Http\Controllers\Tenant\JournalController::class, 'coaStore'])->name('coa.store');
-        Route::delete('/coa/{account}', [\App\Http\Controllers\Tenant\JournalController::class, 'coaDestroy'])->name('coa.destroy');
-        Route::get('/journal', [\App\Http\Controllers\Tenant\JournalController::class, 'journalIndex'])->name('journal');
-        Route::get('/journal/create', [\App\Http\Controllers\Tenant\JournalController::class, 'journalCreate'])->name('journal.create');
-        Route::post('/journal', [\App\Http\Controllers\Tenant\JournalController::class, 'journalStore'])->name('journal.store');
+        Route::get('/coa', [JournalController::class, 'coaIndex'])->name('coa');
+        Route::get('/coa/create', [JournalController::class, 'coaCreate'])->name('coa.create');
+        Route::post('/coa', [JournalController::class, 'coaStore'])->name('coa.store');
+        Route::delete('/coa/{account}', [JournalController::class, 'coaDestroy'])->name('coa.destroy');
+        Route::get('/journal', [JournalController::class, 'journalIndex'])->name('journal');
+        Route::get('/journal/create', [JournalController::class, 'journalCreate'])->name('journal.create');
+        Route::post('/journal', [JournalController::class, 'journalStore'])->name('journal.store');
     });
 
     // --- Customer Groups ---
-    Route::resource('customer-groups', \App\Http\Controllers\Tenant\CustomerGroupController::class);
+    Route::resource('customer-groups', CustomerGroupController::class);
 
     // --- Selling Price Groups ---
     Route::get('/selling-price-groups/{sellingPriceGroup}/prices', [SellingPriceGroupController::class, 'prices'])->name('selling-price-groups.prices');
@@ -585,16 +644,16 @@ Route::get('/settings/backup/download', [SettingsController::class, 'backupDownl
 
     // --- Blog Admin ---
     Route::prefix('blog-admin')->name('blog.admin.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Tenant\BlogController::class, 'index'])->name('index');
-        Route::get('/create', [\App\Http\Controllers\Tenant\BlogController::class, 'create'])->name('create');
-        Route::post('/', [\App\Http\Controllers\Tenant\BlogController::class, 'store'])->name('store');
-        Route::get('/{post}/edit', [\App\Http\Controllers\Tenant\BlogController::class, 'edit'])->name('edit');
-        Route::put('/{post}', [\App\Http\Controllers\Tenant\BlogController::class, 'update'])->name('update');
-        Route::delete('/{post}', [\App\Http\Controllers\Tenant\BlogController::class, 'destroy'])->name('destroy');
-        Route::get('/categories', [\App\Http\Controllers\Tenant\BlogController::class, 'categoryIndex'])->name('categories');
-        Route::post('/categories', [\App\Http\Controllers\Tenant\BlogController::class, 'categoryStore'])->name('categories.store');
-        Route::put('/categories/{category}', [\App\Http\Controllers\Tenant\BlogController::class, 'categoryUpdate'])->name('categories.update');
-        Route::delete('/categories/{category}', [\App\Http\Controllers\Tenant\BlogController::class, 'categoryDestroy'])->name('categories.destroy');
+        Route::get('/', [BlogController::class, 'index'])->name('index');
+        Route::get('/create', [BlogController::class, 'create'])->name('create');
+        Route::post('/', [BlogController::class, 'store'])->name('store');
+        Route::get('/{post}/edit', [BlogController::class, 'edit'])->name('edit');
+        Route::put('/{post}', [BlogController::class, 'update'])->name('update');
+        Route::delete('/{post}', [BlogController::class, 'destroy'])->name('destroy');
+        Route::get('/categories', [BlogController::class, 'categoryIndex'])->name('categories');
+        Route::post('/categories', [BlogController::class, 'categoryStore'])->name('categories.store');
+        Route::put('/categories/{category}', [BlogController::class, 'categoryUpdate'])->name('categories.update');
+        Route::delete('/categories/{category}', [BlogController::class, 'categoryDestroy'])->name('categories.destroy');
     });
 });
 

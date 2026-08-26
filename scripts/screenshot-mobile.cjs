@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
-const BASE_URL = 'http://127.0.0.1:8765';
+const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:8765';
 const EMAIL = 'admin@bengkel.test';
 const PASSWORD = 'password';
 const OUT_DIR = path.join(__dirname, '..', 'public', 'marketing', 'screens-mobile');

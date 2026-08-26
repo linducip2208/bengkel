@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\RequirePair;
 use App\Models\ChartOfAccount;
 use App\Models\Customer;
 use App\Models\FuelType;
 use App\Models\Income;
 use App\Models\Invoice;
-use App\Models\LoyaltyTransaction;
 use App\Models\PaymentMethod;
 use App\Models\RepairCategory;
 use App\Models\Service;
@@ -16,6 +16,7 @@ use App\Models\Vehicle;
 use App\Models\VehicleBrand;
 use App\Models\VehicleType;
 use App\Services\ServiceService;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -29,8 +30,8 @@ class ServiceFlowTest extends TestCase
         parent::setUp();
 
         $this->withoutMiddleware([
-            \App\Http\Middleware\RequirePair::class,
-            \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
+            RequirePair::class,
+            PreventRequestForgery::class,
         ]);
     }
 
@@ -202,9 +203,20 @@ class ServiceFlowTest extends TestCase
         ]);
 
         // Default chart of accounts referenced by the auto-journal on payment.
-        ChartOfAccount::create(['code' => '1000', 'name' => 'Cash', 'type' => 'asset', 'is_active' => true]);
-        ChartOfAccount::create(['code' => '1010', 'name' => 'Bank', 'type' => 'asset', 'is_active' => true]);
-        ChartOfAccount::create(['code' => '4000', 'name' => 'Service Revenue', 'type' => 'income', 'is_active' => true]);
+        // Auto-journaling may already have created defaults during complete();
+        // firstOrCreate avoids unique-code collisions.
+        foreach ([
+            ['code' => '1000', 'name' => 'Cash', 'type' => 'asset'],
+            ['code' => '1010', 'name' => 'Bank', 'type' => 'asset'],
+            ['code' => '1100', 'name' => 'Accounts Receivable', 'type' => 'asset'],
+            ['code' => '4000', 'name' => 'Service Revenue', 'type' => 'income'],
+            ['code' => '4100', 'name' => 'Parts Revenue', 'type' => 'income'],
+        ] as $account) {
+            ChartOfAccount::firstOrCreate(
+                ['code' => $account['code']],
+                $account + ['is_active' => true]
+            );
+        }
 
         $response = $this->post("/invoices/{$invoice->id}/payments", [
             'amount' => $invoice->grand_total,

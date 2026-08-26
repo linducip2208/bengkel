@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use App\Services\ProductService;
+use App\Services\StockService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -26,7 +28,7 @@ class ApiProductController extends Controller
         }
 
         if ($request->boolean('low_stock')) {
-            $query->whereHas('stockRecord', fn($q) => $q->whereColumn('quantity', '<=', 'minimum_stock'));
+            $query->whereHas('stockRecord', fn ($q) => $q->whereColumn('quantity', '<=', 'minimum_stock'));
         }
 
         $products = $query->latest()->paginate($request->get('per_page', 20));
@@ -58,7 +60,9 @@ class ApiProductController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $product = Product::create($validated);
+        // Delegate to ProductService so the initial StockRecord + history are
+        // created consistently (previously API-created products had no stock).
+        $product = app(ProductService::class)->create($validated);
 
         return response()->json(new ProductResource($product), 201);
     }
@@ -66,7 +70,7 @@ class ApiProductController extends Controller
     public function update(Request $request, Product $product): JsonResponse
     {
         $validated = $request->validate([
-            'code' => 'sometimes|string|max:100|unique:products,code,' . $product->id,
+            'code' => 'sometimes|string|max:100|unique:products,code,'.$product->id,
             'name' => 'sometimes|string|max:255',
             'product_type_id' => 'sometimes|exists:product_types,id',
             'unit_id' => 'sometimes|exists:product_units,id',
@@ -94,50 +98,35 @@ class ApiProductController extends Controller
     public function stockAdjust(Request $request, Product $product): JsonResponse
     {
         $validated = $request->validate([
-            'quantity' => 'required|integer',
+            'quantity' => 'required|integer|min:0',
             'type' => 'required|in:add,subtract,set',
             'notes' => 'nullable|string',
         ]);
 
-        $stockRecord = $product->stockRecord()->firstOrCreate([
-            'product_id' => $product->id,
-        ], [
-            'quantity' => 0,
-            'minimum_stock' => 0,
-        ]);
-
-        $before = $stockRecord->quantity;
-
-        switch ($validated['type']) {
-            case 'add':
-                $stockRecord->quantity += $validated['quantity'];
-                $quantityChange = $validated['quantity'];
-                break;
-            case 'subtract':
-                $stockRecord->quantity = max(0, $stockRecord->quantity - $validated['quantity']);
-                $quantityChange = -$validated['quantity'];
-                break;
-            case 'set':
-                $quantityChange = $validated['quantity'] - $stockRecord->quantity;
-                $stockRecord->quantity = $validated['quantity'];
-                break;
+        try {
+            // Route through the locked StockService — previously this wrote a
+            // stale property mutation with no transaction or sufficiency check.
+            match ($validated['type']) {
+                'add' => StockService::increment(
+                    $product->id, (int) $validated['quantity'], 'adjustment_add', $validated['notes'] ?? null,
+                ),
+                'subtract' => StockService::decrement(
+                    $product->id, (int) $validated['quantity'], 'adjustment_reduce', $validated['notes'] ?? null,
+                ),
+                'set' => StockService::set(
+                    $product->id, (int) $validated['quantity'], 'opname', $validated['notes'] ?? null,
+                ),
+            };
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
         }
 
-        $stockRecord->save();
-
-        $product->stockHistories()->create([
-            'quantity_change' => $quantityChange,
-            'previous_stock' => $before,
-            'new_stock' => $stockRecord->quantity,
-            'type' => $validated['type'],
-            'reason' => $validated['notes'] ?? null,
-            'user_id' => auth()->id(),
-        ]);
+        $product->refresh();
+        $stock = $product->stockRecord()->withoutGlobalScopes()->first();
 
         return response()->json([
             'product_id' => $product->id,
-            'quantity_before' => $before,
-            'quantity_after' => $stockRecord->quantity,
+            'quantity_after' => (int) ($stock?->quantity ?? 0),
             'notes' => $validated['notes'] ?? null,
         ]);
     }

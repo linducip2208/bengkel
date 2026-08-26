@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\ProductType;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ProductTypeController extends Controller
@@ -17,6 +16,7 @@ class ProductTypeController extends Controller
             $query->where('type', 'like', "%{$request->search}%");
         }
         $productTypes = $query->orderBy('type')->paginate(15)->withQueryString();
+
         return view('product-types.index', compact('productTypes'));
     }
 
@@ -35,7 +35,6 @@ class ProductTypeController extends Controller
 
         ProductType::create([
             'type' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
             'description' => $validated['description'] ?? null,
             'is_active' => $request->boolean('is_active', true),
         ]);
@@ -58,7 +57,6 @@ class ProductTypeController extends Controller
 
         $productType->update([
             'type' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
             'description' => $validated['description'] ?? null,
             'is_active' => $request->boolean('is_active', true),
         ]);
@@ -72,6 +70,7 @@ class ProductTypeController extends Controller
             return back()->with('error', 'Kategori produk tidak bisa dihapus karena masih dipakai oleh sparepart terdaftar.');
         }
         $productType->delete();
+
         return redirect()->route('product-types.index')->with('success', 'Kategori produk berhasil dihapus.');
     }
 }

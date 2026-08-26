@@ -11,6 +11,7 @@ use App\Models\ProductUnit;
 use App\Models\PurchaseOrder;
 use App\Models\Supplier;
 use App\Models\SupplierPrice;
+use App\Services\DocumentNumberService;
 use App\Services\ProductService;
 use App\Services\ReportService;
 use Illuminate\Http\Request;
@@ -26,7 +27,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $products = $this->productService->index($request->only([
-            'search', 'product_type_id', 'supplier_id', 'stock_status'
+            'search', 'product_type_id', 'supplier_id', 'stock_status',
         ]));
 
         $productTypes = ProductType::orderBy('type')->get();
@@ -40,9 +41,9 @@ class ProductController extends Controller
         $productTypes = ProductType::orderBy('type')->get();
         $units = ProductUnit::orderBy('name')->get();
         $suppliers = Supplier::orderBy('name')->get();
-        $prefix = 'PRD-' . date('Ym');
-        $lastProduct = Product::withTrashed()->where('product_no', 'like', $prefix . '%')->orderByDesc('id')->first();
-        $nextProductNo = $prefix . '-' . str_pad(
+        $prefix = 'PRD-'.date('Ym');
+        $lastProduct = Product::withTrashed()->where('product_no', 'like', $prefix.'%')->orderByDesc('id')->first();
+        $nextProductNo = $prefix.'-'.str_pad(
             $lastProduct ? (int) substr($lastProduct->product_no, -4) + 1 : 1,
             4, '0', STR_PAD_LEFT
         );
@@ -117,12 +118,12 @@ class ProductController extends Controller
             'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
         ]);
 
-        $import = new ProductsImport();
+        $import = new ProductsImport;
         Excel::import($import, $request->file('file'));
 
         $failed = count($import->errors);
         $message = "{$import->imported} produk berhasil diimport."
-            . ($failed > 0 ? " {$failed} baris gagal." : '');
+            .($failed > 0 ? " {$failed} baris gagal." : '');
 
         return redirect()->route('products.index')
             ->with('success', $message)
@@ -235,7 +236,7 @@ class ProductController extends Controller
             ->orderBy('price')
             ->first();
 
-        if (!$cheapest) {
+        if (! $cheapest) {
             return back()->with('error', 'Tidak ada harga supplier untuk produk ini.');
         }
 
@@ -272,17 +273,11 @@ class ProductController extends Controller
         });
 
         return redirect()->route('purchase-orders.show', $purchaseOrder)
-            ->with('success', 'Draft purchase order ' . $purchaseOrder->po_number . ' dibuat otomatis dengan supplier termurah.');
+            ->with('success', 'Draft purchase order '.$purchaseOrder->po_number.' dibuat otomatis dengan supplier termurah.');
     }
 
     private function generatePoNumber(): string
     {
-        $prefix = 'PO-' . date('Ymd');
-        $last = PurchaseOrder::where('po_number', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->first();
-        $next = $last ? (int) substr($last->po_number, -4) + 1 : 1;
-
-        return $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+        return DocumentNumberService::generate(DocumentNumberService::PURCHASE_ORDERS, 'PO', 'Ymd', 4);
     }
 }

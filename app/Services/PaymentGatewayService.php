@@ -29,7 +29,7 @@ class PaymentGatewayService
     public function createForInvoice(Invoice $invoice, ?PaymentGateway $gateway = null): PaymentLink
     {
         $gateway ??= PaymentGateway::default();
-        if (!$gateway) {
+        if (! $gateway) {
             throw new \RuntimeException('Belum ada Payment Gateway aktif. Setup dulu di /payment-gateways.');
         }
 
@@ -55,7 +55,7 @@ class PaymentGatewayService
                 'manual_transfer' => $this->createManualTransferPayment($link, $gateway, $invoice),
             };
         } catch (\Throwable $e) {
-            Log::error("PG create failed: " . $e->getMessage());
+            Log::error('PG create failed: '.$e->getMessage());
             $link->update(['status' => 'failed', 'gateway_response' => ['error' => $e->getMessage()]]);
             throw $e;
         }
@@ -69,7 +69,7 @@ class PaymentGatewayService
      */
     private function createRedirectPayment(PaymentLink $link, PaymentGateway $gateway, Invoice $invoice): void
     {
-        $endpoint = rtrim($gateway->base_url, '/') . ($gateway->callback_path ?: '/transactions');
+        $endpoint = rtrim($gateway->base_url, '/').($gateway->callback_path ?: '/transactions');
         $body = array_merge([
             'order_id' => $link->token,
             'gross_amount' => (int) $link->amount,
@@ -81,7 +81,9 @@ class PaymentGatewayService
         ], $gateway->extra_config ?? []);
 
         $headers = array_merge(['Accept' => 'application/json'], $gateway->extra_headers ?? []);
-        if ($gateway->api_key) $headers['Authorization'] = 'Basic ' . base64_encode($gateway->api_key . ':');
+        if ($gateway->api_key) {
+            $headers['Authorization'] = 'Basic '.base64_encode($gateway->api_key.':');
+        }
 
         $response = Http::withHeaders($headers)->post($endpoint, $body);
         $json = $response->json();
@@ -100,14 +102,16 @@ class PaymentGatewayService
     private function createEmbedPayment(PaymentLink $link, PaymentGateway $gateway, Invoice $invoice): void
     {
         // Embed: dapat token/snap_token, frontend embed widget
-        $endpoint = rtrim($gateway->base_url, '/') . ($gateway->callback_path ?: '/snap/v1/transactions');
+        $endpoint = rtrim($gateway->base_url, '/').($gateway->callback_path ?: '/snap/v1/transactions');
         $body = array_merge([
             'order_id' => $link->token,
             'gross_amount' => (int) $link->amount,
         ], $gateway->extra_config ?? []);
 
         $headers = ['Accept' => 'application/json', 'Content-Type' => 'application/json'];
-        if ($gateway->api_key) $headers['Authorization'] = 'Basic ' . base64_encode($gateway->api_key . ':');
+        if ($gateway->api_key) {
+            $headers['Authorization'] = 'Basic '.base64_encode($gateway->api_key.':');
+        }
         $headers = array_merge($headers, $gateway->extra_headers ?? []);
 
         $response = Http::withHeaders($headers)->post($endpoint, $body);
@@ -122,14 +126,16 @@ class PaymentGatewayService
 
     private function createQrPayment(PaymentLink $link, PaymentGateway $gateway, Invoice $invoice): void
     {
-        $endpoint = rtrim($gateway->base_url, '/') . ($gateway->callback_path ?: '/qris/v1/dynamic-qr');
+        $endpoint = rtrim($gateway->base_url, '/').($gateway->callback_path ?: '/qris/v1/dynamic-qr');
         $body = array_merge([
             'partner_reference_no' => $link->token,
             'amount' => ['value' => (string) $link->amount, 'currency' => 'IDR'],
         ], $gateway->extra_config ?? []);
 
         $headers = $gateway->extra_headers ?? [];
-        if ($gateway->api_key) $headers['X-API-KEY'] = $gateway->api_key;
+        if ($gateway->api_key) {
+            $headers['X-API-KEY'] = $gateway->api_key;
+        }
 
         $response = Http::withHeaders($headers)->post($endpoint, $body);
         $json = $response->json();
@@ -180,16 +186,28 @@ class PaymentGatewayService
         ]);
 
         // Kalau paid → catat PaymentRecord otomatis
-        if ($newStatus === 'paid' && !$link->invoice->paymentRecords()->where('reference_number', $link->token)->exists()) {
-            PaymentRecord::create([
+        if ($newStatus === 'paid' && ! $link->invoice->paymentRecords()->where('reference_number', $link->token)->exists()) {
+            $invoice = Invoice::query()->whereKey($link->invoice_id)->lockForUpdate()->first();
+
+            $paidAmount = round((float) ($invoice->paid_amount ?? 0) + (float) $link->amount, 2);
+
+            $payment = PaymentRecord::create([
                 'invoice_id' => $link->invoice_id,
                 'payment_method_id' => $link->invoice->payment_method_id,
-                'amount' => $link->amount,
+                'amount' => round((float) $link->amount, 2),
                 'payment_date' => now(),
                 'reference_number' => $link->token,
-                'notes' => 'Auto-paid via ' . ($link->gateway?->name ?? 'PG'),
+                'notes' => 'Auto-paid via '.($link->gateway?->name ?? 'PG'),
             ]);
-            $link->invoice->update(['payment_status' => 2, 'paid_amount' => $link->amount]);
+
+            // Accumulate (never overwrite) and only mark settled when fully paid.
+            $invoice->update([
+                'paid_amount' => $paidAmount,
+                'amount_received' => $paidAmount,
+                'payment_status' => $paidAmount >= (float) $invoice->grand_total - 0.009 ? 2 : 1,
+            ]);
+
+            app(AutoJournalService::class)->journalInvoicePayment($payment);
         }
 
         return $link;

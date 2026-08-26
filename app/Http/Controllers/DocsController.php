@@ -10,7 +10,7 @@ class DocsController extends Controller
     {
         return view('docs.index', [
             'sections' => $this->sections(),
-            'appName'  => config('app.name', config('app.name')),
+            'appName' => config('app.name', config('app.name')),
         ]);
     }
 
@@ -24,23 +24,23 @@ class DocsController extends Controller
         $appName = config('app.name', config('app.name'));
 
         $jsonLd = json_encode([
-            '@context'   => 'https://schema.org',
-            '@type'      => 'TechArticle',
-            'headline'   => $section['title'],
+            '@context' => 'https://schema.org',
+            '@type' => 'TechArticle',
+            'headline' => $section['title'],
             'description' => $section['lead'],
             'inLanguage' => 'id-ID',
-            'isPartOf'   => [
+            'isPartOf' => [
                 '@type' => 'CreativeWork',
-                'name'  => 'Tutorial ' . $appName,
-                'url'   => route('docs.index'),
+                'name' => 'Tutorial '.$appName,
+                'url' => route('docs.index'),
             ],
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         return view('docs.show', [
             'sections' => $sections,
-            'section'  => $section,
-            'appName'  => $appName,
-            'jsonLd'   => $jsonLd,
+            'section' => $section,
+            'appName' => $appName,
+            'jsonLd' => $jsonLd,
         ]);
     }
 
@@ -49,15 +49,15 @@ class DocsController extends Controller
      * 1) Pengantar → 2) Alur Bisnis end-to-end (13 langkah) → 3) Panduan per-menu
      * (15 navigation group) → 4) FAQ.
      */
-    private function sections(): array
+    public function sections(): array
     {
         return [
             [
-                'slug'  => 'pengantar',
-                'icon'  => 'fa-book-open',
+                'slug' => 'pengantar',
+                'icon' => 'fa-book-open',
                 'title' => 'Pengantar Aplikasi',
-                'lead'  => 'Sekilas tentang Aplikasi Bengkel Terbaik, 15 navigation group, dan alur 13-status workflow.',
-                'body'  => [
+                'lead' => 'Sekilas tentang Aplikasi Bengkel Terbaik, 15 navigation group, dan alur 13-status workflow.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Aplikasi Bengkel Terbaik adalah aplikasi manajemen bengkel berbasis web dengan 60+ modul terintegrasi. Cakupannya menutup seluruh siklus harian: mulai dari booking online, check-in, inspeksi, approval customer, pengerjaan teknisi, QC, invoicing, pembayaran, sampai serah terima — plus akuntansi otomatis via AutoJournalService.'],
                     ['type' => 'p', 'text' => 'Tutorial ini menjelaskan urut-urutan pemakaian aplikasi seperti operator bekerja di hari pertama: baca <b>Alur Bisnis</b> dulu supaya paham aliran kerjanya, lalu ikuti panduan per-menu untuk detail tiap fitur.'],
                     ['type' => 'h', 'text' => '15 Navigation Group (Sidebar)'],
@@ -99,11 +99,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'alur-bisnis',
-                'icon'  => 'fa-route',
+                'slug' => 'alur-bisnis',
+                'icon' => 'fa-route',
                 'title' => '1. Alur Bisnis Lengkap: Customer Datang → Bayar Lunas',
-                'lead'  => 'Satu alur kerja end-to-end dari customer datang, booking, service, QC, invoice, pembayaran, sampai serah terima — lengkap dengan screenshot di setiap langkah.',
-                'body'  => [
+                'lead' => 'Satu alur kerja end-to-end dari customer datang, booking, service, QC, invoice, pembayaran, sampai serah terima — lengkap dengan screenshot di setiap langkah.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Ini adalah alur utama harian bengkel. Pahami urutannya dulu, karena semua menu lain (Inventory, Finance, Reports) sebenarnya menopang alur ini. Tabel di bawah merangkum 13 langkah dari customer datang sampai kendaraan keluar.'],
                     ['type' => 'table', 'rows' => [
                         ['1', 'Customer datang / Booking', 'Customer datang langsung atau booking online lebih dulu. Catat di Booking Online atau langsung buka Service baru.'],
@@ -166,11 +166,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'menu-dashboard',
-                'icon'  => 'fa-gauge-high',
+                'slug' => 'menu-dashboard',
+                'icon' => 'fa-gauge-high',
                 'title' => '2. Menu Dashboard',
-                'lead'  => 'Ringkasan bisnis real-time: stat cards, chart, quick actions, dan notification bell.',
-                'body'  => [
+                'lead' => 'Ringkasan bisnis real-time: stat cards, chart, quick actions, dan notification bell.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Dashboard adalah halaman pertama setelah login. Di sini semua angka penting bengkel terpantau dalam satu layar dan auto-refresh setiap 60 detik.'],
                     ['type' => 'ul', 'items' => [
                         '<b>Stat Cards</b>: Total Service Aktif, Service Selesai Hari Ini, Revenue Hari Ini, Revenue Bulanan, Outstanding Invoice, Stok Rendah.',
@@ -185,11 +185,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'menu-operations',
-                'icon'  => 'fa-industry',
+                'slug' => 'menu-operations',
+                'icon' => 'fa-industry',
                 'title' => '3. Menu Operations',
-                'lead'  => 'Grup operasional inti: Branches, Companies, Bookings, Job Cards/Services, Gate Passes, Vehicles, Customers, Customer Groups.',
-                'body'  => [
+                'lead' => 'Grup operasional inti: Branches, Companies, Bookings, Job Cards/Services, Gate Passes, Vehicles, Customers, Customer Groups.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Grup <b>Operations</b> berisi semua entitas operasional harian bengkel. Ini menu yang paling sering dibuka front-desk dan teknisi.'],
                     ['type' => 'h', 'text' => 'Branches (Cabang)'],
                     ['type' => 'p', 'text' => 'Kelola multi-cabang: nama, alamat, telepon, jam operasional, hari libur. Switcher cabang di topbar memfilter seluruh data per cabang.'],
@@ -215,11 +215,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'menu-service',
-                'icon'  => 'fa-screwdriver-wrench',
+                'slug' => 'menu-service',
+                'icon' => 'fa-screwdriver-wrench',
                 'title' => '4. Menu Service Management',
-                'lead'  => 'Pusat pengerjaan: Services, Job Cards, Service Packages, dan Subcontractors.',
-                'body'  => [
+                'lead' => 'Pusat pengerjaan: Services, Job Cards, Service Packages, dan Subcontractors.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Grup <b>Service Management</b> adalah jantung aplikasi — semua pekerjaan servis dikelola dari sini.'],
                     ['type' => 'h', 'text' => 'Services'],
                     ['type' => 'p', 'text' => 'Daftar semua service dengan filter 13 status, cabang, teknisi, dan tanggal. Halaman detail menampilkan observation/checklist, parts, estimasi, approval, dan tombol Advance ke status berikutnya.'],
@@ -235,11 +235,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'menu-inventory',
-                'icon'  => 'fa-boxes-stacked',
+                'slug' => 'menu-inventory',
+                'icon' => 'fa-boxes-stacked',
                 'title' => '5. Menu Inventory',
-                'lead'  => 'Produk, gudang, supplier, pembelian, requisition, peralatan, stock adjustment & opname.',
-                'body'  => [
+                'lead' => 'Produk, gudang, supplier, pembelian, requisition, peralatan, stock adjustment & opname.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Grup <b>Inventory</b> mengelola sparepart dan peralatan bengkel. Terintegrasi dengan service & POS — stok otomatis berkurang saat parts dipakai atau terjual.'],
                     ['type' => 'h', 'text' => 'Products'],
                     ['type' => 'p', 'text' => 'Daftar sparepart: kode, barcode, harga beli/jual, stok per gudang, supplier terkait, reorder alert.'],
@@ -267,11 +267,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'menu-sales-pos',
-                'icon'  => 'fa-cash-register',
+                'slug' => 'menu-sales-pos',
+                'icon' => 'fa-cash-register',
                 'title' => '6. Menu Sales & POS',
-                'lead'  => 'POS Terminal, POS Sessions, Invoices, dan Sell Returns untuk penjualan sparepart eceran.',
-                'body'  => [
+                'lead' => 'POS Terminal, POS Sessions, Invoices, dan Sell Returns untuk penjualan sparepart eceran.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Grup <b>Sales & POS</b> menangani penjualan kasir — baik invoice service maupun penjualan sparepart eceran walk-in.'],
                     ['type' => 'h', 'text' => 'POS Terminal'],
                     ['type' => 'p', 'text' => 'Terminal kasir dengan grid produk, barcode scan, pilih customer & payment method, checkout cepat. Stok berkurang otomatis + invoice + payment record + stock history ter-generate.'],
@@ -288,11 +288,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'menu-technicians',
-                'icon'  => 'fa-user-gear',
+                'slug' => 'menu-technicians',
+                'icon' => 'fa-user-gear',
                 'title' => '7. Menu Technicians',
-                'lead'  => 'Komisi teknisi, skill matrix, dan cuti/absensi dalam satu grup.',
-                'body'  => [
+                'lead' => 'Komisi teknisi, skill matrix, dan cuti/absensi dalam satu grup.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Grup <b>Technicians</b> mengelola kinerja dan sumber daya teknisi — dari komisi sampai kompetensi.'],
                     ['type' => 'h', 'text' => 'Commissions (Komisi)'],
                     ['type' => 'p', 'text' => 'Hitung komisi teknisi otomatis per service, filter periode, mark paid batch, laporan per teknisi.'],
@@ -306,11 +306,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'menu-crm',
-                'icon'  => 'fa-bullhorn',
+                'slug' => 'menu-crm',
+                'icon' => 'fa-bullhorn',
                 'title' => '8. Menu CRM & Marketing',
-                'lead'  => 'Vouchers, Loyalty, Reviews, Blog, dan Campaigns untuk menarik & menahan customer.',
-                'body'  => [
+                'lead' => 'Vouchers, Loyalty, Reviews, Blog, dan Campaigns untuk menarik & menahan customer.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Grup <b>CRM & Marketing</b> berisi tools untuk menarik customer baru dan mempertahankan customer lama.'],
                     ['type' => 'h', 'text' => 'Vouchers'],
                     ['type' => 'p', 'text' => 'Generate kode promo dengan diskon nominal/persen, minimal transaksi, masa berlaku, kuota pemakaian.'],
@@ -328,11 +328,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'menu-warranty',
-                'icon'  => 'fa-shield-halved',
+                'slug' => 'menu-warranty',
+                'icon' => 'fa-shield-halved',
                 'title' => '9. Menu Warranty',
-                'lead'  => 'Warranty Claims, Recalls, Insurance Claims, dan Supplier Claims.',
-                'body'  => [
+                'lead' => 'Warranty Claims, Recalls, Insurance Claims, dan Supplier Claims.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Grup <b>Warranty</b> menangani perlindungan aset: garansi sparepart, recall, dan klaim ke asuransi/supplier.'],
                     ['type' => 'h', 'text' => 'Warranty Claims (Garansi & Klaim Garansi)'],
                     ['type' => 'p', 'text' => 'Setup periode garansi per produk/kategori. Service dalam masa garansi auto-flag dan biaya parts Rp 0. Customer ajukan klaim → teknisi verifikasi → approve/reject → buat service gratis.'],
@@ -349,11 +349,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'menu-finance',
-                'icon'  => 'fa-coins',
+                'slug' => 'menu-finance',
+                'icon' => 'fa-coins',
                 'title' => '10. Menu Finance & Accounting',
-                'lead'  => 'Income, Expenses, Petty Cash, Bank Accounts, Bank Reconciliation, Budget, COA, dan Journal.',
-                'body'  => [
+                'lead' => 'Income, Expenses, Petty Cash, Bank Accounts, Bank Reconciliation, Budget, COA, dan Journal.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Grup <b>Finance & Accounting</b> adalah fondasi akuntansi. Didukung AutoJournalService — setiap transaksi operasional otomatis tercatat ke buku besar.'],
                     ['type' => 'h', 'text' => 'Income & Expenses'],
                     ['type' => 'p', 'text' => 'Catat pemasukan & pengeluaran non-operasional, kategori, dan link ke COA. Total amount badge ikut filter tanggal.'],
@@ -380,11 +380,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'menu-reports',
-                'icon'  => 'fa-chart-column',
+                'slug' => 'menu-reports',
+                'icon' => 'fa-chart-column',
                 'title' => '11. Menu Reports (13 Jenis Laporan)',
-                'lead'  => '13 laporan siap saji: Service, Sales, Stock, Financial, Technician, Customer LTV, AR Aging, Parts Usage, Branch Comparison, Cash Flow, GL, P&L, Balance Sheet.',
-                'body'  => [
+                'lead' => '13 laporan siap saji: Service, Sales, Stock, Financial, Technician, Customer LTV, AR Aging, Parts Usage, Branch Comparison, Cash Flow, GL, P&L, Balance Sheet.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Grup <b>Reports</b> menyajikan 13 jenis laporan interaktif dengan date filter, chart, dan export PDF/Excel.'],
                     ['type' => 'table', 'rows' => [
                         ['Service Report', 'Volume service per kategori & teknisi, filter tanggal & cabang.'],
@@ -417,11 +417,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'menu-master-data',
-                'icon'  => 'fa-database',
+                'slug' => 'menu-master-data',
+                'icon' => 'fa-database',
                 'title' => '12. Menu Master Data',
-                'lead'  => 'Data referensi Vehicle, Product, Workshop, dan Finance — isi sekali, dipakai selamanya.',
-                'body'  => [
+                'lead' => 'Data referensi Vehicle, Product, Workshop, dan Finance — isi sekali, dipakai selamanya.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Grup <b>Master Data</b> berisi data referensi yang dipakai berulang di seluruh aplikasi. Isi lengkap di awal supaya operasional lancar.'],
                     ['type' => 'h', 'text' => 'Vehicle (Kendaraan)'],
                     ['type' => 'p', 'text' => 'Vehicle Types (Mobil/Motor/Truk/Bus), Brands (Toyota/Honda/Yamaha/Suzuki/Hino), Fuel Types, Colors.'],
@@ -435,11 +435,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'menu-geography',
-                'icon'  => 'fa-earth-asia',
+                'slug' => 'menu-geography',
+                'icon' => 'fa-earth-asia',
                 'title' => '13. Menu Geography',
-                'lead'  => 'Negara, provinsi, kota, dan mata uang — dipakai alamat & multi-cabang.',
-                'body'  => [
+                'lead' => 'Negara, provinsi, kota, dan mata uang — dipakai alamat & multi-cabang.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Grup <b>Geography</b> menyimpan data wilayah untuk alamat customer, supplier, dan cabang.'],
                     ['type' => 'ul', 'items' => [
                         '<b>Countries (Negara)</b> — daftar negara (Indonesia sudah ter-seed).',
@@ -451,11 +451,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'menu-notifications',
-                'icon'  => 'fa-bell',
+                'slug' => 'menu-notifications',
+                'icon' => 'fa-bell',
                 'title' => '14. Menu Notifications',
-                'lead'  => 'Templates, Reminders, dan Logs — semua notifikasi WA/Email/SMS terkelola di sini.',
-                'body'  => [
+                'lead' => 'Templates, Reminders, dan Logs — semua notifikasi WA/Email/SMS terkelola di sini.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Grup <b>Notifications</b> mengelola semua notifikasi multi-channel (WhatsApp, Email, SMS).'],
                     ['type' => 'h', 'text' => 'Templates'],
                     ['type' => 'p', 'text' => 'Template WA/Email/SMS dengan variabel <code>{customer_name}</code>, <code>{plate}</code>, <code>{next_service_date}</code>.'],
@@ -468,11 +468,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'menu-users',
-                'icon'  => 'fa-user-shield',
+                'slug' => 'menu-users',
+                'icon' => 'fa-user-shield',
                 'title' => '15. Menu Users & Security',
-                'lead'  => 'Users, Roles, Activity Log, dan API Tokens — kendali akses penuh.',
-                'body'  => [
+                'lead' => 'Users, Roles, Activity Log, dan API Tokens — kendali akses penuh.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Grup <b>Users & Security</b> mengelola siapa yang boleh mengakses apa, plus jejak audit.'],
                     ['type' => 'h', 'text' => 'Users'],
                     ['type' => 'p', 'text' => 'CRUD user, assign cabang & role, aktif/nonaktif, reset password.'],
@@ -488,11 +488,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'menu-settings',
-                'icon'  => 'fa-sliders',
+                'slug' => 'menu-settings',
+                'icon' => 'fa-sliders',
                 'title' => '16. Menu Settings',
-                'lead'  => 'General, Invoice Layout, Payment Gateway, dan Backup & Restore.',
-                'body'  => [
+                'lead' => 'General, Invoice Layout, Payment Gateway, dan Backup & Restore.',
+                'body' => [
                     ['type' => 'p', 'text' => 'Grup <b>Settings</b> berisi konfigurasi aplikasi — profil bengkel, layout invoice, payment gateway, dan backup.'],
                     ['type' => 'h', 'text' => 'General Settings'],
                     ['type' => 'p', 'text' => 'Profil bengkel: nama, alamat, telepon, email, logo, jam operasional, dan zona waktu.'],
@@ -507,11 +507,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'faq',
-                'icon'  => 'fa-question-circle',
+                'slug' => 'faq',
+                'icon' => 'fa-question-circle',
                 'title' => '17. FAQ & Troubleshooting',
-                'lead'  => 'Pertanyaan paling sering diajukan operator bengkel.',
-                'body'  => [
+                'lead' => 'Pertanyaan paling sering diajukan operator bengkel.',
+                'body' => [
                     ['type' => 'faq', 'items' => [
                         ['q' => 'Kenapa menu saya tidak muncul semua?', 'a' => 'Role Anda mungkin terbatas. Admin/super_admin punya semua menu. Cek di <b>Users & Security → Roles</b> permission apa yang dimiliki role Anda.'],
                         ['q' => 'Apa perbedaan 13 status workflow dengan yang lama?', 'a' => 'Workflow lama 6 step (Pending→Check In→Progress→QC→Ready→Delivered). Workflow BARU 13 step lebih detail: Booked → Checked In → Inspection → Waiting Approval → Approved → In Progress → Waiting Parts → QC → Ready → Invoiced → Paid → Released → Completed. Setiap tahap mencerminkan kondisi nyata di bengkel.'],
@@ -535,11 +535,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'flow-service',
-                'icon'  => 'fa-code-branch',
+                'slug' => 'flow-service',
+                'icon' => 'fa-code-branch',
                 'title' => '18. Data Flow: Service (Booking → Bayar)',
-                'lead'  => 'Bagaimana data mengalir dari customer datang sampai bayar lunas — lengkap dengan screenshot tiap tahap.',
-                'body'  => [
+                'lead' => 'Bagaimana data mengalir dari customer datang sampai bayar lunas — lengkap dengan screenshot tiap tahap.',
+                'body' => [
                     ['type' => 'note', 'text' => '<b>Alur data:</b><br>Booking → Check-in → Inspection → Job Card → Estimasi → Approval WA → In Progress → Parts terpakai → QC → Ready → Invoice → Payment → Bayar Lunas → Gate Pass → Completed'],
                     ['type' => 'ol', 'items' => [
                         'Customer datang/booking → data masuk ke <b>Booking</b> (nama, HP, kendaraan, jadwal).',
@@ -560,11 +560,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'flow-inventory',
-                'icon'  => 'fa-arrow-right-arrow-left',
+                'slug' => 'flow-inventory',
+                'icon' => 'fa-arrow-right-arrow-left',
                 'title' => '19. Data Flow: Inventory (Parts & Stok)',
-                'lead'  => 'Bagaimana sparepart mengalir: masuk (purchase) dan keluar (service/POS), dengan auto journal.',
-                'body'  => [
+                'lead' => 'Bagaimana sparepart mengalir: masuk (purchase) dan keluar (service/POS), dengan auto journal.',
+                'body' => [
                     ['type' => 'note', 'text' => '<b>Stok masuk:</b> Purchase Order → Mark Received → StockRecord bertambah → StockHistory → AutoJournal (Debit Inventory, Credit Utang/Kas)<br><b>Stok keluar:</b> Service/POS pakai parts → StockRecord berkurang → StockHistory → biaya masuk ke invoice'],
                     ['type' => 'ol', 'items' => [
                         'Beli sparepart → <b>Purchase Order</b> ke supplier.',
@@ -581,11 +581,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'flow-accounting',
-                'icon'  => 'fa-calculator',
+                'slug' => 'flow-accounting',
+                'icon' => 'fa-calculator',
                 'title' => '20. Data Flow: Accounting (Auto Journal)',
-                'lead'  => 'Setiap transaksi otomatis menghasilkan jurnal akuntansi — dari invoice, pembayaran, sampai laporan.',
-                'body'  => [
+                'lead' => 'Setiap transaksi otomatis menghasilkan jurnal akuntansi — dari invoice, pembayaran, sampai laporan.',
+                'body' => [
                     ['type' => 'note', 'text' => '<b>Alur:</b> Invoice dibayar → Income tercatat → AutoJournal (Debit Kas/Bank, Credit Pendapatan) → JournalEntry + Line → General Ledger → P&L → Balance Sheet'],
                     ['type' => 'ol', 'items' => [
                         '<b>Invoice lunas</b> → <b>Income</b> tercatat otomatis.',
@@ -602,11 +602,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'flow-pos',
-                'icon'  => 'fa-cash-register',
+                'slug' => 'flow-pos',
+                'icon' => 'fa-cash-register',
                 'title' => '21. Data Flow: POS & Loyalty',
-                'lead'  => 'Alur penjualan kasir — dari buka sesi sampai tutup sesi, dengan loyalty poin otomatis.',
-                'body'  => [
+                'lead' => 'Alur penjualan kasir — dari buka sesi sampai tutup sesi, dengan loyalty poin otomatis.',
+                'body' => [
                     ['type' => 'note', 'text' => '<b>Alur:</b> Buka Sesi (saldo awal) → Scan/Pilih sparepart → Checkout → Invoice (type pos) + Payment + Stock berkurang + Income + Loyalty poin → Tutup Sesi (hitung fisik uang)'],
                     ['type' => 'ol', 'items' => [
                         '<b>Buka Sesi POS</b> → input saldo awal kasir.',
@@ -622,11 +622,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'flow-warranty',
-                'icon'  => 'fa-shield-halved',
+                'slug' => 'flow-warranty',
+                'icon' => 'fa-shield-halved',
                 'title' => '22. Data Flow: Warranty & Klaim',
-                'lead'  => 'Alur garansi — dari claim customer sampai klaim ke supplier/asuransi.',
-                'body'  => [
+                'lead' => 'Alur garansi — dari claim customer sampai klaim ke supplier/asuransi.',
+                'body' => [
                     ['type' => 'note', 'text' => '<b>Alur:</b> Customer klaim garansi → WarrantyClaim (dari InvoiceItem) → cek garansi parts → Klaim Supplier / Klaim Asuransi'],
                     ['type' => 'ol', 'items' => [
                         'Customer klaim → <b>Warranty Claim</b> dibuat, terhubung ke <b>Invoice Item</b> (parts yang dibeli).',
@@ -641,11 +641,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'flow-technician',
-                'icon'  => 'fa-user-gear',
+                'slug' => 'flow-technician',
+                'icon' => 'fa-user-gear',
                 'title' => '23. Data Flow: Teknisi & Komisi',
-                'lead'  => 'Alur teknisi — dari assign job sampai komisi dibayar, dengan time tracking.',
-                'body'  => [
+                'lead' => 'Alur teknisi — dari assign job sampai komisi dibayar, dengan time tracking.',
+                'body' => [
                     ['type' => 'note', 'text' => '<b>Alur:</b> Service assign teknisi → Timer start/finish → Service selesai → Komisi otomatis dihitung → Mark Paid'],
                     ['type' => 'ol', 'items' => [
                         '<b>Service Advisor</b> assign teknisi + service advisor ke service.',
@@ -660,11 +660,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'flow-booking',
-                'icon'  => 'fa-calendar-check',
+                'slug' => 'flow-booking',
+                'icon' => 'fa-calendar-check',
                 'title' => '24. Data Flow: Booking → Service',
-                'lead'  => 'Alur booking online — dari customer pesan jadwal sampai dikonversi jadi service.',
-                'body'  => [
+                'lead' => 'Alur booking online — dari customer pesan jadwal sampai dikonversi jadi service.',
+                'body' => [
                     ['type' => 'note', 'text' => '<b>Alur:</b> Customer booking (nama/HP/kendaraan/jadwal/kategori) → Status Pending → Admin konfirmasi → Convert → Service + Customer + Vehicle (auto)'],
                     ['type' => 'ol', 'items' => [
                         'Customer isi <b>Booking Form</b> (public) — nama, HP, plat, kendaraan, jadwal, kategori service.',
@@ -678,11 +678,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'flow-requisition',
-                'icon'  => 'fa-clipboard-list',
+                'slug' => 'flow-requisition',
+                'icon' => 'fa-clipboard-list',
                 'title' => '25. Data Flow: Purchase Requisition → PO',
-                'lead'  => 'Alur permintaan pembelian internal — dari teknisi butuh parts sampai jadi purchase order.',
-                'body'  => [
+                'lead' => 'Alur permintaan pembelian internal — dari teknisi butuh parts sampai jadi purchase order.',
+                'body' => [
                     ['type' => 'note', 'text' => '<b>Alur:</b> Teknisi butuh parts → Requisition (draft) → Submit → Manager Approve/Reject → Convert → Purchase Order → Mark Received → Stok bertambah'],
                     ['type' => 'ol', 'items' => [
                         'Teknisi/staff buat <b>Purchase Requisition</b> (parts yang dibutuhkan + qty).',
@@ -696,11 +696,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'flow-return',
-                'icon'  => 'fa-rotate-left',
+                'slug' => 'flow-return',
+                'icon' => 'fa-rotate-left',
                 'title' => '26. Data Flow: Retur (Penjualan & Pembelian)',
-                'lead'  => 'Alur retur — barang balik ke stok baik dari customer maupun ke supplier.',
-                'body'  => [
+                'lead' => 'Alur retur — barang balik ke stok baik dari customer maupun ke supplier.',
+                'body' => [
                     ['type' => 'note', 'text' => '<b>Sell Return (customer):</b> Customer retur barang → Sell Return + item → Stok bertambah + StockHistory (sell_return) + Refund<br><b>Purchase Return (supplier):</b> Barang dikembalikan ke supplier → Stok berkurang + StockHistory (return)'],
                     ['type' => 'ol', 'items' => [
                         '<b>Sell Return</b>: customer kembalikan sparepart yang dibeli → pilih sale/invoice/barang.',
@@ -713,11 +713,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'flow-fleet',
-                'icon'  => 'fa-truck-fast',
+                'slug' => 'flow-fleet',
+                'icon' => 'fa-truck-fast',
                 'title' => '27. Data Flow: Fleet Contract',
-                'lead'  => 'Alur kontrak servis rutin perusahaan/fleet — interval servis + deteksi jatuh tempo.',
-                'body'  => [
+                'lead' => 'Alur kontrak servis rutin perusahaan/fleet — interval servis + deteksi jatuh tempo.',
+                'body' => [
                     ['type' => 'note', 'text' => '<b>Alur:</b> Buat Fleet Contract (customer + interval servis) → Daftarkan kendaraan → Sistem deteksi jatuh tempo (last service + interval) → Buat service/booking'],
                     ['type' => 'ol', 'items' => [
                         'Buat <b>Fleet Contract</b> untuk perusahaan (interval servis: hari & KM).',
@@ -729,11 +729,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'flow-voucher',
-                'icon'  => 'fa-ticket',
+                'slug' => 'flow-voucher',
+                'icon' => 'fa-ticket',
                 'title' => '28. Data Flow: Voucher & Loyalty',
-                'lead'  => 'Alur promo & poin — dari buat voucher sampai dipakai, plus loyalty poin otomatis.',
-                'body'  => [
+                'lead' => 'Alur promo & poin — dari buat voucher sampai dipakai, plus loyalty poin otomatis.',
+                'body' => [
                     ['type' => 'note', 'text' => '<b>Voucher:</b> Buat voucher (diskon/persen, min transaksi, masa berlaku) → Customer masukkan kode di POS → Validasi → Diskon + VoucherUsage<br><b>Loyalty:</b> Invoice lunas → Poin otomatis (1 poin / Rp 1.000) → Tier naik (bronze→platinum)'],
                     ['type' => 'ol', 'items' => [
                         'Buat <b>Voucher</b> — kode, diskon (persen/fixed), min pembelian, masa berlaku, kuota.',
@@ -746,11 +746,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'flow-notification',
-                'icon'  => 'fa-bell-concierge',
+                'slug' => 'flow-notification',
+                'icon' => 'fa-bell-concierge',
                 'title' => '29. Data Flow: Notifikasi & Reminder',
-                'lead'  => 'Alur notifikasi multi-channel — dari template sampai terkirim via WA/Email/SMS.',
-                'body'  => [
+                'lead' => 'Alur notifikasi multi-channel — dari template sampai terkirim via WA/Email/SMS.',
+                'body' => [
                     ['type' => 'note', 'text' => '<b>Alur:</b> Buat Template (variabel) → Event trigger (service ready/payment/reminder) → Queue (notification_queue) → Scheduler proses tiap 5 menit → Kirim WA/Email/SMS → Log'],
                     ['type' => 'ol', 'items' => [
                         'Buat <b>Notification Template</b> dengan variabel ({customer_name}, {plate}, {next_service_date}).',
@@ -764,11 +764,11 @@ class DocsController extends Controller
                 ],
             ],
             [
-                'slug'  => 'flow-bank',
-                'icon'  => 'fa-building-columns',
+                'slug' => 'flow-bank',
+                'icon' => 'fa-building-columns',
                 'title' => '30. Data Flow: Bank & Budget',
-                'lead'  => 'Alur rekonsiliasi bank & anggaran — cocokkan saldo sistem vs riil, kontrol pengeluaran.',
-                'body'  => [
+                'lead' => 'Alur rekonsiliasi bank & anggaran — cocokkan saldo sistem vs riil, kontrol pengeluaran.',
+                'body' => [
                     ['type' => 'note', 'text' => '<b>Bank Recon:</b> Bank Account → Rekonsiliasi (saldo awal + income − expense) → Bandingkan statement → Selisih<br><b>Budget:</b> Set budget (kategori/periode/cabang) → Sistem bandingkan realisasi vs anggaran → Variance'],
                     ['type' => 'ol', 'items' => [
                         'Buat <b>Bank Account</b> (rekening + saldo awal).',

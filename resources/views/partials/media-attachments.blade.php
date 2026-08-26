@@ -45,7 +45,7 @@
                         <td>{{ $media->size ? number_format($media->size / 1024, 1) . ' KB' : '-' }}</td>
                         <td>{{ $media->created_at?->format('d M Y H:i') }}</td>
                         <td class="text-end">
-                            <a href="{{ asset('storage/' . $media->file_path) }}" download="{{ $media->name }}" class="btn btn-sm btn-outline-info" title="Download">
+                            <a href="{{ route('attachments.download', $media) }}" class="btn btn-sm btn-outline-info" title="Download">
                                 <i class="fas fa-download"></i>
                             </a>
                             <form action="{{ route('media.destroy', $media) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus dokumen ini?')">

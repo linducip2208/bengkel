@@ -4,16 +4,21 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InvoiceRequest;
-use App\Http\Requests\PaymentRequest;
+use App\Models\ActivityLog;
 use App\Models\Customer;
+use App\Models\EmailLog;
 use App\Models\Invoice;
 use App\Models\PaymentMethod;
 use App\Models\Service;
+use App\Models\Vehicle;
 use App\Services\InvoiceService;
 use App\Services\PaymentService;
+use App\Services\SettingsService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class InvoiceController extends Controller
@@ -29,13 +34,13 @@ class InvoiceController extends Controller
 
         $invoices = Invoice::query()
             ->with(['customer', 'vehicle', 'paymentRecords', 'service.vehicle', 'sale.vehicle'])
-            ->when($request->status && isset($statusMap[$request->status]), fn($q) => $q->where('payment_status', $statusMap[$request->status]))
-            ->when($request->invoice_type, fn($q) => $q->where('invoice_type', $request->invoice_type))
-            ->when($request->date_from, fn($q) => $q->whereDate('invoice_date', '>=', $request->date_from))
-            ->when($request->date_to, fn($q) => $q->whereDate('invoice_date', '<=', $request->date_to))
-            ->when($request->search, fn($q) => $q->where(function ($q) use ($request) {
-                $q->whereHas('customer', fn($c) => $c->where('name', 'like', "%{$request->search}%"))
-                  ->orWhere('invoice_number', 'like', "%{$request->search}%");
+            ->when($request->status && isset($statusMap[$request->status]), fn ($q) => $q->where('payment_status', $statusMap[$request->status]))
+            ->when($request->invoice_type, fn ($q) => $q->where('invoice_type', $request->invoice_type))
+            ->when($request->date_from, fn ($q) => $q->whereDate('invoice_date', '>=', $request->date_from))
+            ->when($request->date_to, fn ($q) => $q->whereDate('invoice_date', '<=', $request->date_to))
+            ->when($request->search, fn ($q) => $q->where(function ($q) use ($request) {
+                $q->whereHas('customer', fn ($c) => $c->where('name', 'like', "%{$request->search}%"))
+                    ->orWhere('invoice_number', 'like', "%{$request->search}%");
             }))
             ->latest()
             ->paginate(20)
@@ -48,7 +53,7 @@ class InvoiceController extends Controller
     {
         $customers = Customer::orderBy('name')->get();
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
-        $vehicles = \App\Models\Vehicle::with('customer')->orderBy('number_plate')->get();
+        $vehicles = Vehicle::with('customer')->orderBy('number_plate')->get();
         $selectedService = null;
 
         if ($request->service_id) {
@@ -60,12 +65,14 @@ class InvoiceController extends Controller
 
     public function store(InvoiceRequest $request): RedirectResponse
     {
+        $this->authorize('invoices.manage');
+
         $invoice = $this->invoiceService->create($request->validated());
 
-        \App\Models\ActivityLog::record('invoice.create', $invoice, "Invoice {$invoice->invoice_number} dibuat");
+        ActivityLog::record('invoice.create', $invoice, "Invoice {$invoice->invoice_number} dibuat");
 
         return redirect()->route('invoices.show', $invoice)
-            ->with('success', 'Invoice ' . $invoice->invoice_number . ' berhasil dibuat.');
+            ->with('success', 'Invoice '.$invoice->invoice_number.' berhasil dibuat.');
     }
 
     public function show(Invoice $invoice): View
@@ -73,7 +80,7 @@ class InvoiceController extends Controller
         $invoice->load(['items', 'customer', 'vehicle', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod', 'paymentMethod']);
         $totalPaid = (float) $invoice->paid_amount;
         $remaining = max($invoice->grand_total - $totalPaid, 0);
-        $settings = app(\App\Services\SettingsService::class)->getCompanyInfo();
+        $settings = app(SettingsService::class)->getCompanyInfo();
 
         return view('invoices.show', compact('invoice', 'totalPaid', 'remaining', 'settings'));
     }
@@ -85,7 +92,7 @@ class InvoiceController extends Controller
         $invoice->load('items');
         $customers = Customer::orderBy('name')->get();
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
-        $vehicles = \App\Models\Vehicle::with('customer')->orderBy('number_plate')->get();
+        $vehicles = Vehicle::with('customer')->orderBy('number_plate')->get();
 
         return view('invoices.edit', compact('invoice', 'customers', 'paymentMethods', 'vehicles'));
     }
@@ -93,16 +100,18 @@ class InvoiceController extends Controller
     public function update(InvoiceRequest $request, Invoice $invoice): RedirectResponse
     {
         abort_if((int) $invoice->payment_status >= 2, 403);
+        $this->authorize('invoices.manage');
 
         $this->invoiceService->update($invoice, $request->validated());
 
         return redirect()->route('invoices.index')
-            ->with('success', 'Invoice ' . $invoice->invoice_number . ' berhasil diperbarui.');
+            ->with('success', 'Invoice '.$invoice->invoice_number.' berhasil diperbarui.');
     }
 
     public function destroy(Invoice $invoice): RedirectResponse
     {
         abort_if($invoice->paymentRecords()->exists(), 403, 'Invoice yang sudah memiliki pembayaran tidak dapat dihapus.');
+        $this->authorize('invoices.delete');
 
         $invoice->load('items');
         $this->invoiceService->deleteWithStockRestore($invoice);
@@ -111,17 +120,35 @@ class InvoiceController extends Controller
             ->with('success', 'Invoice berhasil dihapus.');
     }
 
+    /**
+     * Stream the customer-uploaded payment proof from private storage.
+     * Falls back to the legacy public-disk path for historical uploads.
+     */
+    public function paymentProof(Invoice $invoice)
+    {
+        abort_unless($invoice->payment_proof, 404, 'Bukti pembayaran belum diunggah.');
+
+        if (Storage::disk('local')->exists($invoice->payment_proof)) {
+            return Storage::disk('local')->response($invoice->payment_proof);
+        }
+
+        abort_unless(Storage::disk('public')->exists($invoice->payment_proof), 404, 'Berkas tidak ditemukan.');
+
+        return Storage::disk('public')->response($invoice->payment_proof);
+    }
+
     private function resolveTemplateView(?string $template = null): array
     {
-        $template = $template ?: app(\App\Services\SettingsService::class)->get('invoice_template', 'modern');
+        $template = $template ?: app(SettingsService::class)->get('invoice_template', 'modern');
         $templates = [
-            'modern'  => 'invoices.pdf-modern',
+            'modern' => 'invoices.pdf-modern',
             'classic' => 'invoices.pdf-classic',
             'minimal' => 'invoices.pdf-minimal',
             'thermal' => 'invoices.pdf-thermal',
         ];
         $view = $templates[$template] ?? $templates['modern'];
         $paperSize = $template === 'thermal' ? [0, 0, 226.77, 841.89] : 'a4';
+
         return [$view, $paperSize, $template];
     }
 
@@ -132,7 +159,7 @@ class InvoiceController extends Controller
         $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
         $totalPaid = (float) $invoice->paid_amount;
         $remaining = max($invoice->grand_total - $totalPaid, 0);
-        $settings = app(\App\Services\SettingsService::class)->getCompanyInfo();
+        $settings = app(SettingsService::class)->getCompanyInfo();
 
         $pdf = Pdf::loadView($view, compact('invoice', 'totalPaid', 'remaining', 'settings'));
         if (is_array($paperSize)) {
@@ -148,7 +175,7 @@ class InvoiceController extends Controller
     {
         $template = $request->get('template', 'modern');
         $previews = [
-            'modern'  => 'invoices.preview-modern',
+            'modern' => 'invoices.preview-modern',
             'classic' => 'invoices.preview-classic',
             'minimal' => 'invoices.preview-minimal',
             'thermal' => 'invoices.preview-thermal',
@@ -158,7 +185,7 @@ class InvoiceController extends Controller
         $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
         $totalPaid = (float) $invoice->paid_amount;
         $remaining = max($invoice->grand_total - $totalPaid, 0);
-        $settings = app(\App\Services\SettingsService::class)->getCompanyInfo();
+        $settings = app(SettingsService::class)->getCompanyInfo();
 
         return view($view, compact('invoice', 'totalPaid', 'remaining', 'settings', 'template'));
     }
@@ -168,7 +195,7 @@ class InvoiceController extends Controller
         $invoice->load(['items', 'customer', 'vehicle', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
 
         $email = $invoice->customer?->email;
-        if (!$email) {
+        if (! $email) {
             return redirect()->route('invoices.show', $invoice)
                 ->with('error', 'Customer tidak punya alamat email.');
         }
@@ -177,10 +204,10 @@ class InvoiceController extends Controller
         $remaining = max($invoice->grand_total - $totalPaid, 0);
 
         try {
-            $settings = app(\App\Services\SettingsService::class)->getCompanyInfo();
+            $settings = app(SettingsService::class)->getCompanyInfo();
             [$view, $paperSize, $template] = $this->resolveTemplateView();
             $pdf = Pdf::loadView($view, compact('invoice', 'totalPaid', 'remaining', 'settings'));
-            if (!is_array($paperSize)) {
+            if (! is_array($paperSize)) {
                 $pdf->setPaper($paperSize);
             }
             $pdfBinary = $pdf->output();
@@ -194,11 +221,11 @@ class InvoiceController extends Controller
                 'appName' => $appName,
             ])->render();
 
-            $settings = app(\App\Services\SettingsService::class);
+            $settings = app(SettingsService::class);
             $fromAddress = $settings->get('mail_from_address', config('mail.from.address'));
             $fromName = $settings->get('mail_from_name', config('mail.from.name'));
 
-            \Illuminate\Support\Facades\Mail::send([], [], function ($message) use ($email, $subject, $body, $fromAddress, $fromName, $pdfBinary, $invoice) {
+            Mail::send([], [], function ($message) use ($email, $subject, $body, $fromAddress, $fromName, $pdfBinary, $invoice) {
                 $message->to($email)
                     ->subject($subject)
                     ->from($fromAddress, $fromName)
@@ -208,7 +235,7 @@ class InvoiceController extends Controller
                     ]);
             });
 
-            \App\Models\EmailLog::create([
+            EmailLog::create([
                 'to' => $email,
                 'subject' => $subject,
                 'body' => "[Invoice {$invoice->invoice_number}] dikirim dengan attachment PDF",
@@ -218,31 +245,32 @@ class InvoiceController extends Controller
             return redirect()->route('invoices.show', $invoice)
                 ->with('success', "Invoice berhasil dikirim ke {$email}.");
         } catch (\Throwable $e) {
-            \App\Models\EmailLog::create([
+            EmailLog::create([
                 'to' => $email,
                 'subject' => "Invoice {$invoice->invoice_number}",
                 'body' => null,
                 'status' => 'failed',
                 'error_message' => $e->getMessage(),
             ]);
+
             return redirect()->route('invoices.show', $invoice)
-                ->with('error', 'Gagal mengirim email: ' . $e->getMessage());
+                ->with('error', 'Gagal mengirim email: '.$e->getMessage());
         }
     }
 
     public function sendWA(Invoice $invoice)
     {
         $phone = $invoice->customer?->phone;
-        if (!$phone) {
+        if (! $phone) {
             return redirect()->back()->with('error', 'Nomor WA pelanggan tidak tersedia.');
         }
 
         $phone = preg_replace('/[^0-9]/', '', $phone);
         if (substr($phone, 0, 1) === '0') {
-            $phone = '62' . substr($phone, 1);
+            $phone = '62'.substr($phone, 1);
         }
 
-        $text = urlencode("Halo {$invoice->customer->name}, berikut invoice Anda:\n*{$invoice->invoice_number}*\nTotal: Rp " . number_format($invoice->grand_total, 0, ',', '.') . "\n\nTerima kasih.");
+        $text = urlencode("Halo {$invoice->customer->name}, berikut invoice Anda:\n*{$invoice->invoice_number}*\nTotal: Rp ".number_format($invoice->grand_total, 0, ',', '.')."\n\nTerima kasih.");
         $url = "https://wa.me/{$phone}?text={$text}";
 
         return redirect()->away($url);
@@ -251,7 +279,7 @@ class InvoiceController extends Controller
     public function share(Request $request, Invoice $invoice)
     {
         $token = $invoice->getOrCreatePublicToken();
-        $url = url('/invoice/' . $token);
+        $url = url('/invoice/'.$token);
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -261,6 +289,6 @@ class InvoiceController extends Controller
         }
 
         return redirect()->route('invoices.show', $invoice)
-            ->with('success', 'Link invoice publik: ' . $url);
+            ->with('success', 'Link invoice publik: '.$url);
     }
 }

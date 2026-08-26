@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\SupplierClaim;
 use App\Models\WarrantyClaim;
+use App\Services\DocumentNumberService;
 use Illuminate\Http\Request;
 
 class SupplierClaimController extends Controller
@@ -93,13 +94,6 @@ class SupplierClaimController extends Controller
 
     private function generateClaimNumber(): string
     {
-        $prefix = 'SCL-' . now()->format('Ymd') . '-';
-        $latest = SupplierClaim::where('claim_number', 'like', $prefix . '%')
-            ->orderBy('claim_number', 'desc')
-            ->first();
-
-        $lastNumber = $latest ? (int) substr($latest->claim_number, -3) : 0;
-
-        return $prefix . str_pad((string) ($lastNumber + 1), 3, '0', STR_PAD_LEFT);
+        return DocumentNumberService::generate(DocumentNumberService::SUPPLIER_CLAIMS, 'SCL', 'Ymd', 3);
     }
 }

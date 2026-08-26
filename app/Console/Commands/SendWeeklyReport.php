@@ -96,7 +96,7 @@ class SendWeeklyReport extends Command
 </html>
 HTML;
 
-        $toAddress = env('MAIL_FROM_ADDRESS', config('mail.from.address'));
+        $toAddress = config('mail.from.address');
         $subject = "{$appName} — Laporan Mingguan ({$formattedDate})";
 
         try {

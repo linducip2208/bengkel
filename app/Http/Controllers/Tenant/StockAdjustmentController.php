@@ -3,21 +3,18 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Branch;
 use App\Models\Product;
 use App\Models\StockAdjustment;
-use App\Models\StockHistory;
 use App\Models\Warehouse;
-use App\Services\ProductService;
+use App\Services\AutoJournalService;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class StockAdjustmentController extends Controller
 {
-    public function __construct(
-        private ProductService $productService
-    ) {}
-
     public function index(Request $request)
     {
         $adjustments = StockAdjustment::with(['product', 'warehouse', 'requestedBy', 'approvedBy'])
@@ -25,7 +22,7 @@ class StockAdjustmentController extends Controller
                 $q->where('status', $request->status);
             })
             ->when($request->filled('product_search'), function ($q) use ($request) {
-                $q->whereHas('product', fn($p) => $p->where('name', 'like', '%' . $request->product_search . '%'));
+                $q->whereHas('product', fn ($p) => $p->where('name', 'like', '%'.$request->product_search.'%'));
             })
             ->latest()
             ->paginate(15)
@@ -76,42 +73,68 @@ class StockAdjustmentController extends Controller
 
     public function approve($id)
     {
+        $this->authorize('stock-adjustments.approve');
+
         $adjustment = StockAdjustment::where('status', 'pending')->findOrFail($id);
 
-        DB::transaction(function () use ($adjustment) {
-            $adjustment->update([
+        $applied = DB::transaction(function () use ($adjustment) {
+            // Lock + re-check: a concurrent second approval aborts here.
+            $locked = StockAdjustment::where('status', 'pending')
+                ->whereKey($adjustment->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $locked) {
+                return null;
+            }
+
+            // The request snapshot may be stale if stock moved since it was
+            // filed — refuse rather than blindly overwrite current stock.
+            $product = Product::with(['stockRecord' => fn ($q) => $q->withoutGlobalScopes()])
+                ->withoutGlobalScopes()
+                ->findOrFail($locked->product_id);
+            $currentStock = (int) ($product->stockRecord->quantity ?? 0);
+            $snapshotStock = (int) $locked->previous_quantity;
+
+            if ($currentStock !== $snapshotStock) {
+                throw new \RuntimeException(
+                    "Stok saat ini ({$currentStock}) berbeda dari saat pengajuan ({$snapshotStock}). Tolak pengajuan ini dan buat penyesuaian baru."
+                );
+            }
+
+            $locked->update([
                 'status' => 'approved',
                 'approved_by' => auth()->id(),
                 'approved_at' => now(),
             ]);
 
-            $product = Product::with('stockRecord')->findOrFail($adjustment->product_id);
-            $previousStock = $product->current_stock;
-            $newStock = $adjustment->new_quantity;
+            StockService::set(
+                $product->id,
+                (int) $locked->new_quantity,
+                'adjustment',
+                'Adjustment approved: '.$locked->reason,
+                StockAdjustment::class,
+                $locked->id,
+            );
 
-            if ($product->stockRecord) {
-                $product->stockRecord->update(['quantity' => $newStock]);
-            } else {
-                \App\Models\StockRecord::create([
-                    'product_id' => $product->id,
-                    'supplier_id' => $product->supplier_id,
-                    'quantity' => $newStock,
-                    'minimum_stock' => 0,
-                ]);
-            }
+            app(AutoJournalService::class)->journalStockAdjustment(
+                $product->id,
+                (float) $locked->quantity_change,
+                (float) ($product->cost_price ?? 0),
+                $locked->reason,
+                StockAdjustment::class,
+                $locked->id,
+            );
 
-            StockHistory::create([
-                'product_id' => $product->id,
-                'quantity_change' => $adjustment->quantity_change,
-                'previous_stock' => $previousStock,
-                'new_stock' => $newStock,
-                'type' => 'adjustment',
-                'reason' => 'Adjustment approved: ' . $adjustment->reason,
-                'reference_type' => StockAdjustment::class,
-                'reference_id' => $adjustment->id,
-                'user_id' => auth()->id(),
-            ]);
+            ActivityLog::record('stock-adjustment.approve', $locked, "Penyesuaian stok {$product->name}: {$locked->previous_quantity} → {$locked->new_quantity}");
+
+            return true;
         });
+
+        if ($applied === null) {
+            return redirect()->route('stock-adjustments.index')
+                ->with('error', 'Pengajuan sudah diproses oleh user lain.');
+        }
 
         return redirect()->route('stock-adjustments.index')
             ->with('success', 'Stock adjustment approved. Stok sudah diperbarui.');
@@ -119,18 +142,27 @@ class StockAdjustmentController extends Controller
 
     public function reject(Request $request, $id)
     {
+        $this->authorize('stock-adjustments.approve');
+
         $request->validate([
             'rejection_reason' => ['required', 'string', 'max:1000'],
         ]);
 
-        $adjustment = StockAdjustment::where('status', 'pending')->findOrFail($id);
+        $updated = StockAdjustment::where('status', 'pending')
+            ->whereKey($id)
+            ->update([
+                'status' => 'rejected',
+                'rejection_reason' => $request->rejection_reason,
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
+            ]);
 
-        $adjustment->update([
-            'status' => 'rejected',
-            'rejection_reason' => $request->rejection_reason,
-            'approved_by' => auth()->id(),
-            'approved_at' => now(),
-        ]);
+        if (! $updated) {
+            return redirect()->route('stock-adjustments.index')
+                ->with('error', 'Pengajuan sudah diproses sebelumnya.');
+        }
+
+        ActivityLog::record('stock-adjustment.reject', null, "Pengajuan adjustment #{$id} ditolak: {$request->rejection_reason}");
 
         return redirect()->route('stock-adjustments.index')
             ->with('success', 'Stock adjustment ditolak.');

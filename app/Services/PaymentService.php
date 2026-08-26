@@ -2,53 +2,95 @@
 
 namespace App\Services;
 
+use App\Http\Controllers\Tenant\LoyaltyController;
+use App\Models\ActivityLog;
 use App\Models\Income;
 use App\Models\Invoice;
 use App\Models\PaymentRecord;
-use App\Services\AutoJournalService;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PaymentService extends BaseService
 {
+    /**
+     * Record a payment against an invoice.
+     *
+     * Concurrency-safe: the invoice row is locked FOR UPDATE before the
+     * remaining-balance check and held until commit, so two simultaneous
+     * requests cannot both pass the overpayment guard (double-click /
+     * retry cannot create duplicate money).
+     *
+     * Idempotency: when $data['idempotency_key'] is supplied and a payment
+     * already exists for that key, the existing record is returned untouched.
+     */
     public function process(Invoice $invoice, array $data): PaymentRecord
     {
-        // Guard overpayment — jangan izinkan bayar melebihi sisa tagihan
-        $alreadyPaid = (float) $invoice->paid_amount;
-        $remaining = (float) $invoice->grand_total - $alreadyPaid;
-        if ($remaining <= 0) {
-            throw new \RuntimeException('Invoice sudah lunas, tidak ada sisa tagihan.');
+        $idempotencyKey = $data['idempotency_key'] ?? null;
+
+        if ($idempotencyKey) {
+            $existing = PaymentRecord::where('invoice_id', $invoice->id)
+                ->where('idempotency_key', $idempotencyKey)
+                ->first();
+            if ($existing) {
+                return $existing;
+            }
         }
-        if ((float) $data['amount'] > $remaining) {
-            throw new \RuntimeException('Jumlah pembayaran melebihi sisa tagihan (sisa: ' . number_format($remaining, 0, ',', '.') . ').');
-        }
 
-        $data['created_by'] = auth()->id() ?? 1;
-        $payment = $invoice->paymentRecords()->create($data);
+        return DB::transaction(function () use ($invoice, $data, $idempotencyKey) {
+            // Re-read under lock to get authoritative paid_amount.
+            $locked = Invoice::query()->whereKey($invoice->id)->lockForUpdate()->first();
 
-        $wasAlreadyPaid = $invoice->payment_status >= 2;
-        $newPaid = $invoice->paid_amount + $data['amount'];
-        $invoice->update([
-            'paid_amount' => $newPaid,
-            'amount_received' => $newPaid,
-            'payment_status' => $newPaid >= $invoice->grand_total ? 2 : ($newPaid > 0 ? 1 : 0),
-        ]);
+            // Guard overpayment — jangan izinkan bayar melebihi sisa tagihan
+            $alreadyPaid = round((float) $locked->paid_amount, 2);
+            $grandTotal = round((float) $locked->grand_total, 2);
+            $remaining = round($grandTotal - $alreadyPaid, 2);
 
-        if (!$wasAlreadyPaid && $invoice->payment_status === 2) {
-            Income::create([
-                'invoice_number' => $invoice->invoice_number,
-                'customer_id' => $invoice->customer_id,
-                'payment_method_id' => $data['payment_method_id'],
-                'amount' => $invoice->grand_total,
-                'income_date' => now(),
-                'label' => 'Pembayaran Invoice ' . $invoice->invoice_number,
-                'created_by' => auth()->id() ?? 1,
+            if ($remaining <= 0) {
+                throw new \RuntimeException('Invoice sudah lunas, tidak ada sisa tagihan.');
+            }
+
+            $amount = round((float) $data['amount'], 2);
+            if ($amount <= 0) {
+                throw new \RuntimeException('Jumlah pembayaran harus lebih besar dari nol.');
+            }
+            if ($amount > $remaining + 0.009) {
+                throw new \RuntimeException('Jumlah pembayaran melebihi sisa tagihan (sisa: '.number_format($remaining, 0, ',', '.').').');
+            }
+
+            $data['amount'] = $amount;
+            $data['created_by'] = auth()->id() ?? 1;
+            $data['idempotency_key'] = $idempotencyKey;
+            $payment = $locked->paymentRecords()->create($data);
+
+            $wasAlreadyPaid = $locked->payment_status >= 2;
+            $newPaid = round($alreadyPaid + $amount, 2);
+            $locked->update([
+                'paid_amount' => $newPaid,
+                'amount_received' => $newPaid,
+                'payment_status' => $newPaid >= $grandTotal - 0.009 ? 2 : 1,
             ]);
 
-            \App\Http\Controllers\Tenant\LoyaltyController::earnFromInvoice($invoice);
-            app(AutoJournalService::class)->journalInvoicePayment($payment);
-        }
+            if (! $wasAlreadyPaid && $locked->payment_status === 2) {
+                Income::firstOrCreate(
+                    ['invoice_number' => $locked->invoice_number],
+                    [
+                        'customer_id' => $locked->customer_id,
+                        'payment_method_id' => $data['payment_method_id'],
+                        'amount' => $grandTotal,
+                        'income_date' => now(),
+                        'label' => 'Pembayaran Invoice '.$locked->invoice_number,
+                        'created_by' => auth()->id() ?? 1,
+                    ]
+                );
 
-        return $payment;
+                LoyaltyController::earnFromInvoice($locked);
+            }
+
+            app(AutoJournalService::class)->journalInvoicePayment($payment);
+
+            ActivityLog::record('payment.create', $payment, "Pembayaran {$amount} untuk invoice {$locked->invoice_number}");
+
+            return $payment;
+        });
     }
 
     public function getTotalCollected($start, $end): float

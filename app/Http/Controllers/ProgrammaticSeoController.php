@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BlogCategory;
+use App\Models\BlogPost;
+use App\Models\Kelurahan;
 use App\Models\RepairCategory;
-use Illuminate\Http\Request;
+use App\Models\Service;
+use App\Support\SeoData;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ProgrammaticSeoController extends Controller
@@ -13,7 +18,7 @@ class ProgrammaticSeoController extends Controller
         $repairCategory = RepairCategory::where('slug', $category)->firstOrFail();
         $year = $year ?? now()->year;
 
-        $topServices = \App\Models\Service::where('repair_category_id', $repairCategory->id)
+        $topServices = Service::where('repair_category_id', $repairCategory->id)
             ->whereYear('service_date', $year)
             ->where('done_status', 2)
             ->with(['customer', 'vehicle'])
@@ -31,7 +36,7 @@ class ProgrammaticSeoController extends Controller
             '@type' => 'ItemList',
             'name' => "Best {$repairCategory->repair_category_name} Services {$year}",
             'description' => $metaDescription,
-            'itemListElement' => $topServices->map(fn($s, $i) => [
+            'itemListElement' => $topServices->map(fn ($s, $i) => [
                 '@type' => 'ListItem',
                 'position' => $i + 1,
                 'item' => [
@@ -66,7 +71,7 @@ class ProgrammaticSeoController extends Controller
         $jsonLd = [
             '@context' => 'https://schema.org',
             '@type' => 'FAQPage',
-            'mainEntity' => $alternatives->map(fn($alt) => [
+            'mainEntity' => $alternatives->map(fn ($alt) => [
                 '@type' => 'Question',
                 'name' => "Is {$alt->repair_category_name} a good alternative to {$repairCategory->repair_category_name}?",
                 'acceptedAnswer' => [
@@ -87,11 +92,11 @@ class ProgrammaticSeoController extends Controller
         $categoryA = RepairCategory::where('slug', $a)->firstOrFail();
         $categoryB = RepairCategory::where('slug', $b)->firstOrFail();
 
-        $servicesA = \App\Models\Service::where('repair_category_id', $categoryA->id)->where('done_status', 2)->count();
-        $servicesB = \App\Models\Service::where('repair_category_id', $categoryB->id)->where('done_status', 2)->count();
+        $servicesA = Service::where('repair_category_id', $categoryA->id)->where('done_status', 2)->count();
+        $servicesB = Service::where('repair_category_id', $categoryB->id)->where('done_status', 2)->count();
 
-        $avgPriceA = \App\Models\Service::where('repair_category_id', $categoryA->id)->avg('charge') ?? 0;
-        $avgPriceB = \App\Models\Service::where('repair_category_id', $categoryB->id)->avg('charge') ?? 0;
+        $avgPriceA = Service::where('repair_category_id', $categoryA->id)->avg('charge') ?? 0;
+        $avgPriceB = Service::where('repair_category_id', $categoryB->id)->avg('charge') ?? 0;
 
         $metaTitle = "{$categoryA->repair_category_name} vs {$categoryB->repair_category_name} | Aplikasi Bengkel Terbaik";
         $metaDescription = "Compare {$categoryA->repair_category_name} vs {$categoryB->repair_category_name}. See differences in cost, service count, and choose the right repair for your vehicle at Aplikasi Bengkel Terbaik.";
@@ -109,7 +114,7 @@ class ProgrammaticSeoController extends Controller
 
         $comparison = [
             ['label' => 'Service Count', 'a' => $servicesA, 'b' => $servicesB],
-            ['label' => 'Average Price', 'a' => 'Rp ' . number_format($avgPriceA, 0, ',', '.'), 'b' => 'Rp ' . number_format($avgPriceB, 0, ',', '.')],
+            ['label' => 'Average Price', 'a' => 'Rp '.number_format($avgPriceA, 0, ',', '.'), 'b' => 'Rp '.number_format($avgPriceB, 0, ',', '.')],
         ];
 
         return view('seo.compare-services', compact(
@@ -121,8 +126,8 @@ class ProgrammaticSeoController extends Controller
     public function blogArticle(string $slug): View
     {
         // Try DB first
-        if (class_exists(\App\Models\BlogPost::class)) {
-            $dbPost = \App\Models\BlogPost::where('slug', $slug)->published()->first();
+        if (class_exists(BlogPost::class)) {
+            $dbPost = BlogPost::where('slug', $slug)->published()->first();
             if ($dbPost) {
                 $article = [
                     'title' => $dbPost->title,
@@ -132,7 +137,7 @@ class ProgrammaticSeoController extends Controller
                 ];
                 $relatedCategories = RepairCategory::inRandomOrder()->limit(4)->get();
 
-                $metaTitle = ($dbPost->meta_title ?: $dbPost->title) . ' | Aplikasi Bengkel Terbaik Blog';
+                $metaTitle = ($dbPost->meta_title ?: $dbPost->title).' | Aplikasi Bengkel Terbaik Blog';
                 $metaDescription = $dbPost->meta_description ?: $dbPost->excerpt;
 
                 $jsonLd = [
@@ -153,7 +158,7 @@ class ProgrammaticSeoController extends Controller
         $article = $this->getStaticArticle($slug);
         $relatedCategories = RepairCategory::inRandomOrder()->limit(4)->get();
 
-        $metaTitle = $article['title'] . ' | Aplikasi Bengkel Terbaik Blog';
+        $metaTitle = $article['title'].' | Aplikasi Bengkel Terbaik Blog';
         $metaDescription = $article['excerpt'];
 
         $jsonLd = [
@@ -169,14 +174,63 @@ class ProgrammaticSeoController extends Controller
         return view('seo.blog-article', compact('article', 'relatedCategories', 'metaTitle', 'metaDescription', 'jsonLd'));
     }
 
+    public function blogCategory(string $slug): View
+    {
+        $appName = config('app.name');
+
+        $query = BlogCategory::where('slug', $slug)->first();
+        abort_unless($query, 404);
+
+        $posts = $query->posts()
+            ->published()
+            ->orderBy('published_at', 'desc')
+            ->limit(24)
+            ->get();
+
+        $categories = BlogCategory::orderBy('name')->get();
+        $recent = BlogPost::published()->orderBy('published_at', 'desc')->limit(5)->get();
+
+        $metaTitle = "Artikel {$query->name} | Blog {$appName}";
+        $metaDescription = "Kumpulan artikel kategori {$query->name}: tips, panduan, dan wawasan otomotif dari blog {$appName}."
+            .($query->description ? ' '.Str::limit($query->description, 120) : '');
+
+        $jsonLd = [
+            '@context' => 'https://schema.org',
+            '@type' => 'CollectionPage',
+            'name' => "Artikel {$query->name}",
+            'description' => $metaDescription,
+            'inLanguage' => 'id-ID',
+            'isPartOf' => ['@type' => 'Blog', 'name' => "Blog {$appName}", 'url' => url('/blog')],
+            'mainEntity' => [
+                '@type' => 'ItemList',
+                'itemListElement' => $posts->values()->map(fn ($p, $i) => [
+                    '@type' => 'ListItem',
+                    'position' => $i + 1,
+                    'url' => url('/blog/'.$p->slug),
+                    'name' => $p->title,
+                ])->all(),
+            ],
+        ];
+
+        return view('seo.blog-list', [
+            'articles' => $posts,
+            'categories' => $categories,
+            'recent' => $recent,
+            'activeCategory' => $query,
+            'metaTitle' => $metaTitle,
+            'metaDescription' => $metaDescription,
+            'jsonLd' => $jsonLd,
+        ]);
+    }
+
     protected function generateFaqs(string $categoryName): array
     {
         return [
             ['q' => "What is {$categoryName} service?", 'a' => "{$categoryName} involves comprehensive inspection, repair, and maintenance performed by certified technicians to ensure your vehicle operates at peak performance and safety standards."],
             ['q' => "How long does {$categoryName} take?", 'a' => "Depending on complexity, {$categoryName} typically takes 1-4 hours. Our team provides an accurate estimate during initial inspection."],
             ['q' => "How much does {$categoryName} cost?", 'a' => "The cost varies based on vehicle type and specific needs. We provide transparent pricing with no hidden fees - you'll receive a detailed quote before any work begins."],
-            ['q' => "Do you offer warranty on {$categoryName}?", 'a' => "Yes, all services come with warranty on both parts and labor. Warranty period varies by service type and will be stated on your invoice."],
-            ['q' => "Can I wait while my {$categoryName} is being done?", 'a' => "Yes, we have a comfortable waiting area with WiFi and refreshments. For longer services, we can arrange alternative transportation."],
+            ['q' => "Do you offer warranty on {$categoryName}?", 'a' => 'Yes, all services come with warranty on both parts and labor. Warranty period varies by service type and will be stated on your invoice.'],
+            ['q' => "Can I wait while my {$categoryName} is being done?", 'a' => 'Yes, we have a comfortable waiting area with WiFi and refreshments. For longer services, we can arrange alternative transportation.'],
         ];
     }
 
@@ -221,32 +275,56 @@ class ProgrammaticSeoController extends Controller
         $parts = explode('-', $slug);
 
         // Parse keywords dari slug
-        $city = null; $brand = null; $service = null; $year = null; $price = null;
-        $cities = \App\Support\SeoData::cities();
-        $brands = \App\Support\SeoData::brands();
-        $services = \App\Support\SeoData::services();
+        $city = null;
+        $brand = null;
+        $service = null;
+        $year = null;
+        $price = null;
+        $cities = SeoData::cities();
+        $brands = SeoData::brands();
+        $services = SeoData::services();
 
         foreach ($parts as $p) {
-            if (in_array($p, $cities)) $city = $p;
-            if (in_array($p, $brands)) $brand = $p;
-            if (in_array($p, $services)) $service = $p;
-            if (preg_match('/^20\d\d$/', $p)) $year = $p;
-            if (preg_match('/^\d+(rb|jt)$/', $p)) $price = $p;
+            if (in_array($p, $cities)) {
+                $city = $p;
+            }
+            if (in_array($p, $brands)) {
+                $brand = $p;
+            }
+            if (in_array($p, $services)) {
+                $service = $p;
+            }
+            if (preg_match('/^20\d\d$/', $p)) {
+                $year = $p;
+            }
+            if (preg_match('/^\d+(rb|jt)$/', $p)) {
+                $price = $p;
+            }
         }
 
         $cityName = $city ? ucwords(str_replace('-', ' ', $city)) : null;
         $brandName = $brand ? strtoupper($brand) : null;
         $serviceName = $service ? ucwords(str_replace('-', ' ', $service)) : null;
-        $priceLabel = $price ? 'Rp ' . str_replace(['rb','jt'], [' Ribu', ' Juta'], $price) : null;
+        $priceLabel = $price ? 'Rp '.str_replace(['rb', 'jt'], [' Ribu', ' Juta'], $price) : null;
         $yearLabel = $year ?? date('Y');
 
         // Build meta title & description
         $parts2 = [];
-        if ($serviceName) $parts2[] = $serviceName;
-        if ($brandName) $parts2[] = $brandName;
-        if ($cityName) $parts2[] = "di {$cityName}";
-        if ($priceLabel) $parts2[] = "mulai {$priceLabel}";
-        if ($year > 2000) $parts2[] = "tahun {$yearLabel}";
+        if ($serviceName) {
+            $parts2[] = $serviceName;
+        }
+        if ($brandName) {
+            $parts2[] = $brandName;
+        }
+        if ($cityName) {
+            $parts2[] = "di {$cityName}";
+        }
+        if ($priceLabel) {
+            $parts2[] = "mulai {$priceLabel}";
+        }
+        if ($year > 2000) {
+            $parts2[] = "tahun {$yearLabel}";
+        }
 
         $context = implode(' ', $parts2);
 
@@ -262,13 +340,13 @@ class ProgrammaticSeoController extends Controller
             $metaDescription = "Butuh {$context}? ERP Bengkel Indonesia — aplikasi bengkel standard, web based, harga mulai Rp 6.000.000. Hubungi WhatsApp 081296052010.";
         } else {
             $metaTitle = "ERP Bengkel Indonesia — {$slug}";
-            $metaDescription = "ERP Bengkel Indonesia / ERP Repair Car Indonesia — aplikasi bengkel standard, web based, harga mulai Rp 6.000.000. WhatsApp 081296052010.";
+            $metaDescription = 'ERP Bengkel Indonesia / ERP Repair Car Indonesia — aplikasi bengkel standard, web based, harga mulai Rp 6.000.000. WhatsApp 081296052010.';
         }
 
         $jsonLd = [
             '@context' => 'https://schema.org',
             '@type' => 'SoftwareApplication',
-            'name' => 'ERP Bengkel Indonesia' . ($cityName ? " - {$cityName}" : ''),
+            'name' => 'ERP Bengkel Indonesia'.($cityName ? " - {$cityName}" : ''),
             'description' => $metaDescription,
             'applicationCategory' => 'BusinessApplication',
             'operatingSystem' => 'Web Browser (Web Based)',
@@ -282,7 +360,7 @@ class ProgrammaticSeoController extends Controller
         ];
 
         $relatedServices = [];
-        foreach (array_slice(\App\Support\SeoData::services(), 0, 8) as $s) {
+        foreach (array_slice(SeoData::services(), 0, 8) as $s) {
             $relatedServices[] = ['slug' => $s, 'name' => ucwords(str_replace('-', ' ', $s))];
         }
 
@@ -303,8 +381,8 @@ class ProgrammaticSeoController extends Controller
         $lang = request()->segment(1);
 
         $t = $this->translations($lang);
-        $services = \App\Support\SeoData::services();
-        $brands = \App\Support\SeoData::brands();
+        $services = SeoData::services();
+        $brands = SeoData::brands();
 
         $metaTitle = str_replace(['{city}'], [$cityName], $t['city_title']);
         $metaDescription = str_replace(['{city}'], [$cityName], $t['city_desc']);
@@ -319,7 +397,7 @@ class ProgrammaticSeoController extends Controller
             'areaServed' => $cityName,
         ];
 
-        $kelurahans = \App\Models\Kelurahan::active()
+        $kelurahans = Kelurahan::active()
             ->where('kabupaten', 'like', "%{$cityName}%")
             ->limit(20)->get();
 
@@ -336,11 +414,11 @@ class ProgrammaticSeoController extends Controller
         $lang = request()->segment(1);
 
         $t = $this->translations($lang);
-        $services = \App\Support\SeoData::services();
-        $brands = \App\Support\SeoData::brands();
+        $services = SeoData::services();
+        $brands = SeoData::brands();
         $kecamatan = '';
 
-        $k = \App\Models\Kelurahan::where('slug', $kelurahan)
+        $k = Kelurahan::where('slug', $kelurahan)
             ->where('kabupaten', 'like', "%{$cityName}%")
             ->first();
         if ($k) {
@@ -348,13 +426,13 @@ class ProgrammaticSeoController extends Controller
             $kecamatan = $k->kecamatan;
         }
 
-        $metaTitle = str_replace(['{kelurahan}','{city}'], [$kelurahanName, $cityName], $t['kel_title']);
-        $metaDescription = str_replace(['{kelurahan}','{city}'], [$kelurahanName, $cityName], $t['kel_desc']);
+        $metaTitle = str_replace(['{kelurahan}', '{city}'], [$kelurahanName, $cityName], $t['kel_title']);
+        $metaDescription = str_replace(['{kelurahan}', '{city}'], [$kelurahanName, $cityName], $t['kel_desc']);
 
         $jsonLd = [
             '@context' => 'https://schema.org',
             '@type' => 'LocalBusiness',
-            'name' => str_replace(['{kelurahan}','{city}'], [$kelurahanName, $cityName], $t['kel_biz']),
+            'name' => str_replace(['{kelurahan}', '{city}'], [$kelurahanName, $cityName], $t['kel_biz']),
             'description' => $metaDescription,
             'address' => ['@type' => 'PostalAddress', 'addressLocality' => $kelurahanName, 'addressRegion' => $cityName, 'addressCountry' => 'ID'],
         ];
@@ -373,8 +451,8 @@ class ProgrammaticSeoController extends Controller
         $lang = request()->segment(1);
         $t = $this->translations($lang);
 
-        $metaTitle = str_replace(['{brand}','{city}'], [$brandName, $cityName], $t['brand_title']);
-        $metaDescription = str_replace(['{brand}','{city}'], [$brandName, $cityName], $t['brand_desc']);
+        $metaTitle = str_replace(['{brand}', '{city}'], [$brandName, $cityName], $t['brand_title']);
+        $metaDescription = str_replace(['{brand}', '{city}'], [$brandName, $cityName], $t['brand_desc']);
 
         return view('pseo.generic', [
             'slug' => "bengkel-{$brand}-{$city}",
@@ -385,8 +463,8 @@ class ProgrammaticSeoController extends Controller
             'isSourceCode' => false,
             'metaTitle' => $metaTitle,
             'metaDescription' => $metaDescription,
-            'jsonLd' => ['@context'=>'https://schema.org','@type'=>'LocalBusiness','name'=>str_replace(['{brand}','{city}'],[$brandName,$cityName],$t['brand_biz']),'address'=>['@type'=>'PostalAddress','addressLocality'=>$cityName,'addressCountry'=>'ID']],
-            'relatedServices' => collect(\App\Support\SeoData::services())->map(fn($s) => ['slug'=>$s,'name'=>ucwords(str_replace('-',' ',$s))])->take(8)->toArray(),
+            'jsonLd' => ['@context' => 'https://schema.org', '@type' => 'LocalBusiness', 'name' => str_replace(['{brand}', '{city}'], [$brandName, $cityName], $t['brand_biz']), 'address' => ['@type' => 'PostalAddress', 'addressLocality' => $cityName, 'addressCountry' => 'ID']],
+            'relatedServices' => collect(SeoData::services())->map(fn ($s) => ['slug' => $s, 'name' => ucwords(str_replace('-', ' ', $s))])->take(8)->toArray(),
         ]);
     }
 
@@ -397,8 +475,8 @@ class ProgrammaticSeoController extends Controller
         $lang = request()->segment(1);
         $t = $this->translations($lang);
 
-        $metaTitle = str_replace(['{service}','{city}'], [$serviceName, $cityName], $t['svc_title']);
-        $metaDescription = str_replace(['{service}','{city}'], [$serviceName, $cityName], $t['svc_desc']);
+        $metaTitle = str_replace(['{service}', '{city}'], [$serviceName, $cityName], $t['svc_title']);
+        $metaDescription = str_replace(['{service}', '{city}'], [$serviceName, $cityName], $t['svc_desc']);
 
         return view('pseo.generic', [
             'slug' => "service-{$service}-{$city}",
@@ -408,8 +486,8 @@ class ProgrammaticSeoController extends Controller
             'isSourceCode' => false,
             'metaTitle' => $metaTitle,
             'metaDescription' => $metaDescription,
-            'jsonLd' => ['@context'=>'https://schema.org','@type'=>'Service','name'=>str_replace(['{service}','{city}'],[$serviceName,$cityName],$t['svc_biz']),'provider'=>['@type'=>'LocalBusiness','name'=>config('app.name')],'areaServed'=>['@type'=>'City','name'=>$cityName]],
-            'relatedServices' => collect(\App\Support\SeoData::services())->filter(fn($s) => $s !== $service)->map(fn($s) => ['slug'=>$s,'name'=>ucwords(str_replace('-',' ',$s))])->take(8)->toArray(),
+            'jsonLd' => ['@context' => 'https://schema.org', '@type' => 'Service', 'name' => str_replace(['{service}', '{city}'], [$serviceName, $cityName], $t['svc_biz']), 'provider' => ['@type' => 'LocalBusiness', 'name' => config('app.name')], 'areaServed' => ['@type' => 'City', 'name' => $cityName]],
+            'relatedServices' => collect(SeoData::services())->filter(fn ($s) => $s !== $service)->map(fn ($s) => ['slug' => $s, 'name' => ucwords(str_replace('-', ' ', $s))])->take(8)->toArray(),
         ]);
     }
 
@@ -429,8 +507,8 @@ class ProgrammaticSeoController extends Controller
             'isSourceCode' => false,
             'metaTitle' => $metaTitle,
             'metaDescription' => $metaDescription,
-            'jsonLd' => ['@context'=>'https://schema.org','@type'=>'ItemList','name'=>str_replace('{city}',$cityName,$t['best_biz'])],
-            'relatedServices' => collect(\App\Support\SeoData::services())->map(fn($s) => ['slug'=>$s,'name'=>ucwords(str_replace('-',' ',$s))])->take(8)->toArray(),
+            'jsonLd' => ['@context' => 'https://schema.org', '@type' => 'ItemList', 'name' => str_replace('{city}', $cityName, $t['best_biz'])],
+            'relatedServices' => collect(SeoData::services())->map(fn ($s) => ['slug' => $s, 'name' => ucwords(str_replace('-', ' ', $s))])->take(8)->toArray(),
         ]);
     }
 

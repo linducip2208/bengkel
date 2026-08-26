@@ -18,12 +18,14 @@ class BranchController extends Controller
                 ->orWhere('code', 'like', "%{$request->search}%");
         }
         $branches = $query->orderBy('name')->paginate(15)->withQueryString();
+
         return view('branches.index', compact('branches'));
     }
 
     public function create()
     {
         $companies = Company::orderBy('name')->get();
+
         return view('branches.create', compact('companies'));
     }
 
@@ -55,12 +57,14 @@ class BranchController extends Controller
     public function show(Branch $branch)
     {
         $branch->load(['businessHours', 'holidays', 'washbays']);
+
         return view('branches.show', compact('branch'));
     }
 
     public function edit(Branch $branch)
     {
         $companies = Company::orderBy('name')->get();
+
         return view('branches.edit', compact('branch', 'companies'));
     }
 
@@ -104,6 +108,7 @@ class BranchController extends Controller
             return back()->with('error', 'Cabang tidak bisa dihapus karena masih punya data operasional terdaftar.');
         }
         $branch->delete();
+
         return redirect()->route('branches.index')->with('success', 'Cabang berhasil dihapus.');
     }
 
@@ -114,8 +119,17 @@ class BranchController extends Controller
             $request->session()->forget('current_branch_id');
         } else {
             $branch = Branch::where('is_active', true)->findOrFail($branchId);
+
+            // Users with explicit branch assignments may only switch to
+            // branches they belong to (super_admin/admin unrestricted,
+            // legacy accounts without assignments keep global access).
+            if (! auth()->user()->hasBranchAccess((int) $branch->id)) {
+                abort(403, 'Anda tidak terdaftar di cabang ini.');
+            }
+
             $request->session()->put('current_branch_id', $branch->id);
         }
+
         return back()->with('success', 'Cabang aktif diubah.');
     }
 }

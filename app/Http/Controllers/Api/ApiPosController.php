@@ -10,11 +10,13 @@ use App\Models\InvoiceItem;
 use App\Models\PaymentRecord;
 use App\Models\PosSession;
 use App\Models\Product;
-use App\Models\StockHistory;
-use App\Models\StockRecord;
+use App\Services\AutoJournalService;
+use App\Services\DocumentNumberService;
+use App\Services\StockService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ApiPosController extends Controller
 {
@@ -63,7 +65,7 @@ class ApiPosController extends Controller
             'expected_balance' => $expected,
             'difference' => $validated['closing_balance'] - $expected,
             'status' => 'closed',
-            'notes' => trim(($session->notes ? $session->notes . "\n---\n" : '') . ($validated['notes'] ?? '')),
+            'notes' => trim(($session->notes ? $session->notes."\n---\n" : '').($validated['notes'] ?? '')),
         ]);
 
         return response()->json($session);
@@ -95,113 +97,132 @@ class ApiPosController extends Controller
             'discount' => 'nullable|numeric|min:0',
             'amount_paid' => 'required|numeric|min:0',
             'payment_method_id' => 'required|exists:payment_methods,id',
+            'idempotency_key' => 'nullable|string|max:64',
         ]);
+
+        // Double-submit guard.
+        if (! empty($validated['idempotency_key'])) {
+            $existing = Invoice::where('idempotency_key', $validated['idempotency_key'])->first();
+            if ($existing) {
+                return response()->json([
+                    'message' => 'Transaksi ini sudah pernah diproses.',
+                    'invoice' => $existing->load(['items.product', 'customer', 'paymentRecords.paymentMethod']),
+                ], 200);
+            }
+        }
 
         $session = PosSession::findOrFail($validated['session_id']);
         if ($session->status !== 'open' || $session->user_id !== auth()->id()) {
             return response()->json(['message' => 'Sesi tidak valid.'], 422);
         }
 
+        usort($validated['items'], fn ($a, $b) => $a['product_id'] <=> $b['product_id']);
+
         $subtotal = 0;
         foreach ($validated['items'] as $item) {
             $subtotal += $this->lineTotal($item);
         }
         $discount = (float) ($validated['discount'] ?? 0);
-        $grandTotal = max($subtotal - $discount, 0);
+        $grandTotal = max(round($subtotal - $discount, 2), 0);
 
         if ((float) $validated['amount_paid'] < $grandTotal) {
             return response()->json([
                 'message' => 'Total bayar kurang dari total belanja.',
-                'shortfall' => $grandTotal - (float) $validated['amount_paid'],
+                'shortfall' => round($grandTotal - (float) $validated['amount_paid'], 2),
             ], 422);
         }
 
-        $invoice = DB::transaction(function () use ($validated, $session, $subtotal, $discount, $grandTotal) {
-            $invoiceNumber = 'POS-' . now()->format('Ymd') . '-' . str_pad((string) ($session->transaction_count + 1), 4, '0', STR_PAD_LEFT);
+        try {
+            $invoice = DB::transaction(function () use ($validated, $session, $subtotal, $discount, $grandTotal) {
+                $invoiceNumber = DocumentNumberService::generate(DocumentNumberService::POS_INVOICES, 'POS', 'Ymd', 4);
 
-            $customerId = $validated['customer_id'] ?? null;
-            if (! $customerId) {
-                $walkIn = Customer::withoutGlobalScopes()->firstOrCreate(
-                    ['name' => 'Walk-in Customer', 'phone' => null],
-                    ['address' => 'POS Counter']
-                );
-                $customerId = $walkIn->id;
-            }
+                $customerId = $validated['customer_id'] ?? null;
+                if (! $customerId) {
+                    $walkIn = Customer::withoutGlobalScopes()->firstOrCreate(
+                        ['name' => 'Walk-in Customer', 'phone' => null],
+                        ['address' => 'POS Counter']
+                    );
+                    $customerId = $walkIn->id;
+                }
 
-            $invoice = Invoice::create([
-                'invoice_number' => $invoiceNumber,
-                'customer_id' => $customerId,
-                'service_id' => null,
-                'sale_id' => null,
-                'pos_session_id' => $session->id,
-                'payment_method_id' => $validated['payment_method_id'],
-                'payment_status' => 2,
-                'total_amount' => $subtotal,
-                'discount' => $discount,
-                'tax_amount' => 0,
-                'grand_total' => $grandTotal,
-                'paid_amount' => $grandTotal,
-                'amount_received' => (float) $validated['amount_paid'],
-                'invoice_date' => now()->toDateString(),
-                'invoice_type' => 'pos',
-                'created_by' => auth()->id(),
-                'branch_id' => $session->branch_id,
-            ]);
-
-            foreach ($validated['items'] as $item) {
-                $product = Product::withoutGlobalScopes()->findOrFail($item['product_id']);
-
-                InvoiceItem::create([
-                    'invoice_id' => $invoice->id,
-                    'product_id' => $product->id,
-                    'description' => $product->name,
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'total_price' => $this->lineTotal($item),
-                    'discount' => $item['discount'] ?? 0,
-                    'discount_type' => $item['discount_type'] ?? null,
+                $invoice = Invoice::create([
+                    'invoice_number' => $invoiceNumber,
+                    'customer_id' => $customerId,
+                    'service_id' => null,
+                    'sale_id' => null,
+                    'pos_session_id' => $session->id,
+                    'payment_method_id' => $validated['payment_method_id'],
+                    'payment_status' => 2,
+                    'total_amount' => round($subtotal, 2),
+                    'discount' => round($discount, 2),
+                    'tax_amount' => 0,
+                    'grand_total' => $grandTotal,
+                    'paid_amount' => $grandTotal,
+                    'amount_received' => round((float) $validated['amount_paid'], 2),
+                    'invoice_date' => now()->toDateString(),
+                    'invoice_type' => 'pos',
+                    'created_by' => auth()->id(),
+                    'branch_id' => $session->branch_id,
+                    'idempotency_key' => $validated['idempotency_key'] ?? null,
                 ]);
 
-                $stock = StockRecord::withoutGlobalScopes()->where('product_id', $product->id)->first();
-                if ($stock) {
-                    $previous = $stock->quantity;
-                    $stock->decrement('quantity', $item['quantity']);
-                    StockHistory::create([
+                foreach ($validated['items'] as $item) {
+                    $product = Product::withoutGlobalScopes()->findOrFail($item['product_id']);
+
+                    InvoiceItem::create([
+                        'invoice_id' => $invoice->id,
                         'product_id' => $product->id,
-                        'quantity_change' => -$item['quantity'],
-                        'previous_stock' => $previous,
-                        'new_stock' => $previous - $item['quantity'],
-                        'type' => 'pos',
-                        'reference_type' => Invoice::class,
-                        'reference_id' => $invoice->id,
-                        'reason' => 'POS sale ' . $invoice->invoice_number,
-                        'user_id' => auth()->id(),
+                        'description' => $product->name,
+                        'quantity' => $item['quantity'],
+                        'unit_price' => round((float) $item['unit_price'], 2),
+                        'total_price' => $this->lineTotal($item),
+                        'discount' => $item['discount'] ?? 0,
+                        'discount_type' => $item['discount_type'] ?? null,
                     ]);
+
+                    StockService::decrement(
+                        $product->id,
+                        (int) $item['quantity'],
+                        'pos',
+                        'POS sale '.$invoiceNumber,
+                        Invoice::class,
+                        $invoice->id,
+                    );
                 }
-            }
 
-            PaymentRecord::create([
-                'invoice_id' => $invoice->id,
-                'payment_method_id' => $validated['payment_method_id'],
-                'amount' => $grandTotal,
-                'payment_date' => now(),
-                'reference_number' => $invoice->invoice_number,
-                'notes' => 'POS payment',
-            ]);
+                $payment = PaymentRecord::create([
+                    'invoice_id' => $invoice->id,
+                    'payment_method_id' => $validated['payment_method_id'],
+                    'amount' => $grandTotal,
+                    'payment_date' => now(),
+                    'reference_number' => $invoiceNumber,
+                    'notes' => 'POS payment',
+                ]);
 
-            Income::create([
-                'invoice_number' => $invoice->invoice_number,
-                'customer_id' => $customerId,
-                'payment_method_id' => $validated['payment_method_id'],
-                'amount' => $grandTotal,
-                'income_date' => now(),
-                'label' => 'POS ' . $invoice->invoice_number,
-                'created_by' => auth()->id(),
-                'branch_id' => $session->branch_id,
-            ]);
+                Income::create([
+                    'invoice_number' => $invoiceNumber,
+                    'customer_id' => $customerId,
+                    'payment_method_id' => $validated['payment_method_id'],
+                    'amount' => $grandTotal,
+                    'income_date' => now(),
+                    'label' => 'POS '.$invoiceNumber,
+                    'created_by' => auth()->id(),
+                    'branch_id' => $session->branch_id,
+                ]);
 
-            return $invoice;
-        });
+                app(AutoJournalService::class)->journalInvoiceIssued($invoice);
+
+                try {
+                    app(AutoJournalService::class)->journalInvoicePayment($payment, min($grandTotal, (float) $payment->amount));
+                } catch (\Throwable $e) {
+                    Log::error("API POS auto-journal payment: {$e->getMessage()}");
+                }
+
+                return $invoice;
+            });
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         $changeAmount = max((float) $validated['amount_paid'] - $grandTotal, 0);
 

@@ -2,41 +2,69 @@
 
 namespace App\Providers;
 
+use App\Services\LicenseClient;
+use App\Services\SettingsService;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(\App\Services\LicenseClient::class);
+        $this->app->singleton(LicenseClient::class);
     }
 
     public function boot(): void
     {
         // Set application locale from session (defaults to config locale = id fallback)
-        if (!$this->app->runningInConsole() && session()->has('locale')) {
+        if (! $this->app->runningInConsole() && session()->has('locale')) {
             app()->setLocale(session('locale'));
         }
 
         Paginator::defaultView('partials.pagination');
 
-        \Illuminate\Support\Facades\Blade::directive('money', function ($expression) {
+        Blade::directive('money', function ($expression) {
             return "<?php echo \\App\\Models\\Currency::format($expression); ?>";
         });
 
         // super_admin auto-grant all permissions
-        \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
+        Gate::before(function ($user, $ability) {
             if ($user->hasRole('super_admin')) {
                 return true;
             }
+
             return null; // fallthrough ke check normal
         });
 
+        /*
+         * Server-side action gates — defense in depth on top of route
+         * middleware. Route middleware hides/blocks endpoints; these gates
+         * are enforced inside controllers via $this->authorize() so a missed
+         * route definition can never expose a sensitive action.
+         */
+        $roleGates = [
+            'invoices.manage' => ['admin', 'manager'],
+            'invoices.delete' => ['admin'],
+            'payments.process' => ['admin', 'manager', 'kasir'],
+            'stock-adjustments.approve' => ['admin', 'manager'],
+            'users.manage' => ['admin'],
+            'roles.manage' => [],
+            'journals.manage' => ['admin', 'manager'],
+        ];
+
+        foreach ($roleGates as $ability => $roles) {
+            Gate::define($ability, function ($user) use ($roles) {
+                return $user->hasAnyRole($roles);
+            });
+        }
+
         // Share settings ke semua views
-        \Illuminate\Support\Facades\View::composer('*', function ($view) {
+        View::composer('*', function ($view) {
             try {
-                $service = app(\App\Services\SettingsService::class);
+                $service = app(SettingsService::class);
                 $view->with('appSettings', $service->getCompanyInfo());
             } catch (\Throwable $e) {
                 $view->with('appSettings', [

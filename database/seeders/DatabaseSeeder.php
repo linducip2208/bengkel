@@ -2,21 +2,21 @@
 
 namespace Database\Seeders;
 
+use App\Models\BankAccount;
 use App\Models\Branch;
+use App\Models\ChartOfAccount;
 use App\Models\CheckoutCategory;
+use App\Models\Color;
 use App\Models\Company;
-use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Customer;
 use App\Models\Expense;
 use App\Models\ExpenseHistoryRecord;
 use App\Models\FuelType;
-use App\Models\Color;
 use App\Models\Income;
 use App\Models\IncomeHistoryRecord;
 use App\Models\InspectionPointsLibrary;
 use App\Models\Invoice;
-use App\Models\JobcardDetail;
 use App\Models\ObservationPoint;
 use App\Models\ObservationType;
 use App\Models\PaymentMethod;
@@ -29,10 +29,12 @@ use App\Models\Setting;
 use App\Models\StockRecord;
 use App\Models\Supplier;
 use App\Models\TaxRate;
+use App\Models\TechnicianSkill;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleBrand;
 use App\Models\VehicleType;
+use App\Models\Voucher;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -61,6 +63,7 @@ class DatabaseSeeder extends Seeder
         $this->seedBankAccounts();
         $this->seedVouchers();
         $this->seedTechnicianSkills();
+        $this->call(BlogSeeder::class);
 
         $this->command->info('Database seeded successfully!');
     }
@@ -158,7 +161,7 @@ class DatabaseSeeder extends Seeder
 
         $colors = ['Putih', 'Hitam', 'Silver / Abu', 'Merah', 'Biru', 'Kuning', 'Hijau', 'Orange'];
         foreach ($colors as $c) {
-            Color::firstOrCreate(['color' => $c], ['hex_code' => '#' . str_pad(dechex(crc32($c) & 0xFFFFFF), 6, '0', STR_PAD_LEFT)]);
+            Color::firstOrCreate(['color' => $c], ['hex_code' => '#'.str_pad(dechex(crc32($c) & 0xFFFFFF), 6, '0', STR_PAD_LEFT)]);
         }
 
         $pTypes = ['Oli & Pelumas', 'Filter', 'Sistem Pengapian', 'Sistem Rem', 'Baterai / Aki', 'Cairan', 'Ban & Velg', 'Komponen Mesin', 'Kelistrikan', 'Aksesoris', 'Parts CVT', 'Rantai & Sproket'];
@@ -314,7 +317,7 @@ class DatabaseSeeder extends Seeder
 
         foreach ($services as $i => $s) {
             $service = Service::create(array_merge($s, [
-                'job_no' => 'BP-' . str_pad($i + 1, 4, '0', STR_PAD_LEFT),
+                'job_no' => 'BP-'.str_pad($i + 1, 4, '0', STR_PAD_LEFT),
                 'created_by' => 1,
             ]));
 
@@ -332,11 +335,11 @@ class DatabaseSeeder extends Seeder
 
             if ($doneStatus >= 2) {
                 $jobcardData['odometer_out'] = $vehicle->odometer + rand(100, 1000);
-                $jobcardData['out_date'] = date('Y-m-d H:i:s', strtotime($s['service_date'] . ' +' . rand(1, 4) . ' hours'));
-                $jobcardData['next_service_date'] = date('Y-m-d', strtotime($s['service_date'] . ' +90 days'));
+                $jobcardData['out_date'] = date('Y-m-d H:i:s', strtotime($s['service_date'].' +'.rand(1, 4).' hours'));
+                $jobcardData['next_service_date'] = date('Y-m-d', strtotime($s['service_date'].' +90 days'));
                 $jobcardData['next_service_km'] = $vehicle->odometer + 10000;
             } else {
-                $jobcardData['next_service_date'] = date('Y-m-d', strtotime($s['service_date'] . ' +90 days'));
+                $jobcardData['next_service_date'] = date('Y-m-d', strtotime($s['service_date'].' +90 days'));
                 $jobcardData['next_service_km'] = $vehicle->odometer + 10000;
             }
 
@@ -349,7 +352,7 @@ class DatabaseSeeder extends Seeder
         $services = Service::all();
         foreach ($services as $i => $service) {
             $isPaid = $service->done_status >= 2;
-            $invoiceNum = 'INV-2026-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT);
+            $invoiceNum = 'INV-2026-'.str_pad($i + 1, 3, '0', STR_PAD_LEFT);
 
             $invoice = Invoice::create([
                 'invoice_number' => $invoiceNum,
@@ -396,7 +399,7 @@ class DatabaseSeeder extends Seeder
                 'payment_method_id' => $invoice->payment_method_id,
                 'amount' => $invoice->grand_total,
                 'income_date' => $invoice->invoice_date,
-                'label' => $incomeLabels[$idx] ?? 'Pembayaran Invoice ' . $invoice->invoice_number,
+                'label' => $incomeLabels[$idx] ?? 'Pembayaran Invoice '.$invoice->invoice_number,
                 'created_by' => 1,
             ]);
 
@@ -556,7 +559,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($accounts as $acc) {
-            \App\Models\ChartOfAccount::firstOrCreate(['code' => $acc['code']], $acc);
+            ChartOfAccount::firstOrCreate(['code' => $acc['code']], $acc);
         }
     }
 
@@ -568,7 +571,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($accounts as $acc) {
-            \App\Models\BankAccount::firstOrCreate(['account_number' => $acc['account_number']], $acc);
+            BankAccount::firstOrCreate(['account_number' => $acc['account_number']], $acc);
         }
     }
 
@@ -580,14 +583,16 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($vouchers as $v) {
-            \App\Models\Voucher::firstOrCreate(['code' => $v['code']], $v + ['usage_limit' => 100, 'used_count' => 0, 'valid_from' => now()->toDateString(), 'is_active' => true]);
+            Voucher::firstOrCreate(['code' => $v['code']], $v + ['usage_limit' => 100, 'used_count' => 0, 'valid_from' => now()->toDateString(), 'is_active' => true]);
         }
     }
 
     private function seedTechnicianSkills(): void
     {
         $tech = User::where('email', 'teknisi@bengkel.test')->first();
-        if (!$tech) return;
+        if (! $tech) {
+            return;
+        }
 
         $skills = [
             ['skill' => 'Engine', 'level' => 'expert'],
@@ -596,7 +601,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($skills as $s) {
-            \App\Models\TechnicianSkill::firstOrCreate(
+            TechnicianSkill::firstOrCreate(
                 ['user_id' => $tech->id, 'skill' => $s['skill']],
                 ['level' => $s['level']]
             );

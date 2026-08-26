@@ -7,11 +7,13 @@ use App\Models\ActivityLog;
 use App\Models\Branch;
 use App\Models\Purchase;
 use App\Models\PurchaseOrder;
-use App\Models\StockHistory;
-use App\Models\StockRecord;
 use App\Models\Supplier;
+use App\Services\AutoJournalService;
+use App\Services\DocumentNumberService;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class PurchaseOrderController extends Controller
@@ -70,7 +72,7 @@ class PurchaseOrderController extends Controller
         ActivityLog::record('purchase-order.create', $purchaseOrder, "Purchase order {$purchaseOrder->po_number} dibuat");
 
         return redirect()->route('purchase-orders.show', $purchaseOrder)
-            ->with('success', 'Purchase order ' . $purchaseOrder->po_number . ' berhasil dibuat.');
+            ->with('success', 'Purchase order '.$purchaseOrder->po_number.' berhasil dibuat.');
     }
 
     public function show(PurchaseOrder $purchaseOrder)
@@ -125,7 +127,7 @@ class PurchaseOrderController extends Controller
 
     public function destroy(PurchaseOrder $purchaseOrder)
     {
-        if (!in_array($purchaseOrder->status, ['draft', 'cancelled'])) {
+        if (! in_array($purchaseOrder->status, ['draft', 'cancelled'])) {
             return redirect()->route('purchase-orders.index')
                 ->with('error', 'Hanya purchase order dengan status Draft/Cancelled yang dapat dihapus.');
         }
@@ -138,91 +140,67 @@ class PurchaseOrderController extends Controller
 
     public function markReceived(PurchaseOrder $purchaseOrder)
     {
-        if ($purchaseOrder->status === 'received') {
-            return redirect()->route('purchase-orders.show', $purchaseOrder)
-                ->with('error', 'Purchase order sudah diterima.');
-        }
-
         if ($purchaseOrder->items()->whereNull('product_id')->exists()) {
             return redirect()->route('purchase-orders.show', $purchaseOrder)
                 ->with('error', 'Ada item tanpa produk terkait. Penerimaan hanya bisa dilakukan jika semua item terhubung ke produk.');
         }
 
-        $purchase = DB::transaction(function () use ($purchaseOrder) {
-            $purchase = Purchase::create([
-                'purchase_no' => $this->generatePurchaseNo(),
-                'supplier_id' => $purchaseOrder->supplier_id,
-                'purchase_date' => now()->toDateString(),
-                'status' => 'received',
-                'total_amount' => $purchaseOrder->grand_total,
-                'notes' => 'Diterima dari purchase order #' . $purchaseOrder->po_number,
-                'created_by' => auth()->id(),
-                'branch_id' => $purchaseOrder->branch_id,
-            ]);
+        try {
+            $purchase = DB::transaction(function () use ($purchaseOrder) {
+                // Guard + lock inside the transaction (concurrent double-receive aborts).
+                $locked = PurchaseOrder::query()->whereKey($purchaseOrder->id)->lockForUpdate()->first();
+                if ($locked->status === 'received') {
+                    throw new \RuntimeException('Purchase order sudah diterima.');
+                }
 
-            foreach ($purchaseOrder->items as $item) {
-                $purchase->items()->create([
-                    'product_id' => $item->product_id,
-                    'quantity' => (int) round($item->quantity),
-                    'unit_price' => $item->unit_price,
-                    'total_price' => $item->total_price,
+                $purchase = Purchase::create([
+                    'purchase_no' => DocumentNumberService::generate(DocumentNumberService::PURCHASES, 'PO', 'Ymd', 4),
+                    'supplier_id' => $locked->supplier_id,
+                    'purchase_date' => now()->toDateString(),
+                    'status' => 'received',
+                    'total_amount' => $locked->grand_total,
+                    'notes' => 'Diterima dari purchase order #'.$locked->po_number,
+                    'created_by' => auth()->id(),
+                    'branch_id' => $locked->branch_id,
                 ]);
 
-                $this->addStock($item, $purchase);
-            }
+                foreach ($locked->items as $item) {
+                    $purchase->items()->create([
+                        'product_id' => $item->product_id,
+                        'quantity' => (int) round($item->quantity),
+                        'unit_price' => round((float) $item->unit_price, 2),
+                        'total_price' => round((float) $item->total_price, 2),
+                    ]);
 
-            $purchaseOrder->update(['status' => 'received']);
+                    StockService::increment(
+                        (int) $item->product_id,
+                        (float) $item->quantity,
+                        'purchase',
+                        "Purchase #{$purchase->purchase_no}",
+                        Purchase::class,
+                        $purchase->id,
+                    );
+                }
 
-            return $purchase;
-        });
+                $locked->update(['status' => 'received']);
+
+                return $purchase;
+            });
+        } catch (\RuntimeException $e) {
+            return redirect()->route('purchase-orders.show', $purchaseOrder)
+                ->with('error', $e->getMessage());
+        }
 
         try {
-            app(\App\Services\AutoJournalService::class)->journalPurchase($purchase);
+            app(AutoJournalService::class)->journalPurchase($purchase);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning("PO auto-journal: {$e->getMessage()}");
+            Log::warning("PO auto-journal: {$e->getMessage()}");
         }
 
         ActivityLog::record('purchase-order.receive', $purchaseOrder, "Purchase order {$purchaseOrder->po_number} diterima menjadi purchase {$purchase->purchase_no}");
 
         return redirect()->route('purchase-orders.show', $purchaseOrder)
             ->with('success', 'Barang diterima. Purchase order diubah menjadi purchase & stok bertambah.');
-    }
-
-    private function addStock($item, Purchase $purchase): void
-    {
-        if (empty($item->product_id)) {
-            return;
-        }
-
-        $product = $item->product;
-        $quantity = (int) round($item->quantity);
-
-        $stockRecord = StockRecord::firstOrCreate(
-            ['product_id' => $product->id],
-            [
-                'supplier_id' => $product->supplier_id,
-                'quantity' => 0,
-                'minimum_stock' => 0,
-                'rack_location' => null,
-            ]
-        );
-
-        $previousStock = $stockRecord->quantity;
-        $newStock = $previousStock + $quantity;
-
-        $stockRecord->update(['quantity' => $newStock]);
-
-        StockHistory::create([
-            'product_id' => $product->id,
-            'quantity_change' => $quantity,
-            'previous_stock' => $previousStock,
-            'new_stock' => $newStock,
-            'type' => 'purchase',
-            'reference_type' => Purchase::class,
-            'reference_id' => $purchase->id,
-            'reason' => "Purchase #{$purchase->purchase_no}",
-            'user_id' => auth()->id(),
-        ]);
     }
 
     private function validateData(Request $request): array
@@ -282,23 +260,12 @@ class PurchaseOrderController extends Controller
 
     private function generatePoNumber(): string
     {
-        $prefix = 'PO-' . date('Ymd');
-        $last = PurchaseOrder::where('po_number', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->first();
-        $next = $last ? (int) substr($last->po_number, -4) + 1 : 1;
-
-        return $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+        return DocumentNumberService::generate(DocumentNumberService::PURCHASE_ORDERS, 'PO', 'Ymd', 4);
     }
 
     private function generatePurchaseNo(): string
     {
-        $prefix = 'PR-' . date('Ymd');
-        $last = Purchase::where('purchase_no', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->first();
-        $next = $last ? (int) substr($last->purchase_no, -4) + 1 : 1;
-
-        return $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+        // Unified with PurchaseService so purchase_no sequences never fork.
+        return DocumentNumberService::generate(DocumentNumberService::PURCHASES, 'PO', 'Ymd', 4);
     }
 }

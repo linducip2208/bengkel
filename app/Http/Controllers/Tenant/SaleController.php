@@ -8,9 +8,8 @@ use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
-use App\Models\StockHistory;
-use App\Models\StockRecord;
 use App\Services\SaleService;
+use App\Services\StockService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +28,7 @@ class SaleController extends Controller
             ->withCount('items')
             ->when($request->search, function ($q) use ($request) {
                 $q->where(function ($sub) use ($request) {
-                    $sub->whereHas('customer', fn($c) => $c->where('name', 'like', "%{$request->search}%"))
+                    $sub->whereHas('customer', fn ($c) => $c->where('name', 'like', "%{$request->search}%"))
                         ->orWhere('sales_no', 'like', "%{$request->search}%");
                 });
             })
@@ -113,15 +112,23 @@ class SaleController extends Controller
 
     public function destroy(Sale $sale): RedirectResponse
     {
-        $sale->delete();
+        // Restore reserved stock before removing the document — deleting a
+        // sale must not silently lose inventory.
+        DB::transaction(function () use ($sale) {
+            foreach ($sale->items as $old) {
+                $this->restoreStock($old->product_id, $old->quantity, $sale);
+            }
+            $sale->items()->delete();
+            $sale->delete();
+        });
 
         return redirect()->route('sales.index')
-            ->with('success', 'Penjualan berhasil dihapus.');
+            ->with('success', 'Penjualan berhasil dihapus dan stok dikembalikan.');
     }
 
     protected function lineItemsTotal(array $items): float
     {
-        return round(collect($items)->sum(fn($i) => (float) $i['quantity'] * (float) $i['unit_price']), 2);
+        return round(collect($items)->sum(fn ($i) => (float) $i['quantity'] * (float) $i['unit_price']), 2);
     }
 
     protected function syncItems(Sale $sale, array $items, bool $isUpdate = false): void
@@ -133,16 +140,19 @@ class SaleController extends Controller
             $sale->items()->delete();
         }
 
+        // Deterministic stock-lock order prevents deadlocks under concurrency.
+        usort($items, fn ($a, $b) => $a['product_id'] <=> $b['product_id']);
+
         foreach ($items as $item) {
             $quantity = (int) $item['quantity'];
-            $unitPrice = (float) $item['unit_price'];
+            $unitPrice = round((float) $item['unit_price'], 2);
 
             SaleItem::create([
                 'sale_id' => $sale->id,
                 'product_id' => $item['product_id'],
                 'quantity' => $quantity,
                 'unit_price' => $unitPrice,
-                'total_price' => $quantity * $unitPrice,
+                'total_price' => round($quantity * $unitPrice, 2),
             ]);
 
             $this->reduceStock($item['product_id'], $quantity, $sale);
@@ -151,53 +161,25 @@ class SaleController extends Controller
 
     protected function reduceStock(int $productId, int $quantity, Sale $sale): void
     {
-        $stock = StockRecord::withoutGlobalScopes()->where('product_id', $productId)->first();
-        if (!$stock) {
-            return;
-        }
-
-        if ($stock->quantity < $quantity) {
-            $product = Product::withoutGlobalScopes()->find($productId);
-            $name = $product?->name ?? "ID {$productId}";
-            throw new \RuntimeException("Stok \"{$name}\" tidak cukup: tersedia {$stock->quantity}, dibutuhkan {$quantity}.");
-        }
-
-        $previous = $stock->quantity;
-        $stock->decrement('quantity', $quantity);
-
-        StockHistory::create([
-            'product_id' => $productId,
-            'quantity_change' => -$quantity,
-            'previous_stock' => $previous,
-            'new_stock' => $previous - $quantity,
-            'type' => 'sale',
-            'reference_type' => Sale::class,
-            'reference_id' => $sale->id,
-            'reason' => 'Penjualan ' . $sale->sales_no,
-            'user_id' => auth()->id() ?? 1,
-        ]);
+        StockService::decrement(
+            $productId,
+            $quantity,
+            'sale',
+            'Penjualan '.$sale->sales_no,
+            Sale::class,
+            $sale->id,
+        );
     }
 
     protected function restoreStock(int $productId, int $quantity, Sale $sale): void
     {
-        $stock = StockRecord::withoutGlobalScopes()->where('product_id', $productId)->first();
-        if (!$stock) {
-            return;
-        }
-
-        $previous = $stock->quantity;
-        $stock->increment('quantity', $quantity);
-
-        StockHistory::create([
-            'product_id' => $productId,
-            'quantity_change' => $quantity,
-            'previous_stock' => $previous,
-            'new_stock' => $previous + $quantity,
-            'type' => 'sale_restore',
-            'reference_type' => Sale::class,
-            'reference_id' => $sale->id,
-            'reason' => 'Koreksi penjualan ' . $sale->sales_no,
-            'user_id' => auth()->id() ?? 1,
-        ]);
+        StockService::increment(
+            $productId,
+            $quantity,
+            'sale_restore',
+            'Koreksi penjualan '.$sale->sales_no,
+            Sale::class,
+            $sale->id,
+        );
     }
 }

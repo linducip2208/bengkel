@@ -5,8 +5,6 @@ namespace App\Services;
 use App\Models\Purchase;
 use App\Models\PurchaseHistoryRecord;
 use App\Models\PurchaseItem;
-use App\Models\StockHistory;
-use App\Models\StockRecord;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -53,7 +51,7 @@ class PurchaseService
             ]);
 
             foreach ($data['items'] as $item) {
-                $totalPrice = $item['quantity'] * $item['unit_price'];
+                $totalPrice = round((float) $item['quantity'] * (float) $item['unit_price'], 2);
                 $totalAmount += $totalPrice;
 
                 PurchaseItem::create([
@@ -92,7 +90,7 @@ class PurchaseService
             $purchase->items()->delete();
 
             foreach ($data['items'] as $item) {
-                $totalPrice = $item['quantity'] * $item['unit_price'];
+                $totalPrice = round((float) $item['quantity'] * (float) $item['unit_price'], 2);
                 $totalAmount += $totalPrice;
 
                 PurchaseItem::create([
@@ -112,54 +110,41 @@ class PurchaseService
 
     public function markReceived(Purchase $purchase): Purchase
     {
-        if ($purchase->status !== 'ordered') {
-            throw new \RuntimeException('Hanya purchase order dengan status "Dipesan" yang dapat diterima.');
-        }
-
         return DB::transaction(function () use ($purchase) {
-            foreach ($purchase->items as $item) {
-                $product = $item->product;
-
-                $stockRecord = StockRecord::firstOrCreate(
-                    ['product_id' => $product->id],
-                    [
-                        'supplier_id' => $product->supplier_id,
-                        'quantity' => 0,
-                        'minimum_stock' => 0,
-                        'rack_location' => null,
-                    ]
-                );
-
-                $previousStock = $stockRecord->quantity;
-                $newStock = $previousStock + $item->quantity;
-
-                $stockRecord->update(['quantity' => $newStock]);
-
-                StockHistory::create([
-                    'product_id' => $product->id,
-                    'quantity_change' => $item->quantity,
-                    'previous_stock' => $previousStock,
-                    'new_stock' => $newStock,
-                    'type' => 'purchase',
-                    'reference_type' => Purchase::class,
-                    'reference_id' => $purchase->id,
-                    'reason' => "PO #{$purchase->purchase_no}",
-                    'user_id' => auth()->id(),
-                ]);
+            // Status guard INSIDE the transaction + row lock: a concurrent
+            // double-click re-reads the authoritative status and aborts.
+            $locked = Purchase::query()->whereKey($purchase->id)->lockForUpdate()->first();
+            if ($locked->status !== 'ordered') {
+                throw new \RuntimeException('Hanya purchase order dengan status "Dipesan" yang dapat diterima.');
             }
 
-            $purchase->update(['status' => 'received']);
+            foreach ($locked->items as $item) {
+                StockService::increment(
+                    $item->product_id,
+                    (float) $item->quantity,
+                    'purchase',
+                    "PO #{$locked->purchase_no}",
+                    Purchase::class,
+                    $locked->id,
+                );
+            }
 
-            try { app(AutoJournalService::class)->journalPurchase($purchase); } catch (\Throwable $e) { \Log::warning("AutoJournal purchase: {$e->getMessage()}"); }
+            $locked->update(['status' => 'received']);
+
+            try {
+                app(AutoJournalService::class)->journalPurchase($locked);
+            } catch (\Throwable $e) {
+                \Log::warning("AutoJournal purchase: {$e->getMessage()}");
+            }
 
             PurchaseHistoryRecord::create([
-                'purchase_id' => $purchase->id,
+                'purchase_id' => $locked->id,
                 'status' => 'received',
                 'notes' => 'Barang diterima, stok ditambahkan',
                 'changed_at' => now(),
             ]);
 
-            return $purchase->fresh(['items.product', 'supplier']);
+            return $locked->fresh(['items.product', 'supplier']);
         });
     }
 
@@ -178,12 +163,6 @@ class PurchaseService
 
     private function generatePurchaseNo(): string
     {
-        $prefix = 'PO-' . date('Ymd');
-        $last = Purchase::withTrashed()->where('purchase_no', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->first();
-        $next = $last ? (int) substr($last->purchase_no, -4) + 1 : 1;
-
-        return $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+        return DocumentNumberService::generate(DocumentNumberService::PURCHASES, 'PO', 'Ymd', 4);
     }
 }

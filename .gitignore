@@ -34,8 +34,7 @@ Thumbs.db
 # Tenant database backups
 /storage/tenant-db-dumps/
 
-# Docs & archives
-*.md
+# Archives
 *.zip
 
 bootstrap/cache/*.php

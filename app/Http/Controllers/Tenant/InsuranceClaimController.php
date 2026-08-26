@@ -7,6 +7,7 @@ use App\Models\ActivityLog;
 use App\Models\Customer;
 use App\Models\InsuranceClaim;
 use App\Models\Service;
+use App\Services\DocumentNumberService;
 use Illuminate\Http\Request;
 
 class InsuranceClaimController extends Controller
@@ -49,12 +50,14 @@ class InsuranceClaimController extends Controller
         $claim = InsuranceClaim::create($validated);
 
         ActivityLog::record('insurance-claim.create', $claim, "Klaim asuransi {$claim->claim_number} dibuat");
+
         return redirect()->route('insurance-claims.show', $claim)->with('success', 'Klaim asuransi berhasil dibuat.');
     }
 
     public function show(InsuranceClaim $insuranceClaim)
     {
         $insuranceClaim->load(['customer', 'vehicle', 'service']);
+
         return view('insurance-claims.show', compact('insuranceClaim'));
     }
 
@@ -70,6 +73,7 @@ class InsuranceClaimController extends Controller
 
         $insuranceClaim->update($validated);
         ActivityLog::record('insurance-claim.update', $insuranceClaim, "Klaim {$insuranceClaim->claim_number} diperbarui");
+
         return back()->with('success', 'Klaim asuransi diperbarui.');
     }
 
@@ -87,6 +91,7 @@ class InsuranceClaimController extends Controller
         ]);
 
         ActivityLog::record('insurance-claim.approve', $insuranceClaim, "Klaim {$insuranceClaim->claim_number} disetujui");
+
         return back()->with('success', 'Klaim disetujui.');
     }
 
@@ -102,6 +107,7 @@ class InsuranceClaimController extends Controller
         ]);
 
         ActivityLog::record('insurance-claim.reject', $insuranceClaim, "Klaim {$insuranceClaim->claim_number} ditolak");
+
         return back()->with('success', 'Klaim ditolak.');
     }
 
@@ -109,6 +115,7 @@ class InsuranceClaimController extends Controller
     {
         $insuranceClaim->update(['status' => 'paid']);
         ActivityLog::record('insurance-claim.paid', $insuranceClaim, "Klaim {$insuranceClaim->claim_number} dibayar");
+
         return back()->with('success', 'Klaim ditandai dibayar.');
     }
 
@@ -116,17 +123,12 @@ class InsuranceClaimController extends Controller
     {
         ActivityLog::record('insurance-claim.delete', $insuranceClaim, "Hapus klaim {$insuranceClaim->claim_number}");
         $insuranceClaim->delete();
+
         return redirect()->route('insurance-claims.index')->with('success', 'Klaim dihapus.');
     }
 
     private function generateClaimNumber(): string
     {
-        $prefix = 'ASR-' . now()->format('Ymd') . '-';
-        $latest = InsuranceClaim::where('claim_number', 'like', $prefix . '%')
-            ->orderBy('claim_number', 'desc')
-            ->first();
-
-        $lastNumber = $latest ? (int) substr($latest->claim_number, -3) : 0;
-        return $prefix . str_pad((string) ($lastNumber + 1), 3, '0', STR_PAD_LEFT);
+        return DocumentNumberService::generate(DocumentNumberService::INSURANCE_CLAIMS, 'ASR', 'Ymd', 3);
     }
 }
