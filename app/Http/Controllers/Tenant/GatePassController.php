@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\GatePass;
+use App\Models\Invoice;
 use App\Models\Service;
 use App\Models\Vehicle;
 use App\Services\DocumentNumberService;
@@ -109,8 +110,11 @@ class GatePassController extends Controller
     public function markExit(GatePass $gatePass)
     {
         if ($gatePass->service_id) {
-            $service = Service::with('invoice')->find($gatePass->service_id);
-            if ($service && (int) ($service->invoice?->payment_status ?? 0) !== 2) {
+            $service = Service::find($gatePass->service_id);
+            $invoiceStatus = $service
+                ? (int) (Invoice::query()->where('service_id', $service->id)->value('payment_status') ?? 0)
+                : 0;
+            if ($service && $invoiceStatus !== 2) {
                 return back()->withErrors([
                     'gate_pass' => 'Kendaraan belum dapat keluar sebelum invoice lunas.',
                 ]);
