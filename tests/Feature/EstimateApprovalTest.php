@@ -6,7 +6,9 @@ use App\Http\Middleware\RequirePair;
 use App\Models\ActivityLog;
 use App\Models\Customer;
 use App\Models\FuelType;
+use App\Models\RepairCategory;
 use App\Models\Service;
+use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleBrand;
 use App\Models\VehicleType;
@@ -28,9 +30,13 @@ class EstimateApprovalTest extends TestCase
     {
         $customer = Customer::create(['name' => 'Approval Customer']);
         $vehicle = $this->vehicleFor($customer);
+        $category = $this->category();
+        $creator = User::factory()->create();
         $service = Service::create([
             'customer_id' => $customer->id,
             'vehicle_id' => $vehicle->id,
+            'repair_category_id' => $category->id,
+            'created_by' => $creator->id,
             'job_no' => 'BP-'.uniqid(),
             'title' => 'Pengerjaan tambahan',
             'service_date' => now(),
@@ -49,9 +55,13 @@ class EstimateApprovalTest extends TestCase
     {
         $customer = Customer::create(['name' => 'Late Approval Customer']);
         $vehicle = $this->vehicleFor($customer);
+        $category = $this->category();
+        $creator = User::factory()->create();
         $service = Service::create([
             'customer_id' => $customer->id,
             'vehicle_id' => $vehicle->id,
+            'repair_category_id' => $category->id,
+            'created_by' => $creator->id,
             'job_no' => 'BP-'.uniqid(),
             'title' => 'Terlambat approval',
             'service_date' => now(),
@@ -76,6 +86,15 @@ class EstimateApprovalTest extends TestCase
             'fuel_type_id' => $fuel->id,
             'number_plate' => 'B '.uniqid(),
             'model_name' => 'Model',
+        ]);
+    }
+
+    private function category(): RepairCategory
+    {
+        return RepairCategory::create([
+            'repair_category_name' => 'Servis tambahan '.uniqid(),
+            'slug' => uniqid(),
+            'is_active' => true,
         ]);
     }
 }
