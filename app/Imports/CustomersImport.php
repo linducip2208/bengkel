@@ -9,7 +9,7 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Throwable;
 
-class CustomersImport implements ToModel, WithHeadingRow, SkipsOnError
+class CustomersImport implements SkipsOnError, ToModel, WithHeadingRow
 {
     use RemembersRowNumber;
 
@@ -53,7 +53,7 @@ class CustomersImport implements ToModel, WithHeadingRow, SkipsOnError
 
             return $customer;
         } catch (Throwable $e) {
-            $this->errors[] = 'Baris ' . ($this->getRowNumber() ?? '?') . ': ' . $e->getMessage();
+            $this->errors[] = 'Baris '.($this->getRowNumber() ?? '?').': '.$e->getMessage();
 
             return null;
         }
@@ -61,7 +61,7 @@ class CustomersImport implements ToModel, WithHeadingRow, SkipsOnError
 
     public function onError(Throwable $e)
     {
-        $this->errors[] = 'Baris ' . ($this->getRowNumber() ?? '?') . ': ' . $e->getMessage();
+        $this->errors[] = 'Baris '.($this->getRowNumber() ?? '?').': '.$e->getMessage();
     }
 
     protected function nullableString($value): ?string

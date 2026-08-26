@@ -3,11 +3,14 @@
 namespace App\Console\Commands;
 
 use App\Models\NotificationQueue;
+use App\Services\WhatsAppNotificationService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Mail;
 
 class ProcessNotificationQueue extends Command
 {
     protected $signature = 'notifications:process {--limit=50}';
+
     protected $description = 'Process pending notifications from queue';
 
     public function handle()
@@ -18,15 +21,16 @@ class ProcessNotificationQueue extends Command
         foreach ($items as $item) {
             try {
                 if ($item->channel === 'whatsapp') {
-                    $wa = app(\App\Services\WhatsAppNotificationService::class);
+                    $wa = app(WhatsAppNotificationService::class);
                     $result = $wa->send($item->recipient, $item->message);
                 } elseif ($item->channel === 'email') {
-                    \Illuminate\Support\Facades\Mail::raw($item->message, function ($msg) use ($item) {
+                    Mail::raw($item->message, function ($msg) use ($item) {
                         $msg->to($item->recipient)->subject('Aplikasi Bengkel Terbaik Notification');
                     });
                     $result = ['success' => true];
                 } else {
                     $item->update(['status' => 'failed', 'error' => 'Unknown channel']);
+
                     continue;
                 }
 
@@ -36,7 +40,7 @@ class ProcessNotificationQueue extends Command
                     'sent_at' => $result['success'] ? now() : null,
                 ]);
 
-                $this->info("{$item->channel} notification to {$item->recipient}: " . ($result['success'] ? 'OK' : 'FAIL'));
+                $this->info("{$item->channel} notification to {$item->recipient}: ".($result['success'] ? 'OK' : 'FAIL'));
             } catch (\Throwable $e) {
                 $item->update(['status' => 'failed', 'error' => $e->getMessage()]);
                 $this->error("{$item->channel} to {$item->recipient}: {$e->getMessage()}");

@@ -18,10 +18,10 @@ class JobcardService extends BaseService
                 $q->where('done_status', $request->status);
             })
             ->when($request->filled('date_from'), function ($q) use ($request) {
-                $q->whereHas('jobcardDetail', fn($j) => $j->whereDate('in_date', '>=', $request->date_from));
+                $q->whereHas('jobcardDetail', fn ($j) => $j->whereDate('in_date', '>=', $request->date_from));
             })
             ->when($request->filled('date_to'), function ($q) use ($request) {
-                $q->whereHas('jobcardDetail', fn($j) => $j->whereDate('in_date', '<=', $request->date_to));
+                $q->whereHas('jobcardDetail', fn ($j) => $j->whereDate('in_date', '<=', $request->date_to));
             })
             ->latest()
             ->paginate(15)
@@ -34,7 +34,7 @@ class JobcardService extends BaseService
     {
         $serviceId = $request->route('service');
         $service = Service::findOrFail($serviceId);
-        $validated = \App\Http\Requests\JobcardRequest::createFrom($request)->validated();
+        $validated = JobcardRequest::createFrom($request)->validated();
 
         DB::transaction(function () use ($service, $validated) {
             $validated['jobcard_no'] = $service->job_no;
@@ -66,7 +66,7 @@ class JobcardService extends BaseService
     public function update(Request $request, $id)
     {
         $service = Service::findOrFail($id);
-        $validated = \App\Http\Requests\JobcardRequest::createFrom($request)->validated();
+        $validated = JobcardRequest::createFrom($request)->validated();
 
         DB::transaction(function () use ($service, $validated) {
             $validated['jobcard_no'] = $service->job_no;
@@ -98,7 +98,7 @@ class JobcardService extends BaseService
         $pdf = Pdf::loadView('jobcards.print', compact('service'));
         $pdf->setPaper('a4');
 
-        return $pdf->download('jobcard-' . $service->job_no . '.pdf');
+        return $pdf->download('jobcard-'.$service->job_no.'.pdf');
     }
 
     public function gatePass($id)
@@ -108,14 +108,14 @@ class JobcardService extends BaseService
         $pdf = Pdf::loadView('jobcards.gatepass', compact('service'));
         $pdf->setPaper([0, 0, 210, 330], 'portrait');
 
-        return $pdf->download('gatepass-' . $service->job_no . '.pdf');
+        return $pdf->download('gatepass-'.$service->job_no.'.pdf');
     }
 
     public function calculateNextService(Service $service): array
     {
         $jobcard = $service->jobcardDetail;
 
-        if (!$jobcard) {
+        if (! $jobcard) {
             return ['next_service_date' => null, 'next_service_km' => null];
         }
 

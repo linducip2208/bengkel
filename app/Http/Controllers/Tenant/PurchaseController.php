@@ -18,7 +18,7 @@ class PurchaseController extends Controller
     public function index(Request $request)
     {
         $purchases = $this->purchaseService->index($request->only([
-            'search', 'status', 'supplier_id', 'date_from', 'date_to'
+            'search', 'status', 'supplier_id', 'date_from', 'date_to',
         ]));
 
         $suppliers = Supplier::orderBy('name')->get();
@@ -103,12 +103,12 @@ class PurchaseController extends Controller
 
     private function generateDraftPurchaseNo(): string
     {
-        $prefix = 'PO-' . date('Ymd');
-        $last = Purchase::where('purchase_no', 'like', $prefix . '%')
+        $prefix = 'PO-'.date('Ymd');
+        $last = Purchase::where('purchase_no', 'like', $prefix.'%')
             ->orderByDesc('id')
             ->first();
         $next = $last ? (int) substr($last->purchase_no, -4) + 1 : 1;
 
-        return $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+        return $prefix.'-'.str_pad($next, 4, '0', STR_PAD_LEFT);
     }
 }

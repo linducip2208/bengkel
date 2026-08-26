@@ -17,6 +17,7 @@ class VehicleTypeController extends Controller
             $query->where('vehicle_type', 'like', "%{$request->search}%");
         }
         $vehicleTypes = $query->orderBy('vehicle_type')->paginate(15)->withQueryString();
+
         return view('vehicle-types.index', compact('vehicleTypes'));
     }
 
@@ -72,6 +73,7 @@ class VehicleTypeController extends Controller
             return back()->with('error', 'Tipe kendaraan tidak bisa dihapus karena masih dipakai oleh kendaraan atau merek terdaftar.');
         }
         $vehicleType->delete();
+
         return redirect()->route('vehicle-types.index')->with('success', 'Tipe kendaraan berhasil dihapus.');
     }
 }

@@ -12,7 +12,18 @@ class LoyaltyTransaction extends Model
 {
     protected $casts = ['points' => 'integer'];
 
-    public function customer(): BelongsTo { return $this->belongsTo(Customer::class); }
-    public function reference(): MorphTo { return $this->morphTo(); }
-    public function creator(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function reference(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

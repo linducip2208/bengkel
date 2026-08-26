@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\HasBranchScope;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,11 +14,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'product_no', 'code', 'barcode', 'name', 'product_type_id', 'unit_id', 'supplier_id',
-    'price', 'cost_price', 'warranty', 'description', 'branch_id'
+    'price', 'cost_price', 'warranty', 'description', 'branch_id',
 ])]
 class Product extends Model
 {
-    use HasFactory, SoftDeletes, HasBranchScope;
+    use HasBranchScope, HasFactory, SoftDeletes;
 
     protected function casts(): array
     {
@@ -135,6 +136,7 @@ class Product extends Model
         if ($min && $stock <= $min) {
             return 'low';
         }
+
         return 'in_stock';
     }
 
@@ -167,7 +169,7 @@ class Product extends Model
             return false;
         }
 
-        $expiryDate = \Carbon\Carbon::parse($referenceDate)->addMonths($months);
+        $expiryDate = Carbon::parse($referenceDate)->addMonths($months);
 
         return now()->lte($expiryDate);
     }
@@ -192,7 +194,7 @@ class Product extends Model
             return null;
         }
 
-        return \Carbon\Carbon::parse($referenceDate)->addMonths($months)->format('d/m/Y');
+        return Carbon::parse($referenceDate)->addMonths($months)->format('d/m/Y');
     }
 
     protected function parseWarrantyMonths(string $warranty): int

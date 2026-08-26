@@ -16,6 +16,7 @@ class ColorController extends Controller
             $query->where('color', 'like', "%{$request->search}%");
         }
         $colors = $query->orderBy('color')->paginate(15)->withQueryString();
+
         return view('colors.index', compact('colors'));
     }
 
@@ -66,6 +67,7 @@ class ColorController extends Controller
     public function destroy(Color $color)
     {
         $color->delete();
+
         return redirect()->route('colors.index')->with('success', 'Warna berhasil dihapus.');
     }
 }

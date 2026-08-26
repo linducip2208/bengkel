@@ -13,18 +13,22 @@ class WarrantyClaimController extends Controller
     public function index(Request $request)
     {
         $query = WarrantyClaim::with(['customer', 'invoiceItem.product', 'invoiceItem.invoice']);
-        if ($request->filled('status')) $query->where('status', $request->status);
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
         $claims = $query->latest()->paginate(20)->withQueryString();
+
         return view('warranty-claims.index', compact('claims'));
     }
 
     public function create()
     {
         $items = InvoiceItem::with(['product', 'invoice.customer'])
-            ->whereHas('product', fn($q) => $q->whereNotNull('warranty')->where('warranty', '!=', ''))
+            ->whereHas('product', fn ($q) => $q->whereNotNull('warranty')->where('warranty', '!=', ''))
             ->latest()
             ->limit(200)
             ->get();
+
         return view('warranty-claims.create', compact('items'));
     }
 
@@ -43,6 +47,7 @@ class WarrantyClaimController extends Controller
         ]);
 
         ActivityLog::record('warranty.create', $claim, "Klaim garansi untuk {$item->description}");
+
         return redirect()->route('warranty-claims.index')->with('success', 'Klaim garansi dibuat.');
     }
 
@@ -54,18 +59,21 @@ class WarrantyClaimController extends Controller
         ]);
         $warrantyClaim->update($validated);
         ActivityLog::record('warranty.update', $warrantyClaim, "Update klaim ke {$validated['status']}");
+
         return back()->with('success', 'Status klaim diperbarui.');
     }
 
     public function show(WarrantyClaim $warrantyClaim)
     {
         $warrantyClaim->load(['customer', 'invoiceItem.product', 'invoiceItem.invoice']);
+
         return view('warranty-claims.show', compact('warrantyClaim'));
     }
 
     public function edit(WarrantyClaim $warrantyClaim)
     {
         $warrantyClaim->load(['customer', 'invoiceItem.product', 'invoiceItem.invoice']);
+
         return view('warranty-claims.edit', compact('warrantyClaim'));
     }
 
@@ -73,6 +81,7 @@ class WarrantyClaimController extends Controller
     {
         ActivityLog::record('warranty.delete', $warrantyClaim, "Hapus klaim {$warrantyClaim->id}");
         $warrantyClaim->delete();
+
         return back()->with('success', 'Klaim dihapus.');
     }
 }

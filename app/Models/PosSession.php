@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 ])]
 class PosSession extends Model
 {
-    use HasFactory, SoftDeletes, HasBranchScope;
+    use HasBranchScope, HasFactory, SoftDeletes;
 
     protected function casts(): array
     {

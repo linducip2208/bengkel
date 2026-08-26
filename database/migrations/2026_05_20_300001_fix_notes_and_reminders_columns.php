@@ -10,9 +10,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('notes', function (Blueprint $table) {
-            if (Schema::hasColumn('notes', 'author') && !Schema::hasColumn('notes', 'created_by')) {
+            if (Schema::hasColumn('notes', 'author') && ! Schema::hasColumn('notes', 'created_by')) {
                 $table->unsignedBigInteger('created_by')->nullable()->after('content');
-            } elseif (!Schema::hasColumn('notes', 'created_by')) {
+            } elseif (! Schema::hasColumn('notes', 'created_by')) {
                 $table->unsignedBigInteger('created_by')->nullable()->after('content');
             }
         });
@@ -25,10 +25,10 @@ return new class extends Migration
         }
 
         Schema::table('reminders', function (Blueprint $table) {
-            if (!Schema::hasColumn('reminders', 'created_by')) {
+            if (! Schema::hasColumn('reminders', 'created_by')) {
                 $table->unsignedBigInteger('created_by')->nullable()->after('branch_id');
             }
-            if (!Schema::hasColumn('reminders', 'message')) {
+            if (! Schema::hasColumn('reminders', 'message')) {
                 $table->text('message')->nullable()->after('reminder_date');
             }
         });
@@ -37,7 +37,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('notes', function (Blueprint $table) {
-            if (!Schema::hasColumn('notes', 'author')) {
+            if (! Schema::hasColumn('notes', 'author')) {
                 $table->string('author')->nullable();
             }
             if (Schema::hasColumn('notes', 'created_by')) {

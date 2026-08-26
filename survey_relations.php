@@ -5,13 +5,14 @@
  * These are the root cause of the 384 phpstan-baseline entries
  * (Larastan cannot infer related-model types without them).
  */
-
-$dir = __DIR__ . '/app/Models';
+$dir = __DIR__.'/app/Models';
 $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
 $report = [];
 
 foreach ($files as $file) {
-    if ($file->getExtension() !== 'php') continue;
+    if ($file->getExtension() !== 'php') {
+        continue;
+    }
     $path = $file->getPathname();
     $code = file_get_contents($path);
     $relPath = str_replace('\\', '/', substr($path, strlen(__DIR__) + 1));

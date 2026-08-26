@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 class CustomFieldController extends Controller
 {
     private const MODULES = ['customer', 'vehicle', 'service', 'invoice', 'product', 'supplier'];
+
     private const TYPES = ['text', 'number', 'date', 'select', 'boolean', 'textarea'];
 
     public function index(Request $request)
@@ -18,6 +19,7 @@ class CustomFieldController extends Controller
             $query->where('module', $request->module);
         }
         $fields = $query->orderBy('module')->orderBy('sort_order')->paginate(20)->withQueryString();
+
         return view('custom-fields.index', [
             'fields' => $fields,
             'modules' => self::MODULES,
@@ -35,9 +37,9 @@ class CustomFieldController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'module' => 'required|string|in:' . implode(',', self::MODULES),
+            'module' => 'required|string|in:'.implode(',', self::MODULES),
             'field_name' => 'required|string|max:100',
-            'field_type' => 'required|in:' . implode(',', self::TYPES),
+            'field_type' => 'required|in:'.implode(',', self::TYPES),
             'options' => 'nullable|string',
             'is_required' => 'nullable|boolean',
             'sort_order' => 'nullable|integer|min:0',
@@ -45,7 +47,7 @@ class CustomFieldController extends Controller
         ]);
 
         $options = null;
-        if (in_array($validated['field_type'], ['select']) && !empty($validated['options'])) {
+        if (in_array($validated['field_type'], ['select']) && ! empty($validated['options'])) {
             $options = array_values(array_filter(array_map('trim', explode("\n", $validated['options']))));
         }
 
@@ -74,9 +76,9 @@ class CustomFieldController extends Controller
     public function update(Request $request, CustomField $customField)
     {
         $validated = $request->validate([
-            'module' => 'required|string|in:' . implode(',', self::MODULES),
+            'module' => 'required|string|in:'.implode(',', self::MODULES),
             'field_name' => 'required|string|max:100',
-            'field_type' => 'required|in:' . implode(',', self::TYPES),
+            'field_type' => 'required|in:'.implode(',', self::TYPES),
             'options' => 'nullable|string',
             'is_required' => 'nullable|boolean',
             'sort_order' => 'nullable|integer|min:0',
@@ -84,7 +86,7 @@ class CustomFieldController extends Controller
         ]);
 
         $options = null;
-        if (in_array($validated['field_type'], ['select']) && !empty($validated['options'])) {
+        if (in_array($validated['field_type'], ['select']) && ! empty($validated['options'])) {
             $options = array_values(array_filter(array_map('trim', explode("\n", $validated['options']))));
         }
 
@@ -107,6 +109,7 @@ class CustomFieldController extends Controller
             return back()->with('error', 'Custom field tidak bisa dihapus karena masih punya data tersimpan.');
         }
         $customField->delete();
+
         return redirect()->route('custom-fields.index')->with('success', 'Custom field dihapus.');
     }
 }

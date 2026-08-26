@@ -11,6 +11,13 @@ class WarrantyClaim extends Model
 {
     protected $casts = ['claim_date' => 'date'];
 
-    public function invoiceItem(): BelongsTo { return $this->belongsTo(InvoiceItem::class); }
-    public function customer(): BelongsTo { return $this->belongsTo(Customer::class); }
+    public function invoiceItem(): BelongsTo
+    {
+        return $this->belongsTo(InvoiceItem::class);
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }

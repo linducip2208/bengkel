@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('invoices', function (Blueprint $table) {
-            if (!Schema::hasColumn('invoices', 'public_token')) {
+            if (! Schema::hasColumn('invoices', 'public_token')) {
                 $table->string('public_token', 32)->nullable()->unique()->after('invoice_number');
             }
         });

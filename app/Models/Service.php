@@ -11,11 +11,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 #[Fillable(['customer_id', 'vehicle_id', 'repair_category_id', 'title', 'description', 'service_date', 'charge', 'actual_cost', 'estimated_hours', 'started_at', 'completed_at', 'done_status', 'workflow_status', 'checked_in_at', 'qc_passed_at', 'mot_status', 'is_quotation', 'is_approved', 'created_by', 'branch_id', 'job_no', 'approval_token', 'repeat_of', 'assign_to', 'service_advisor_id', 'inspected_at', 'approved_at', 'invoiced_at', 'paid_at', 'released_at', 'cancelled_at', 'cancel_reason', 'survey_token'])]
 class Service extends Model
 {
-    use HasFactory, SoftDeletes, HasBranchScope;
+    use HasBranchScope, HasFactory, SoftDeletes;
 
     protected function casts(): array
     {
@@ -122,6 +123,7 @@ class Service extends Model
                 default => 'Booked',
             };
         }
+
         return match ((int) $this->done_status) {
             0 => 'Pending', 1 => 'In Progress', 2 => 'Done',
             default => 'Pending',
@@ -140,14 +142,22 @@ class Service extends Model
                 default => 'secondary',
             };
         }
+
         return match ((int) $this->done_status) {
             0 => 'secondary', 1 => 'warning', 2 => 'success',
             default => 'secondary',
         };
     }
 
-    public function getWorkflowLabelAttribute(): string { return $this->status_label; }
-    public function getWorkflowColorAttribute(): string { return $this->status_color; }
+    public function getWorkflowLabelAttribute(): string
+    {
+        return $this->status_label;
+    }
+
+    public function getWorkflowColorAttribute(): string
+    {
+        return $this->status_color;
+    }
 
     public function scopeOpen($query)
     {
@@ -174,26 +184,31 @@ class Service extends Model
         if ($this->started_at && $this->completed_at) {
             return round($this->started_at->diffInMinutes($this->completed_at) / 60, 1);
         }
+
         return null;
     }
 
     public function getDurationLabelAttribute(): string
     {
-        if (!$this->duration) {
-            if ($this->started_at && !$this->completed_at) {
+        if (! $this->duration) {
+            if ($this->started_at && ! $this->completed_at) {
                 $elapsed = round(now()->diffInMinutes($this->started_at) / 60, 1);
-                return $elapsed . ' jam (berjalan)';
+
+                return $elapsed.' jam (berjalan)';
             }
-            return $this->estimated_hours ? $this->estimated_hours . ' jam (estimasi)' : '-';
+
+            return $this->estimated_hours ? $this->estimated_hours.' jam (estimasi)' : '-';
         }
-        return $this->duration . ' jam';
+
+        return $this->duration.' jam';
     }
 
     public function getIsOverdueAttribute(): bool
     {
-        if (!$this->estimated_hours || !$this->started_at || $this->completed_at) {
+        if (! $this->estimated_hours || ! $this->started_at || $this->completed_at) {
             return false;
         }
+
         return now()->diffInHours($this->started_at) > $this->estimated_hours;
     }
 
@@ -204,7 +219,7 @@ class Service extends Model
 
     public function getOrCreateApprovalToken(): string
     {
-        if (!empty($this->approval_token)) {
+        if (! empty($this->approval_token)) {
             return $this->approval_token;
         }
 
@@ -217,7 +232,7 @@ class Service extends Model
     protected function generateUniqueApprovalToken(): string
     {
         do {
-            $token = \Illuminate\Support\Str::random(32);
+            $token = Str::random(32);
         } while (static::withoutGlobalScopes()->where('approval_token', $token)->exists());
 
         return $token;
@@ -225,7 +240,7 @@ class Service extends Model
 
     public function detectRepeatJob(): ?Service
     {
-        if (!$this->vehicle_id) {
+        if (! $this->vehicle_id) {
             return null;
         }
 
@@ -239,10 +254,10 @@ class Service extends Model
             ->where(function ($q) {
                 $q->where('repair_category_id', $this->repair_category_id);
                 if ($this->title) {
-                    $q->orWhere('title', 'like', '%' . $this->title . '%');
+                    $q->orWhere('title', 'like', '%'.$this->title.'%');
                 }
                 if ($this->description) {
-                    $q->orWhere('description', 'like', '%' . $this->description . '%');
+                    $q->orWhere('description', 'like', '%'.$this->description.'%');
                 }
             })
             ->orderBy('completed_at', 'desc')

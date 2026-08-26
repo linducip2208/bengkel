@@ -7,10 +7,12 @@ use App\Models\Customer;
 use App\Models\EmailLog;
 use App\Services\NotificationService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Mail;
 
 class SendBirthdayGreetings extends Command
 {
     protected $signature = 'birthday:send {--dry : tampil saja tanpa kirim}';
+
     protected $description = 'Kirim ucapan ulang tahun ke customer + tawaran diskon';
 
     public function handle(NotificationService $notif): int
@@ -24,6 +26,7 @@ class SendBirthdayGreetings extends Command
 
         if ($customers->isEmpty()) {
             $this->info('Tidak ada customer ulang tahun hari ini.');
+
             return self::SUCCESS;
         }
 
@@ -32,12 +35,14 @@ class SendBirthdayGreetings extends Command
             $msg = "Halo {$c->name}, selamat ulang tahun! 🎂\n\nKhusus untukmu hari ini & 7 hari ke depan, dapatkan DISKON 10% untuk service apa saja di {$appName}. Tunjukkan pesan ini saat datang.\n\nSemoga sehat selalu!\n\n— Tim {$appName}";
             $this->line("→ {$c->name} ({$c->phone})");
 
-            if ($this->option('dry')) continue;
+            if ($this->option('dry')) {
+                continue;
+            }
 
             // Coba email kalau ada
             if ($c->email) {
                 try {
-                    \Illuminate\Support\Facades\Mail::raw($msg, function ($m) use ($c, $appName) {
+                    Mail::raw($msg, function ($m) use ($c, $appName) {
                         $m->to($c->email)->subject("🎂 Selamat Ulang Tahun dari {$appName}!");
                     });
                     EmailLog::create(['to' => $c->email, 'subject' => 'Birthday greeting', 'body' => $msg, 'status' => 'sent']);
@@ -50,6 +55,7 @@ class SendBirthdayGreetings extends Command
         }
 
         $this->info("Kirim greeting ke {$customers->count()} customer.");
+
         return self::SUCCESS;
     }
 }

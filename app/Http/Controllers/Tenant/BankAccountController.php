@@ -21,12 +21,14 @@ class BankAccountController extends Controller
             });
         }
         $bankAccounts = $query->orderBy('bank_name')->orderBy('name')->paginate(15)->withQueryString();
+
         return view('bank-accounts.index', compact('bankAccounts'));
     }
 
     public function create()
     {
         $branches = Branch::orderBy('name')->get();
+
         return view('bank-accounts.create', compact('branches'));
     }
 
@@ -53,6 +55,7 @@ class BankAccountController extends Controller
     public function edit(BankAccount $bankAccount)
     {
         $branches = Branch::orderBy('name')->get();
+
         return view('bank-accounts.edit', compact('bankAccount', 'branches'));
     }
 
@@ -76,6 +79,7 @@ class BankAccountController extends Controller
     public function destroy(BankAccount $bankAccount)
     {
         $bankAccount->delete();
+
         return redirect()->route('bank-accounts.index')->with('success', 'Rekening bank berhasil dihapus.');
     }
 

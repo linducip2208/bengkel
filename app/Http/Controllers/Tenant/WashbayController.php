@@ -21,6 +21,7 @@ class WashbayController extends Controller
         }
         $washbays = $query->orderBy('branch_id')->orderBy('name')->get();
         $branches = Branch::orderBy('name')->get();
+
         return view('washbays.index', compact('washbays', 'branches'));
     }
 
@@ -28,6 +29,7 @@ class WashbayController extends Controller
     {
         $branches = Branch::where('is_active', true)->orderBy('name')->get();
         $selectedBranchId = $request->get('branch_id');
+
         return view('washbays.create', compact('branches', 'selectedBranchId'));
     }
 
@@ -41,9 +43,10 @@ class WashbayController extends Controller
 
         Washbay::create($validated);
 
-        if (!empty($validated['branch_id'])) {
+        if (! empty($validated['branch_id'])) {
             return redirect()->route('branches.show', $validated['branch_id'])->with('success', 'Washbay ditambahkan.');
         }
+
         return redirect()->route('washbays.index')->with('success', 'Washbay ditambahkan.');
     }
 
@@ -55,6 +58,7 @@ class WashbayController extends Controller
             ->latest()
             ->limit(50)
             ->get();
+
         return view('washbays.edit', compact('washbay', 'branches', 'activeServices'));
     }
 
@@ -82,6 +86,7 @@ class WashbayController extends Controller
             return back()->with('error', 'Washbay sedang dipakai. Selesaikan service dulu sebelum dihapus.');
         }
         $washbay->delete();
+
         return redirect()->route('washbays.index')->with('success', 'Washbay dihapus.');
     }
 
@@ -109,6 +114,7 @@ class WashbayController extends Controller
             'status' => 'available',
             'current_service_id' => null,
         ]);
+
         return back()->with('success', 'Washbay dikosongkan.');
     }
 }

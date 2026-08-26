@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['invoice_number', 'customer_id', 'payment_method_id', 'bank_account_id', 'amount', 'income_date', 'label', 'description', 'created_by', 'branch_id'])]
 class Income extends Model
 {
-    use HasFactory, SoftDeletes, HasBranchScope;
+    use HasBranchScope, HasFactory, SoftDeletes;
 
     protected function casts(): array
     {

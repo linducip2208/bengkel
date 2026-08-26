@@ -21,12 +21,14 @@ class PrinterController extends Controller
             });
         }
         $printers = $query->orderByDesc('is_default')->orderBy('name')->paginate(15)->withQueryString();
+
         return view('printers.index', compact('printers'));
     }
 
     public function create()
     {
         $branches = Branch::orderBy('name')->get();
+
         return view('printers.create', compact('branches'));
     }
 
@@ -63,6 +65,7 @@ class PrinterController extends Controller
     public function edit(Printer $printer)
     {
         $branches = Branch::orderBy('name')->get();
+
         return view('printers.edit', compact('printer', 'branches'));
     }
 
@@ -99,6 +102,7 @@ class PrinterController extends Controller
     public function destroy(Printer $printer)
     {
         $printer->delete();
+
         return redirect()->route('printers.index')->with('success', 'Printer berhasil dihapus.');
     }
 }

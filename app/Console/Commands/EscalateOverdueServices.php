@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 class EscalateOverdueServices extends Command
 {
     protected $signature = 'services:escalate-overdue';
+
     protected $description = 'Escalate overdue services beyond estimated hours to branch manager';
 
     public function handle(): int
@@ -22,11 +23,13 @@ class EscalateOverdueServices extends Command
             ->get()
             ->filter(function ($service) {
                 $elapsedHours = now()->diffInHours($service->started_at);
+
                 return $elapsedHours > $service->estimated_hours;
             });
 
         if ($overdue->isEmpty()) {
             $this->info('Tidak ada service overdue.');
+
             return self::SUCCESS;
         }
 
@@ -43,6 +46,7 @@ class EscalateOverdueServices extends Command
             if ($alreadyEscalated) {
                 $this->line("Skip (already escalated <4h): {$service->job_no}");
                 $skip++;
+
                 continue;
             }
 
@@ -66,6 +70,7 @@ class EscalateOverdueServices extends Command
         }
 
         $this->info("Done. {$sent} escalated, {$skip} skipped.");
+
         return self::SUCCESS;
     }
 }

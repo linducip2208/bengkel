@@ -12,6 +12,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Subcontractor extends Model
 {
     use HasBranchScope, SoftDeletes;
+
     protected $casts = ['is_active' => 'boolean'];
-    public function jobs(): HasMany { return $this->hasMany(SubcontractorJob::class); }
+
+    public function jobs(): HasMany
+    {
+        return $this->hasMany(SubcontractorJob::class);
+    }
 }

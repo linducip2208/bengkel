@@ -20,6 +20,7 @@ class HolidayController extends Controller
         }
         $holidays = $query->orderBy('date', 'desc')->paginate(20)->withQueryString();
         $branches = Branch::orderBy('name')->get();
+
         return view('holidays.index', compact('holidays', 'branches'));
     }
 
@@ -27,6 +28,7 @@ class HolidayController extends Controller
     {
         $branches = Branch::where('is_active', true)->orderBy('name')->get();
         $selectedBranchId = $request->get('branch_id');
+
         return view('holidays.create', compact('branches', 'selectedBranchId'));
     }
 
@@ -46,15 +48,17 @@ class HolidayController extends Controller
             'is_recurring' => $request->boolean('is_recurring'),
         ]);
 
-        if (!empty($validated['branch_id'])) {
+        if (! empty($validated['branch_id'])) {
             return redirect()->route('branches.show', $validated['branch_id'])->with('success', 'Hari libur ditambahkan.');
         }
+
         return redirect()->route('holidays.index')->with('success', 'Hari libur ditambahkan.');
     }
 
     public function edit(Holiday $holiday)
     {
         $branches = Branch::where('is_active', true)->orderBy('name')->get();
+
         return view('holidays.edit', compact('holiday', 'branches'));
     }
 
@@ -80,6 +84,7 @@ class HolidayController extends Controller
     public function destroy(Holiday $holiday)
     {
         $holiday->delete();
+
         return redirect()->route('holidays.index')->with('success', 'Hari libur dihapus.');
     }
 }

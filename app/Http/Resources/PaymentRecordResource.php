@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\PaymentRecord;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\PaymentRecord
+ * @mixin PaymentRecord
  */
 class PaymentRecordResource extends JsonResource
 {
@@ -16,7 +17,7 @@ class PaymentRecordResource extends JsonResource
             'id' => $this->id,
             'invoice_id' => $this->invoice_id,
             'payment_method_id' => $this->payment_method_id,
-            'payment_method' => $this->whenLoaded('paymentMethod', fn() => $this->paymentMethod->payment ?? null),
+            'payment_method' => $this->whenLoaded('paymentMethod', fn () => $this->paymentMethod->payment ?? null),
             'amount' => $this->amount,
             'payment_date' => $this->payment_date,
             'reference_number' => $this->reference_number,

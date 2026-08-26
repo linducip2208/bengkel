@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable(['code', 'name', 'symbol', 'exchange_rate', 'is_default'])]
@@ -71,12 +70,17 @@ class Currency extends Model
     {
         $meta = self::defaultMeta();
         $decimals ??= $meta['decimals'];
-        return $meta['symbol'] . ' ' . number_format((float) ($amount ?? 0), $decimals, ',', '.');
+
+        return $meta['symbol'].' '.number_format((float) ($amount ?? 0), $decimals, ',', '.');
     }
 
     protected static function booted(): void
     {
-        static::saved(function () { self::$defaultMeta = null; });
-        static::deleted(function () { self::$defaultMeta = null; });
+        static::saved(function () {
+            self::$defaultMeta = null;
+        });
+        static::deleted(function () {
+            self::$defaultMeta = null;
+        });
     }
 }

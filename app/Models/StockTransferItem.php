@@ -8,7 +8,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class StockTransferItem extends Model
 {
     protected $fillable = ['stock_transfer_id', 'product_id', 'quantity'];
+
     protected $casts = ['quantity' => 'decimal:2'];
-    public function transfer(): BelongsTo { return $this->belongsTo(StockTransfer::class); }
-    public function product(): BelongsTo { return $this->belongsTo(Product::class); }
+
+    public function transfer(): BelongsTo
+    {
+        return $this->belongsTo(StockTransfer::class);
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

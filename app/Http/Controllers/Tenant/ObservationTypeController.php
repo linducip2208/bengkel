@@ -16,6 +16,7 @@ class ObservationTypeController extends Controller
             $query->where('observation_type', 'like', "%{$request->search}%");
         }
         $observationTypes = $query->orderBy('observation_type')->paginate(15)->withQueryString();
+
         return view('observation-types.index', compact('observationTypes'));
     }
 
@@ -57,6 +58,7 @@ class ObservationTypeController extends Controller
             return back()->with('error', 'Tipe observasi tidak bisa dihapus karena masih punya checklist point terdaftar.');
         }
         $observationType->delete();
+
         return redirect()->route('observation-types.index')->with('success', 'Tipe observasi berhasil dihapus.');
     }
 }

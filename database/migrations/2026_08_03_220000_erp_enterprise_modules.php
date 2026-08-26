@@ -13,7 +13,7 @@ return new class extends Migration
             $table->id();
             $table->string('code', 20)->unique();
             $table->string('name');
-            $table->enum('type', ['asset','liability','equity','income','expense']);
+            $table->enum('type', ['asset', 'liability', 'equity', 'income', 'expense']);
             $table->foreignId('parent_id')->nullable()->constrained('chart_of_accounts')->nullOnDelete();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

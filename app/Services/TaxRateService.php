@@ -13,6 +13,7 @@ class TaxRateService extends BaseService
         if ($request->filled('search')) {
             $query->where('taxname', 'like', "%{$request->search}%");
         }
+
         return $query->orderBy('taxname')->get();
     }
 
@@ -24,6 +25,7 @@ class TaxRateService extends BaseService
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
+
         return TaxRate::create($validated);
     }
 
@@ -36,12 +38,13 @@ class TaxRateService extends BaseService
     {
         $model = TaxRate::findOrFail($id);
         $validated = $request->validate([
-            'taxname' => 'required|string|max:255|unique:tax_rates,taxname,' . $id,
+            'taxname' => 'required|string|max:255|unique:tax_rates,taxname,'.$id,
             'tax' => 'required|numeric|min:0',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
         $model->update($validated);
+
         return $model;
     }
 
@@ -49,6 +52,7 @@ class TaxRateService extends BaseService
     {
         $model = TaxRate::findOrFail($id);
         $model->delete();
+
         return $model;
     }
 }

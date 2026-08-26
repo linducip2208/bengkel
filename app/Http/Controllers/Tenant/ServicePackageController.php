@@ -12,12 +12,14 @@ class ServicePackageController extends Controller
     public function index()
     {
         $packages = ServicePackage::with('repairCategory')->orderBy('name')->paginate(15);
+
         return view('service-packages.index', compact('packages'));
     }
 
     public function create()
     {
         $categories = RepairCategory::orderBy('repair_category_name')->get();
+
         return view('service-packages.create', compact('categories'));
     }
 
@@ -41,6 +43,7 @@ class ServicePackageController extends Controller
     public function edit(ServicePackage $servicePackage)
     {
         $categories = RepairCategory::orderBy('repair_category_name')->get();
+
         return view('service-packages.edit', compact('servicePackage', 'categories'));
     }
 
@@ -64,6 +67,7 @@ class ServicePackageController extends Controller
     public function destroy(ServicePackage $servicePackage)
     {
         $servicePackage->delete();
+
         return redirect()->route('service-packages.index')->with('success', 'Paket service berhasil dihapus.');
     }
 

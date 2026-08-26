@@ -12,9 +12,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Equipment extends Model
 {
     use HasBranchScope, SoftDeletes;
+
     protected $table = 'equipment';
+
     protected $casts = ['purchase_date' => 'date', 'next_maintenance_date' => 'date', 'purchase_price' => 'decimal:2'];
-    public function maintenanceLogs(): HasMany { return $this->hasMany(EquipmentMaintenanceLog::class); }
+
+    public function maintenanceLogs(): HasMany
+    {
+        return $this->hasMany(EquipmentMaintenanceLog::class);
+    }
 
     public function getIsDueMaintenanceAttribute(): bool
     {

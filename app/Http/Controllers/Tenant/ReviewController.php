@@ -15,7 +15,9 @@ class ReviewController extends Controller
         if ($request->filled('status')) {
             $query->where('is_published', $request->status === 'published');
         }
-        if ($request->filled('rating')) $query->where('rating', $request->rating);
+        if ($request->filled('rating')) {
+            $query->where('rating', $request->rating);
+        }
         $reviews = $query->latest()->paginate(20)->withQueryString();
 
         $summary = [
@@ -31,12 +33,14 @@ class ReviewController extends Controller
     {
         $review->update(['is_published' => true]);
         ActivityLog::record('review.publish', $review, "Publish review dari {$review->reviewer_name}");
+
         return back()->with('success', 'Review dipublikasikan.');
     }
 
     public function unpublish(Review $review)
     {
         $review->update(['is_published' => false]);
+
         return back()->with('success', 'Review di-unpublish.');
     }
 
@@ -45,6 +49,7 @@ class ReviewController extends Controller
         $validated = $request->validate(['admin_reply' => 'required|string|max:1000']);
         $review->update($validated);
         ActivityLog::record('review.reply', $review, "Reply review dari {$review->reviewer_name}");
+
         return back()->with('success', 'Balasan disimpan.');
     }
 
@@ -52,6 +57,7 @@ class ReviewController extends Controller
     {
         ActivityLog::record('review.delete', $review, "Delete review {$review->id}");
         $review->delete();
+
         return back()->with('success', 'Review dihapus.');
     }
 }

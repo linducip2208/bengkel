@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['gate_pass_no', 'vehicle_id', 'customer_id', 'service_id', 'entry_date', 'exit_date', 'status', 'driver_name', 'driver_phone', 'notes', 'customer_signature', 'technician_signature', 'created_by', 'branch_id'])]
 class GatePass extends Model
 {
-    use HasFactory, SoftDeletes, HasBranchScope;
+    use HasBranchScope, HasFactory, SoftDeletes;
 
     protected function casts(): array
     {

@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\PurchaseHistoryRecord;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\PurchaseHistoryRecord
+ * @mixin PurchaseHistoryRecord
  */
 class PurchaseHistoryResource extends JsonResource
 {

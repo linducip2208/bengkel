@@ -1,18 +1,25 @@
 <?php
+
+use App\Models\Product;
+use App\Models\Purchase;
+use App\Models\Supplier;
+use Illuminate\Contracts\Console\Kernel;
+
 /**
  * Test "Simpan Draft" button — should save as draft, not ordered.
  */
 
-require __DIR__ . '/../vendor/autoload.php';
-$app = require __DIR__ . '/../bootstrap/app.php';
-$kernel = $app->make(\Illuminate\Contracts\Console\Kernel::class);
+require __DIR__.'/../vendor/autoload.php';
+$app = require __DIR__.'/../bootstrap/app.php';
+$kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
 $base = 'http://127.0.0.1:8124';
-$cookieJar = sys_get_temp_dir() . '/uat_pd_' . getmypid() . '.txt';
+$cookieJar = sys_get_temp_dir().'/uat_pd_'.getmypid().'.txt';
 @unlink($cookieJar);
 
-function req($url, $method = 'GET', $data = null, $cookieJar = null) {
+function req($url, $method = 'GET', $data = null, $cookieJar = null)
+{
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -27,6 +34,7 @@ function req($url, $method = 'GET', $data = null, $cookieJar = null) {
     $body = curl_exec($ch);
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+
     return ['status' => $status, 'body' => $body];
 }
 
@@ -38,8 +46,8 @@ $r = req("$base/purchases/create", 'GET', null, $cookieJar);
 preg_match('/name="_token" value="([^"]+)"/', $r['body'], $m);
 $tok = $m[1];
 
-$supplier = \App\Models\Supplier::first();
-$product = \App\Models\Product::first();
+$supplier = Supplier::first();
+$product = Product::first();
 
 // Simpan dengan status=draft (sesuai tombol "Simpan Draft")
 $r = req("$base/purchases", 'POST', [
@@ -55,8 +63,8 @@ $r = req("$base/purchases", 'POST', [
 
 echo "POST: {$r['status']}\n";
 
-$last = \App\Models\Purchase::orderByDesc('id')->first();
+$last = Purchase::orderByDesc('id')->first();
 echo "Purchase: id={$last->id} status={$last->status} (EXPECTED: draft)\n";
 echo $last->status === 'draft' ? "✓ DRAFT BUTTON WORKS\n" : "✗ BUG: status saved as '{$last->status}' instead of 'draft'\n";
 
-\App\Models\Purchase::where('id', $last->id)->forceDelete();
+Purchase::where('id', $last->id)->forceDelete();

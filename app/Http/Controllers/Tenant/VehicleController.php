@@ -7,8 +7,8 @@ use App\Http\Requests\VehicleRequest;
 use App\Models\Customer;
 use App\Models\FuelType;
 use App\Models\Vehicle;
-use App\Models\VehicleImage;
 use App\Models\VehicleBrand;
+use App\Models\VehicleImage;
 use App\Models\VehicleType;
 use App\Services\VehicleService;
 use Illuminate\Http\Request;
@@ -22,6 +22,7 @@ class VehicleController extends Controller
         $vehicles = $this->service->list($request->only(['search', 'customer_id', 'vehicle_type_id', 'per_page']));
         $customers = Customer::orderBy('name')->get();
         $vehicleTypes = VehicleType::orderBy('vehicle_type')->get();
+
         return view('vehicles.index', compact('vehicles', 'customers', 'vehicleTypes'));
     }
 
@@ -31,12 +32,14 @@ class VehicleController extends Controller
         $vehicleTypes = VehicleType::orderBy('vehicle_type')->get();
         $vehicleBrands = VehicleBrand::orderBy('vehicle_brand')->get();
         $fuelTypes = FuelType::orderBy('fuel_type')->get();
+
         return view('vehicles.create', compact('customers', 'vehicleTypes', 'vehicleBrands', 'fuelTypes'));
     }
 
     public function store(VehicleRequest $request)
     {
         $this->service->create($request->validated());
+
         return redirect()->route('vehicles.index')->with('success', 'Kendaraan berhasil ditambahkan.');
     }
 
@@ -48,6 +51,7 @@ class VehicleController extends Controller
         $jobCards = $vehicle->services()->has('jobcardDetail')->with(['jobcardDetail', 'repairCategory', 'technicians'])->latest()->get();
         $invoices = $vehicle->invoices()->latest()->get();
         $inspectionHistory = $vehicle->services()->has('checkoutResults')->with(['checkoutResults.checkoutCategory'])->latest()->get();
+
         return view('vehicles.show', compact('vehicle', 'nextService', 'serviceHistory', 'jobCards', 'invoices', 'inspectionHistory'));
     }
 
@@ -58,6 +62,7 @@ class VehicleController extends Controller
         $vehicleTypes = VehicleType::orderBy('vehicle_type')->get();
         $vehicleBrands = VehicleBrand::orderBy('vehicle_brand')->get();
         $fuelTypes = FuelType::orderBy('fuel_type')->get();
+
         return view('vehicles.edit', compact('vehicle', 'customers', 'vehicleTypes', 'vehicleBrands', 'fuelTypes'));
     }
 
@@ -65,6 +70,7 @@ class VehicleController extends Controller
     {
         $vehicle = Vehicle::findOrFail($id);
         $this->service->update($vehicle, $request->validated());
+
         return redirect()->route('vehicles.index')->with('success', 'Kendaraan berhasil diperbarui.');
     }
 
@@ -72,6 +78,7 @@ class VehicleController extends Controller
     {
         $vehicle = Vehicle::findOrFail($id);
         $this->service->delete($vehicle);
+
         return redirect()->route('vehicles.index')->with('success', 'Kendaraan berhasil dihapus.');
     }
 
@@ -92,6 +99,7 @@ class VehicleController extends Controller
     {
         $vehicleImage = VehicleImage::findOrFail($image);
         $vehicleImage->delete();
+
         return back()->with('success', 'Foto berhasil dihapus.');
     }
 

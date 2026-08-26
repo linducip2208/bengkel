@@ -1,4 +1,10 @@
 <?php
+
+use App\Models\Product;
+use App\Models\Purchase;
+use App\Models\Supplier;
+use Illuminate\Contracts\Console\Kernel;
+
 /**
  * Reproduce purchase flow:
  * 1. GET /purchases/create -> verifikasi form load
@@ -7,16 +13,17 @@
  * 4. POST /purchases/{id}/mark-received -> terima barang
  */
 
-require __DIR__ . '/../vendor/autoload.php';
-$app = require __DIR__ . '/../bootstrap/app.php';
-$kernel = $app->make(\Illuminate\Contracts\Console\Kernel::class);
+require __DIR__.'/../vendor/autoload.php';
+$app = require __DIR__.'/../bootstrap/app.php';
+$kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
 $base = 'http://127.0.0.1:8124';
-$cookieJar = sys_get_temp_dir() . '/uat_purchase_' . getmypid() . '.txt';
+$cookieJar = sys_get_temp_dir().'/uat_purchase_'.getmypid().'.txt';
 @unlink($cookieJar);
 
-function req($url, $method = 'GET', $data = null, $cookieJar = null) {
+function req($url, $method = 'GET', $data = null, $cookieJar = null)
+{
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -35,6 +42,7 @@ function req($url, $method = 'GET', $data = null, $cookieJar = null) {
     $head = substr($body, 0, $headerSize);
     $body = substr($body, $headerSize);
     curl_close($ch);
+
     return ['status' => $status, 'head' => $head, 'body' => $body];
 }
 
@@ -50,22 +58,22 @@ $r = req("$base/purchases/create", 'GET', null, $cookieJar);
 echo "GET /purchases/create: {$r['status']}\n";
 preg_match('/name="_token" value="([^"]+)"/', $r['body'], $m);
 $tok = $m[1] ?? null;
-echo "CSRF token: " . ($tok ? 'OK' : 'MISSING') . "\n";
+echo 'CSRF token: '.($tok ? 'OK' : 'MISSING')."\n";
 
 // Check JS — search-json endpoint
 $searchUrl = "$base/products/search-json";
-$r = req($searchUrl . '?q=', 'GET', null, $cookieJar);
+$r = req($searchUrl.'?q=', 'GET', null, $cookieJar);
 echo "GET /products/search-json: {$r['status']}\n";
 $products = json_decode($r['body'], true);
-echo "  products returned: " . (is_array($products) ? count($products) : 'NULL') . "\n";
+echo '  products returned: '.(is_array($products) ? count($products) : 'NULL')."\n";
 
-if (!$products) {
-    echo "  body sample: " . substr($r['body'], 0, 200) . "\n";
+if (! $products) {
+    echo '  body sample: '.substr($r['body'], 0, 200)."\n";
     exit(1);
 }
 
-$supplier = \App\Models\Supplier::first();
-$product = \App\Models\Product::first();
+$supplier = Supplier::first();
+$product = Product::first();
 echo "  Using supplier=$supplier->id product=$product->id\n";
 
 // 3. POST /purchases (Simpan & Pesan -> status=ordered)
@@ -86,7 +94,7 @@ $payload = [
 $r = req("$base/purchases", 'POST', $payload, $cookieJar);
 echo "POST /purchases (ordered): {$r['status']}\n";
 if ($r['status'] !== 302) {
-    echo "  Body sample:\n" . substr($r['body'], 0, 1500) . "\n";
+    echo "  Body sample:\n".substr($r['body'], 0, 1500)."\n";
 }
 // Check the Location header on redirect
 if (preg_match('/Location:\s*(\S+)/i', $r['head'], $lm)) {
@@ -94,22 +102,26 @@ if (preg_match('/Location:\s*(\S+)/i', $r['head'], $lm)) {
 }
 
 // 4. Verify saved
-$last = \App\Models\Purchase::orderByDesc('id')->first();
+$last = Purchase::orderByDesc('id')->first();
 echo "Last Purchase: id={$last->id} no={$last->purchase_no} status={$last->status} total={$last->total_amount}\n";
-echo "  items count: " . $last->items()->count() . "\n";
+echo '  items count: '.$last->items()->count()."\n";
 
 // 5. POST mark-received
 $tok2 = null;
 $r = req("$base/purchases/{$last->id}", 'GET', null, $cookieJar);
-if (preg_match('/name="_token" value="([^"]+)"/', $r['body'], $m)) $tok2 = $m[1];
+if (preg_match('/name="_token" value="([^"]+)"/', $r['body'], $m)) {
+    $tok2 = $m[1];
+}
 
 $r = req("$base/purchases/{$last->id}/mark-received", 'POST', ['_token' => $tok2], $cookieJar);
 echo "POST mark-received: {$r['status']}\n";
-if ($r['status'] !== 302) echo substr($r['body'], 0, 600) . "\n";
+if ($r['status'] !== 302) {
+    echo substr($r['body'], 0, 600)."\n";
+}
 
 $last->refresh();
 echo "After mark-received: status={$last->status}\n";
 
 // Cleanup
-\App\Models\Purchase::where('purchase_no', 'like', 'PO-' . date('Ymd') . '%')->forceDelete();
+Purchase::where('purchase_no', 'like', 'PO-'.date('Ymd').'%')->forceDelete();
 echo "Cleanup OK\n";

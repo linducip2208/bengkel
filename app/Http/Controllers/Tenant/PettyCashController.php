@@ -6,16 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\PettyCash;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PettyCashController extends Controller
 {
     public function index(Request $request)
     {
         $query = PettyCash::with('creator');
-        if ($request->filled('type')) $query->where('type', $request->type);
-        if ($request->filled('date_from')) $query->whereDate('date', '>=', $request->date_from);
-        if ($request->filled('date_to')) $query->whereDate('date', '<=', $request->date_to);
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
         $rows = $query->latest('date')->paginate(30)->withQueryString();
 
         $balance = (float) PettyCash::where('type', 'in')->sum('amount')
@@ -37,6 +42,7 @@ class PettyCashController extends Controller
         $validated['created_by'] = auth()->id();
         $tx = PettyCash::create($validated);
         ActivityLog::record('petty_cash.create', $tx, "Petty cash {$validated['type']}: {$validated['description']}");
+
         return back()->with('success', 'Transaksi kas kecil tercatat.');
     }
 
@@ -44,6 +50,7 @@ class PettyCashController extends Controller
     {
         ActivityLog::record('petty_cash.delete', $pettyCash, "Hapus petty cash {$pettyCash->description}");
         $pettyCash->delete();
+
         return back()->with('success', 'Transaksi dihapus.');
     }
 }

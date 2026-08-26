@@ -24,6 +24,7 @@ class ApiReportController extends Controller
 
         $byCategory = $services->groupBy('repair_category_id')->map(function ($group) {
             $category = $group->first()->repairCategory;
+
             return [
                 'category' => $category ? $category->repair_category_name : 'Uncategorized',
                 'count' => $group->count(),
@@ -43,7 +44,7 @@ class ApiReportController extends Controller
             'total_charge' => $services->sum('charge'),
             'by_category' => $byCategory,
             'by_status' => $byStatus,
-            'services' => $services->map(fn($s) => [
+            'services' => $services->map(fn ($s) => [
                 'id' => $s->id,
                 'title' => $s->title,
                 'customer' => $s->customer->name ?? null,
@@ -64,13 +65,13 @@ class ApiReportController extends Controller
             ->whereBetween('invoice_date', [$dateFrom, $dateTo])
             ->get();
 
-        $dailyInvoiced = $invoices->groupBy(fn($i) => optional($i->invoice_date)->toDateString())
-            ->map(fn($g) => [
+        $dailyInvoiced = $invoices->groupBy(fn ($i) => optional($i->invoice_date)->toDateString())
+            ->map(fn ($g) => [
                 'count' => $g->count(),
                 'total_discount' => $g->sum('discount'),
             ]);
 
-        $byPaymentStatus = $invoices->groupBy('payment_status')->map(fn($g) => $g->count());
+        $byPaymentStatus = $invoices->groupBy('payment_status')->map(fn ($g) => $g->count());
 
         return response()->json([
             'date_range' => ['from' => $dateFrom, 'to' => $dateTo],
@@ -88,7 +89,7 @@ class ApiReportController extends Controller
     {
         $products = Product::with(['productType'])
             ->get()
-            ->map(fn($p) => [
+            ->map(fn ($p) => [
                 'id' => $p->id,
                 'code' => $p->code,
                 'name' => $p->name,
@@ -102,8 +103,8 @@ class ApiReportController extends Controller
                 'stock_status' => $p->stock_status,
             ]);
 
-        $lowStock = $products->filter(fn($p) => $p['stock'] <= $p['minimum_stock'] && $p['minimum_stock'] > 0);
-        $outOfStock = $products->filter(fn($p) => $p['stock'] <= 0);
+        $lowStock = $products->filter(fn ($p) => $p['stock'] <= $p['minimum_stock'] && $p['minimum_stock'] > 0);
+        $outOfStock = $products->filter(fn ($p) => $p['stock'] <= 0);
 
         return response()->json([
             'total_products' => $products->count(),
@@ -125,13 +126,13 @@ class ApiReportController extends Controller
         $totalExpense = Expense::whereBetween('expense_date', [$dateFrom, $dateTo])->sum('amount');
 
         $dailyIncome = Income::whereBetween('income_date', [$dateFrom, $dateTo])
-            ->selectRaw("DATE(income_date) as date, SUM(amount) as total")
+            ->selectRaw('DATE(income_date) as date, SUM(amount) as total')
             ->groupBy('date')
             ->get()
             ->pluck('total', 'date');
 
         $dailyExpense = Expense::whereBetween('expense_date', [$dateFrom, $dateTo])
-            ->selectRaw("DATE(expense_date) as date, SUM(amount) as total")
+            ->selectRaw('DATE(expense_date) as date, SUM(amount) as total')
             ->groupBy('date')
             ->get()
             ->pluck('total', 'date');

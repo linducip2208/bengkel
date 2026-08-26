@@ -17,6 +17,7 @@ class RepairCategoryController extends Controller
             $query->where('repair_category_name', 'like', "%{$request->search}%");
         }
         $repairCategories = $query->orderBy('repair_category_name')->paginate(15)->withQueryString();
+
         return view('repair-categories.index', compact('repairCategories'));
     }
 
@@ -72,6 +73,7 @@ class RepairCategoryController extends Controller
             return back()->with('error', 'Kategori repair tidak bisa dihapus karena masih dipakai oleh service atau observation point.');
         }
         $repairCategory->delete();
+
         return redirect()->route('repair-categories.index')->with('success', 'Kategori repair berhasil dihapus.');
     }
 }

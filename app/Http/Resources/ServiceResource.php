@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\Service
+ * @mixin Service
  */
 class ServiceResource extends JsonResource
 {
@@ -19,7 +20,7 @@ class ServiceResource extends JsonResource
             'vehicle_id' => $this->vehicle_id,
             'vehicle' => new VehicleResource($this->whenLoaded('vehicle')),
             'repair_category_id' => $this->repair_category_id,
-            'repair_category' => $this->whenLoaded('repairCategory', fn() => $this->repairCategory->repair_category_name ?? null),
+            'repair_category' => $this->whenLoaded('repairCategory', fn () => $this->repairCategory->repair_category_name ?? null),
             'title' => $this->title,
             'description' => $this->description,
             'service_date' => $this->service_date,
@@ -33,7 +34,7 @@ class ServiceResource extends JsonResource
             },
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'assigned_technicians' => $this->whenLoaded('technicians', fn() => $this->technicians->pluck('name')),
+            'assigned_technicians' => $this->whenLoaded('technicians', fn () => $this->technicians->pluck('name')),
             'jobcard' => new JobcardResource($this->whenLoaded('jobcardDetail')),
             'images' => ServiceImageResource::collection($this->whenLoaded('images')),
             'checkout_results' => CheckoutResultResource::collection($this->whenLoaded('checkoutResults')),

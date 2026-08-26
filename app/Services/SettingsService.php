@@ -10,6 +10,7 @@ class SettingsService
     public function get(string $key, $default = null): mixed
     {
         $setting = Setting::where('key', $key)->first();
+
         return $setting ? $setting->value : $default;
     }
 

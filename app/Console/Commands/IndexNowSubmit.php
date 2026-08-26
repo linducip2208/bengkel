@@ -19,7 +19,8 @@ class IndexNowSubmit extends Command
     {
         if ($this->option('url')) {
             $result = $service->submitSingle($this->option('url'));
-            $this->info("Submitted 1 URL. Success: " . ($result['success'] ? 'yes' : 'no'));
+            $this->info('Submitted 1 URL. Success: '.($result['success'] ? 'yes' : 'no'));
+
             return 0;
         }
 
@@ -33,6 +34,7 @@ class IndexNowSubmit extends Command
             }
             $result = $service->submitNewOnly($urls);
             $this->info("New URLs submitted: {$result['submitted']}");
+
             return 0;
         }
 

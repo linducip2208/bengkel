@@ -58,9 +58,10 @@ class ServiceTechnician extends Model
         if ($this->started_at && $this->finished_at) {
             return (int) $this->started_at->diffInMinutes($this->finished_at);
         }
-        if ($this->started_at && !$this->finished_at) {
+        if ($this->started_at && ! $this->finished_at) {
             return (int) $this->started_at->diffInMinutes(now());
         }
+
         return null;
     }
 }

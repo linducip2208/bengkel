@@ -27,7 +27,7 @@ return new class extends Migration
         });
 
         Schema::table('customer_groups', function (Blueprint $table) {
-            if (!Schema::hasColumn('customer_groups', 'selling_price_group_id')) {
+            if (! Schema::hasColumn('customer_groups', 'selling_price_group_id')) {
                 $table->foreignId('selling_price_group_id')->nullable()->after('is_active')->constrained('selling_price_groups')->nullOnDelete();
             }
         });

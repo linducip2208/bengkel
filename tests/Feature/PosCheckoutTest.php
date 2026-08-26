@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\RequirePair;
 use App\Models\Branch;
 use App\Models\Income;
 use App\Models\Invoice;
@@ -13,6 +14,7 @@ use App\Models\ProductUnit;
 use App\Models\StockHistory;
 use App\Models\StockRecord;
 use App\Models\User;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -26,8 +28,8 @@ class PosCheckoutTest extends TestCase
         parent::setUp();
 
         $this->withoutMiddleware([
-            \App\Http\Middleware\RequirePair::class,
-            \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
+            RequirePair::class,
+            PreventRequestForgery::class,
         ]);
     }
 

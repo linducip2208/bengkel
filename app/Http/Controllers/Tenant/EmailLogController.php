@@ -21,6 +21,7 @@ class EmailLogController extends Controller
             });
         }
         $logs = $query->latest()->paginate(30)->withQueryString();
+
         return view('email-logs.index', compact('logs'));
     }
 
@@ -32,6 +33,7 @@ class EmailLogController extends Controller
     public function destroy(EmailLog $emailLog)
     {
         $emailLog->delete();
+
         return redirect()->route('email-logs.index')->with('success', 'Log dihapus.');
     }
 }

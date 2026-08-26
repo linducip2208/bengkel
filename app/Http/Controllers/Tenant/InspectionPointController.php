@@ -20,12 +20,14 @@ class InspectionPointController extends Controller
         }
         $points = $query->orderBy('sort_order')->orderBy('point')->paginate(20)->withQueryString();
         $observationTypes = ObservationType::orderBy('observation_type')->get();
+
         return view('inspection-points.index', compact('points', 'observationTypes'));
     }
 
     public function create()
     {
         $observationTypes = ObservationType::orderBy('observation_type')->get();
+
         return view('inspection-points.create', compact('observationTypes'));
     }
 
@@ -53,6 +55,7 @@ class InspectionPointController extends Controller
     public function edit(InspectionPointsLibrary $inspectionPoint)
     {
         $observationTypes = ObservationType::orderBy('observation_type')->get();
+
         return view('inspection-points.edit', ['point' => $inspectionPoint, 'observationTypes' => $observationTypes]);
     }
 
@@ -80,6 +83,7 @@ class InspectionPointController extends Controller
     public function destroy(InspectionPointsLibrary $inspectionPoint)
     {
         $inspectionPoint->delete();
+
         return redirect()->route('inspection-points.index')->with('success', 'Inspection point dihapus.');
     }
 }

@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['name', 'phone', 'email', 'address', 'notes', 'branch_id', 'mobile', 'company_name', 'tax_id', 'customer_group_id', 'birth_date', 'loyalty_points', 'membership_tier', 'portal_password', 'portal_last_login'])]
 class Customer extends Model
 {
-    use HasFactory, SoftDeletes, HasBranchScope;
+    use HasBranchScope, HasFactory, SoftDeletes;
 
     protected function casts(): array
     {

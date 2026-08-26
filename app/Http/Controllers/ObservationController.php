@@ -20,7 +20,7 @@ class ObservationController extends Controller
 
         $checkResults = $service->serviceObservationPoints->keyBy('observation_point_id');
 
-        $groupedPoints = $points->groupBy(fn($p) => $p->observationType?->observation_type ?? 'Lainnya');
+        $groupedPoints = $points->groupBy(fn ($p) => $p->observationType?->observation_type ?? 'Lainnya');
 
         return view('observations.checklist', compact('service', 'groupedPoints', 'checkResults'));
     }

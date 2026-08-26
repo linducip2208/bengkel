@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
+use GuzzleHttp\Client;
+
 class SmsNotificationService
 {
     protected string $apiUrl;
+
     protected string $apiKey;
 
     public function __construct()
@@ -20,11 +23,12 @@ class SmsNotificationService
         }
 
         try {
-            $client = new \GuzzleHttp\Client(['timeout' => 10]);
+            $client = new Client(['timeout' => 10]);
             $response = $client->post($this->apiUrl, [
-                'headers' => ['Authorization' => 'Bearer ' . $this->apiKey],
+                'headers' => ['Authorization' => 'Bearer '.$this->apiKey],
                 'json' => ['phone' => $this->normalizePhone($phone), 'message' => $message],
             ]);
+
             return ['success' => true, 'data' => json_decode($response->getBody(), true)];
         } catch (\Throwable $e) {
             return ['success' => false, 'error' => $e->getMessage()];
@@ -34,13 +38,17 @@ class SmsNotificationService
     public function sendReminder(string $phone, string $type, string $detail): array
     {
         $message = "Aplikasi Bengkel Terbaik Reminder\n{$type}: {$detail}\nHubungi kami untuk booking.";
+
         return $this->send($phone, $message);
     }
 
     protected function normalizePhone(string $phone): string
     {
         $phone = preg_replace('/[^0-9]/', '', $phone);
-        if (str_starts_with($phone, '0')) return '62' . substr($phone, 1);
+        if (str_starts_with($phone, '0')) {
+            return '62'.substr($phone, 1);
+        }
+
         return $phone;
     }
 }

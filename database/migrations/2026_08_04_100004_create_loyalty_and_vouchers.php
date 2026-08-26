@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasColumn('customers', 'loyalty_points')) {
+        if (! Schema::hasColumn('customers', 'loyalty_points')) {
             Schema::table('customers', function (Blueprint $t) {
                 $t->integer('loyalty_points')->default(0)->after('address');
                 $t->string('membership_tier', 20)->default('bronze')->after('loyalty_points');
             });
         }
 
-        if (!Schema::hasTable('loyalty_transactions')) {
+        if (! Schema::hasTable('loyalty_transactions')) {
             Schema::create('loyalty_transactions', function (Blueprint $t) {
                 $t->id();
                 $t->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
@@ -29,7 +29,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('vouchers')) {
+        if (! Schema::hasTable('vouchers')) {
             Schema::create('vouchers', function (Blueprint $t) {
                 $t->id();
                 $t->string('code', 30)->unique();
@@ -50,7 +50,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('voucher_usages')) {
+        if (! Schema::hasTable('voucher_usages')) {
             Schema::create('voucher_usages', function (Blueprint $t) {
                 $t->id();
                 $t->foreignId('voucher_id')->constrained('vouchers')->onDelete('cascade');
@@ -68,7 +68,9 @@ return new class extends Migration
         Schema::dropIfExists('vouchers');
         Schema::dropIfExists('loyalty_transactions');
         Schema::table('customers', function (Blueprint $t) {
-            if (Schema::hasColumn('customers', 'loyalty_points')) $t->dropColumn(['loyalty_points', 'membership_tier']);
+            if (Schema::hasColumn('customers', 'loyalty_points')) {
+                $t->dropColumn(['loyalty_points', 'membership_tier']);
+            }
         });
     }
 };

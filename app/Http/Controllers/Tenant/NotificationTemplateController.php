@@ -11,7 +11,7 @@ class NotificationTemplateController extends Controller
     public function index(Request $request)
     {
         $templates = NotificationTemplate::query()
-            ->when($request->search, fn($q, $v) => $q->where('name', 'like', "%{$v}%"))
+            ->when($request->search, fn ($q, $v) => $q->where('name', 'like', "%{$v}%"))
             ->latest()
             ->paginate(15)
             ->withQueryString();
@@ -45,12 +45,14 @@ class NotificationTemplateController extends Controller
     public function show($id)
     {
         $template = NotificationTemplate::findOrFail($id);
+
         return view('notification-templates.show', compact('template'));
     }
 
     public function edit($id)
     {
         $template = NotificationTemplate::findOrFail($id);
+
         return view('notification-templates.edit', compact('template'));
     }
 
@@ -60,7 +62,7 @@ class NotificationTemplateController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', 'unique:notification_templates,slug,' . $template->id],
+            'slug' => ['required', 'string', 'max:255', 'unique:notification_templates,slug,'.$template->id],
             'channel' => ['required', 'in:email,whatsapp'],
             'subject' => ['nullable', 'string', 'max:255'],
             'body' => ['required', 'string'],
@@ -77,6 +79,7 @@ class NotificationTemplateController extends Controller
     public function destroy($id)
     {
         NotificationTemplate::findOrFail($id)->delete();
+
         return redirect()->route('notification-templates.index')->with('success', 'Template berhasil dihapus.');
     }
 

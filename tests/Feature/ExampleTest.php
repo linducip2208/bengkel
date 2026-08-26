@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\RequirePair;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
@@ -12,7 +13,7 @@ class ExampleTest extends TestCase
     public function test_the_application_returns_a_successful_response(): void
     {
         $this->withoutMiddleware([
-            \App\Http\Middleware\RequirePair::class,
+            RequirePair::class,
         ]);
 
         $response = $this->get('/');

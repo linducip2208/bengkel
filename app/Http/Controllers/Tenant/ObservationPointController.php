@@ -21,12 +21,14 @@ class ObservationPointController extends Controller
         $observationPoints = $query->orderBy('observation_type_id')->orderBy('observation_point')
             ->paginate(20)->withQueryString();
         $observationTypes = ObservationType::orderBy('observation_type')->get();
+
         return view('observation-points.index', compact('observationPoints', 'observationTypes'));
     }
 
     public function create()
     {
         $observationTypes = ObservationType::orderBy('observation_type')->get();
+
         return view('observation-points.create', compact('observationTypes'));
     }
 
@@ -45,6 +47,7 @@ class ObservationPointController extends Controller
     public function edit(ObservationPoint $observationPoint)
     {
         $observationTypes = ObservationType::orderBy('observation_type')->get();
+
         return view('observation-points.edit', compact('observationPoint', 'observationTypes'));
     }
 
@@ -66,6 +69,7 @@ class ObservationPointController extends Controller
             return back()->with('error', 'Point tidak bisa dihapus karena sudah dipakai di service.');
         }
         $observationPoint->delete();
+
         return redirect()->route('observation-points.index')->with('success', 'Observation point dihapus.');
     }
 }

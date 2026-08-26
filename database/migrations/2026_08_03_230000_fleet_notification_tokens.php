@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('customer_groups')) {
+        if (! Schema::hasTable('customer_groups')) {
             Schema::create('customer_groups', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -19,15 +19,15 @@ return new class extends Migration
         }
 
         Schema::table('customers', function (Blueprint $table) {
-            if (!Schema::hasColumn('customers', 'customer_group_id')) {
+            if (! Schema::hasColumn('customers', 'customer_group_id')) {
                 $table->foreignId('customer_group_id')->nullable()->after('id')->constrained('customer_groups')->nullOnDelete();
             }
-            if (!Schema::hasColumn('customers', 'birth_date')) {
+            if (! Schema::hasColumn('customers', 'birth_date')) {
                 $table->date('birth_date')->nullable()->after('phone');
             }
         });
 
-        if (!Schema::hasTable('notification_queue')) {
+        if (! Schema::hasTable('notification_queue')) {
             Schema::create('notification_queue', function (Blueprint $table) {
                 $table->id();
                 $table->string('channel');

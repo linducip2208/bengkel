@@ -13,6 +13,7 @@ class FuelTypeService extends BaseService
         if ($request->filled('search')) {
             $query->where('fuel_type', 'like', "%{$request->search}%");
         }
+
         return $query->orderBy('fuel_type')->get();
     }
 
@@ -24,6 +25,7 @@ class FuelTypeService extends BaseService
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
+
         return FuelType::create($validated);
     }
 
@@ -36,12 +38,13 @@ class FuelTypeService extends BaseService
     {
         $model = FuelType::findOrFail($id);
         $validated = $request->validate([
-            'fuel_type' => 'required|string|max:255|unique:fuel_types,fuel_type,' . $id,
-            'slug' => 'nullable|string|max:255|unique:fuel_types,slug,' . $id,
+            'fuel_type' => 'required|string|max:255|unique:fuel_types,fuel_type,'.$id,
+            'slug' => 'nullable|string|max:255|unique:fuel_types,slug,'.$id,
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
         $model->update($validated);
+
         return $model;
     }
 
@@ -49,6 +52,7 @@ class FuelTypeService extends BaseService
     {
         $model = FuelType::findOrFail($id);
         $model->delete();
+
         return $model;
     }
 }

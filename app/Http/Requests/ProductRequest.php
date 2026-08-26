@@ -11,7 +11,7 @@ class ProductRequest extends FormRequest
     {
         $route = $this->route('product');
         $productId = is_object($route) ? $route->id : $route;
-        $isCreate = !$productId;
+        $isCreate = ! $productId;
 
         return [
             'code' => ['required', 'string', 'max:50', Rule::unique('products', 'code')->ignore($productId)],

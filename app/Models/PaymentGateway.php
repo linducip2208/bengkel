@@ -31,9 +31,14 @@ class PaymentGateway extends Model
 
     public function getApiKeyAttribute(): ?string
     {
-        if (empty($this->api_key_encrypted)) return null;
-        try { return Crypt::decryptString($this->api_key_encrypted); }
-        catch (\Throwable) { return null; }
+        if (empty($this->api_key_encrypted)) {
+            return null;
+        }
+        try {
+            return Crypt::decryptString($this->api_key_encrypted);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     public function setApiKeyAttribute(?string $value): void
@@ -43,9 +48,14 @@ class PaymentGateway extends Model
 
     public function getSecretKeyAttribute(): ?string
     {
-        if (empty($this->secret_key_encrypted)) return null;
-        try { return Crypt::decryptString($this->secret_key_encrypted); }
-        catch (\Throwable) { return null; }
+        if (empty($this->secret_key_encrypted)) {
+            return null;
+        }
+        try {
+            return Crypt::decryptString($this->secret_key_encrypted);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     public function setSecretKeyAttribute(?string $value): void

@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Models\Branch;
 use App\Scopes\BranchScope;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,7 +24,7 @@ trait HasBranchScope
 
     public function branch(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\Branch::class);
+        return $this->belongsTo(Branch::class);
     }
 
     public function scopeWithoutBranchScope($query)

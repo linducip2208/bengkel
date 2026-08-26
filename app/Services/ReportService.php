@@ -2,16 +2,17 @@
 
 namespace App\Services;
 
+use App\Models\Branch;
 use App\Models\Expense;
 use App\Models\Income;
 use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\Purchase;
-use App\Models\Sale;
 use App\Models\Service;
 use App\Models\StockHistory;
 use App\Models\StockRecord;
 use App\Models\SupplierPrice;
+use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
@@ -22,13 +23,13 @@ class ReportService
     {
         $query = Service::with(['customer', 'vehicle']);
 
-        if (!empty($filters['start_date'])) {
+        if (! empty($filters['start_date'])) {
             $query->whereDate('service_date', '>=', $filters['start_date']);
         }
-        if (!empty($filters['end_date'])) {
+        if (! empty($filters['end_date'])) {
             $query->whereDate('service_date', '<=', $filters['end_date']);
         }
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
             $query->where('done_status', $filters['status']);
         }
 
@@ -40,16 +41,16 @@ class ReportService
         $totalVariance = (float) $totalActualCost - (float) $totalRevenue;
         $avgValue = $totalServices > 0 ? $totalRevenue / $totalServices : 0;
 
-        $byDate = $services->groupBy(fn($s) => \Carbon\Carbon::parse($s->service_date)->format('Y-m-d'))
-            ->map(fn($group) => [
+        $byDate = $services->groupBy(fn ($s) => Carbon::parse($s->service_date)->format('Y-m-d'))
+            ->map(fn ($group) => [
                 'count' => $group->count(),
                 'revenue' => $group->sum('charge'),
             ]);
 
         $byTechnician = $services->groupBy('assign_to')
-            ->map(fn($group, $techId) => [
+            ->map(fn ($group, $techId) => [
                 'technician_id' => $techId,
-                'technician_name' => \App\Models\User::find($techId)?->name ?? 'Unassigned',
+                'technician_name' => User::find($techId)?->name ?? 'Unassigned',
                 'count' => $group->count(),
                 'revenue' => $group->sum('charge'),
             ]);
@@ -72,10 +73,10 @@ class ReportService
         $query = Invoice::with(['customer'])
             ->where('invoice_type', 'pos');
 
-        if (!empty($filters['start_date'])) {
+        if (! empty($filters['start_date'])) {
             $query->whereDate('invoice_date', '>=', $filters['start_date']);
         }
-        if (!empty($filters['end_date'])) {
+        if (! empty($filters['end_date'])) {
             $query->whereDate('invoice_date', '<=', $filters['end_date']);
         }
 
@@ -83,8 +84,8 @@ class ReportService
         $totalSales = $sales->count();
         $totalRevenue = $sales->sum('grand_total');
 
-        $byDate = $sales->groupBy(fn($s) => \Carbon\Carbon::parse($s->invoice_date)->format('Y-m-d'))
-            ->map(fn($group) => [
+        $byDate = $sales->groupBy(fn ($s) => Carbon::parse($s->invoice_date)->format('Y-m-d'))
+            ->map(fn ($group) => [
                 'count' => $group->count(),
                 'revenue' => $group->sum('grand_total'),
             ]);
@@ -101,7 +102,7 @@ class ReportService
     {
         $query = Product::with(['productType', 'unit', 'stockRecord']);
 
-        if (!empty($filters['category_id'])) {
+        if (! empty($filters['category_id'])) {
             $query->where('product_type_id', $filters['category_id']);
         }
 
@@ -116,10 +117,10 @@ class ReportService
             ->where('quantity_change', '<', 0)
             ->selectRaw('product_id, SUM(ABS(quantity_change)) as total_out')
             ->groupBy('product_id')->pluck('total_out', 'product_id');
-        $purchases = Purchase::whereHas('items', fn($q) => $q->whereIn('product_id', $productIds))
-            ->with(['items' => fn($q) => $q->whereIn('product_id', $productIds)])
+        $purchases = Purchase::whereHas('items', fn ($q) => $q->whereIn('product_id', $productIds))
+            ->with(['items' => fn ($q) => $q->whereIn('product_id', $productIds)])
             ->latest('purchase_date')->get()
-            ->flatMap(fn($p) => $p->items->map(fn($i) => [$i->product_id => $p->purchase_date]))
+            ->flatMap(fn ($p) => $p->items->map(fn ($i) => [$i->product_id => $p->purchase_date]))
             ->collapse();
         $lastUsages = StockHistory::whereIn('product_id', $productIds)
             ->where('quantity_change', '<', 0)
@@ -138,7 +139,7 @@ class ReportService
             return $product;
         });
 
-        $lowStock = $products->filter(fn($p) => $p->current_stock <= ($p->minimum_stock ?? 5));
+        $lowStock = $products->filter(fn ($p) => $p->current_stock <= ($p->minimum_stock ?? 5));
         $totalValue = $products->sum('total_value');
 
         return [
@@ -168,7 +169,7 @@ class ReportService
 
         $monthlyBreakdown = collect([]);
 
-        $months = \Carbon\CarbonPeriod::create($startDate, '1 month', $endDate);
+        $months = CarbonPeriod::create($startDate, '1 month', $endDate);
         foreach ($months as $month) {
             $monthStart = $month->copy()->startOfMonth()->toDateString();
             $monthEnd = $month->copy()->endOfMonth()->toDateString();
@@ -255,9 +256,9 @@ class ReportService
                 'cheapest_price' => $cheapest?->price ?? 0,
             ];
         })
-        ->sortByDesc('suggested_reorder')
-        ->values()
-        ->toArray();
+            ->sortByDesc('suggested_reorder')
+            ->values()
+            ->toArray();
     }
 
     public function getDashboardStats(): array
@@ -276,7 +277,7 @@ class ReportService
 
         $outstandingInvoices = Invoice::where('payment_status', '!=', 2)->count();
 
-        $lowStockCount = \App\Models\StockRecord::where('quantity', '<=', \Illuminate\Support\Facades\DB::raw('COALESCE(minimum_stock, 5)'))->count();
+        $lowStockCount = StockRecord::where('quantity', '<=', DB::raw('COALESCE(minimum_stock, 5)'))->count();
 
         return [
             'open_services' => $openServices,
@@ -305,10 +306,11 @@ class ReportService
                     $inv->days_overdue <= 90 => '61-90',
                     default => '90+',
                 };
+
                 return $inv;
             });
 
-        $aging = $invoices->groupBy('age_group')->map(fn($g) => [
+        $aging = $invoices->groupBy('age_group')->map(fn ($g) => [
             'count' => $g->count(),
             'total' => $g->sum('remaining'),
         ]);
@@ -322,8 +324,12 @@ class ReportService
             ->where('type', 'usage')
             ->where('quantity_change', '<', 0);
 
-        if (!empty($filters['start_date'])) $query->whereDate('created_at', '>=', $filters['start_date']);
-        if (!empty($filters['end_date'])) $query->whereDate('created_at', '<=', $filters['end_date']);
+        if (! empty($filters['start_date'])) {
+            $query->whereDate('created_at', '>=', $filters['start_date']);
+        }
+        if (! empty($filters['end_date'])) {
+            $query->whereDate('created_at', '<=', $filters['end_date']);
+        }
 
         $usage = $query->selectRaw('product_id, SUM(ABS(quantity_change)) as total_qty, COUNT(*) as usage_count')
             ->groupBy('product_id')
@@ -335,6 +341,7 @@ class ReportService
                 $u->category = $product?->productType?->name ?? '-';
                 $u->unit_cost = $product?->cost_price ?? 0;
                 $u->total_cost = $u->total_qty * $u->unit_cost;
+
                 return $u;
             });
 
@@ -343,7 +350,7 @@ class ReportService
 
     public function branchComparison(array $filters): array
     {
-        $branches = \App\Models\Branch::where('is_active', true)->get();
+        $branches = Branch::where('is_active', true)->get();
         $startDate = $filters['start_date'] ?? now()->startOfMonth()->toDateString();
         $endDate = $filters['end_date'] ?? now()->toDateString();
 

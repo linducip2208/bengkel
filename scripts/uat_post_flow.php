@@ -1,18 +1,31 @@
 <?php
+
+use App\Models\Customer;
+use App\Models\FuelType;
+use App\Models\ProductType;
+use App\Models\ProductUnit;
+use App\Models\RepairCategory;
+use App\Models\Service;
+use App\Models\Vehicle;
+use App\Models\VehicleBrand;
+use App\Models\VehicleType;
+use Illuminate\Contracts\Console\Kernel;
+
 /**
  * UAT POST flow — simulates filling forms and submitting.
  */
 
-require __DIR__ . '/../vendor/autoload.php';
-$app = require __DIR__ . '/../bootstrap/app.php';
-$kernel = $app->make(\Illuminate\Contracts\Console\Kernel::class);
+require __DIR__.'/../vendor/autoload.php';
+$app = require __DIR__.'/../bootstrap/app.php';
+$kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
 $base = $argv[1] ?? 'http://127.0.0.1:8124';
-$cookieJar = sys_get_temp_dir() . '/uat_post_' . getmypid() . '.txt';
+$cookieJar = sys_get_temp_dir().'/uat_post_'.getmypid().'.txt';
 @unlink($cookieJar);
 
-function curlReq($url, $method = 'GET', $data = null, $cookieJar = null, $files = []) {
+function curlReq($url, $method = 'GET', $data = null, $cookieJar = null, $files = [])
+{
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -35,25 +48,37 @@ function curlReq($url, $method = 'GET', $data = null, $cookieJar = null, $files 
     $head = substr($body, 0, $headerSize);
     $body = substr($body, $headerSize);
     curl_close($ch);
+
     return ['status' => $status, 'head' => $head, 'body' => $body];
 }
 
-function fetchCsrf($url, $cookieJar) {
+function fetchCsrf($url, $cookieJar)
+{
     $r = curlReq($url, 'GET', null, $cookieJar);
-    if (preg_match('/name="_token" value="([^"]+)"/', $r['body'], $m)) return $m[1];
+    if (preg_match('/name="_token" value="([^"]+)"/', $r['body'], $m)) {
+        return $m[1];
+    }
+
     return null;
 }
 
-function describeStatus($r, $route) {
+function describeStatus($r, $route)
+{
     $s = $r['status'];
     if ($s >= 200 && $s < 400) {
         echo "✓ $s POST $route\n";
+
         return true;
     }
     echo "✗ $s POST $route\n";
     // try to extract error
-    if (preg_match("#\"message\":\"([^\"]+)\"#", $r['body'], $m)) echo "   {$m[1]}\n";
-    if (preg_match('/<title>(.+?)<\/title>/s', $r['body'], $m)) echo "   {$m[1]}\n";
+    if (preg_match('#"message":"([^"]+)"#', $r['body'], $m)) {
+        echo "   {$m[1]}\n";
+    }
+    if (preg_match('/<title>(.+?)<\/title>/s', $r['body'], $m)) {
+        echo "   {$m[1]}\n";
+    }
+
     return false;
 }
 
@@ -71,7 +96,8 @@ if ($r['status'] !== 302) {
 echo "✓ Logged in\n";
 
 // Helper: get latest csrf from any authenticated page
-function csrf($base, $cookieJar) {
+function csrf($base, $cookieJar)
+{
     return fetchCsrf("$base/customers/create", $cookieJar);
 }
 
@@ -81,24 +107,24 @@ $results = [];
 $tok = csrf($base, $cookieJar);
 $r = curlReq("$base/customers", 'POST', [
     '_token' => $tok,
-    'name' => 'UAT POST ' . uniqid(),
-    'phone' => '0812' . rand(10000000, 99999999),
-    'mobile' => '0813' . rand(10000000, 99999999),
-    'email' => 'uatpost' . uniqid() . '@t.id',
+    'name' => 'UAT POST '.uniqid(),
+    'phone' => '0812'.rand(10000000, 99999999),
+    'mobile' => '0813'.rand(10000000, 99999999),
+    'email' => 'uatpost'.uniqid().'@t.id',
     'address' => 'Jl. Test',
 ], $cookieJar);
 $results['create-customer'] = describeStatus($r, '/customers');
 
 // --- 2. Create Vehicle ---
-$customer = \App\Models\Customer::latest('id')->first();
+$customer = Customer::latest('id')->first();
 $tok = csrf($base, $cookieJar);
 $r = curlReq("$base/vehicles", 'POST', [
     '_token' => $tok,
     'customer_id' => $customer->id,
-    'vehicle_brand_id' => \App\Models\VehicleBrand::first()->id,
-    'vehicle_type_id' => \App\Models\VehicleType::first()->id,
-    'fuel_type_id' => \App\Models\FuelType::first()->id,
-    'number_plate' => 'POST ' . rand(1000, 9999),
+    'vehicle_brand_id' => VehicleBrand::first()->id,
+    'vehicle_type_id' => VehicleType::first()->id,
+    'fuel_type_id' => FuelType::first()->id,
+    'number_plate' => 'POST '.rand(1000, 9999),
     'model_name' => 'Test Model',
     'model_year' => 2022,
     'color' => 'red',
@@ -107,13 +133,13 @@ $r = curlReq("$base/vehicles", 'POST', [
 $results['create-vehicle'] = describeStatus($r, '/vehicles');
 
 // --- 3. Create Service ---
-$vehicle = \App\Models\Vehicle::latest('id')->first();
+$vehicle = Vehicle::latest('id')->first();
 $tok = csrf($base, $cookieJar);
 $r = curlReq("$base/services", 'POST', [
     '_token' => $tok,
     'customer_id' => $customer->id,
     'vehicle_id' => $vehicle->id,
-    'repair_category_id' => \App\Models\RepairCategory::first()?->id,
+    'repair_category_id' => RepairCategory::first()?->id,
     'title' => 'POST Test Service',
     'description' => 'desc',
     'service_date' => date('Y-m-d'),
@@ -126,9 +152,9 @@ $tok = csrf($base, $cookieJar);
 $r = curlReq("$base/products", 'POST', [
     '_token' => $tok,
     'name' => 'POST Test Product',
-    'code' => 'PST-' . uniqid(),
-    'product_type_id' => \App\Models\ProductType::first()->id,
-    'unit_id' => \App\Models\ProductUnit::first()->id,
+    'code' => 'PST-'.uniqid(),
+    'product_type_id' => ProductType::first()->id,
+    'unit_id' => ProductUnit::first()->id,
     'price' => 50000,
     'cost_price' => 30000,
     'description' => 'desc',
@@ -141,7 +167,7 @@ $r = curlReq("$base/suppliers", 'POST', [
     '_token' => $tok,
     'name' => 'POST Test Supplier',
     'phone' => '081200001111',
-    'email' => 'sup' . uniqid() . '@t.id',
+    'email' => 'sup'.uniqid().'@t.id',
     'address' => 'addr',
 ], $cookieJar);
 $results['create-supplier'] = describeStatus($r, '/suppliers');
@@ -172,7 +198,7 @@ $results['create-expense'] = describeStatus($r, '/expenses');
 $tok = csrf($base, $cookieJar);
 $r = curlReq("$base/vouchers", 'POST', [
     '_token' => $tok,
-    'code' => 'POST' . rand(100, 999),
+    'code' => 'POST'.rand(100, 999),
     'name' => 'POST Voucher',
     'type' => 'percent',
     'value' => 10,
@@ -189,8 +215,8 @@ $results['create-voucher'] = describeStatus($r, '/vouchers');
 $tok = csrf($base, $cookieJar);
 $r = curlReq("$base/notification-templates", 'POST', [
     '_token' => $tok,
-    'name' => 'POST Tpl ' . uniqid(),
-    'slug' => 'post-tpl-' . uniqid(),
+    'name' => 'POST Tpl '.uniqid(),
+    'slug' => 'post-tpl-'.uniqid(),
     'channel' => 'whatsapp',
     'body' => 'Hi {customer_name}',
 ], $cookieJar);
@@ -200,7 +226,7 @@ $results['create-tpl'] = describeStatus($r, '/notification-templates');
 $tok = csrf($base, $cookieJar);
 $r = curlReq("$base/vehicle-brands", 'POST', [
     '_token' => $tok,
-    'name' => 'POST Brand ' . uniqid(),
+    'name' => 'POST Brand '.uniqid(),
 ], $cookieJar);
 $results['create-brand'] = describeStatus($r, '/vehicle-brands');
 
@@ -208,13 +234,13 @@ $results['create-brand'] = describeStatus($r, '/vehicle-brands');
 $tok = csrf($base, $cookieJar);
 $r = curlReq("$base/payment-methods", 'POST', [
     '_token' => $tok,
-    'name' => 'POST PM ' . uniqid(),
+    'name' => 'POST PM '.uniqid(),
     'is_active' => 1,
 ], $cookieJar);
 $results['create-pm'] = describeStatus($r, '/payment-methods');
 
 // --- 12. Create reminder ---
-$svc = \App\Models\Service::latest('id')->first();
+$svc = Service::latest('id')->first();
 $tok = csrf($base, $cookieJar);
 $r = curlReq("$base/reminders", 'POST', [
     '_token' => $tok,
@@ -232,9 +258,9 @@ $tok = fetchCsrf("$base/booking", $cookieJar);
 $r = curlReq("$base/booking", 'POST', [
     '_token' => $tok,
     'name' => 'Public Booking',
-    'phone' => '0812' . rand(10000000, 99999999),
-    'email' => 'pb' . uniqid() . '@t.id',
-    'vehicle_plate' => 'PB ' . rand(1000, 9999),
+    'phone' => '0812'.rand(10000000, 99999999),
+    'email' => 'pb'.uniqid().'@t.id',
+    'vehicle_plate' => 'PB '.rand(1000, 9999),
     'vehicle_brand' => 'Honda',
     'vehicle_model' => 'Brio',
     'booking_at' => date('Y-m-d H:i:s', strtotime('+1 day')),
@@ -247,5 +273,5 @@ $ok = count(array_filter($results));
 $total = count($results);
 echo "✓ OK: $ok / $total\n";
 foreach ($results as $name => $pass) {
-    echo ($pass ? "✓" : "✗") . " $name\n";
+    echo ($pass ? '✓' : '✗')." $name\n";
 }

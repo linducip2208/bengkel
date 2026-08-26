@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\EmailLog;
 use App\Models\NotificationTemplate;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 
 class NotificationService
@@ -13,12 +14,12 @@ class NotificationService
     {
         $template = $this->getTemplate($templateSlug);
 
-        if (!$template || !$template->is_active) {
+        if (! $template || ! $template->is_active) {
             return;
         }
 
         $to = $notifiable->email ?? $notifiable->phone ?? null;
-        if (!$to) {
+        if (! $to) {
             return;
         }
 
@@ -34,7 +35,7 @@ class NotificationService
     public function sendSms(string $templateSlug, string $to, array $data): void
     {
         $template = $this->getTemplate($templateSlug);
-        if (!$template || !$template->is_active) {
+        if (! $template || ! $template->is_active) {
             return;
         }
 
@@ -42,12 +43,12 @@ class NotificationService
         $apiUrl = app(SettingsService::class)->get('sms_api_url', '');
         $apiKey = app(SettingsService::class)->get('sms_api_key', '');
 
-        if (!$apiUrl) {
+        if (! $apiUrl) {
             return;
         }
 
         try {
-            \Illuminate\Support\Facades\Http::post($apiUrl, [
+            Http::post($apiUrl, [
                 'phone' => $to,
                 'message' => $body,
                 'api_key' => $apiKey,
@@ -61,7 +62,7 @@ class NotificationService
     public function sendEmail(string $templateSlug, string $to, array $data): void
     {
         $template = $this->getTemplate($templateSlug);
-        if (!$template || !$template->is_active) {
+        if (! $template || ! $template->is_active) {
             return;
         }
 
@@ -86,7 +87,7 @@ class NotificationService
     public function sendWhatsApp(string $templateSlug, string $to, array $data): void
     {
         $template = $this->getTemplate($templateSlug);
-        if (!$template || !$template->is_active) {
+        if (! $template || ! $template->is_active) {
             return;
         }
 
@@ -118,8 +119,8 @@ class NotificationService
 
     private function sendViaFonnte(string $to, string $message, string $apiUrl, string $apiKey): void
     {
-        \Illuminate\Support\Facades\Http::withToken($apiKey)
-            ->post(rtrim($apiUrl, '/') . '/send', [
+        Http::withToken($apiKey)
+            ->post(rtrim($apiUrl, '/').'/send', [
                 'target' => $to,
                 'message' => $message,
             ]);
@@ -127,8 +128,8 @@ class NotificationService
 
     private function sendViaWablas(string $to, string $message, string $apiUrl, string $apiKey): void
     {
-        \Illuminate\Support\Facades\Http::withToken($apiKey)
-            ->post(rtrim($apiUrl, '/') . '/send-message', [
+        Http::withToken($apiKey)
+            ->post(rtrim($apiUrl, '/').'/send-message', [
                 'phone' => $to,
                 'message' => $message,
             ]);
@@ -136,8 +137,8 @@ class NotificationService
 
     private function sendViaWABusiness(string $to, string $message, string $apiUrl, string $apiKey, string $senderId): void
     {
-        \Illuminate\Support\Facades\Http::withToken($apiKey)
-            ->post(rtrim($apiUrl, '/') . '/messages', [
+        Http::withToken($apiKey)
+            ->post(rtrim($apiUrl, '/').'/messages', [
                 'messaging_product' => 'whatsapp',
                 'to' => $to,
                 'type' => 'text',
@@ -164,7 +165,7 @@ class NotificationService
 
     private function parseTemplate(string $template, array $data): string
     {
-        $search = array_map(fn($k) => '{' . $k . '}', array_keys($data));
+        $search = array_map(fn ($k) => '{'.$k.'}', array_keys($data));
         $replace = array_values($data);
 
         return str_replace($search, $replace, $template);

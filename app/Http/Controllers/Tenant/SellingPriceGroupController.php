@@ -81,6 +81,7 @@ class SellingPriceGroupController extends Controller
         foreach (($request->input('prices', [])) as $productId => $price) {
             if ($price === null || $price === '') {
                 $sellingPriceGroup->productSellingPrices()->where('product_id', $productId)->delete();
+
                 continue;
             }
 

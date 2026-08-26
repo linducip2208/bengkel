@@ -26,6 +26,7 @@ class StockHistoryController extends Controller
         }
         $histories = $query->latest()->paginate(30)->withQueryString();
         $products = Product::orderBy('name')->limit(500)->get();
+
         return view('stock-histories.index', compact('histories', 'products'));
     }
 }

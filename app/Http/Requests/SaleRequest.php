@@ -25,7 +25,7 @@ class SaleRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $items = collect($this->input('items', []))
-            ->filter(fn($item) => !empty($item['product_id']))
+            ->filter(fn ($item) => ! empty($item['product_id']))
             ->values()
             ->all();
 

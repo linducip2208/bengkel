@@ -11,7 +11,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class PettyCash extends Model
 {
     use HasBranchScope;
+
     protected $table = 'petty_cash_transactions';
+
     protected $casts = ['date' => 'date', 'amount' => 'decimal:2'];
-    public function creator(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

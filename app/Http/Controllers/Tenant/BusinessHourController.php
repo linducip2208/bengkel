@@ -13,6 +13,7 @@ class BusinessHourController extends Controller
     {
         $branches = Branch::where('is_active', true)->orderBy('name')->get();
         $selectedBranchId = $request->get('branch_id');
+
         return view('business-hours.create', compact('branches', 'selectedBranchId'));
     }
 
@@ -47,6 +48,7 @@ class BusinessHourController extends Controller
     public function edit(BusinessHour $businessHour)
     {
         $branches = Branch::where('is_active', true)->orderBy('name')->get();
+
         return view('business-hours.edit', compact('businessHour', 'branches'));
     }
 
@@ -73,6 +75,7 @@ class BusinessHourController extends Controller
     {
         $branchId = $businessHour->branch_id;
         $businessHour->delete();
+
         return redirect()->route('branches.show', $branchId)->with('success', 'Jam operasional dihapus.');
     }
 }

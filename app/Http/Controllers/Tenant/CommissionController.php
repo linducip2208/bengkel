@@ -13,7 +13,7 @@ class CommissionController extends Controller
     public function index(Request $request)
     {
         $query = ServiceTechnician::with(['service.customer', 'service.vehicle', 'user'])
-            ->whereHas('service', fn($q) => $q->where('done_status', 2));
+            ->whereHas('service', fn ($q) => $q->where('done_status', 2));
 
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
@@ -26,24 +26,24 @@ class CommissionController extends Controller
             }
         }
         if ($request->filled('date_from')) {
-            $query->whereHas('service', fn($q) => $q->whereDate('service_date', '>=', $request->date_from));
+            $query->whereHas('service', fn ($q) => $q->whereDate('service_date', '>=', $request->date_from));
         }
         if ($request->filled('date_to')) {
-            $query->whereHas('service', fn($q) => $q->whereDate('service_date', '<=', $request->date_to));
+            $query->whereHas('service', fn ($q) => $q->whereDate('service_date', '<=', $request->date_to));
         }
 
         $rows = $query->latest()->paginate(30)->withQueryString();
 
         $summary = [
             'total_unpaid' => ServiceTechnician::unpaid()
-                ->whereHas('service', fn($q) => $q->where('done_status', 2))
+                ->whereHas('service', fn ($q) => $q->where('done_status', 2))
                 ->sum('commission_amt') ?? 0,
             'total_paid_month' => ServiceTechnician::paid()
                 ->whereMonth('paid_at', now()->month)
                 ->whereYear('paid_at', now()->year)
                 ->sum('commission_amt') ?? 0,
             'pending_count' => ServiceTechnician::unpaid()
-                ->whereHas('service', fn($q) => $q->where('done_status', 2))
+                ->whereHas('service', fn ($q) => $q->where('done_status', 2))
                 ->count(),
         ];
 
@@ -58,18 +58,20 @@ class CommissionController extends Controller
             return back()->with('error', 'Pekerjaan teknisi ini sudah dimulai.');
         }
         $serviceTechnician->update(['started_at' => now()]);
+
         return back()->with('success', 'Timer teknisi dimulai.');
     }
 
     public function finishJob(ServiceTechnician $serviceTechnician)
     {
-        if (!$serviceTechnician->started_at) {
+        if (! $serviceTechnician->started_at) {
             return back()->with('error', 'Pekerjaan belum dimulai.');
         }
         if ($serviceTechnician->finished_at) {
             return back()->with('error', 'Pekerjaan teknisi ini sudah selesai.');
         }
         $serviceTechnician->update(['finished_at' => now()]);
+
         return back()->with('success', 'Timer teknisi dihentikan.');
     }
 
@@ -83,6 +85,7 @@ class CommissionController extends Controller
             'paid_by' => auth()->id(),
             'notes' => $request->input('notes', $serviceTechnician->notes),
         ]);
+
         return back()->with('success', 'Komisi ditandai sudah dibayar.');
     }
 
@@ -111,7 +114,7 @@ class CommissionController extends Controller
         $rows = DB::table('service_technicians')
             ->join('users', 'service_technicians.user_id', '=', 'users.id')
             ->join('services', 'service_technicians.service_id', '=', 'services.id')
-            ->whereBetween('services.service_date', [$from, $to . ' 23:59:59'])
+            ->whereBetween('services.service_date', [$from, $to.' 23:59:59'])
             ->where('services.done_status', 2)
             ->whereNull('service_technicians.deleted_at')
             ->select(

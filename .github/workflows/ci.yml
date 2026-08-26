@@ -2,7 +2,6 @@ name: CI
 
 on:
   push:
-    branches: [main]
   pull_request:
 
 jobs:
@@ -33,8 +32,8 @@ jobs:
           php -r "file_exists('.env') || copy('.env.ci', '.env');"
           php artisan key:generate --force
 
-      - name: Run migrations (clean database)
-        run: php artisan migrate --force
+      - name: Run migrations and seeders (clean database)
+        run: php artisan migrate:fresh --seed --force
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: ':memory:'
@@ -44,6 +43,12 @@ jobs:
 
       - name: Static analysis (PHPStan level 5)
         run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+      - name: Validate routes and production configuration
+        run: |
+          php artisan route:list --except-vendor
+          APP_ENV=production APP_DEBUG=false php artisan config:cache
+          php artisan config:clear
 
       - name: Run test suite
         run: php artisan test --compact

@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['customer_id', 'vehicle_type_id', 'vehicle_brand_id', 'fuel_type_id', 'number_plate', 'chassis_number', 'engine_number', 'model_name', 'model_year', 'color', 'odometer', 'branch_id', 'price', 'description'])]
 class Vehicle extends Model
 {
-    use HasFactory, SoftDeletes, HasBranchScope;
+    use HasBranchScope, HasFactory, SoftDeletes;
 
     protected function casts(): array
     {

@@ -13,6 +13,7 @@ class ObservationTypeService extends BaseService
         if ($request->filled('search')) {
             $query->where('observation_type', 'like', "%{$request->search}%");
         }
+
         return $query->orderBy('observation_type')->get();
     }
 
@@ -21,6 +22,7 @@ class ObservationTypeService extends BaseService
         $validated = $request->validate([
             'observation_type' => 'required|string|max:255|unique:observation_types',
         ]);
+
         return ObservationType::create($validated);
     }
 
@@ -33,9 +35,10 @@ class ObservationTypeService extends BaseService
     {
         $model = ObservationType::findOrFail($id);
         $validated = $request->validate([
-            'observation_type' => 'required|string|max:255|unique:observation_types,observation_type,' . $id,
+            'observation_type' => 'required|string|max:255|unique:observation_types,observation_type,'.$id,
         ]);
         $model->update($validated);
+
         return $model;
     }
 
@@ -43,6 +46,7 @@ class ObservationTypeService extends BaseService
     {
         $model = ObservationType::findOrFail($id);
         $model->delete();
+
         return $model;
     }
 }

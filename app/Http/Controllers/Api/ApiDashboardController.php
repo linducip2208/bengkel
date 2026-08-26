@@ -8,8 +8,6 @@ use App\Models\Expense;
 use App\Models\Income;
 use App\Models\Invoice;
 use App\Models\Product;
-use App\Models\Purchase;
-use App\Models\Sale;
 use App\Models\Service;
 use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
@@ -44,7 +42,7 @@ class ApiDashboardController extends Controller
                 'completed_services' => Service::where('done_status', 2)->count(),
                 'unpaid_invoices' => Invoice::whereIn('payment_status', [0, 1])->count(),
                 'products' => Product::count(),
-                'low_stock_products' => Product::whereHas('stockRecord', fn($q) => $q->whereColumn('quantity', '<=', 'minimum_stock'))->count(),
+                'low_stock_products' => Product::whereHas('stockRecord', fn ($q) => $q->whereColumn('quantity', '<=', 'minimum_stock'))->count(),
             ],
             'revenue_chart' => $this->getMonthlyRevenue(),
             'service_chart' => $this->getMonthlyServices(),

@@ -2,26 +2,32 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\Invoice
+ * @mixin Invoice
  */
 class InvoiceResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        /** @var Invoice $invoice */
+        $invoice = $this->resource;
+
         return [
             'id' => $this->id,
             'invoice_number' => $this->invoice_number,
             'service_id' => $this->service_id,
             'service' => new ServiceResource($this->whenLoaded('service')),
-            'customer' => $this->when($this->relationLoaded('service'), function () {
-                return $this->service ? new CustomerResource($this->service->customer) : null;
+            'customer' => $this->when($this->relationLoaded('service'), function () use ($invoice) {
+                return $invoice->service
+                    ? new CustomerResource($invoice->service->getRelation('customer'))
+                    : null;
             }),
             'invoice_date' => $this->invoice_date,
-            'payment_method' => $this->paymentMethod?->payment ?? null,
+            'payment_method' => $invoice->paymentMethod?->getAttribute('payment'),
             'payment_status' => $this->payment_status,
             'payment_status_text' => match ((int) $this->payment_status) {
                 0 => 'Unpaid',

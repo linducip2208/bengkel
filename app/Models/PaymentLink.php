@@ -23,8 +23,18 @@ class PaymentLink extends Model
         ];
     }
 
-    public function invoice(): BelongsTo { return $this->belongsTo(Invoice::class); }
-    public function gateway(): BelongsTo { return $this->belongsTo(PaymentGateway::class, 'payment_gateway_id'); }
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
+    }
 
-    public function isExpired(): bool { return $this->expires_at && $this->expires_at->isPast(); }
+    public function gateway(): BelongsTo
+    {
+        return $this->belongsTo(PaymentGateway::class, 'payment_gateway_id');
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->expires_at && $this->expires_at->isPast();
+    }
 }

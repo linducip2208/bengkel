@@ -20,7 +20,7 @@ class ApiMasterDataController extends Controller
     {
         return response()->json([
             'vehicle_types' => VehicleType::orderBy('vehicle_type')->get(['id', 'vehicle_type']),
-            'vehicle_brands' => VehicleBrand::with('vehicleType')->orderBy('vehicle_brand')->get()->map(fn($b) => [
+            'vehicle_brands' => VehicleBrand::with('vehicleType')->orderBy('vehicle_brand')->get()->map(fn ($b) => [
                 'id' => $b->id,
                 'vehicle_type_id' => $b->vehicle_type_id,
                 'vehicle_brand' => $b->vehicle_brand,

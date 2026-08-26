@@ -20,12 +20,14 @@ class StateController extends Controller
         }
         $states = $query->orderBy('name')->paginate(20)->withQueryString();
         $countries = Country::orderBy('name')->get();
+
         return view('states.index', compact('states', 'countries'));
     }
 
     public function create()
     {
         $countries = Country::orderBy('name')->get();
+
         return view('states.create', compact('countries'));
     }
 
@@ -36,12 +38,14 @@ class StateController extends Controller
             'name' => 'required|string|max:255',
         ]);
         State::create($validated);
+
         return redirect()->route('states.index')->with('success', 'Provinsi ditambahkan.');
     }
 
     public function edit(State $state)
     {
         $countries = Country::orderBy('name')->get();
+
         return view('states.edit', compact('state', 'countries'));
     }
 
@@ -52,6 +56,7 @@ class StateController extends Controller
             'name' => 'required|string|max:255',
         ]);
         $state->update($validated);
+
         return redirect()->route('states.index')->with('success', 'Provinsi diperbarui.');
     }
 
@@ -61,6 +66,7 @@ class StateController extends Controller
             return back()->with('error', 'Provinsi tidak bisa dihapus karena masih punya kota terdaftar.');
         }
         $state->delete();
+
         return redirect()->route('states.index')->with('success', 'Provinsi dihapus.');
     }
 }

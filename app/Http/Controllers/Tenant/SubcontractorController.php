@@ -3,11 +3,8 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
-use App\Models\Branch;
 use App\Models\Subcontractor;
-use App\Models\SubcontractorJob;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class SubcontractorController extends Controller
 {
@@ -18,6 +15,7 @@ class SubcontractorController extends Controller
             $query->where('name', 'like', "%{$request->search}%");
         }
         $subcontractors = $query->paginate(15)->withQueryString();
+
         return view('subcontractors.index', compact('subcontractors'));
     }
 
@@ -46,6 +44,7 @@ class SubcontractorController extends Controller
     public function show(Subcontractor $subcontractor)
     {
         $subcontractor->load('jobs.service');
+
         return view('subcontractors.show', compact('subcontractor'));
     }
 
@@ -74,6 +73,7 @@ class SubcontractorController extends Controller
     public function destroy(Subcontractor $subcontractor)
     {
         $subcontractor->delete();
+
         return redirect()->route('subcontractors.index')
             ->with('success', 'Subkontraktor berhasil dihapus.');
     }

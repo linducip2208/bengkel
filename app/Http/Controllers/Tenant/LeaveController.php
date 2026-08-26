@@ -14,8 +14,8 @@ class LeaveController extends Controller
     public function index(Request $request): View
     {
         $leaves = Leave::with(['user', 'approver'])
-            ->when($request->status, fn($q) => $q->where('status', $request->status))
-            ->when($request->user_id, fn($q) => $q->where('user_id', $request->user_id))
+            ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->user_id, fn ($q) => $q->where('user_id', $request->user_id))
             ->latest()->paginate(20)->withQueryString();
 
         $users = User::orderBy('name')->get();
@@ -42,6 +42,7 @@ class LeaveController extends Controller
     public function approve(Leave $leave): RedirectResponse
     {
         $leave->update(['status' => 'approved', 'approved_by' => auth()->id(), 'approved_at' => now()]);
+
         return back()->with('success', 'Cuti disetujui.');
     }
 
@@ -49,12 +50,14 @@ class LeaveController extends Controller
     {
         $validated = $request->validate(['rejection_reason' => 'nullable|string|max:500']);
         $leave->update(['status' => 'rejected', 'approved_by' => auth()->id(), 'rejection_reason' => $validated['rejection_reason']]);
+
         return back()->with('success', 'Cuti ditolak.');
     }
 
     public function destroy(Leave $leave): RedirectResponse
     {
         $leave->delete();
+
         return back()->with('success', 'Cuti dihapus.');
     }
 }

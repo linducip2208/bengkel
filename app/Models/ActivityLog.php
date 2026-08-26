@@ -12,12 +12,20 @@ class ActivityLog extends Model
 {
     protected $casts = ['changes' => 'array'];
 
-    public function user(): BelongsTo { return $this->belongsTo(User::class); }
-    public function subject(): MorphTo { return $this->morphTo(); }
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function subject(): MorphTo
+    {
+        return $this->morphTo();
+    }
 
     public static function record(string $event, $subject = null, string $description = '', array $changes = []): self
     {
         $request = request();
+
         return self::create([
             'user_id' => auth()->id(),
             'event' => $event,

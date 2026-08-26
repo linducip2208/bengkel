@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\HasBranchScope;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,16 +20,27 @@ class Booking extends Model
 
     protected $casts = ['booking_at' => 'datetime'];
 
-    public function customer(): BelongsTo { return $this->belongsTo(Customer::class); }
-    public function service(): BelongsTo { return $this->belongsTo(Service::class); }
-    public function technician(): BelongsTo { return $this->belongsTo(User::class, 'technician_id'); }
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    public function technician(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'technician_id');
+    }
 
     public static function technicianAvailability($date): array
     {
         $technicians = User::workshopStaffQuery()->where('is_active', true)->orderBy('name')->get();
 
         $busy = static::withoutGlobalScopes()
-            ->whereDate('booking_at', \Carbon\Carbon::parse($date)->toDateString())
+            ->whereDate('booking_at', Carbon::parse($date)->toDateString())
             ->whereNotNull('technician_id')
             ->whereIn('status', ['pending', 'confirmed', 'in_progress'])
             ->groupBy('technician_id')
@@ -45,11 +57,11 @@ class Booking extends Model
 
     public static function technicianIsBusy(?int $technicianId, $date, ?int $excludeBookingId = null): bool
     {
-        if (!$technicianId) {
+        if (! $technicianId) {
             return false;
         }
 
-        $day = \Carbon\Carbon::parse($date)->toDateString();
+        $day = Carbon::parse($date)->toDateString();
 
         $bookingBusy = static::withoutGlobalScopes()
             ->where('technician_id', $technicianId)

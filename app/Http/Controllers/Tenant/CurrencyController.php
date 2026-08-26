@@ -18,6 +18,7 @@ class CurrencyController extends Controller
                 ->orWhere('code', 'like', "%{$request->search}%");
         }
         $currencies = $query->orderByDesc('is_default')->orderBy('code')->paginate(15)->withQueryString();
+
         return view('currencies.index', compact('currencies'));
     }
 
@@ -89,6 +90,7 @@ class CurrencyController extends Controller
             return back()->with('error', 'Currency default tidak bisa dihapus.');
         }
         $currency->delete();
+
         return redirect()->route('currencies.index')->with('success', 'Currency dihapus.');
     }
 }

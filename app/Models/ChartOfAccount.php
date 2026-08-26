@@ -9,7 +9,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ChartOfAccount extends Model
 {
     protected $fillable = ['code', 'name', 'type', 'parent_id', 'is_active'];
+
     protected $casts = ['is_active' => 'boolean'];
-    public function parent(): BelongsTo { return $this->belongsTo(self::class, 'parent_id'); }
-    public function children(): HasMany { return $this->hasMany(self::class, 'parent_id'); }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id');
+    }
 }

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -26,8 +27,8 @@ return new class extends Migration
         if (Schema::hasColumn('sales', 'customer_id')) {
             try {
                 DB::statement('ALTER TABLE `sales` MODIFY `customer_id` BIGINT UNSIGNED NULL');
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning('could not modify sales.customer_id: ' . $e->getMessage());
+            } catch (Throwable $e) {
+                Log::warning('could not modify sales.customer_id: '.$e->getMessage());
             }
         }
     }

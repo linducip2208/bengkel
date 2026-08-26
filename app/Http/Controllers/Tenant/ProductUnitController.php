@@ -17,6 +17,7 @@ class ProductUnitController extends Controller
             $query->where('name', 'like', "%{$request->search}%");
         }
         $productUnits = $query->orderBy('name')->paginate(15)->withQueryString();
+
         return view('product-units.index', compact('productUnits'));
     }
 
@@ -70,6 +71,7 @@ class ProductUnitController extends Controller
             return back()->with('error', 'Satuan produk tidak bisa dihapus karena masih dipakai oleh sparepart terdaftar.');
         }
         $productUnit->delete();
+
         return redirect()->route('product-units.index')->with('success', 'Satuan produk berhasil dihapus.');
     }
 }

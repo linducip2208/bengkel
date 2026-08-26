@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\RequirePair;
 use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\Product;
@@ -14,6 +15,7 @@ use App\Models\StockAdjustment;
 use App\Models\StockRecord;
 use App\Models\Supplier;
 use App\Models\User;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -27,8 +29,8 @@ class InventoryTest extends TestCase
         parent::setUp();
 
         $this->withoutMiddleware([
-            \App\Http\Middleware\RequirePair::class,
-            \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,
+            RequirePair::class,
+            PreventRequestForgery::class,
         ]);
     }
 
@@ -53,9 +55,9 @@ class InventoryTest extends TestCase
         $unit = ProductUnit::create(['name' => 'Pcs', 'abbreviation' => 'pcs', 'is_active' => true]);
 
         return Product::create([
-            'product_no' => 'P-' . strtoupper(uniqid()),
-            'code' => 'CODE-' . strtoupper(uniqid()),
-            'name' => 'Spare Part ' . strtoupper(uniqid()),
+            'product_no' => 'P-'.strtoupper(uniqid()),
+            'code' => 'CODE-'.strtoupper(uniqid()),
+            'name' => 'Spare Part '.strtoupper(uniqid()),
             'product_type_id' => $type->id,
             'unit_id' => $unit->id,
             'price' => 75000,

@@ -29,7 +29,7 @@ return new class extends Migration
 
         // Barcode column for products
         Schema::table('products', function (Blueprint $table) {
-            if (!Schema::hasColumn('products', 'barcode')) {
+            if (! Schema::hasColumn('products', 'barcode')) {
                 $table->string('barcode', 100)->nullable()->unique()->after('code');
             }
         });

@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Expense;
 use App\Models\Income;
 use App\Models\Invoice;
+use App\Models\PosSession;
 use App\Models\Service;
+use App\Models\ServiceTechnician;
 use App\Services\ReportService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -45,7 +46,7 @@ class DashboardController extends Controller
 
         // Low stock alert — show once per session
         $lowStockAlert = false;
-        if ($stats['low_stock_count'] > 0 && !session('low_stock_shown')) {
+        if ($stats['low_stock_count'] > 0 && ! session('low_stock_shown')) {
             $lowStockAlert = true;
             session(['low_stock_shown' => true]);
         }
@@ -77,7 +78,7 @@ class DashboardController extends Controller
     {
         $validated = $request->validate([
             'widgets' => ['array'],
-            'widgets.*' => ['string', 'in:' . implode(',', array_keys(self::WIDGETS))],
+            'widgets.*' => ['string', 'in:'.implode(',', array_keys(self::WIDGETS))],
         ]);
 
         $enabled = array_fill_keys(array_keys(self::WIDGETS), false);
@@ -97,13 +98,13 @@ class DashboardController extends Controller
     {
         $config = $user->dashboardConfig?->config;
 
-        if (!is_array($config)) {
+        if (! is_array($config)) {
             return array_keys(self::WIDGETS);
         }
 
         $enabled = [];
         foreach (array_keys(self::WIDGETS) as $key) {
-            if (!empty($config[$key])) {
+            if (! empty($config[$key])) {
                 $enabled[] = $key;
             }
         }
@@ -124,7 +125,9 @@ class DashboardController extends Controller
             ->selectRaw('expense_date, SUM(amount) as total')
             ->groupBy('expense_date')->pluck('total', 'expense_date');
 
-        $days = []; $revenue = []; $expenses = [];
+        $days = [];
+        $revenue = [];
+        $expenses = [];
         for ($i = 13; $i >= 0; $i--) {
             $date = now()->subDays($i)->toDateString();
             $days[] = now()->subDays($i)->format('d/m');
@@ -183,15 +186,15 @@ class DashboardController extends Controller
             $widgets['my_pending'] = Service::where('workflow_status', '<', 12)
                 ->where(function ($q) use ($user) {
                     $q->where('assign_to', $user->id)
-                      ->orWhereHas('technicians', fn($t) => $t->where('users.id', $user->id));
+                        ->orWhereHas('technicians', fn ($t) => $t->where('users.id', $user->id));
                 })->count();
             $widgets['my_completed_today'] = Service::where('workflow_status', 12)
                 ->whereDate('updated_at', today())
                 ->where(function ($q) use ($user) {
                     $q->where('assign_to', $user->id)
-                      ->orWhereHas('technicians', fn($t) => $t->where('users.id', $user->id));
+                        ->orWhereHas('technicians', fn ($t) => $t->where('users.id', $user->id));
                 })->count();
-            $widgets['my_commission'] = \App\Models\ServiceTechnician::where('user_id', $user->id)
+            $widgets['my_commission'] = ServiceTechnician::where('user_id', $user->id)
                 ->whereNull('paid_at')
                 ->sum('commission_amt');
         }
@@ -203,7 +206,7 @@ class DashboardController extends Controller
             $widgets['pos_revenue_today'] = Invoice::where('invoice_type', 'pos')
                 ->whereDate('invoice_date', today())
                 ->sum('grand_total');
-            $activeSession = \App\Models\PosSession::where('user_id', $user->id)
+            $activeSession = PosSession::where('user_id', $user->id)
                 ->where('status', 'open')
                 ->first();
             $widgets['pos_balance'] = $activeSession?->opening_balance ?? 0;

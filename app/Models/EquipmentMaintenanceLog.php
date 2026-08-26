@@ -10,5 +10,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class EquipmentMaintenanceLog extends Model
 {
     protected $casts = ['maintenance_date' => 'date', 'cost' => 'decimal:2'];
-    public function equipment(): BelongsTo { return $this->belongsTo(Equipment::class); }
+
+    public function equipment(): BelongsTo
+    {
+        return $this->belongsTo(Equipment::class);
+    }
 }

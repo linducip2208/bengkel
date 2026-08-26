@@ -14,16 +14,21 @@ class RecallController extends Controller
     public function index(Request $request)
     {
         $query = Recall::with(['product', 'vehicleBrand']);
-        if ($request->filled('severity')) $query->where('severity', $request->severity);
-        if ($request->filled('is_active')) $query->where('is_active', $request->is_active);
+        if ($request->filled('severity')) {
+            $query->where('severity', $request->severity);
+        }
+        if ($request->filled('is_active')) {
+            $query->where('is_active', $request->is_active);
+        }
         if ($request->filled('search')) {
             $s = $request->search;
             $query->where(function ($q) use ($s) {
                 $q->where('title', 'like', "%{$s}%")
-                  ->orWhere('description', 'like', "%{$s}%");
+                    ->orWhere('description', 'like', "%{$s}%");
             });
         }
         $recalls = $query->latest()->paginate(20)->withQueryString();
+
         return view('recalls.index', compact('recalls'));
     }
 
@@ -31,6 +36,7 @@ class RecallController extends Controller
     {
         $products = Product::orderBy('name')->get();
         $vehicleBrands = VehicleBrand::orderBy('vehicle_brand')->get();
+
         return view('recalls.create', compact('products', 'vehicleBrands'));
     }
 
@@ -49,6 +55,7 @@ class RecallController extends Controller
 
         $recall = Recall::create($validated);
         ActivityLog::record('recall.create', $recall, "Recall dibuat: {$recall->title}");
+
         return redirect()->route('recalls.index')->with('success', 'Recall berhasil dibuat.');
     }
 
@@ -56,6 +63,7 @@ class RecallController extends Controller
     {
         $products = Product::orderBy('name')->get();
         $vehicleBrands = VehicleBrand::orderBy('vehicle_brand')->get();
+
         return view('recalls.edit', compact('recall', 'products', 'vehicleBrands'));
     }
 
@@ -74,6 +82,7 @@ class RecallController extends Controller
 
         $recall->update($validated);
         ActivityLog::record('recall.update', $recall, "Recall diperbarui: {$recall->title}");
+
         return redirect()->route('recalls.index')->with('success', 'Recall berhasil diperbarui.');
     }
 
@@ -81,6 +90,7 @@ class RecallController extends Controller
     {
         ActivityLog::record('recall.delete', $recall, "Recall dihapus: {$recall->title}");
         $recall->delete();
+
         return back()->with('success', 'Recall berhasil dihapus.');
     }
 }

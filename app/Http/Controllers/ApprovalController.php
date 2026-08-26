@@ -18,6 +18,7 @@ class ApprovalController extends Controller
     public function showApprove(string $token)
     {
         $service = $this->findByToken($token);
+
         return view('public.approve', compact('service'));
     }
 
@@ -38,6 +39,7 @@ class ApprovalController extends Controller
     public function showReject(string $token)
     {
         $service = $this->findByToken($token);
+
         return view('public.reject', compact('service'));
     }
 

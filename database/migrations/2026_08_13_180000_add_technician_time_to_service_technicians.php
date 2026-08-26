@@ -9,10 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('service_technicians', function (Blueprint $table) {
-            if (!Schema::hasColumn('service_technicians', 'started_at')) {
+            if (! Schema::hasColumn('service_technicians', 'started_at')) {
                 $table->timestamp('started_at')->nullable()->after('notes');
             }
-            if (!Schema::hasColumn('service_technicians', 'finished_at')) {
+            if (! Schema::hasColumn('service_technicians', 'finished_at')) {
                 $table->timestamp('finished_at')->nullable()->after('started_at');
             }
         });

@@ -21,12 +21,14 @@ class InvoiceSchemeController extends Controller
             });
         }
         $schemes = $query->orderByDesc('is_default')->orderBy('name')->paginate(15)->withQueryString();
+
         return view('invoice-schemes.index', compact('schemes'));
     }
 
     public function create()
     {
         $branches = Branch::orderBy('name')->get();
+
         return view('invoice-schemes.create', compact('branches'));
     }
 
@@ -56,6 +58,7 @@ class InvoiceSchemeController extends Controller
     public function edit(InvoiceScheme $invoiceScheme)
     {
         $branches = Branch::orderBy('name')->get();
+
         return view('invoice-schemes.edit', compact('invoiceScheme', 'branches'));
     }
 
@@ -85,6 +88,7 @@ class InvoiceSchemeController extends Controller
     public function destroy(InvoiceScheme $invoiceScheme)
     {
         $invoiceScheme->delete();
+
         return redirect()->route('invoice-schemes.index')->with('success', 'Skema penomoran berhasil dihapus.');
     }
 

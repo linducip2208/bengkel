@@ -17,12 +17,14 @@ class VehicleBrandController extends Controller
             $query->where('vehicle_brand', 'like', "%{$request->search}%");
         }
         $vehicleBrands = $query->orderBy('vehicle_brand')->paginate(15)->withQueryString();
+
         return view('vehicle-brands.index', compact('vehicleBrands'));
     }
 
     public function create()
     {
         $vehicleTypes = VehicleType::orderBy('vehicle_type')->get();
+
         return view('vehicle-brands.create', compact('vehicleTypes'));
     }
 
@@ -44,6 +46,7 @@ class VehicleBrandController extends Controller
     public function edit(VehicleBrand $vehicleBrand)
     {
         $vehicleTypes = VehicleType::orderBy('vehicle_type')->get();
+
         return view('vehicle-brands.edit', compact('vehicleBrand', 'vehicleTypes'));
     }
 
@@ -68,6 +71,7 @@ class VehicleBrandController extends Controller
             return back()->with('error', 'Merek kendaraan tidak bisa dihapus karena masih dipakai oleh kendaraan terdaftar.');
         }
         $vehicleBrand->delete();
+
         return redirect()->route('vehicle-brands.index')->with('success', 'Merek kendaraan berhasil dihapus.');
     }
 }

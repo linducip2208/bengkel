@@ -9,19 +9,22 @@ use Illuminate\Support\Str;
 class ImportKelurahan extends Command
 {
     protected $signature = 'import:kelurahan {file? : Path to CSV file} {--sample : Generate sample data}';
+
     protected $description = 'Import kelurahan data from CSV or generate sample data';
 
     public function handle(): void
     {
         $file = $this->argument('file');
 
-        if ($this->option('sample') || !$file) {
+        if ($this->option('sample') || ! $file) {
             $this->generateSample();
+
             return;
         }
 
-        if (!file_exists($file)) {
+        if (! file_exists($file)) {
             $this->error("File not found: {$file}");
+
             return;
         }
 
@@ -36,7 +39,9 @@ class ImportKelurahan extends Command
 
         $this->output->progressStart();
         while (($row = fgetcsv($handle)) !== false) {
-            if (count($row) < 5) continue;
+            if (count($row) < 5) {
+                continue;
+            }
 
             $data = array_combine($header, $row);
             $name = $data['kelurahan'] ?? $data['name'] ?? $row[0];
@@ -53,7 +58,9 @@ class ImportKelurahan extends Command
                 ]
             );
             $count++;
-            if ($count % 100 === 0) $this->output->progressAdvance(100);
+            if ($count % 100 === 0) {
+                $this->output->progressAdvance(100);
+            }
         }
         fclose($handle);
         $this->output->progressFinish();
@@ -114,6 +121,6 @@ class ImportKelurahan extends Command
             }
         }
 
-        $this->info('Done! ' . Kelurahan::count() . ' kelurahan generated.');
+        $this->info('Done! '.Kelurahan::count().' kelurahan generated.');
     }
 }

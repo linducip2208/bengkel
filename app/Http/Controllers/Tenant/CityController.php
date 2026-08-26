@@ -20,12 +20,14 @@ class CityController extends Controller
         }
         $cities = $query->orderBy('name')->paginate(20)->withQueryString();
         $states = State::orderBy('name')->get();
+
         return view('cities.index', compact('cities', 'states'));
     }
 
     public function create()
     {
         $states = State::orderBy('name')->get();
+
         return view('cities.create', compact('states'));
     }
 
@@ -36,12 +38,14 @@ class CityController extends Controller
             'name' => 'required|string|max:255',
         ]);
         City::create($validated);
+
         return redirect()->route('cities.index')->with('success', 'Kota ditambahkan.');
     }
 
     public function edit(City $city)
     {
         $states = State::orderBy('name')->get();
+
         return view('cities.edit', compact('city', 'states'));
     }
 
@@ -52,12 +56,14 @@ class CityController extends Controller
             'name' => 'required|string|max:255',
         ]);
         $city->update($validated);
+
         return redirect()->route('cities.index')->with('success', 'Kota diperbarui.');
     }
 
     public function destroy(City $city)
     {
         $city->delete();
+
         return redirect()->route('cities.index')->with('success', 'Kota dihapus.');
     }
 }

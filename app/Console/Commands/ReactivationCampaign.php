@@ -4,12 +4,14 @@ namespace App\Console\Commands;
 
 use App\Models\ActivityLog;
 use App\Models\Customer;
+use App\Models\Service;
 use App\Models\Voucher;
 use Illuminate\Console\Command;
 
 class ReactivationCampaign extends Command
 {
     protected $signature = 'marketing:reactivation';
+
     protected $description = 'Find dormant customers (no service >6 months) and send promo vouchers';
 
     public function handle(): int
@@ -21,7 +23,7 @@ class ReactivationCampaign extends Command
             ->whereHas('services', function ($q) {
                 $q->whereNotNull('service_date');
             })
-            ->addSelect(['last_service_date' => \App\Models\Service::select('service_date')
+            ->addSelect(['last_service_date' => Service::select('service_date')
                 ->whereColumn('customer_id', 'customers.id')
                 ->whereNotNull('service_date')
                 ->latest('service_date')
@@ -35,6 +37,7 @@ class ReactivationCampaign extends Command
 
         if ($dormantCustomers->isEmpty()) {
             $this->info('No dormant customers found.');
+
             return self::SUCCESS;
         }
 
@@ -46,10 +49,10 @@ class ReactivationCampaign extends Command
                 "Reactivation campaign — dormant customer: {$customer->name} / {$customer->phone}"
             );
 
-            $code = 'WAKE-' . $customer->id . '-' . rand(100, 999);
+            $code = 'WAKE-'.$customer->id.'-'.rand(100, 999);
             Voucher::create([
                 'code' => $code,
-                'name' => 'Welcome Back Promo ' . $customer->name,
+                'name' => 'Welcome Back Promo '.$customer->name,
                 'type' => 'percent',
                 'value' => 15,
                 'min_purchase' => 0,
@@ -57,7 +60,7 @@ class ReactivationCampaign extends Command
                 'valid_from' => now(),
                 'valid_until' => now()->addDays(14),
                 'is_active' => true,
-                'description' => 'Auto-generated reactivation voucher for ' . $customer->name,
+                'description' => 'Auto-generated reactivation voucher for '.$customer->name,
                 'usage_limit' => 1,
                 'used_count' => 0,
             ]);
@@ -66,6 +69,7 @@ class ReactivationCampaign extends Command
         }
 
         $this->info("Reactivation campaign sent to {$sent} dormant customer(s).");
+
         return self::SUCCESS;
     }
 }

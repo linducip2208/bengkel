@@ -55,7 +55,7 @@ class PurchaseOrder extends Model
             'sent' => '<span class="badge bg-primary">Terkirim</span>',
             'received' => '<span class="badge bg-success">Diterima</span>',
             'cancelled' => '<span class="badge bg-danger">Dibatalkan</span>',
-            default => '<span class="badge bg-secondary">' . $this->status . '</span>',
+            default => '<span class="badge bg-secondary">'.$this->status.'</span>',
         };
     }
 

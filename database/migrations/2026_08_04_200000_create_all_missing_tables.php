@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('activity_logs')) {
+        if (! Schema::hasTable('activity_logs')) {
             Schema::create('activity_logs', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
@@ -23,7 +23,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('attendances')) {
+        if (! Schema::hasTable('attendances')) {
             Schema::create('attendances', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
@@ -40,7 +40,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('bookings')) {
+        if (! Schema::hasTable('bookings')) {
             Schema::create('bookings', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('set null');
@@ -61,7 +61,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('equipment')) {
+        if (! Schema::hasTable('equipment')) {
             Schema::create('equipment', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('set null');
@@ -79,7 +79,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('equipment_maintenance_logs')) {
+        if (! Schema::hasTable('equipment_maintenance_logs')) {
             Schema::create('equipment_maintenance_logs', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('equipment_id')->constrained('equipment')->onDelete('cascade');
@@ -91,7 +91,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('ip_whitelists')) {
+        if (! Schema::hasTable('ip_whitelists')) {
             Schema::create('ip_whitelists', function (Blueprint $table) {
                 $table->id();
                 $table->string('ip', 45);
@@ -102,7 +102,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('payment_gateways')) {
+        if (! Schema::hasTable('payment_gateways')) {
             Schema::create('payment_gateways', function (Blueprint $table) {
                 $table->id();
                 $table->string('name', 100);
@@ -123,7 +123,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('payment_links')) {
+        if (! Schema::hasTable('payment_links')) {
             Schema::create('payment_links', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('invoice_id')->constrained('invoices')->onDelete('cascade');
@@ -142,7 +142,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('petty_cash_transactions')) {
+        if (! Schema::hasTable('petty_cash_transactions')) {
             Schema::create('petty_cash_transactions', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('set null');
@@ -157,7 +157,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('recalls')) {
+        if (! Schema::hasTable('recalls')) {
             Schema::create('recalls', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('product_id')->nullable()->constrained('products')->onDelete('set null');
@@ -171,7 +171,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('reviews')) {
+        if (! Schema::hasTable('reviews')) {
             Schema::create('reviews', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('service_id')->nullable()->constrained('services')->onDelete('set null');
@@ -186,7 +186,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('salaries')) {
+        if (! Schema::hasTable('salaries')) {
             Schema::create('salaries', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
@@ -207,7 +207,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('subcontractors')) {
+        if (! Schema::hasTable('subcontractors')) {
             Schema::create('subcontractors', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('set null');
@@ -223,7 +223,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('subcontractor_jobs')) {
+        if (! Schema::hasTable('subcontractor_jobs')) {
             Schema::create('subcontractor_jobs', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('subcontractor_id')->constrained('subcontractors')->onDelete('cascade');
@@ -237,7 +237,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('warranty_claims')) {
+        if (! Schema::hasTable('warranty_claims')) {
             Schema::create('warranty_claims', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('invoice_item_id')->nullable()->constrained('invoice_items')->onDelete('set null');
@@ -250,7 +250,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('supplier_prices')) {
+        if (! Schema::hasTable('supplier_prices')) {
             Schema::create('supplier_prices', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('supplier_id')->constrained('suppliers')->onDelete('cascade');
@@ -262,7 +262,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('fleet_notification_tokens')) {
+        if (! Schema::hasTable('fleet_notification_tokens')) {
             Schema::create('fleet_notification_tokens', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('user_id')->constrained('users')->onDelete('cascade');

@@ -7,7 +7,6 @@
  *      when identifier is nullsafe.neverNull)
  *  2. class.notFound Log  : "\Log::" -> "Illuminate\Support\Facades\Log::"
  */
-
 $raw = shell_exec('php vendor/phpstan/phpstan/phpstan analyse --no-progress --memory-limit=1G --error-format=raw 2>&1');
 $lines = array_filter(explode("\n", (string) $raw));
 
@@ -33,7 +32,9 @@ foreach ($nullsafeByFile as $file => $lineNos) {
     $rows = file($file);
     foreach (array_unique($lineNos) as $ln) {
         $idx = $ln - 1;
-        if (! isset($rows[$idx])) continue;
+        if (! isset($rows[$idx])) {
+            continue;
+        }
         $original = $rows[$idx];
 
         // "$svc->vehicle?->number_plate ?? '-'" -> "$svc->vehicle->number_plate"
@@ -61,15 +62,19 @@ echo "nullsafe fixed: {$totalFixed}\n";
 foreach (array_keys($logFiles) as $file) {
     $code = file_get_contents($file);
 
-    if (! preg_match('/(^|[^\w\\\])Log::/', $code) && ! str_contains($code, '\\Log::')) continue;
-    if (str_contains($code, 'use Illuminate\\Support\\Facades\\Log;')) continue;
+    if (! preg_match('/(^|[^\w\\\])Log::/', $code) && ! str_contains($code, '\\Log::')) {
+        continue;
+    }
+    if (str_contains($code, 'use Illuminate\\Support\\Facades\\Log;')) {
+        continue;
+    }
 
     // Normalize \Log:: to Log:: then import the facade
     $code = str_replace('\\Log::', 'Log::', $code);
 
     $new = preg_replace(
         '/^(use\s+[^\n]+;\n)(?!use)/m',
-        '$1use Illuminate\\Support\\Facades\\Log;' . "\n",
+        '$1use Illuminate\\Support\\Facades\\Log;'."\n",
         $code,
         1,
         $count
@@ -77,7 +82,7 @@ foreach (array_keys($logFiles) as $file) {
     if ($count === 0) {
         $new = preg_replace(
             '/^(<\?php\n\n)/m',
-            '$1use Illuminate\\Support\\Facades\\Log;' . "\n\n",
+            '$1use Illuminate\\Support\\Facades\\Log;'."\n\n",
             $code,
             1,
             $count

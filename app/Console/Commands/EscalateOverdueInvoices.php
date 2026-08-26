@@ -2,13 +2,16 @@
 
 namespace App\Console\Commands;
 
+use App\Models\ActivityLog;
 use App\Models\Invoice;
+use App\Services\NotificationService;
 use App\Services\SettingsService;
 use Illuminate\Console\Command;
 
 class EscalateOverdueInvoices extends Command
 {
     protected $signature = 'invoices:escalate-overdue';
+
     protected $description = 'Escalate overdue unpaid/half-paid invoices & send WA reminder';
 
     public function handle(): int
@@ -23,13 +26,14 @@ class EscalateOverdueInvoices extends Command
 
         if ($overdue->isEmpty()) {
             $this->info('No overdue invoices found.');
+
             return self::SUCCESS;
         }
 
         $sent = 0;
         $phone = preg_replace('/[^0-9]/', '', $settings->get('company_phone', ''));
         if ($phone && substr($phone, 0, 1) === '0') {
-            $phone = '62' . substr($phone, 1);
+            $phone = '62'.substr($phone, 1);
         }
 
         foreach ($overdue as $invoice) {
@@ -42,7 +46,7 @@ class EscalateOverdueInvoices extends Command
             $custPhone = $invoice->customer?->phone;
             if ($custPhone && $invoice->customer) {
                 try {
-                    app(\App\Services\NotificationService::class)->send('invoice-overdue', $invoice->customer, [
+                    app(NotificationService::class)->send('invoice-overdue', $invoice->customer, [
                         'customer_name' => $invoice->customer->name,
                         'invoice_number' => $invoice->invoice_number,
                         'remaining' => $remaining,
@@ -51,7 +55,7 @@ class EscalateOverdueInvoices extends Command
                     \Log::warning("Overdue WA send failed: {$e->getMessage()}");
                 }
 
-                \App\Models\ActivityLog::create([
+                ActivityLog::create([
                     'user_id' => null,
                     'event' => 'overdue_reminder',
                     'description' => "Pengingat overdue: Invoice {$invoice->invoice_number} ke {$invoice->customer->name}",
@@ -65,6 +69,7 @@ class EscalateOverdueInvoices extends Command
         }
 
         $this->info("Done. {$sent} reminders logged for {$overdue->count()} overdue invoices.");
+
         return self::SUCCESS;
     }
 }

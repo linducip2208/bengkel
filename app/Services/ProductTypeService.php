@@ -13,6 +13,7 @@ class ProductTypeService extends BaseService
         if ($request->filled('search')) {
             $query->where('type', 'like', "%{$request->search}%");
         }
+
         return $query->orderBy('type')->get();
     }
 
@@ -24,6 +25,7 @@ class ProductTypeService extends BaseService
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
+
         return ProductType::create($validated);
     }
 
@@ -36,12 +38,13 @@ class ProductTypeService extends BaseService
     {
         $model = ProductType::findOrFail($id);
         $validated = $request->validate([
-            'type' => 'required|string|max:255|unique:product_types,type,' . $id,
-            'slug' => 'nullable|string|max:255|unique:product_types,slug,' . $id,
+            'type' => 'required|string|max:255|unique:product_types,type,'.$id,
+            'slug' => 'nullable|string|max:255|unique:product_types,slug,'.$id,
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
         $model->update($validated);
+
         return $model;
     }
 
@@ -49,6 +52,7 @@ class ProductTypeService extends BaseService
     {
         $model = ProductType::findOrFail($id);
         $model->delete();
+
         return $model;
     }
 }

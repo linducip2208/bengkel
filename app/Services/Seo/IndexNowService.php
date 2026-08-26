@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Log;
 class IndexNowService
 {
     protected string $key;
+
     protected string $keyLocation;
+
     protected array $searchEngines = [
         'https://www.bing.com/indexnow',
         'https://yandex.com/indexnow',
@@ -20,12 +22,14 @@ class IndexNowService
     {
         $keyPath = public_path('indexnow-key.txt');
         $this->key = file_exists($keyPath) ? trim((string) file_get_contents($keyPath)) : '';
-        $this->keyLocation = config('app.url') . '/indexnow-key.txt';
+        $this->keyLocation = config('app.url').'/indexnow-key.txt';
     }
 
     public function submit(array $urls): array
     {
-        if (empty($urls)) return ['success' => false, 'message' => 'No URLs provided'];
+        if (empty($urls)) {
+            return ['success' => false, 'message' => 'No URLs provided'];
+        }
 
         $payload = [
             'host' => parse_url(config('app.url'), PHP_URL_HOST),
@@ -46,7 +50,7 @@ class IndexNowService
             }
         }
 
-        Log::info('IndexNow: submitted ' . count($urls) . ' URLs', $results);
+        Log::info('IndexNow: submitted '.count($urls).' URLs', $results);
 
         return ['success' => true, 'submitted' => count($urls), 'engines' => $results];
     }
@@ -65,9 +69,12 @@ class IndexNowService
         $total = 0;
         foreach ($chunks as $chunk) {
             $result = $this->submit($chunk);
-            if ($result['success']) $total += count($chunk);
+            if ($result['success']) {
+                $total += count($chunk);
+            }
             sleep(1);
         }
+
         return ['success' => true, 'submitted' => $total];
     }
 
@@ -89,6 +96,7 @@ class IndexNowService
             $allSubmitted = array_slice($allSubmitted, -50000);
         }
         cache(['indexnow_last_submit' => $allSubmitted], now()->addYear());
+
         return $result;
     }
 }

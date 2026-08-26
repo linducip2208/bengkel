@@ -13,6 +13,7 @@ class NotificationTemplateService extends BaseService
         if ($request->filled('search')) {
             $query->where('name', 'like', "%{$request->search}%");
         }
+
         return $query->orderBy('name')->get();
     }
 
@@ -26,6 +27,7 @@ class NotificationTemplateService extends BaseService
             'body' => 'required|string',
             'is_active' => 'boolean',
         ]);
+
         return NotificationTemplate::create($validated);
     }
 
@@ -38,14 +40,15 @@ class NotificationTemplateService extends BaseService
     {
         $model = NotificationTemplate::findOrFail($id);
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:notification_templates,name,' . $id,
-            'slug' => 'nullable|string|max:255|unique:notification_templates,slug,' . $id,
+            'name' => 'required|string|max:255|unique:notification_templates,name,'.$id,
+            'slug' => 'nullable|string|max:255|unique:notification_templates,slug,'.$id,
             'channel' => 'required|string|max:50',
             'subject' => 'nullable|string|max:255',
             'body' => 'required|string',
             'is_active' => 'boolean',
         ]);
         $model->update($validated);
+
         return $model;
     }
 
@@ -53,6 +56,7 @@ class NotificationTemplateService extends BaseService
     {
         $model = NotificationTemplate::findOrFail($id);
         $model->delete();
+
         return $model;
     }
 }

@@ -31,7 +31,9 @@ class HrmController extends Controller
     {
         $today = today();
         $existing = Attendance::where('user_id', auth()->id())->where('date', $today)->first();
-        if ($existing && $existing->clock_in) return back()->with('error', 'Sudah clock-in hari ini.');
+        if ($existing && $existing->clock_in) {
+            return back()->with('error', 'Sudah clock-in hari ini.');
+        }
 
         $clockIn = now()->format('H:i:s');
         $isLate = now()->hour >= 9; // > jam 9 = late
@@ -45,19 +47,25 @@ class HrmController extends Controller
                 'status' => $isLate ? 'late' : 'present',
             ]
         );
-        ActivityLog::record('attendance.clock_in', null, auth()->user()->name . ' clock-in jam ' . $clockIn);
-        return back()->with('success', 'Clock-in tercatat: ' . $clockIn);
+        ActivityLog::record('attendance.clock_in', null, auth()->user()->name.' clock-in jam '.$clockIn);
+
+        return back()->with('success', 'Clock-in tercatat: '.$clockIn);
     }
 
     public function clockOut(Request $request)
     {
         $today = today();
         $att = Attendance::where('user_id', auth()->id())->where('date', $today)->first();
-        if (!$att || !$att->clock_in) return back()->with('error', 'Belum clock-in.');
-        if ($att->clock_out) return back()->with('error', 'Sudah clock-out.');
+        if (! $att || ! $att->clock_in) {
+            return back()->with('error', 'Belum clock-in.');
+        }
+        if ($att->clock_out) {
+            return back()->with('error', 'Sudah clock-out.');
+        }
 
         $att->update(['clock_out' => now()->format('H:i:s'), 'clock_out_location' => $request->input('location')]);
-        ActivityLog::record('attendance.clock_out', null, auth()->user()->name . ' clock-out');
+        ActivityLog::record('attendance.clock_out', null, auth()->user()->name.' clock-out');
+
         return back()->with('success', 'Clock-out tercatat.');
     }
 
@@ -93,7 +101,7 @@ class HrmController extends Controller
                     ->where('status', 'absent')->count();
 
                 $commission = ServiceTechnician::where('user_id', $u->id)
-                    ->whereHas('service', fn($q) => $q->whereYear('service_date', $validated['period_year'])->whereMonth('service_date', $validated['period_month']))
+                    ->whereHas('service', fn ($q) => $q->whereYear('service_date', $validated['period_year'])->whereMonth('service_date', $validated['period_month']))
                     ->sum('commission_amt') ?? 0;
 
                 $base = (float) $u->base_salary;
@@ -116,6 +124,7 @@ class HrmController extends Controller
         });
 
         ActivityLog::record('salary.generate', null, "Generate gaji periode {$validated['period_month']}/{$validated['period_year']}");
+
         return back()->with('success', "Gaji generated untuk {$users->count()} karyawan.");
     }
 
@@ -123,6 +132,7 @@ class HrmController extends Controller
     {
         $salary->update(['status' => 'paid', 'paid_at' => now()]);
         ActivityLog::record('salary.paid', $salary, "Gaji dibayar untuk user {$salary->user->name}");
+
         return back()->with('success', 'Gaji ditandai sudah dibayar.');
     }
 
@@ -130,6 +140,7 @@ class HrmController extends Controller
     {
         $salary->load('user');
         $pdf = Pdf::loadView('hrm.salary-slip', compact('salary'));
+
         return $pdf->download("slip-gaji-{$salary->user->name}-{$salary->period_month}-{$salary->period_year}.pdf");
     }
 }

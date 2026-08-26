@@ -21,7 +21,7 @@ class FleetContractController extends Controller
             $s = $request->search;
             $query->where(function ($q) use ($s) {
                 $q->where('name', 'like', "%{$s}%")
-                    ->orWhereHas('customer', fn($c) => $c->where('name', 'like', "%{$s}%"));
+                    ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', "%{$s}%"));
             });
         }
         $contracts = $query->latest()->paginate(20)->withQueryString();
@@ -56,13 +56,14 @@ class FleetContractController extends Controller
 
         $contract = FleetContract::create($validated);
 
-        if (!empty($validated['vehicle_ids'])) {
+        if (! empty($validated['vehicle_ids'])) {
             foreach ($validated['vehicle_ids'] as $vehicleId) {
                 $contract->vehicles()->create(['vehicle_id' => $vehicleId]);
             }
         }
 
         ActivityLog::record('fleet-contract.create', $contract, "Kontrak fleet {$contract->name} dibuat");
+
         return redirect()->route('fleet-contracts.show', $contract)->with('success', 'Kontrak fleet berhasil dibuat.');
     }
 
@@ -127,6 +128,7 @@ class FleetContractController extends Controller
         }
 
         ActivityLog::record('fleet-contract.update', $fleetContract, "Kontrak fleet {$fleetContract->name} diperbarui");
+
         return redirect()->route('fleet-contracts.show', $fleetContract)->with('success', 'Kontrak fleet diperbarui.');
     }
 
@@ -134,6 +136,7 @@ class FleetContractController extends Controller
     {
         ActivityLog::record('fleet-contract.delete', $fleetContract, "Kontrak fleet {$fleetContract->name} dihapus");
         $fleetContract->delete();
+
         return redirect()->route('fleet-contracts.index')->with('success', 'Kontrak fleet dihapus.');
     }
 
@@ -148,7 +151,7 @@ class FleetContractController extends Controller
             $intervalDays = $contract->service_interval_days ?? 90;
             foreach ($contract->vehicles as $cv) {
                 $vehicle = $cv->vehicle;
-                if (!$vehicle) {
+                if (! $vehicle) {
                     continue;
                 }
                 $lastService = $vehicle->services()->latest('service_date')->first();
@@ -168,7 +171,7 @@ class FleetContractController extends Controller
             }
         }
 
-        $due = $due->filter(fn($d) => $d['is_due'])->sortBy('due_date')->values();
+        $due = $due->filter(fn ($d) => $d['is_due'])->sortBy('due_date')->values();
 
         return view('fleet-contracts.due', compact('due'));
     }

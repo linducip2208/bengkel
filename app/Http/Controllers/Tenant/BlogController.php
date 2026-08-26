@@ -18,12 +18,14 @@ class BlogController extends Controller
             $query->where('title', 'like', "%{$request->search}%");
         }
         $posts = $query->paginate(15)->withQueryString();
+
         return view('blog.admin.index', compact('posts'));
     }
 
     public function create()
     {
         $categories = BlogCategory::where('is_active', true)->orderBy('name')->get();
+
         return view('blog.admin.create', compact('categories'));
     }
 
@@ -62,6 +64,7 @@ class BlogController extends Controller
     public function edit(BlogPost $post)
     {
         $categories = BlogCategory::where('is_active', true)->orderBy('name')->get();
+
         return view('blog.admin.edit', compact('post', 'categories'));
     }
 
@@ -99,6 +102,7 @@ class BlogController extends Controller
     public function destroy(BlogPost $post)
     {
         $post->delete();
+
         return redirect()->route('blog.admin.index')->with('success', 'Artikel berhasil dihapus.');
     }
 
@@ -106,6 +110,7 @@ class BlogController extends Controller
     public function categoryIndex()
     {
         $categories = BlogCategory::orderBy('name')->paginate(15);
+
         return view('blog.admin.categories', compact('categories'));
     }
 
@@ -149,6 +154,7 @@ class BlogController extends Controller
             return back()->with('error', 'Kategori tidak bisa dihapus karena masih ada artikel.');
         }
         $category->delete();
+
         return redirect()->route('blog.admin.categories')->with('success', 'Kategori blog berhasil dihapus.');
     }
 
@@ -160,18 +166,18 @@ class BlogController extends Controller
         $xml .= '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">';
         $xml .= '<channel>';
         $xml .= '<title>Blog Aplikasi Bengkel Terbaik</title>';
-        $xml .= '<link>' . config('app.url') . '/blog</link>';
+        $xml .= '<link>'.config('app.url').'/blog</link>';
         $xml .= '<description>Tips perawatan mobil, berita otomotif, dan panduan service dari Aplikasi Bengkel Terbaik.</description>';
         $xml .= '<language>id</language>';
-        $xml .= '<atom:link href="' . url('/blog/feed.xml') . '" rel="self" type="application/rss+xml"/>';
+        $xml .= '<atom:link href="'.url('/blog/feed.xml').'" rel="self" type="application/rss+xml"/>';
 
         foreach ($posts as $post) {
             $xml .= '<item>';
-            $xml .= '<title><![CDATA[' . $post->title . ']]></title>';
-            $xml .= '<link>' . url('/blog/' . $post->slug) . '</link>';
-            $xml .= '<guid>' . url('/blog/' . $post->slug) . '</guid>';
-            $xml .= '<description><![CDATA[' . ($post->excerpt ?: '') . ']]></description>';
-            $xml .= '<pubDate>' . $post->published_at->toRfc2822String() . '</pubDate>';
+            $xml .= '<title><![CDATA['.$post->title.']]></title>';
+            $xml .= '<link>'.url('/blog/'.$post->slug).'</link>';
+            $xml .= '<guid>'.url('/blog/'.$post->slug).'</guid>';
+            $xml .= '<description><![CDATA['.($post->excerpt ?: '').']]></description>';
+            $xml .= '<pubDate>'.$post->published_at->toRfc2822String().'</pubDate>';
             $xml .= '</item>';
         }
 

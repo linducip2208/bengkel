@@ -11,7 +11,18 @@ class VoucherUsage extends Model
 {
     protected $casts = ['discount_applied' => 'decimal:2'];
 
-    public function voucher(): BelongsTo { return $this->belongsTo(Voucher::class); }
-    public function invoice(): BelongsTo { return $this->belongsTo(Invoice::class); }
-    public function customer(): BelongsTo { return $this->belongsTo(Customer::class); }
+    public function voucher(): BelongsTo
+    {
+        return $this->belongsTo(Voucher::class);
+    }
+
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }

@@ -13,6 +13,7 @@ class ProductUnitService extends BaseService
         if ($request->filled('search')) {
             $query->where('name', 'like', "%{$request->search}%");
         }
+
         return $query->orderBy('name')->get();
     }
 
@@ -23,6 +24,7 @@ class ProductUnitService extends BaseService
             'abbreviation' => 'nullable|string|max:50',
             'is_active' => 'boolean',
         ]);
+
         return ProductUnit::create($validated);
     }
 
@@ -35,11 +37,12 @@ class ProductUnitService extends BaseService
     {
         $model = ProductUnit::findOrFail($id);
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:product_units,name,' . $id,
+            'name' => 'required|string|max:255|unique:product_units,name,'.$id,
             'abbreviation' => 'nullable|string|max:50',
             'is_active' => 'boolean',
         ]);
         $model->update($validated);
+
         return $model;
     }
 
@@ -47,6 +50,7 @@ class ProductUnitService extends BaseService
     {
         $model = ProductUnit::findOrFail($id);
         $model->delete();
+
         return $model;
     }
 }

@@ -38,7 +38,7 @@ class ProductVariationController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => 'nullable|string|max:255|unique:product_variations,sku,' . $variation->id,
+            'sku' => 'nullable|string|max:255|unique:product_variations,sku,'.$variation->id,
             'price' => 'nullable|numeric|min:0',
             'stock' => 'nullable|integer|min:0',
         ]);

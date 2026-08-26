@@ -10,6 +10,7 @@ use Illuminate\Console\Command;
 class SendBirthdayVouchers extends Command
 {
     protected $signature = 'loyalty:birthday-vouchers';
+
     protected $description = 'Auto-generate birthday vouchers for customers whose birth_date matches today';
 
     public function handle(): int
@@ -24,14 +25,15 @@ class SendBirthdayVouchers extends Command
 
         if ($customers->isEmpty()) {
             $this->info('No customers with birthday today.');
+
             return self::SUCCESS;
         }
 
         foreach ($customers as $customer) {
-            $code = 'BDY-' . $customer->id . '-' . rand(100, 999);
+            $code = 'BDY-'.$customer->id.'-'.rand(100, 999);
             $voucher = Voucher::create([
                 'code' => $code,
-                'name' => 'Birthday Promo ' . $customer->name,
+                'name' => 'Birthday Promo '.$customer->name,
                 'type' => 'percent',
                 'value' => 10,
                 'min_purchase' => 0,
@@ -39,7 +41,7 @@ class SendBirthdayVouchers extends Command
                 'valid_from' => now(),
                 'valid_until' => now()->addDays(30),
                 'is_active' => true,
-                'description' => 'Auto-generated birthday voucher for ' . $customer->name,
+                'description' => 'Auto-generated birthday voucher for '.$customer->name,
                 'usage_limit' => 1,
                 'used_count' => 0,
             ]);
@@ -54,6 +56,7 @@ class SendBirthdayVouchers extends Command
         }
 
         $this->info("Total: {$customers->count()} birthday voucher(s) created.");
+
         return self::SUCCESS;
     }
 }

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['customer_id', 'vehicle_id', 'sale_date', 'total_amount', 'notes', 'branch_id', 'sales_no', 'tax_amount', 'grand_total', 'salesperson_id', 'created_by', 'price', 'down_payment', 'status', 'description'])]
 class Sale extends Model
 {
-    use HasFactory, SoftDeletes, HasBranchScope;
+    use HasBranchScope, HasFactory, SoftDeletes;
 
     protected function casts(): array
     {

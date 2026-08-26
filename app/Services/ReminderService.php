@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Reminder;
 use App\Models\Service;
 use App\Models\Vehicle;
+use Carbon\Carbon;
 
 class ReminderService
 {
@@ -19,6 +20,7 @@ class ReminderService
     {
         $data['created_by'] = $data['created_by'] ?? auth()->id();
         $data['sent'] = false;
+
         return Reminder::create($data);
     }
 
@@ -43,7 +45,7 @@ class ReminderService
         $customer = $reminder->customer;
         $vehicle = $reminder->vehicle;
 
-        if (!$customer) {
+        if (! $customer) {
             return;
         }
 
@@ -74,7 +76,7 @@ class ReminderService
     public function scheduleServiceReminder(Service $service): void
     {
         $jobcard = $service->jobcardDetail()->first();
-        if (!$jobcard || !$jobcard->next_service_date) {
+        if (! $jobcard || ! $jobcard->next_service_date) {
             return;
         }
 
@@ -91,7 +93,7 @@ class ReminderService
             'vehicle_id' => $service->vehicle_id,
             'service_id' => $service->id,
             'reminder_type' => 'service',
-            'reminder_date' => \Carbon\Carbon::parse($jobcard->next_service_date)->subDays(7)->toDateString(),
+            'reminder_date' => Carbon::parse($jobcard->next_service_date)->subDays(7)->toDateString(),
             'message' => "Reminder: Service is due for vehicle {$service->vehicle->number_plate} on {$jobcard->next_service_date}",
         ]);
     }

@@ -27,22 +27,39 @@ class Voucher extends Model
         ];
     }
 
-    public function usages(): HasMany { return $this->hasMany(VoucherUsage::class); }
+    public function usages(): HasMany
+    {
+        return $this->hasMany(VoucherUsage::class);
+    }
 
     public function isUsable(): bool
     {
-        if (!$this->is_active) return false;
-        if ($this->valid_from && $this->valid_from->isFuture()) return false;
-        if ($this->valid_until && $this->valid_until->isPast()) return false;
-        if ($this->usage_limit !== null && $this->used_count >= $this->usage_limit) return false;
+        if (! $this->is_active) {
+            return false;
+        }
+        if ($this->valid_from && $this->valid_from->isFuture()) {
+            return false;
+        }
+        if ($this->valid_until && $this->valid_until->isPast()) {
+            return false;
+        }
+        if ($this->usage_limit !== null && $this->used_count >= $this->usage_limit) {
+            return false;
+        }
+
         return true;
     }
 
     public function calculateDiscount(float $subtotal): float
     {
-        if (!$this->isUsable() || $subtotal < $this->min_purchase) return 0;
+        if (! $this->isUsable() || $subtotal < $this->min_purchase) {
+            return 0;
+        }
         $discount = $this->type === 'percent' ? $subtotal * ((float) $this->value / 100) : (float) $this->value;
-        if ($this->max_discount !== null) $discount = min($discount, (float) $this->max_discount);
+        if ($this->max_discount !== null) {
+            $discount = min($discount, (float) $this->max_discount);
+        }
+
         return min($discount, $subtotal);
     }
 }

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\LicenseClient;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 class PairController extends Controller
@@ -12,7 +12,7 @@ class PairController extends Controller
     public function __construct(private LicenseClient $client) {}
 
     /** GET /__pair — show wizard form (or redirect if already paired) */
-    public function show(Request $request): View|\Illuminate\Http\RedirectResponse
+    public function show(Request $request): View|RedirectResponse
     {
         $domain = strtolower($request->getHost());
 
@@ -21,15 +21,15 @@ class PairController extends Controller
         }
 
         return view('license.pair-wizard', [
-            'domain'           => $domain,
-            'marketplace_url'  => rtrim(config('license.server_url'), '/'),
-            'old_key'          => $request->old('activation_key'),
-            'error'            => session('pair_error'),
+            'domain' => $domain,
+            'marketplace_url' => rtrim(config('license.server_url'), '/'),
+            'old_key' => $request->old('activation_key'),
+            'error' => session('pair_error'),
         ]);
     }
 
     /** POST /__pair — submit activation key */
-    public function activate(Request $request): \Illuminate\Http\RedirectResponse
+    public function activate(Request $request): RedirectResponse
     {
         $request->validate([
             'activation_key' => 'required|string|min:10|max:64',
@@ -37,11 +37,11 @@ class PairController extends Controller
 
         // Domain is server-detected; user cannot spoof
         $domain = strtolower($request->getHost());
-        $key    = strtoupper(trim($request->input('activation_key')));
+        $key = strtoupper(trim($request->input('activation_key')));
 
         $result = $this->client->activate($key, $domain);
 
-        if (!$result['ok']) {
+        if (! $result['ok']) {
             return back()
                 ->withInput()
                 ->with('pair_error', $result['error'] ?? 'Aktivasi gagal.');
@@ -53,13 +53,15 @@ class PairController extends Controller
     }
 
     /** GET /__pair/success — post-activation confirmation page */
-    public function success(Request $request): View|\Illuminate\Http\RedirectResponse
+    public function success(Request $request): View|RedirectResponse
     {
         $data = session('pair_success');
-        if (!$data) {
+        if (! $data) {
             // Direct visit — fall back to verifying current lock
             $data = $this->client->verify(strtolower($request->getHost()));
-            if (!$data) return redirect('/__pair');
+            if (! $data) {
+                return redirect('/__pair');
+            }
         }
 
         return view('license.pair-success', ['data' => $data]);

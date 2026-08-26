@@ -17,6 +17,7 @@ class TrackingController extends Controller
             ->firstOrFail();
 
         $review = Review::where('service_id', $service->id)->first();
+
         return view('public.tracking-status', compact('service', 'review'));
     }
 

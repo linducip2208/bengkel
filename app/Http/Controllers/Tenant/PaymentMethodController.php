@@ -18,6 +18,7 @@ class PaymentMethodController extends Controller
             $query->where('payment', 'like', "%{$request->search}%");
         }
         $paymentMethods = $query->orderBy('payment')->paginate(15)->withQueryString();
+
         return view('payment-methods.index', compact('paymentMethods'));
     }
 
@@ -76,6 +77,7 @@ class PaymentMethodController extends Controller
             return back()->with('error', 'Metode pembayaran tidak bisa dihapus karena masih dipakai oleh invoice, pembayaran, atau pemasukan.');
         }
         $paymentMethod->delete();
+
         return redirect()->route('payment-methods.index')->with('success', 'Metode pembayaran berhasil dihapus.');
     }
 }

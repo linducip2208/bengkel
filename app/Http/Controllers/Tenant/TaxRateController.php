@@ -16,6 +16,7 @@ class TaxRateController extends Controller
             $query->where('taxname', 'like', "%{$request->search}%");
         }
         $taxRates = $query->orderBy('taxname')->paginate(15)->withQueryString();
+
         return view('tax-rates.index', compact('taxRates'));
     }
 
@@ -73,6 +74,7 @@ class TaxRateController extends Controller
             return back()->with('error', 'Tarif pajak tidak bisa dihapus karena masih dipakai oleh service terdaftar.');
         }
         $taxRate->delete();
+
         return redirect()->route('tax-rates.index')->with('success', 'Tarif pajak berhasil dihapus.');
     }
 }

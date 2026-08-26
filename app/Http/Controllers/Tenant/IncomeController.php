@@ -23,12 +23,12 @@ class IncomeController extends Controller
     {
         $incomes = Income::query()
             ->with(['customer', 'paymentMethod'])
-            ->when($request->date_from, fn($q) => $q->whereDate('income_date', '>=', $request->date_from))
-            ->when($request->date_to, fn($q) => $q->whereDate('income_date', '<=', $request->date_to))
-            ->when($request->payment_method_id, fn($q) => $q->where('payment_method_id', $request->payment_method_id))
-            ->when($request->search, fn($q) => $q->where(function ($q) use ($request) {
+            ->when($request->date_from, fn ($q) => $q->whereDate('income_date', '>=', $request->date_from))
+            ->when($request->date_to, fn ($q) => $q->whereDate('income_date', '<=', $request->date_to))
+            ->when($request->payment_method_id, fn ($q) => $q->where('payment_method_id', $request->payment_method_id))
+            ->when($request->search, fn ($q) => $q->where(function ($q) use ($request) {
                 $q->where('label', 'like', "%{$request->search}%")
-                  ->orWhere('invoice_number', 'like', "%{$request->search}%");
+                    ->orWhere('invoice_number', 'like', "%{$request->search}%");
             }))
             ->latest()
             ->paginate(20)
@@ -37,12 +37,12 @@ class IncomeController extends Controller
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
 
         $totalAmount = Income::query()
-            ->when($request->date_from, fn($q) => $q->whereDate('income_date', '>=', $request->date_from))
-            ->when($request->date_to, fn($q) => $q->whereDate('income_date', '<=', $request->date_to))
-            ->when($request->payment_method_id, fn($q) => $q->where('payment_method_id', $request->payment_method_id))
-            ->when($request->search, fn($q) => $q->where(function ($q) use ($request) {
+            ->when($request->date_from, fn ($q) => $q->whereDate('income_date', '>=', $request->date_from))
+            ->when($request->date_to, fn ($q) => $q->whereDate('income_date', '<=', $request->date_to))
+            ->when($request->payment_method_id, fn ($q) => $q->where('payment_method_id', $request->payment_method_id))
+            ->when($request->search, fn ($q) => $q->where(function ($q) use ($request) {
                 $q->where('label', 'like', "%{$request->search}%")
-                  ->orWhere('invoice_number', 'like', "%{$request->search}%");
+                    ->orWhere('invoice_number', 'like', "%{$request->search}%");
             }))
             ->sum('amount');
 

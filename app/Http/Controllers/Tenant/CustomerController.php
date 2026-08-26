@@ -17,6 +17,7 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         $customers = $this->service->list($request->only(['search', 'per_page']));
+
         return view('customers.index', compact('customers'));
     }
 
@@ -28,6 +29,7 @@ class CustomerController extends Controller
     public function store(CustomerRequest $request)
     {
         $this->service->create($request->validated());
+
         return redirect()->route('customers.index')->with('success', 'Pelanggan berhasil ditambahkan.');
     }
 
@@ -40,12 +42,14 @@ class CustomerController extends Controller
         $invoices = $customer->invoices()->latest()->get();
         $loyaltyTransactions = $customer->loyaltyTransactions()->latest()->get();
         $warrantyClaims = $customer->warrantyClaims()->latest()->get();
+
         return view('customers.show', compact('customer', 'stats', 'vehicles', 'services', 'invoices', 'loyaltyTransactions', 'warrantyClaims'));
     }
 
     public function edit($id)
     {
         $customer = Customer::findOrFail($id);
+
         return view('customers.edit', compact('customer'));
     }
 
@@ -53,6 +57,7 @@ class CustomerController extends Controller
     {
         $customer = Customer::findOrFail($id);
         $this->service->update($customer, $request->validated());
+
         return redirect()->route('customers.index')->with('success', 'Pelanggan berhasil diperbarui.');
     }
 
@@ -60,6 +65,7 @@ class CustomerController extends Controller
     {
         $customer = Customer::findOrFail($id);
         $this->service->delete($customer);
+
         return redirect()->route('customers.index')->with('success', 'Pelanggan berhasil dihapus.');
     }
 
@@ -74,12 +80,12 @@ class CustomerController extends Controller
             'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
         ]);
 
-        $import = new CustomersImport();
+        $import = new CustomersImport;
         Excel::import($import, $request->file('file'));
 
         $failed = count($import->errors);
         $message = "{$import->imported} pelanggan berhasil diimport."
-            . ($failed > 0 ? " {$failed} baris gagal." : '');
+            .($failed > 0 ? " {$failed} baris gagal." : '');
 
         return redirect()->route('customers.index')
             ->with('success', $message)

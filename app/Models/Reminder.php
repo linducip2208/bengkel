@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['customer_id', 'vehicle_id', 'service_id', 'title', 'description', 'reminder_type', 'reminder_date', 'sent', 'sent_at', 'is_active', 'branch_id', 'created_by', 'message'])]
 class Reminder extends Model
 {
-    use HasFactory, SoftDeletes, HasBranchScope;
+    use HasBranchScope, HasFactory, SoftDeletes;
 
     protected function casts(): array
     {

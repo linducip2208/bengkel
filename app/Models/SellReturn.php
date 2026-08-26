@@ -54,7 +54,7 @@ class SellReturn extends Model
         return match ($this->status) {
             'pending' => '<span class="badge bg-warning text-dark">Pending</span>',
             'completed' => '<span class="badge bg-success">Selesai</span>',
-            default => '<span class="badge bg-secondary">' . $this->status . '</span>',
+            default => '<span class="badge bg-secondary">'.$this->status.'</span>',
         };
     }
 }

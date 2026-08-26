@@ -27,7 +27,7 @@ class ObservationService
                         'observation_point_id' => $pointId,
                     ],
                     [
-                        'checked' => !empty($data['is_checked']),
+                        'checked' => ! empty($data['is_checked']),
                         'comment' => $data['comment'] ?? null,
                     ]
                 );

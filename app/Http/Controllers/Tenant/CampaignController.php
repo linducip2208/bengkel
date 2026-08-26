@@ -12,6 +12,7 @@ class CampaignController extends Controller
     public function index()
     {
         $groups = Customer::whereNotNull('phone')->get()->groupBy('customer_group_id');
+
         return view('marketing.campaign', compact('groups'));
     }
 
@@ -26,7 +27,9 @@ class CampaignController extends Controller
         $customers = Customer::whereIn('id', $v['customer_ids'])->get();
         $count = 0;
         foreach ($customers as $c) {
-            if (!$c->phone) continue;
+            if (! $c->phone) {
+                continue;
+            }
             NotificationQueue::create([
                 'channel' => $v['channel'],
                 'recipient' => $c->phone,
@@ -35,13 +38,15 @@ class CampaignController extends Controller
             ]);
             $count++;
         }
+
         return back()->with('success', "{$count} notifikasi diantrikan untuk dikirim.");
     }
 
-    /** AJAX: search customers for campaign */ 
+    /** AJAX: search customers for campaign */
     public function searchCustomers(Request $request)
     {
-        $customers = Customer::where('name', 'like', "%{$request->q}%")->orWhere('phone', 'like', "%{$request->q}%")->limit(20)->get(['id','name','phone']);
+        $customers = Customer::where('name', 'like', "%{$request->q}%")->orWhere('phone', 'like', "%{$request->q}%")->limit(20)->get(['id', 'name', 'phone']);
+
         return response()->json($customers);
     }
 }

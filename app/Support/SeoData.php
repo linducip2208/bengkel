@@ -17,36 +17,36 @@ class SeoData
 
     /** Kota besar & menengah (100+ kota untuk volume tinggi). */
     public const CITIES_FULL = [
-        'jakarta','surabaya','bandung','medan','semarang','makassar','palembang','batam','pekanbaru','bogor',
-        'tangerang','bekasi','depok','denpasar','yogyakarta','malang','solo','balikpapan','manado','padang',
-        'banjarmasin','samarinda','pontianak','jambi','bengkulu','mataram','kupang','ambon','ternate','jayapura',
-        'serang','cilegon','tasikmalaya','cimahi','sukabumi','cirebon','tegal','purwokerto','magelang','salatiga',
-        'kediri','blitar','madiun','mojokerto','probolinggo','pasuruan','batu','sidoarjo','gresik','lamongan',
-        'bojonegoro','tuban','jember','banyuwangi','lumajang','bondowoso','situbondo','sumenep','pamekasan','bangkalan',
-        'sampang','pacitan','ponorogo','trenggalek','tulungagung','nganjuk','ngawi','magetan','wonogiri','klaten',
-        'boyolali','sragen','kudus','pati','rembang','blora','grobogan','demak','jepara','kendal',
-        'batang','pemalang','pekalongan','brebes','banjar','garut','cianjur','sumedang','indramayu','subang',
-        'purwakarta','karawang','pandeglang','lebak','lampung','metropolitan','palu','gorontalo','kendari','bau-bau',
-        'bitung','tomohon','tondano','kotamobagu','tahuna','tobelo','tidore','soe','atambua','maumere',
-        'ende','bajawa','ruteng','labuan-bajo','waingapu','waikabubak','kalabahi','larantuka','lewoloba','rote',
-        'sabu','raijua','alor','lembata','flores','sumba','timor','sorong','manokwari','fakfak',
-        'kaimana','teluk-bintuni','teluk-wondama','nabire','serui','biak','merauke','timika','wamena','boven-digoel',
-        'asmat','mappi','boven','yahukimo','pegunungan-bintang','tolikara','keerom','supiori','waropen','dogiyai',
-        'deiyai','intan-jaya','lanny-jaya','memberamo','nduga','paniai','puncak','puncak-jaya','sarmi','yapen',
-        'aceh','binjai','pematang-siantar','tebing-tinggi','tanjung-balai','sibolga','padang-sidempuan','gunungsitoli','dumai','batam-center',
-        'tanjung-pinang','pangkal-pinang','sungaipenuh','lubuklinggau','pagar-alam','prabumulih','baturaja','muara-enim','lahat','martapura',
-        'tanjung','tabalong','hulu-sungai','barito','kapuas','katingan','kotawaringin','sukamara','lamandau','seruyan',
-        'majene','mamuju','pasangkayu','polewali','mamasa','toraja','palopo','parepare','watampone','sinjai',
-        'bulukumba','bantaeng','jeneponto','takalar','gowa','maros','pangkep','barru','soppeng','wajo',
+        'jakarta', 'surabaya', 'bandung', 'medan', 'semarang', 'makassar', 'palembang', 'batam', 'pekanbaru', 'bogor',
+        'tangerang', 'bekasi', 'depok', 'denpasar', 'yogyakarta', 'malang', 'solo', 'balikpapan', 'manado', 'padang',
+        'banjarmasin', 'samarinda', 'pontianak', 'jambi', 'bengkulu', 'mataram', 'kupang', 'ambon', 'ternate', 'jayapura',
+        'serang', 'cilegon', 'tasikmalaya', 'cimahi', 'sukabumi', 'cirebon', 'tegal', 'purwokerto', 'magelang', 'salatiga',
+        'kediri', 'blitar', 'madiun', 'mojokerto', 'probolinggo', 'pasuruan', 'batu', 'sidoarjo', 'gresik', 'lamongan',
+        'bojonegoro', 'tuban', 'jember', 'banyuwangi', 'lumajang', 'bondowoso', 'situbondo', 'sumenep', 'pamekasan', 'bangkalan',
+        'sampang', 'pacitan', 'ponorogo', 'trenggalek', 'tulungagung', 'nganjuk', 'ngawi', 'magetan', 'wonogiri', 'klaten',
+        'boyolali', 'sragen', 'kudus', 'pati', 'rembang', 'blora', 'grobogan', 'demak', 'jepara', 'kendal',
+        'batang', 'pemalang', 'pekalongan', 'brebes', 'banjar', 'garut', 'cianjur', 'sumedang', 'indramayu', 'subang',
+        'purwakarta', 'karawang', 'pandeglang', 'lebak', 'lampung', 'metropolitan', 'palu', 'gorontalo', 'kendari', 'bau-bau',
+        'bitung', 'tomohon', 'tondano', 'kotamobagu', 'tahuna', 'tobelo', 'tidore', 'soe', 'atambua', 'maumere',
+        'ende', 'bajawa', 'ruteng', 'labuan-bajo', 'waingapu', 'waikabubak', 'kalabahi', 'larantuka', 'lewoloba', 'rote',
+        'sabu', 'raijua', 'alor', 'lembata', 'flores', 'sumba', 'timor', 'sorong', 'manokwari', 'fakfak',
+        'kaimana', 'teluk-bintuni', 'teluk-wondama', 'nabire', 'serui', 'biak', 'merauke', 'timika', 'wamena', 'boven-digoel',
+        'asmat', 'mappi', 'boven', 'yahukimo', 'pegunungan-bintang', 'tolikara', 'keerom', 'supiori', 'waropen', 'dogiyai',
+        'deiyai', 'intan-jaya', 'lanny-jaya', 'memberamo', 'nduga', 'paniai', 'puncak', 'puncak-jaya', 'sarmi', 'yapen',
+        'aceh', 'binjai', 'pematang-siantar', 'tebing-tinggi', 'tanjung-balai', 'sibolga', 'padang-sidempuan', 'gunungsitoli', 'dumai', 'batam-center',
+        'tanjung-pinang', 'pangkal-pinang', 'sungaipenuh', 'lubuklinggau', 'pagar-alam', 'prabumulih', 'baturaja', 'muara-enim', 'lahat', 'martapura',
+        'tanjung', 'tabalong', 'hulu-sungai', 'barito', 'kapuas', 'katingan', 'kotawaringin', 'sukamara', 'lamandau', 'seruyan',
+        'majene', 'mamuju', 'pasangkayu', 'polewali', 'mamasa', 'toraja', 'palopo', 'parepare', 'watampone', 'sinjai',
+        'bulukumba', 'bantaeng', 'jeneponto', 'takalar', 'gowa', 'maros', 'pangkep', 'barru', 'soppeng', 'wajo',
     ];
 
     /** Kota kompak untuk pattern high-volume. */
     public const CITIES_COMPACT = [
-        'jakarta','surabaya','bandung','medan','semarang','makassar','palembang','batam','pekanbaru','bogor',
-        'tangerang','bekasi','depok','denpasar','yogyakarta','malang','solo','balikpapan','manado','padang',
-        'banjarmasin','samarinda','pontianak','jambi','mataram','kupang','ambon','jayapura','serang','cilegon',
-        'tasikmalaya','cirebon','tegal','purwokerto','kediri','madiun','sidoarjo','gresik','jember','banyuwangi',
-        'lampung','palu','gorontalo','kendari','sorong','manokwari','aceh','batam-center','dumai','martapura',
+        'jakarta', 'surabaya', 'bandung', 'medan', 'semarang', 'makassar', 'palembang', 'batam', 'pekanbaru', 'bogor',
+        'tangerang', 'bekasi', 'depok', 'denpasar', 'yogyakarta', 'malang', 'solo', 'balikpapan', 'manado', 'padang',
+        'banjarmasin', 'samarinda', 'pontianak', 'jambi', 'mataram', 'kupang', 'ambon', 'jayapura', 'serang', 'cilegon',
+        'tasikmalaya', 'cirebon', 'tegal', 'purwokerto', 'kediri', 'madiun', 'sidoarjo', 'gresik', 'jember', 'banyuwangi',
+        'lampung', 'palu', 'gorontalo', 'kendari', 'sorong', 'manokwari', 'aceh', 'batam-center', 'dumai', 'martapura',
     ];
 
     // ==================================================================
@@ -54,9 +54,9 @@ class SeoData
     // ==================================================================
 
     public const CAR_BRANDS = [
-        'toyota','honda','daihatsu','suzuki','mitsubishi','nissan','mazda','bmw','mercedes-benz','hyundai',
-        'kia','wuling','isuzu','hino','ford','chevrolet','lexus','audi','volkswagen','renault',
-        'peugeot','chery','dfsk','tata','mahindra','tesla','byd','gwm','haval','geely',
+        'toyota', 'honda', 'daihatsu', 'suzuki', 'mitsubishi', 'nissan', 'mazda', 'bmw', 'mercedes-benz', 'hyundai',
+        'kia', 'wuling', 'isuzu', 'hino', 'ford', 'chevrolet', 'lexus', 'audi', 'volkswagen', 'renault',
+        'peugeot', 'chery', 'dfsk', 'tata', 'mahindra', 'tesla', 'byd', 'gwm', 'haval', 'geely',
     ];
 
     // ==================================================================
@@ -64,12 +64,12 @@ class SeoData
     // ==================================================================
 
     public const SERVICE_TYPES = [
-        'servis-berkala','tune-up','ganti-oli','cuci-mobil','body-repair',
-        'servis-ac','ganti-ban','spooring-balancing','overhaul-mesin','servis-rem',
-        'ganti-aki','servis-kopling','turun-mesin','ganti-kampas','servis-kaki-kaki',
-        'repair-transmisi','servis-kelistrikan','ganti-busi','servis-injeksi','cuci-injector',
-        'perbaikan-radiator','servis-power-steering','ganti-shockbreaker','ketok-magic','poles-mobil',
-        'coating-mobil','kaca-film','ganti-knalpot','modifikasi-mobil','servis-aki-kering',
+        'servis-berkala', 'tune-up', 'ganti-oli', 'cuci-mobil', 'body-repair',
+        'servis-ac', 'ganti-ban', 'spooring-balancing', 'overhaul-mesin', 'servis-rem',
+        'ganti-aki', 'servis-kopling', 'turun-mesin', 'ganti-kampas', 'servis-kaki-kaki',
+        'repair-transmisi', 'servis-kelistrikan', 'ganti-busi', 'servis-injeksi', 'cuci-injector',
+        'perbaikan-radiator', 'servis-power-steering', 'ganti-shockbreaker', 'ketok-magic', 'poles-mobil',
+        'coating-mobil', 'kaca-film', 'ganti-knalpot', 'modifikasi-mobil', 'servis-aki-kering',
     ];
 
     // ==================================================================
@@ -77,35 +77,50 @@ class SeoData
     // ==================================================================
 
     public const SOURCE_CODE_KEYWORDS = [
-        'aplikasi-bengkel-standard-indonesia','erp-bengkel-indonesia','erp-repair-car-indonesia',
-        'aplikasi-bengkel-indonesia','software-bengkel-indonesia','sistem-erp-bengkel',
-        'aplikasi-manajemen-bengkel','erp-bengkel-web-based','aplikasi-bengkel-web',
-        'software-manajemen-bengkel','aplikasi-kasir-bengkel','aplikasi-service-bengkel',
-        'erp-bengkel-mobil-indonesia','program-bengkel-indonesia','sistem-informasi-bengkel',
+        'aplikasi-bengkel-standard-indonesia', 'erp-bengkel-indonesia', 'erp-repair-car-indonesia',
+        'aplikasi-bengkel-indonesia', 'software-bengkel-indonesia', 'sistem-erp-bengkel',
+        'aplikasi-manajemen-bengkel', 'erp-bengkel-web-based', 'aplikasi-bengkel-web',
+        'software-manajemen-bengkel', 'aplikasi-kasir-bengkel', 'aplikasi-service-bengkel',
+        'erp-bengkel-mobil-indonesia', 'program-bengkel-indonesia', 'sistem-informasi-bengkel',
     ];
 
     public const SC_MODIFIERS = [
-        'terbaik','murah','lengkap','gratis-demo','full-source-code',
-        'laravel','php','siap-pakai','whitelabel','bisa-custom','web-based',
+        'terbaik', 'murah', 'lengkap', 'gratis-demo', 'full-source-code',
+        'laravel', 'php', 'siap-pakai', 'whitelabel', 'bisa-custom', 'web-based',
     ];
 
     public const SC_PRICE_RANGES = [
-        '6jt','7jt','8jt','10jt','15jt','20jt','paket-lengkap','source-code',
+        '6jt', '7jt', '8jt', '10jt', '15jt', '20jt', 'paket-lengkap', 'source-code',
     ];
 
     public const SC_ACTIONS = [
-        'beli','jual','download','order','pesan','beli-online',
-        'custom','modifikasi','install','pasang','setting','konfigurasi',
+        'beli', 'jual', 'download', 'order', 'pesan', 'beli-online',
+        'custom', 'modifikasi', 'install', 'pasang', 'setting', 'konfigurasi',
     ];
 
     // ==================================================================
     // GENERATORS: URL LIST — semuanya return array of path strings
     // ==================================================================
 
-    public static function cities(): array { return self::CITIES_FULL; }
-    public static function compactCities(): array { return self::CITIES_COMPACT; }
-    public static function brands(): array { return self::CAR_BRANDS; }
-    public static function services(): array { return self::SERVICE_TYPES; }
+    public static function cities(): array
+    {
+        return self::CITIES_FULL;
+    }
+
+    public static function compactCities(): array
+    {
+        return self::CITIES_COMPACT;
+    }
+
+    public static function brands(): array
+    {
+        return self::CAR_BRANDS;
+    }
+
+    public static function services(): array
+    {
+        return self::SERVICE_TYPES;
+    }
 
     // ── PSEO UMUM ──
 
@@ -116,6 +131,7 @@ class SeoData
         foreach (self::CITIES_COMPACT as $c) {
             $urls[] = "/bengkel-{$c}";
         }
+
         return $urls;
     }
 
@@ -128,6 +144,7 @@ class SeoData
                 $urls[] = "/bengkel-{$brand}-{$c}";
             }
         }
+
         return $urls; // 50 × 30 = 1,500
     }
 
@@ -140,6 +157,7 @@ class SeoData
                 $urls[] = "/service-{$svc}-{$c}";
             }
         }
+
         return $urls; // 50 × 30 = 1,500
     }
 
@@ -150,6 +168,7 @@ class SeoData
         foreach (self::CITIES_COMPACT as $c) {
             $urls[] = "/bengkel-terbaik-{$c}";
         }
+
         return $urls; // 50
     }
 
@@ -163,6 +182,7 @@ class SeoData
                 $urls[] = "/bengkel-terbaik-{$c}-{$y}";
             }
         }
+
         return $urls; // 50 × ~6 = 300
     }
 
@@ -175,25 +195,26 @@ class SeoData
                 $urls[] = "/harga-{$svc}-{$c}";
             }
         }
+
         return $urls; // 50 × 30 = 1,500
     }
 
     /** /bengkel-24-jam-{city} */
     public static function all24JamCityUrls(): array
     {
-        return array_map(fn($c) => "/bengkel-24-jam-{$c}", self::CITIES_COMPACT);
+        return array_map(fn ($c) => "/bengkel-24-jam-{$c}", self::CITIES_COMPACT);
     }
 
     /** /bengkel-mobil-{brand} */
     public static function allBengkelBrandUrls(): array
     {
-        return array_map(fn($b) => "/bengkel-mobil-{$b}", self::CAR_BRANDS);
+        return array_map(fn ($b) => "/bengkel-mobil-{$b}", self::CAR_BRANDS);
     }
 
     /** /tips-merawat-{brand} */
     public static function allTipsBrandUrls(): array
     {
-        return array_map(fn($b) => "/tips-merawat-{$b}", self::CAR_BRANDS);
+        return array_map(fn ($b) => "/tips-merawat-{$b}", self::CAR_BRANDS);
     }
 
     /** /perbandingan-{brand-a}-vs-{brand-b} */
@@ -206,13 +227,14 @@ class SeoData
                 $urls[] = "/perbandingan-{$brands[$i]}-vs-{$brands[$j]}";
             }
         }
+
         return $urls; // C(30,2) = 435
     }
 
     /** /alternatif-{service} */
     public static function allAlternatifServiceUrls(): array
     {
-        return array_map(fn($s) => "/alternatif-{$s}", self::SERVICE_TYPES);
+        return array_map(fn ($s) => "/alternatif-{$s}", self::SERVICE_TYPES);
     }
 
     // ── MASSIVE EXPANSION ──
@@ -220,7 +242,7 @@ class SeoData
     /** Cross: /{bengkel-key}-{city}-{year} */
     public static function allKeywordCityYearUrls(): array
     {
-        $kw = ['bengkel','service-mobil','repair-mobil','turun-mesin','body-repair'];
+        $kw = ['bengkel', 'service-mobil', 'repair-mobil', 'turun-mesin', 'body-repair'];
         $years = range(2020, (int) date('Y') + 1);
         $urls = [];
         foreach (self::CITIES_COMPACT as $c) {
@@ -230,6 +252,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 50 × 5 × ~7 = 1,750
     }
 
@@ -237,11 +260,11 @@ class SeoData
     public static function allKeywordCityUrls(): array
     {
         $kw = [
-            'bengkel-mobil','service-mobil','bengkel-ac-mobil','bengkel-kaki-kaki',
-            'bengkel-body-repair','bengkel-kelistrikan','bengkel-transmisi','bengkel-radiator',
-            'bengkel-ban','bengkel-velg','bengkel-knalpot','bengkel-modifikasi',
-            'bengkel-variasi','bengkel-audio-mobil','bengkel-kaca-mobil','bengkel-salon-mobil',
-            'bengkel-detailing','bengkel-starter','bengkel-dinamo','bengkel-turbo',
+            'bengkel-mobil', 'service-mobil', 'bengkel-ac-mobil', 'bengkel-kaki-kaki',
+            'bengkel-body-repair', 'bengkel-kelistrikan', 'bengkel-transmisi', 'bengkel-radiator',
+            'bengkel-ban', 'bengkel-velg', 'bengkel-knalpot', 'bengkel-modifikasi',
+            'bengkel-variasi', 'bengkel-audio-mobil', 'bengkel-kaca-mobil', 'bengkel-salon-mobil',
+            'bengkel-detailing', 'bengkel-starter', 'bengkel-dinamo', 'bengkel-turbo',
         ];
         $urls = [];
         foreach (self::CITIES_COMPACT as $c) {
@@ -249,6 +272,7 @@ class SeoData
                 $urls[] = "/{$k}-{$c}";
             }
         }
+
         return $urls; // 50 × 20 = 1,000
     }
 
@@ -263,6 +287,7 @@ class SeoData
                 $urls[] = "/{$k}-{$c}";
             }
         }
+
         return $urls; // 200 × 15 = 3,000
     }
 
@@ -276,6 +301,7 @@ class SeoData
                 $urls[] = "/bandingkan-{$svcs[$i]}-vs-{$svcs[$j]}";
             }
         }
+
         return $urls; // C(30,2) = 435
     }
 
@@ -292,6 +318,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 50 × 10 × 10 = 5,000
     }
 
@@ -304,6 +331,7 @@ class SeoData
         foreach (self::SOURCE_CODE_KEYWORDS as $kw) {
             $urls[] = "/beli-{$kw}";
         }
+
         return $urls;
     }
 
@@ -316,6 +344,7 @@ class SeoData
             $urls[] = "/download-{$kw}";
             $urls[] = "/jual-{$kw}";
         }
+
         return $urls;
     }
 
@@ -328,6 +357,7 @@ class SeoData
                 $urls[] = "/{$kw}-{$c}";
             }
         }
+
         return $urls; // 200 × 14 = 2,800
     }
 
@@ -340,6 +370,7 @@ class SeoData
                 $urls[] = "/{$kw}-{$mod}";
             }
         }
+
         return $urls; // 14 × 10 = 140
     }
 
@@ -355,6 +386,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 5 × 10 = 10,000
     }
 
@@ -370,6 +402,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 50 × 12 × 4 = 2,400
     }
 
@@ -380,12 +413,13 @@ class SeoData
         $kws = array_slice(self::SOURCE_CODE_KEYWORDS, 0, 4);
         foreach (self::CITIES_FULL as $c) {
             foreach ($kws as $kw) {
-                $prefs = ['paket','harga','demo'];
+                $prefs = ['paket', 'harga', 'demo'];
                 foreach ($prefs as $p) {
                     $urls[] = "/{$p}-{$kw}-{$c}";
                 }
             }
         }
+
         return $urls; // 200 × 4 × 3 = 2,400
     }
 
@@ -399,6 +433,7 @@ class SeoData
                 $urls[] = "/bandingkan-{$kws[$i]}-vs-{$kws[$j]}";
             }
         }
+
         return $urls; // C(14,2) = 91
     }
 
@@ -408,9 +443,9 @@ class SeoData
     public static function allMassiveVolumeUrls(): array
     {
         $kw = array_merge(
-            ['bengkel','service','repair','tune-up','overhaul','body-repair','ganti-oli','cuci-mobil'],
-            ['spooring','balancing','servis-rem','servis-ac','servis-kopling','turun-mesin','modifikasi'],
-            ['bengkel-mobil-murah','bengkel-mobil-terdekat','bengkel-rekomendasi','bengkel-profesional']
+            ['bengkel', 'service', 'repair', 'tune-up', 'overhaul', 'body-repair', 'ganti-oli', 'cuci-mobil'],
+            ['spooring', 'balancing', 'servis-rem', 'servis-ac', 'servis-kopling', 'turun-mesin', 'modifikasi'],
+            ['bengkel-mobil-murah', 'bengkel-mobil-terdekat', 'bengkel-rekomendasi', 'bengkel-profesional']
         );
         $years = range(2018, (int) date('Y') + 2);
         $urls = [];
@@ -421,6 +456,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 19 × ~9 = 34,200
     }
 
@@ -437,6 +473,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 10 × ~7 = 14,000
     }
 
@@ -449,14 +486,15 @@ class SeoData
                 $urls[] = "/best-{$svc}-{$c}";
             }
         }
+
         return $urls; // 50 × 30 = 1,500
     }
 
     /** /super-mega: {prefix}-{service}-{city}-{suffix} */
     public static function allSuperMegaUrls(): array
     {
-        $pref = ['best','top','rekomendasi','murah','terdekat','profesional','berpengalaman','terpercaya','24-jam','express'];
-        $suff = ['terbaik','murah','terdekat','terlengkap','bergaransi'];
+        $pref = ['best', 'top', 'rekomendasi', 'murah', 'terdekat', 'profesional', 'berpengalaman', 'terpercaya', '24-jam', 'express'];
+        $suff = ['terbaik', 'murah', 'terdekat', 'terlengkap', 'bergaransi'];
         $urls = [];
         foreach (self::CITIES_COMPACT as $c) {
             foreach (self::SERVICE_TYPES as $svc) {
@@ -467,6 +505,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 50 × 30 × 10 × 5 = 75,000
     }
 
@@ -486,6 +525,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 50 × 8 × 8 × ~7 = 22,400
     }
 
@@ -503,6 +543,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 6 × 10 × 5 = 60,000
     }
 
@@ -518,13 +559,14 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 50 × 8 × 10 = 4,000
     }
 
     /** Source code feature × city */
     public static function allSourceCodeFeatureUrls(): array
     {
-        $features = ['kasir','inventory','service','invoice','customer','laporan','multi-cabang','pos','booking-online','api'];
+        $features = ['kasir', 'inventory', 'service', 'invoice', 'customer', 'laporan', 'multi-cabang', 'pos', 'booking-online', 'api'];
         $urls = [];
         foreach (self::CITIES_FULL as $c) {
             foreach ($features as $f) {
@@ -532,19 +574,21 @@ class SeoData
                 $urls[] = "/source-code-bengkel-{$f}-{$c}";
             }
         }
+
         return $urls; // 200 × 10 × 2 = 4,000
     }
 
     /** /bengkel-{city}-harga-{price} */
     public static function allCityPriceUrls(): array
     {
-        $prices = ['100rb','200rb','300rb','500rb','1jt','2jt','5jt'];
+        $prices = ['100rb', '200rb', '300rb', '500rb', '1jt', '2jt', '5jt'];
         $urls = [];
         foreach (self::CITIES_FULL as $c) {
             foreach ($prices as $p) {
                 $urls[] = "/bengkel-{$c}-harga-{$p}";
             }
         }
+
         return $urls; // 200 × 7 = 1,400
     }
 
@@ -557,6 +601,7 @@ class SeoData
                 $urls[] = "/bengkel-{$c}-rating-{$star}";
             }
         }
+
         return $urls; // 200 × 5 = 1,000
     }
 
@@ -578,13 +623,14 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 50 × 5 × 5 × ~4 = 5,000
     }
 
     /** Source code action × kw × city × price */
     public static function allSourceCodeActionPriceUrls(): array
     {
-        $actions = ['beli','jual','download','order','custom'];
+        $actions = ['beli', 'jual', 'download', 'order', 'custom'];
         $kws = array_slice(self::SOURCE_CODE_KEYWORDS, 0, 5);
         $urls = [];
         foreach (self::CITIES_FULL as $c) {
@@ -596,6 +642,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 5 × 5 × 5 = 25,000
     }
 
@@ -609,19 +656,21 @@ class SeoData
                 $urls[] = "/bandingkan-bengkel-{$cities[$i]}-vs-{$cities[$j]}";
             }
         }
+
         return $urls; // C(25,2) = 300
     }
 
     /** /bengkel-murah-{city} + /bengkel-terdekat-{city} + /bengkel-express-{city} */
     public static function allShortLabelCityUrls(): array
     {
-        $labels = ['murah','terdekat','express','ramah','profesional','terpercaya','lengkap','modern','bersih','nyaman'];
+        $labels = ['murah', 'terdekat', 'express', 'ramah', 'profesional', 'terpercaya', 'lengkap', 'modern', 'bersih', 'nyaman'];
         $urls = [];
         foreach (self::CITIES_COMPACT as $c) {
             foreach ($labels as $l) {
                 $urls[] = "/bengkel-{$l}-{$c}";
             }
         }
+
         return $urls; // 50 × 10 = 500
     }
 
@@ -629,10 +678,10 @@ class SeoData
     public static function allSourceCodeDistrictUrls(): array
     {
         $districts = [
-            'jakarta-pusat','jakarta-selatan','jakarta-barat','jakarta-timur','jakarta-utara',
-            'bandung-kota','bandung-barat','surabaya-pusat','surabaya-barat','surabaya-timur',
-            'medan-kota','medan-area','semarang-atas','semarang-bawah','depok-margonda',
-            'tangerang-kota','tangerang-selatan','bekasi-timur','bekasi-barat','bogor-tengah',
+            'jakarta-pusat', 'jakarta-selatan', 'jakarta-barat', 'jakarta-timur', 'jakarta-utara',
+            'bandung-kota', 'bandung-barat', 'surabaya-pusat', 'surabaya-barat', 'surabaya-timur',
+            'medan-kota', 'medan-area', 'semarang-atas', 'semarang-bawah', 'depok-margonda',
+            'tangerang-kota', 'tangerang-selatan', 'bekasi-timur', 'bekasi-barat', 'bogor-tengah',
         ];
         $kws = array_slice(self::SOURCE_CODE_KEYWORDS, 0, 4);
         $urls = [];
@@ -641,6 +690,7 @@ class SeoData
                 $urls[] = "/{$kw}-{$d}";
             }
         }
+
         return $urls; // 20 × 4 = 80
     }
 
@@ -660,13 +710,14 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 30 × 6 × ~7 = 252,000
     }
 
     /** /aplikasi-bengkel-{feature}-{city}-{price} */
     public static function allSourceCodeFeatureCityPriceUrls(): array
     {
-        $features = ['kasir','inventory','service','invoice','customer','laporan','multi-cabang','pos','booking-online','api-mobile'];
+        $features = ['kasir', 'inventory', 'service', 'invoice', 'customer', 'laporan', 'multi-cabang', 'pos', 'booking-online', 'api-mobile'];
         $urls = [];
         foreach (self::CITIES_FULL as $c) {
             foreach ($features as $f) {
@@ -675,6 +726,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 10 × 6 = 12,000
     }
 
@@ -687,6 +739,7 @@ class SeoData
                 $urls[] = "/paket-aplikasi-bengkel-{$c}-{$p}";
             }
         }
+
         return $urls; // 200 × 10 = 2,000
     }
 
@@ -700,26 +753,28 @@ class SeoData
                 $urls[] = "/promo-bengkel-{$c}-{$y}";
             }
         }
+
         return $urls; // 50 × ~7 = 350
     }
 
     /** /bengkel-{city}-bulan-{month} */
     public static function allMonthCityUrls(): array
     {
-        $months = ['januari','februari','maret','april','mei','juni','juli','agustus','september','oktober','november','desember'];
+        $months = ['januari', 'februari', 'maret', 'april', 'mei', 'juni', 'juli', 'agustus', 'september', 'oktober', 'november', 'desember'];
         $urls = [];
         foreach (self::CITIES_COMPACT as $c) {
             foreach ($months as $m) {
                 $urls[] = "/bengkel-{$c}-bulan-{$m}";
             }
         }
+
         return $urls; // 50 × 12 = 600
     }
 
     /** /service-{service}-{city}-{price} */
     public static function allServiceCityPriceUrls(): array
     {
-        $prices = ['50rb','100rb','150rb','200rb','300rb','500rb','1jt','2jt'];
+        $prices = ['50rb', '100rb', '150rb', '200rb', '300rb', '500rb', '1jt', '2jt'];
         $svcs = array_slice(self::SERVICE_TYPES, 0, 10);
         $urls = [];
         foreach (self::CITIES_COMPACT as $c) {
@@ -729,6 +784,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 50 × 10 × 8 = 4,000
     }
 
@@ -747,6 +803,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 14 × 10 = 28,000
     }
 
@@ -761,6 +818,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 14 × 12 = 33,600
     }
 
@@ -775,6 +833,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 50 × 14 × 10 = 7,000
     }
 
@@ -791,6 +850,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 50 × 8 × ~12 = 4,800
     }
 
@@ -807,6 +867,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 5 × ~8 = 8,000
     }
 
@@ -822,6 +883,7 @@ class SeoData
             $urls[] = "/demo-aplikasi-bengkel-{$c}";
             $urls[] = "/trial-aplikasi-bengkel-{$c}";
         }
+
         return $urls; // 200 × 8 = 1,600
     }
 
@@ -837,6 +899,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 50 × 6 × ~8 = 2,400
     }
 
@@ -853,6 +916,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 30 × 6 = 36,000
     }
 
@@ -868,6 +932,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 30 × ~9 = 54,000
     }
 
@@ -887,6 +952,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 10 × ~5 × 6 = 60,000
     }
 
@@ -906,14 +972,15 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 6 × 10 × ~5 = 60,000
     }
 
     /** /bengkel-{city}-{price}-{keyword} */
     public static function allCityPriceKeyword(): array
     {
-        $prices = ['100rb','200rb','300rb','500rb','1jt','2jt','5jt','10jt'];
-        $kw = ['murah','terbaik','terdekat','profesional','express','24-jam'];
+        $prices = ['100rb', '200rb', '300rb', '500rb', '1jt', '2jt', '5jt', '10jt'];
+        $kw = ['murah', 'terbaik', 'terdekat', 'profesional', 'express', '24-jam'];
         $urls = [];
         foreach (self::CITIES_FULL as $c) {
             foreach ($prices as $p) {
@@ -922,6 +989,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 8 × 6 = 9,600
     }
 
@@ -936,6 +1004,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 8 × 6 = 9,600
     }
 
@@ -953,13 +1022,14 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 50 × 6 × 6 × ~7 = 12,600
     }
 
     /** /wajib-tau-{service}-{brand}-{city} */
     public static function allInfoBrandCity(): array
     {
-        $prefs = ['wajib-tau','panduan','cara','tips','rekomendasi'];
+        $prefs = ['wajib-tau', 'panduan', 'cara', 'tips', 'rekomendasi'];
         $urls = [];
         foreach (self::CITIES_COMPACT as $c) {
             foreach (array_slice(self::SERVICE_TYPES, 0, 8) as $s) {
@@ -969,6 +1039,7 @@ class SeoData
                 $urls[] = "/{$s}-{$c}"; // duplicate from earlier but included for completeness
             }
         }
+
         // dedupe
         return array_values(array_unique($urls));
     }
@@ -976,7 +1047,7 @@ class SeoData
     /** /bengkel-{city}-terbaik-{year}-bulan-{month} */
     public static function allCityYearMonth(): array
     {
-        $months = ['januari','februari','maret','april','mei','juni','juli','agustus','september','oktober','november','desember'];
+        $months = ['januari', 'februari', 'maret', 'april', 'mei', 'juni', 'juli', 'agustus', 'september', 'oktober', 'november', 'desember'];
         $years = range(2020, (int) date('Y'));
         $urls = [];
         foreach (self::CITIES_COMPACT as $c) {
@@ -986,6 +1057,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 50 × 5 × 12 = 3,000
     }
 
@@ -1002,6 +1074,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 8 × 8 × 5 = 64,000
     }
 
@@ -1018,6 +1091,7 @@ class SeoData
                 }
             }
         }
+
         return $urls; // 200 × 5 × 6 × 3 = 18,000
     }
 }

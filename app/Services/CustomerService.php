@@ -11,7 +11,7 @@ class CustomerService extends BaseService
     {
         $query = Customer::query();
 
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $term = $filters['search'];
             $query->where(function ($q) use ($term) {
                 $q->where('name', 'like', "%{$term}%")
@@ -31,6 +31,7 @@ class CustomerService extends BaseService
     public function update(Customer $customer, array $data): Customer
     {
         $customer->update($data);
+
         return $customer;
     }
 
@@ -76,6 +77,7 @@ class CustomerService extends BaseService
             );
             $imported++;
         }
+
         return $imported;
     }
 }

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
-use App\Models\Equipment;
 use App\Models\Branch;
+use App\Models\Equipment;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -15,13 +15,14 @@ class EquipmentController extends Controller
         $query = Equipment::orderBy('name');
         if ($request->filled('search')) {
             $query->where('name', 'like', "%{$request->search}%")
-                  ->orWhere('code', 'like', "%{$request->search}%");
+                ->orWhere('code', 'like', "%{$request->search}%");
         }
         if ($request->filled('category')) {
             $query->where('category', $request->category);
         }
         $equipment = $query->paginate(15)->withQueryString();
         $categories = ['Lift/Hoist', 'Diagnostic Tool', 'Hand Tool', 'Air Tool', 'Compressor', 'Welding', 'Tire', 'Other'];
+
         return view('equipment.index', compact('equipment', 'categories'));
     }
 
@@ -29,6 +30,7 @@ class EquipmentController extends Controller
     {
         $branches = Branch::where('is_active', true)->orderBy('name')->get();
         $categories = ['Lift/Hoist', 'Diagnostic Tool', 'Hand Tool', 'Air Tool', 'Compressor', 'Welding', 'Tire', 'Other'];
+
         return view('equipment.create', compact('branches', 'categories'));
     }
 
@@ -56,6 +58,7 @@ class EquipmentController extends Controller
     public function show(Equipment $equipment)
     {
         $equipment->load('maintenanceLogs');
+
         return view('equipment.show', compact('equipment'));
     }
 
@@ -63,6 +66,7 @@ class EquipmentController extends Controller
     {
         $branches = Branch::where('is_active', true)->orderBy('name')->get();
         $categories = ['Lift/Hoist', 'Diagnostic Tool', 'Hand Tool', 'Air Tool', 'Compressor', 'Welding', 'Tire', 'Other'];
+
         return view('equipment.edit', compact('equipment', 'branches', 'categories'));
     }
 
@@ -90,6 +94,7 @@ class EquipmentController extends Controller
     public function destroy(Equipment $equipment)
     {
         $equipment->delete();
+
         return redirect()->route('equipment.index')
             ->with('success', 'Peralatan berhasil dihapus.');
     }

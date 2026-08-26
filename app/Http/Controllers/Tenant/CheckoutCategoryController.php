@@ -16,6 +16,7 @@ class CheckoutCategoryController extends Controller
             $query->where('category_name', 'like', "%{$request->search}%");
         }
         $categories = $query->orderBy('category_name')->paginate(15)->withQueryString();
+
         return view('checkout-categories.index', compact('categories'));
     }
 
@@ -30,6 +31,7 @@ class CheckoutCategoryController extends Controller
             'category_name' => ['required', 'string', 'max:255', Rule::unique('checkout_categories', 'category_name')->whereNull('deleted_at')],
         ]);
         CheckoutCategory::create($validated);
+
         return redirect()->route('checkout-categories.index')->with('success', 'Kategori checkout ditambahkan.');
     }
 
@@ -44,6 +46,7 @@ class CheckoutCategoryController extends Controller
             'category_name' => ['required', 'string', 'max:255', Rule::unique('checkout_categories', 'category_name')->whereNull('deleted_at')->ignore($checkoutCategory->id)],
         ]);
         $checkoutCategory->update($validated);
+
         return redirect()->route('checkout-categories.index')->with('success', 'Kategori checkout diperbarui.');
     }
 
@@ -53,6 +56,7 @@ class CheckoutCategoryController extends Controller
             return back()->with('error', 'Kategori checkout tidak bisa dihapus karena masih dipakai di service.');
         }
         $checkoutCategory->delete();
+
         return redirect()->route('checkout-categories.index')->with('success', 'Kategori checkout dihapus.');
     }
 }

@@ -1,14 +1,15 @@
 <?php
+
 /**
  * Hits every authenticated GET route as an admin user via a CookieJar+Curl session.
  * Reports HTTP status + first error line from response if status != 200/302.
  */
-
 $base = $argv[1] ?? 'http://127.0.0.1:8124';
-$cookieJar = sys_get_temp_dir() . '/uat_cookies_' . getmypid() . '.txt';
+$cookieJar = sys_get_temp_dir().'/uat_cookies_'.getmypid().'.txt';
 @unlink($cookieJar);
 
-function curlReq($url, $method = 'GET', $data = null, $cookieJar = null) {
+function curlReq($url, $method = 'GET', $data = null, $cookieJar = null)
+{
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -29,6 +30,7 @@ function curlReq($url, $method = 'GET', $data = null, $cookieJar = null) {
     $head = substr($body, 0, $headerSize);
     $body = substr($body, $headerSize);
     curl_close($ch);
+
     return ['status' => $status, 'head' => $head, 'body' => $body];
 }
 
@@ -36,7 +38,7 @@ function curlReq($url, $method = 'GET', $data = null, $cookieJar = null) {
 $r = curlReq("$base/login", 'GET', null, $cookieJar);
 preg_match('/name="_token" value="([^"]+)"/', $r['body'], $m);
 $token = $m[1] ?? null;
-if (!$token) {
+if (! $token) {
     echo "✗ Login page CSRF token not found. Status={$r['status']}\n";
     exit(1);
 }
@@ -50,8 +52,10 @@ $r = curlReq("$base/login", 'POST', [
 
 if ($r['status'] !== 302) {
     echo "✗ Login failed. Status={$r['status']}\n";
-    if (preg_match('/<title>(.+?)<\/title>/s', $r['body'], $m)) echo "   Title: {$m[1]}\n";
-    echo substr($r['body'], 0, 500) . "\n";
+    if (preg_match('/<title>(.+?)<\/title>/s', $r['body'], $m)) {
+        echo "   Title: {$m[1]}\n";
+    }
+    echo substr($r['body'], 0, 500)."\n";
     exit(1);
 }
 echo "✓ Logged in\n\n";
@@ -59,7 +63,7 @@ echo "✓ Logged in\n\n";
 // Step 3: gather routes via artisan
 exec('php artisan route:list --json', $out);
 $routes = json_decode(implode('', $out), true);
-if (!$routes) {
+if (! $routes) {
     echo "✗ Cannot get route list\n";
     exit(1);
 }
@@ -75,36 +79,57 @@ $skipPatterns = [
     '#horizon#',
 ];
 
-$ok = 0; $bad = 0; $skip = 0;
+$ok = 0;
+$bad = 0;
+$skip = 0;
 $badList = [];
 
 foreach ($routes as $r) {
     $method = $r['method'] ?? '';
     $uri = $r['uri'] ?? '';
     $name = $r['name'] ?? '';
-    if (!str_contains($method, 'GET')) { $skip++; continue; }
+    if (! str_contains($method, 'GET')) {
+        $skip++;
+
+        continue;
+    }
 
     $shouldSkip = false;
     foreach ($skipPatterns as $p) {
-        if (preg_match($p, $uri)) { $shouldSkip = true; break; }
+        if (preg_match($p, $uri)) {
+            $shouldSkip = true;
+            break;
+        }
     }
-    if ($shouldSkip) { $skip++; continue; }
+    if ($shouldSkip) {
+        $skip++;
 
-    $url = $base . '/' . ltrim($uri, '/');
+        continue;
+    }
+
+    $url = $base.'/'.ltrim($uri, '/');
     $res = curlReq($url, 'GET', null, $cookieJar);
     $s = $res['status'];
 
     if ($s === 200 || $s === 302 || $s === 304) {
         $ok++;
-        echo "✓ $s GET /$uri" . ($name ? " [$name]" : '') . "\n";
+        echo "✓ $s GET /$uri".($name ? " [$name]" : '')."\n";
     } else {
         $bad++;
         // Extract Laravel exception message
         $msg = '';
-        if (preg_match('#<title>(.+?)</title>#s', $res['body'], $m)) $msg = trim($m[1]);
-        if (preg_match('#<div class="exception_title">.*?<h1[^>]*>(.+?)</h1>#s', $res['body'], $m)) $msg .= ' :: ' . trim($m[1]);
-        if (preg_match('#<span class="exception_message">(.+?)</span>#s', $res['body'], $m)) $msg .= ' :: ' . strip_tags($m[1]);
-        if (preg_match("#\"message\":\"([^\"]+)\"#", $res['body'], $m)) $msg .= ' :: ' . $m[1];
+        if (preg_match('#<title>(.+?)</title>#s', $res['body'], $m)) {
+            $msg = trim($m[1]);
+        }
+        if (preg_match('#<div class="exception_title">.*?<h1[^>]*>(.+?)</h1>#s', $res['body'], $m)) {
+            $msg .= ' :: '.trim($m[1]);
+        }
+        if (preg_match('#<span class="exception_message">(.+?)</span>#s', $res['body'], $m)) {
+            $msg .= ' :: '.strip_tags($m[1]);
+        }
+        if (preg_match('#"message":"([^"]+)"#', $res['body'], $m)) {
+            $msg .= ' :: '.$m[1];
+        }
         $badList[] = "$s GET /$uri [$name] :: $msg";
         echo "✗ $s GET /$uri [$name]\n   $msg\n";
     }
@@ -117,5 +142,7 @@ echo "  skipped: $skip\n";
 
 if ($badList) {
     echo "\n=== FAILURES ===\n";
-    foreach ($badList as $e) echo "  $e\n";
+    foreach ($badList as $e) {
+        echo "  $e\n";
+    }
 }

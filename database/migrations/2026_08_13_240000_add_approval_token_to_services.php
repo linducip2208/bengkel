@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('services', function (Blueprint $table) {
-            if (!Schema::hasColumn('services', 'approval_token')) {
+            if (! Schema::hasColumn('services', 'approval_token')) {
                 $table->string('approval_token', 64)->nullable()->unique()->after('job_no');
             }
         });

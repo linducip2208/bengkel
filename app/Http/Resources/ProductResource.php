@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\Product
+ * @mixin Product
  */
 class ProductResource extends JsonResource
 {
@@ -17,9 +18,9 @@ class ProductResource extends JsonResource
             'code' => $this->code,
             'name' => $this->name,
             'product_type_id' => $this->product_type_id,
-            'type' => $this->whenLoaded('productType', fn() => $this->productType->type ?? null),
+            'type' => $this->whenLoaded('productType', fn () => $this->productType->type ?? null),
             'unit_id' => $this->unit_id,
-            'unit' => $this->whenLoaded('unit', fn() => $this->unit->name ?? null),
+            'unit' => $this->whenLoaded('unit', fn () => $this->unit->name ?? null),
             'supplier_id' => $this->supplier_id,
             'supplier' => new SupplierResource($this->whenLoaded('supplier')),
             'price' => $this->price,

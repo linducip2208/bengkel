@@ -38,7 +38,7 @@ return [
     | Grace = how long to keep working if marketplace is unreachable.
     */
     'heartbeat_interval' => env('LICENSE_HEARTBEAT_INTERVAL', 86400),  // 24h
-    'heartbeat_grace'    => env('LICENSE_HEARTBEAT_GRACE', 604800),    // 7d
+    'heartbeat_grace' => env('LICENSE_HEARTBEAT_GRACE', 604800),    // 7d
 
     /*
     |---------------------------------------------------------------------

@@ -13,6 +13,7 @@ class ColorService extends BaseService
         if ($request->filled('search')) {
             $query->where('color', 'like', "%{$request->search}%");
         }
+
         return $query->orderBy('color')->get();
     }
 
@@ -23,6 +24,7 @@ class ColorService extends BaseService
             'hex_code' => 'nullable|string|max:7',
             'is_active' => 'boolean',
         ]);
+
         return Color::create($validated);
     }
 
@@ -35,11 +37,12 @@ class ColorService extends BaseService
     {
         $model = Color::findOrFail($id);
         $validated = $request->validate([
-            'color' => 'required|string|max:255|unique:colors,color,' . $id,
+            'color' => 'required|string|max:255|unique:colors,color,'.$id,
             'hex_code' => 'nullable|string|max:7',
             'is_active' => 'boolean',
         ]);
         $model->update($validated);
+
         return $model;
     }
 
@@ -47,6 +50,7 @@ class ColorService extends BaseService
     {
         $model = Color::findOrFail($id);
         $model->delete();
+
         return $model;
     }
 }

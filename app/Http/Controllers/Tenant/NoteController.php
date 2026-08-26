@@ -30,6 +30,7 @@ class NoteController extends Controller
             }
         }
         $notes = $query->latest()->paginate(20)->withQueryString();
+
         return view('notes.index', [
             'notes' => $notes,
             'notableTypes' => array_keys(self::NOTABLE_MAP),
@@ -54,7 +55,7 @@ class NoteController extends Controller
         ]);
 
         $cls = self::NOTABLE_MAP[$validated['notable_type']];
-        if (!$cls::find($validated['notable_id'])) {
+        if (! $cls::find($validated['notable_id'])) {
             return back()->withInput()->with('error', 'Target entity tidak ditemukan.');
         }
 
@@ -71,6 +72,7 @@ class NoteController extends Controller
     public function destroy(Note $note)
     {
         $note->delete();
+
         return redirect()->route('notes.index')->with('success', 'Catatan dihapus.');
     }
 }

@@ -20,7 +20,7 @@ class SearchController extends Controller
         $customers = $vehicles = $services = $invoices = $products = [];
 
         if ($q !== '') {
-            $like = '%' . $q . '%';
+            $like = '%'.$q.'%';
 
             $customers = Customer::query()
                 ->where(fn ($query) => $query->where('name', 'like', $like)
@@ -44,7 +44,7 @@ class SearchController extends Controller
                 ->map(fn ($v) => [
                     'id' => $v->id,
                     'title' => $v->number_plate,
-                    'subtitle' => trim(($v->vehicleBrand?->name ? $v->vehicleBrand->name . ' ' : '') . ($v->model_name ?: '')),
+                    'subtitle' => trim(($v->vehicleBrand?->name ? $v->vehicleBrand->name.' ' : '').($v->model_name ?: '')),
                     'url' => route('vehicles.show', $v),
                 ])
                 ->values();
@@ -57,7 +57,7 @@ class SearchController extends Controller
                 ->get()
                 ->map(fn ($s) => [
                     'id' => $s->id,
-                    'title' => trim(($s->job_no ? $s->job_no . ' — ' : '') . ($s->title ?: '')),
+                    'title' => trim(($s->job_no ? $s->job_no.' — ' : '').($s->title ?: '')),
                     'subtitle' => $s->customer?->name ?: '—',
                     'url' => route('services.show', $s),
                 ])

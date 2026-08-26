@@ -49,7 +49,7 @@ class ApiVehicleController extends Controller
             'chassis_number' => 'nullable|string|max:50',
             'engine_number' => 'nullable|string|max:50',
             'model_name' => 'nullable|string|max:100',
-            'model_year' => 'nullable|integer|min:1990|max:' . (now()->year + 1),
+            'model_year' => 'nullable|integer|min:1990|max:'.(now()->year + 1),
             'color' => 'nullable|string|max:50',
             'odometer' => 'nullable|integer|min:0',
         ]);
@@ -66,11 +66,11 @@ class ApiVehicleController extends Controller
             'vehicle_type_id' => 'sometimes|exists:vehicle_types,id',
             'vehicle_brand_id' => 'sometimes|exists:vehicle_brands,id',
             'fuel_type_id' => 'sometimes|exists:fuel_types,id',
-            'number_plate' => 'sometimes|string|max:20|unique:vehicles,number_plate,' . $vehicle->id,
+            'number_plate' => 'sometimes|string|max:20|unique:vehicles,number_plate,'.$vehicle->id,
             'chassis_number' => 'nullable|string|max:50',
             'engine_number' => 'nullable|string|max:50',
             'model_name' => 'nullable|string|max:100',
-            'model_year' => 'nullable|integer|min:1990|max:' . (now()->year + 1),
+            'model_year' => 'nullable|integer|min:1990|max:'.(now()->year + 1),
             'color' => 'nullable|string|max:50',
             'odometer' => 'nullable|integer|min:0',
         ]);

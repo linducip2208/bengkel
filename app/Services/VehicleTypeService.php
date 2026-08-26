@@ -13,6 +13,7 @@ class VehicleTypeService extends BaseService
         if ($request->filled('search')) {
             $query->where('vehicle_type', 'like', "%{$request->search}%");
         }
+
         return $query->orderBy('vehicle_type')->get();
     }
 
@@ -24,6 +25,7 @@ class VehicleTypeService extends BaseService
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
+
         return VehicleType::create($validated);
     }
 
@@ -36,12 +38,13 @@ class VehicleTypeService extends BaseService
     {
         $model = VehicleType::findOrFail($id);
         $validated = $request->validate([
-            'vehicle_type' => 'required|string|max:255|unique:vehicle_types,vehicle_type,' . $id,
-            'slug' => 'nullable|string|max:255|unique:vehicle_types,slug,' . $id,
+            'vehicle_type' => 'required|string|max:255|unique:vehicle_types,vehicle_type,'.$id,
+            'slug' => 'nullable|string|max:255|unique:vehicle_types,slug,'.$id,
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
         $model->update($validated);
+
         return $model;
     }
 
@@ -49,6 +52,7 @@ class VehicleTypeService extends BaseService
     {
         $model = VehicleType::findOrFail($id);
         $model->delete();
+
         return $model;
     }
 }

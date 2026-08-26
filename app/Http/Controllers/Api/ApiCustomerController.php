@@ -30,7 +30,7 @@ class ApiCustomerController extends Controller
     public function show(Customer $customer): JsonResponse
     {
         $customer->loadCount(['vehicles', 'services']);
-        $customer->load(['vehicles', 'services' => fn($q) => $q->latest()->limit(10)]);
+        $customer->load(['vehicles', 'services' => fn ($q) => $q->latest()->limit(10)]);
 
         return response()->json(new CustomerResource($customer));
     }
@@ -53,7 +53,7 @@ class ApiCustomerController extends Controller
     {
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'email' => 'nullable|email|unique:customers,email,' . $customer->id,
+            'email' => 'nullable|email|unique:customers,email,'.$customer->id,
             'phone' => 'sometimes|string|max:20',
             'address' => 'nullable|string',
         ]);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\Invoice;
 use App\Models\LoyaltyTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,8 +17,12 @@ class LoyaltyController extends Controller
             ->select('customers.*')
             ->withCount('invoices')
             ->orderBy('loyalty_points', 'desc');
-        if ($request->filled('tier')) $query->where('membership_tier', $request->tier);
-        if ($request->filled('search')) $query->where('name', 'like', "%{$request->search}%");
+        if ($request->filled('tier')) {
+            $query->where('membership_tier', $request->tier);
+        }
+        if ($request->filled('search')) {
+            $query->where('name', 'like', "%{$request->search}%");
+        }
         $customers = $query->paginate(20)->withQueryString();
 
         $summary = [
@@ -31,6 +36,7 @@ class LoyaltyController extends Controller
     public function show(Customer $customer)
     {
         $transactions = LoyaltyTransaction::where('customer_id', $customer->id)->with('creator')->latest()->paginate(30);
+
         return view('loyalty.show', compact('customer', 'transactions'));
     }
 
@@ -56,16 +62,20 @@ class LoyaltyController extends Controller
         return back()->with('success', 'Poin disesuaikan.');
     }
 
-    public static function earnFromInvoice(\App\Models\Invoice $invoice, int $pointsPer1000Rupiah = 1): void
+    public static function earnFromInvoice(Invoice $invoice, int $pointsPer1000Rupiah = 1): void
     {
-        if (!$invoice->customer_id) return;
+        if (! $invoice->customer_id) {
+            return;
+        }
         $points = (int) floor($invoice->grand_total / 1000) * $pointsPer1000Rupiah;
-        if ($points <= 0) return;
+        if ($points <= 0) {
+            return;
+        }
 
         DB::transaction(function () use ($invoice, $points) {
             LoyaltyTransaction::create([
                 'customer_id' => $invoice->customer_id,
-                'reference_type' => \App\Models\Invoice::class,
+                'reference_type' => Invoice::class,
                 'reference_id' => $invoice->id,
                 'points' => $points,
                 'type' => 'earn',

@@ -12,11 +12,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'purchase_no', 'supplier_id', 'purchase_date', 'status',
-    'total_amount', 'notes', 'created_by', 'branch_id'
+    'total_amount', 'notes', 'created_by', 'branch_id',
 ])]
 class Purchase extends Model
 {
-    use HasFactory, SoftDeletes, HasBranchScope;
+    use HasBranchScope, HasFactory, SoftDeletes;
 
     protected function casts(): array
     {
@@ -54,7 +54,7 @@ class Purchase extends Model
             'received' => '<span class="badge bg-success">Diterima</span>',
             'returned' => '<span class="badge bg-warning text-dark">Diretur</span>',
             'cancelled' => '<span class="badge bg-danger">Dibatalkan</span>',
-            default => '<span class="badge bg-secondary">' . $this->status . '</span>',
+            default => '<span class="badge bg-secondary">'.$this->status.'</span>',
         };
     }
 

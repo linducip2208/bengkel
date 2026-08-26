@@ -12,6 +12,7 @@ use App\Models\PaymentRecord;
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\SellReturn;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -356,6 +357,11 @@ class AutoJournalService
         $totalDebit = 0.0;
         $totalCredit = 0.0;
         foreach ($lines as [$account, $debit, $credit]) {
+            if ($account === null) {
+                throw new \RuntimeException(
+                    "Konfigurasi akun jurnal belum lengkap: {$description}. Lengkapi Chart of Accounts sebelum posting."
+                );
+            }
             $totalDebit += (float) $debit;
             $totalCredit += (float) $credit;
         }
@@ -381,15 +387,22 @@ class AutoJournalService
                     ->first();
             }
 
-            $entry = JournalEntry::create([
-                'entry_number' => $entryNumber,
-                'entry_type' => $entryType,
-                'entry_date' => $entryDate ?? now(),
-                'description' => $description,
-                'reference_type' => $refType,
-                'reference_id' => $refId,
-                'created_by' => $userId ?? auth()->id() ?? 1,
-            ]);
+            try {
+                $entry = JournalEntry::create([
+                    'entry_number' => $entryNumber,
+                    'entry_type' => $entryType,
+                    'entry_date' => $entryDate ?? now(),
+                    'description' => $description,
+                    'reference_type' => $refType,
+                    'reference_id' => $refId,
+                    'created_by' => $userId ?? auth()->id() ?? 1,
+                ]);
+            } catch (UniqueConstraintViolationException) {
+                return JournalEntry::where('reference_type', $refType)
+                    ->where('reference_id', $refId)
+                    ->where('entry_type', $entryType)
+                    ->firstOrFail();
+            }
 
             foreach ($lines as [$account, $debit, $credit, $lineDescription]) {
                 JournalEntryLine::create([

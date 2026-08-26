@@ -51,7 +51,7 @@ class PurchaseRequisition extends Model
             'approved' => '<span class="badge bg-success">Disetujui</span>',
             'rejected' => '<span class="badge bg-danger">Ditolak</span>',
             'converted' => '<span class="badge bg-info text-dark">Dikonversi</span>',
-            default => '<span class="badge bg-secondary">' . $this->status . '</span>',
+            default => '<span class="badge bg-secondary">'.$this->status.'</span>',
         };
     }
 

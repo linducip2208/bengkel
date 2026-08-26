@@ -6,6 +6,8 @@ use App\Models\Invoice;
 use App\Models\PaymentGateway;
 use App\Models\PaymentLink;
 use App\Models\PaymentRecord;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -158,58 +160,118 @@ class PaymentGatewayService
     /**
      * Webhook callback dari gateway. Universal extract status dari payload.
      */
-    public function handleCallback(string $token, array $payload): PaymentLink
+    public function handleCallback(string $token, array $payload, array $headers = [], ?string $rawBody = null): PaymentLink
     {
-        $link = PaymentLink::where('token', $token)->firstOrFail();
+        return DB::transaction(function () use ($token, $payload, $headers, $rawBody) {
+            $link = PaymentLink::query()->where('token', $token)->lockForUpdate()->firstOrFail();
+            $link->loadMissing(['gateway', 'invoice']);
 
-        // Universal status extract — gateway umumnya pakai salah satu:
-        $statusRaw = strtolower((string) (
-            $payload['transaction_status'] ??
-            $payload['status'] ??
-            $payload['payment_status'] ??
-            $payload['state'] ??
-            ''
-        ));
+            if ($link->expires_at !== null && Carbon::parse($link->expires_at)->isPast() && $link->status !== 'paid') {
+                $link->update(['status' => 'expired']);
+                throw new \RuntimeException('Payment link sudah kedaluwarsa.');
+            }
 
-        $newStatus = match (true) {
-            in_array($statusRaw, ['settlement', 'capture', 'paid', 'success', 'successful', 'completed']) => 'paid',
-            in_array($statusRaw, ['expire', 'expired', 'timeout']) => 'expired',
-            in_array($statusRaw, ['deny', 'failure', 'failed', 'rejected']) => 'failed',
-            in_array($statusRaw, ['cancel', 'cancelled', 'void']) => 'cancelled',
-            default => 'pending',
-        };
+            $this->verifyCallback($link, $payload, $headers, $rawBody);
 
-        $link->update([
-            'status' => $newStatus,
-            'paid_at' => $newStatus === 'paid' ? now() : $link->paid_at,
-            'gateway_response' => array_merge($link->gateway_response ?? [], ['callback' => $payload]),
-        ]);
+            // Universal status extract — gateway umumnya pakai salah satu:
+            $statusRaw = strtolower((string) (
+                $payload['transaction_status'] ??
+                $payload['status'] ??
+                $payload['payment_status'] ??
+                $payload['state'] ??
+                ''
+            ));
 
-        // Kalau paid → catat PaymentRecord otomatis
-        if ($newStatus === 'paid' && ! $link->invoice->paymentRecords()->where('reference_number', $link->token)->exists()) {
-            $invoice = Invoice::query()->whereKey($link->invoice_id)->lockForUpdate()->first();
+            $newStatus = match (true) {
+                in_array($statusRaw, ['settlement', 'capture', 'paid', 'success', 'successful', 'completed']) => 'paid',
+                in_array($statusRaw, ['expire', 'expired', 'timeout']) => 'expired',
+                in_array($statusRaw, ['deny', 'failure', 'failed', 'rejected']) => 'failed',
+                in_array($statusRaw, ['cancel', 'cancelled', 'void']) => 'cancelled',
+                default => 'pending',
+            };
 
-            $paidAmount = round((float) ($invoice->paid_amount ?? 0) + (float) $link->amount, 2);
-
-            $payment = PaymentRecord::create([
-                'invoice_id' => $link->invoice_id,
-                'payment_method_id' => $link->invoice->payment_method_id,
-                'amount' => round((float) $link->amount, 2),
-                'payment_date' => now(),
-                'reference_number' => $link->token,
-                'notes' => 'Auto-paid via '.($link->gateway?->name ?? 'PG'),
+            $link->update([
+                'status' => $newStatus,
+                'paid_at' => $newStatus === 'paid' ? now() : $link->paid_at,
+                'gateway_response' => array_merge($link->gateway_response ?? [], ['callback' => $payload]),
             ]);
 
-            // Accumulate (never overwrite) and only mark settled when fully paid.
-            $invoice->update([
-                'paid_amount' => $paidAmount,
-                'amount_received' => $paidAmount,
-                'payment_status' => $paidAmount >= (float) $invoice->grand_total - 0.009 ? 2 : 1,
-            ]);
+            // Kalau paid → catat PaymentRecord otomatis
+            if ($newStatus === 'paid' && ! $link->invoice->paymentRecords()->where('reference_number', $link->token)->exists()) {
+                $invoice = Invoice::query()->whereKey($link->invoice_id)->lockForUpdate()->firstOrFail();
 
-            app(AutoJournalService::class)->journalInvoicePayment($payment);
+                $reportedAmount = $payload['gross_amount'] ?? $payload['amount'] ?? null;
+                if (is_array($reportedAmount)) {
+                    $reportedAmount = $reportedAmount['value'] ?? null;
+                }
+                if ($reportedAmount !== null && abs((float) $reportedAmount - (float) $link->amount) >= 0.01) {
+                    throw new \RuntimeException('Nominal callback tidak sesuai dengan payment link.');
+                }
+
+                $paidAmount = round((float) ($invoice->paid_amount ?? 0) + (float) $link->amount, 2);
+
+                $payment = PaymentRecord::create([
+                    'invoice_id' => $link->invoice_id,
+                    'payment_method_id' => $link->invoice->payment_method_id,
+                    'amount' => round((float) $link->amount, 2),
+                    'payment_date' => now(),
+                    'reference_number' => $link->token,
+                    'notes' => 'Auto-paid via '.($link->gateway?->name ?? 'PG'),
+                    'idempotency_key' => 'gateway:'.$link->token,
+                ]);
+
+                // Accumulate (never overwrite) and only mark settled when fully paid.
+                $invoice->update([
+                    'paid_amount' => $paidAmount,
+                    'amount_received' => $paidAmount,
+                    'payment_status' => $paidAmount >= (float) $invoice->grand_total - 0.009 ? 2 : 1,
+                ]);
+
+                app(AutoJournalService::class)->journalInvoicePayment($payment);
+            }
+
+            return $link->fresh();
+        });
+    }
+
+    private function verifyCallback(PaymentLink $link, array $payload, array $headers, ?string $rawBody): void
+    {
+        $gateway = PaymentGateway::query()->find($link->payment_gateway_id);
+        $configured = $gateway?->getAttribute('extra_config');
+        $config = is_array($configured) ? $configured : [];
+        $headerName = strtolower((string) ($config['webhook_signature_header'] ?? ''));
+
+        if ($headerName === '') {
+            if (($config['require_webhook_signature'] ?? false) === true) {
+                throw new \RuntimeException('Header signature webhook belum dikonfigurasi.');
+            }
+
+            return;
         }
 
-        return $link;
+        $secret = $gateway?->getSecretKeyAttribute();
+        if (! $secret) {
+            throw new \RuntimeException('Secret webhook belum dikonfigurasi.');
+        }
+
+        $normalized = array_change_key_case($headers, CASE_LOWER);
+        $providedHeader = $normalized[$headerName] ?? '';
+        $provided = is_array($providedHeader)
+            ? (string) ($providedHeader[0] ?? '')
+            : (string) $providedHeader;
+        $algorithm = (string) ($config['webhook_signature_algorithm'] ?? 'sha256');
+        if (! in_array($algorithm, hash_hmac_algos(), true)) {
+            throw new \RuntimeException('Algoritma signature webhook tidak didukung.');
+        }
+
+        $content = $rawBody ?? json_encode($payload, JSON_UNESCAPED_SLASHES);
+        $expected = hash_hmac($algorithm, (string) $content, $secret);
+        $provided = str_starts_with($provided, $algorithm.'=')
+            ? substr($provided, strlen($algorithm) + 1)
+            : $provided;
+
+        if ($provided === '' || ! hash_equals($expected, $provided)) {
+            throw new \RuntimeException('Signature webhook tidak valid.');
+        }
     }
 }

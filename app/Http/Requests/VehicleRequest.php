@@ -7,7 +7,10 @@ use Illuminate\Validation\Rule;
 
 class VehicleRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     public function rules(): array
     {
@@ -24,7 +27,7 @@ class VehicleRequest extends FormRequest
             'chassis_number' => ['nullable', 'string', 'max:50'],
             'engine_number' => ['nullable', 'string', 'max:50'],
             'model_name' => ['nullable', 'string', 'max:255'],
-            'model_year' => ['nullable', 'integer', 'min:1900', 'max:' . (date('Y') + 1)],
+            'model_year' => ['nullable', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
             'color' => ['nullable', 'string', 'max:50'],
             'odometer' => ['nullable', 'integer', 'min:0'],
             'description' => ['nullable', 'string', 'max:1000'],

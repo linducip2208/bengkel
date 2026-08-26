@@ -17,6 +17,7 @@ class FuelTypeController extends Controller
             $query->where('fuel_type', 'like', "%{$request->search}%");
         }
         $fuelTypes = $query->orderBy('fuel_type')->paginate(15)->withQueryString();
+
         return view('fuel-types.index', compact('fuelTypes'));
     }
 
@@ -72,6 +73,7 @@ class FuelTypeController extends Controller
             return back()->with('error', 'Jenis BBM tidak bisa dihapus karena masih dipakai oleh kendaraan terdaftar.');
         }
         $fuelType->delete();
+
         return redirect()->route('fuel-types.index')->with('success', 'Jenis BBM berhasil dihapus.');
     }
 }

@@ -17,6 +17,7 @@ class CompanyController extends Controller
                 ->orWhere('code', 'like', "%{$request->search}%");
         }
         $companies = $query->orderBy('name')->paginate(15)->withQueryString();
+
         return view('companies.index', compact('companies'));
     }
 
@@ -55,6 +56,7 @@ class CompanyController extends Controller
             'total_branches' => $company->branches()->count(),
             'active_branches' => $company->branches()->where('is_active', true)->count(),
         ];
+
         return view('companies.show', compact('company', 'stats'));
     }
 
@@ -92,6 +94,7 @@ class CompanyController extends Controller
             return back()->with('error', 'Perusahaan tidak bisa dihapus karena masih punya cabang terdaftar.');
         }
         $company->delete();
+
         return redirect()->route('companies.index')->with('success', 'Perusahaan berhasil dihapus.');
     }
 }

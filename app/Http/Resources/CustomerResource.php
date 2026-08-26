@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\Customer
+ * @mixin Customer
  */
 class CustomerResource extends JsonResource
 {
@@ -22,7 +23,7 @@ class CustomerResource extends JsonResource
             'updated_at' => $this->updated_at,
             'vehicles_count' => $this->whenCounted('vehicles'),
             'services_count' => $this->whenCounted('services'),
-            'total_spent' => $this->whenLoaded('services', fn() => $this->services->sum('charge')),
+            'total_spent' => $this->whenLoaded('services', fn () => $this->services->sum('charge')),
             'vehicles' => VehicleResource::collection($this->whenLoaded('vehicles')),
             'services' => ServiceResource::collection($this->whenLoaded('services')),
         ];

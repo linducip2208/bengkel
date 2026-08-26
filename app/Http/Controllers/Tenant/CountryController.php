@@ -17,6 +17,7 @@ class CountryController extends Controller
                 ->orWhere('code', 'like', "%{$request->search}%");
         }
         $countries = $query->orderBy('name')->paginate(20)->withQueryString();
+
         return view('countries.index', compact('countries'));
     }
 
@@ -37,6 +38,7 @@ class CountryController extends Controller
             'name' => $validated['name'],
             'phone_code' => $validated['phone_code'] ?? null,
         ]);
+
         return redirect()->route('countries.index')->with('success', 'Negara ditambahkan.');
     }
 
@@ -57,6 +59,7 @@ class CountryController extends Controller
             'name' => $validated['name'],
             'phone_code' => $validated['phone_code'] ?? null,
         ]);
+
         return redirect()->route('countries.index')->with('success', 'Negara diperbarui.');
     }
 
@@ -66,6 +69,7 @@ class CountryController extends Controller
             return back()->with('error', 'Negara tidak bisa dihapus karena masih punya provinsi terdaftar.');
         }
         $country->delete();
+
         return redirect()->route('countries.index')->with('success', 'Negara dihapus.');
     }
 }

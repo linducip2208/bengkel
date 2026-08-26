@@ -34,6 +34,7 @@ class ReminderController extends Controller
     public function create()
     {
         $customers = Customer::orderBy('name')->get();
+
         return view('reminders.create', compact('customers'));
     }
 
@@ -64,6 +65,7 @@ class ReminderController extends Controller
     {
         $customers = Customer::orderBy('name')->get();
         $vehicles = Vehicle::where('customer_id', $reminder->customer_id)->orderBy('number_plate')->get();
+
         return view('reminders.edit', compact('reminder', 'customers', 'vehicles'));
     }
 
@@ -86,6 +88,7 @@ class ReminderController extends Controller
     public function destroy(Reminder $reminder)
     {
         $reminder->delete();
+
         return redirect()->route('reminders.index')
             ->with('success', 'Reminder deleted successfully.');
     }
@@ -93,6 +96,7 @@ class ReminderController extends Controller
     public function send(Reminder $reminder, ReminderService $reminderService)
     {
         $reminderService->sendSingleReminder($reminder);
+
         return redirect()->route('reminders.index')
             ->with('success', 'Reminder sent successfully.');
     }
@@ -100,6 +104,7 @@ class ReminderController extends Controller
     public function sendScheduled(ReminderService $reminderService)
     {
         $count = $reminderService->sendDueReminders();
+
         return redirect()->route('reminders.index')
             ->with('success', "{$count} reminder(s) sent successfully.");
     }

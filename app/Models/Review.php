@@ -20,6 +20,13 @@ class Review extends Model
         return ['rating' => 'integer', 'is_published' => 'boolean'];
     }
 
-    public function service(): BelongsTo { return $this->belongsTo(Service::class); }
-    public function customer(): BelongsTo { return $this->belongsTo(Customer::class); }
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }

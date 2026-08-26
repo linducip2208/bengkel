@@ -16,5 +16,8 @@ class FleetNotificationToken extends Model
         return ['is_active' => 'boolean'];
     }
 
-    public function user(): BelongsTo { return $this->belongsTo(User::class); }
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

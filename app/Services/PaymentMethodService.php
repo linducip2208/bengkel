@@ -13,6 +13,7 @@ class PaymentMethodService extends BaseService
         if ($request->filled('search')) {
             $query->where('payment', 'like', "%{$request->search}%");
         }
+
         return $query->orderBy('payment')->get();
     }
 
@@ -24,6 +25,7 @@ class PaymentMethodService extends BaseService
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
+
         return PaymentMethod::create($validated);
     }
 
@@ -36,12 +38,13 @@ class PaymentMethodService extends BaseService
     {
         $model = PaymentMethod::findOrFail($id);
         $validated = $request->validate([
-            'payment' => 'required|string|max:255|unique:payment_methods,payment,' . $id,
-            'slug' => 'nullable|string|max:255|unique:payment_methods,slug,' . $id,
+            'payment' => 'required|string|max:255|unique:payment_methods,payment,'.$id,
+            'slug' => 'nullable|string|max:255|unique:payment_methods,slug,'.$id,
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
         $model->update($validated);
+
         return $model;
     }
 
@@ -49,6 +52,7 @@ class PaymentMethodService extends BaseService
     {
         $model = PaymentMethod::findOrFail($id);
         $model->delete();
+
         return $model;
     }
 }

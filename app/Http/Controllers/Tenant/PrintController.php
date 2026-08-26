@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
+use App\Models\Printer;
 use App\Models\Service;
+use App\Services\SettingsService;
 use App\Services\ThermalPrintService;
 use Illuminate\Http\Request;
 
@@ -18,8 +20,8 @@ class PrintController extends Controller
         $printerIp = $request->get('printer_ip');
         $printerPort = $request->get('printer_port');
 
-        if (!$printerIp) {
-            $printer = \App\Models\Printer::query()
+        if (! $printerIp) {
+            $printer = Printer::query()
                 ->where('is_active', true)
                 ->where('type', 'thermal')
                 ->whereNotNull('ip_address')
@@ -32,15 +34,15 @@ class PrintController extends Controller
         }
 
         try {
-            $items = $invoice->items->map(fn($i) => [
+            $items = $invoice->items->map(fn ($i) => [
                 'description' => $i->description,
                 'quantity' => $i->quantity,
                 'unit_price' => $i->unit_price,
             ])->toArray();
 
-            $settingsService = app(\App\Services\SettingsService::class);
+            $settingsService = app(SettingsService::class);
             $companyLogo = $settingsService->get('company_logo', '');
-            $logoPath = $companyLogo ? public_path('storage/' . $companyLogo) : null;
+            $logoPath = $companyLogo ? public_path('storage/'.$companyLogo) : null;
 
             $printService->printToNetwork($printerIp, (int) $printerPort)
                 ->printReceipt([
@@ -62,7 +64,7 @@ class PrintController extends Controller
             return redirect()->route('pos.receipt', $invoice)
                 ->with('success', 'Print berhasil dikirim ke printer.');
         } catch (\Throwable $e) {
-            return back()->with('error', 'Print gagal: ' . $e->getMessage());
+            return back()->with('error', 'Print gagal: '.$e->getMessage());
         }
     }
 
@@ -90,7 +92,7 @@ class PrintController extends Controller
 
             return back()->with('success', 'Jobcard berhasil di-print.');
         } catch (\Throwable $e) {
-            return back()->with('error', 'Print gagal: ' . $e->getMessage());
+            return back()->with('error', 'Print gagal: '.$e->getMessage());
         }
     }
 
@@ -104,6 +106,7 @@ class PrintController extends Controller
 
         try {
             $printService->printToNetwork($printerIp, (int) $printerPort)->openCashDrawer();
+
             return response()->json(['ok' => true, 'message' => 'Laci kasir terbuka.']);
         } catch (\Throwable $e) {
             return response()->json(['ok' => false, 'message' => $e->getMessage()], 500);
@@ -115,7 +118,7 @@ class PrintController extends Controller
      */
     public function rawData(Invoice $invoice, ThermalPrintService $printService)
     {
-        $items = $invoice->items->map(fn($i) => [
+        $items = $invoice->items->map(fn ($i) => [
             'description' => $i->description,
             'quantity' => $i->quantity,
             'unit_price' => $i->unit_price,
@@ -134,6 +137,7 @@ class PrintController extends Controller
 
         // Generate ESC/POS binary as base64 for JavaScript to send via Web Bluetooth
         $raw = $printService->generateReceiptData($data);
+
         return response()->json([
             'ok' => true,
             'data' => base64_encode($raw),

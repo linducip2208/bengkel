@@ -7,6 +7,8 @@ use App\Models\Branch;
 use App\Models\Budget;
 use App\Models\Expense;
 use App\Models\Income;
+use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -24,7 +26,7 @@ class BudgetController extends Controller
 
         $actualMap = [];
         foreach ($budgets as $budget) {
-            $key = ($budget->branch_id ?? 'all') . '|' . $budget->category;
+            $key = ($budget->branch_id ?? 'all').'|'.$budget->category;
             if (! isset($actualMap[$key])) {
                 $actualMap[$key] = $this->actualForPeriod($period, $budget->category, $budget->branch_id);
             }
@@ -57,7 +59,7 @@ class BudgetController extends Controller
 
         try {
             Budget::create($validated);
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             return back()->withInput()->with('error', 'Budget untuk cabang, kategori, dan periode ini sudah ada.');
         }
 
@@ -86,7 +88,7 @@ class BudgetController extends Controller
 
         try {
             $budget->update($validated);
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             return back()->withInput()->with('error', 'Budget untuk cabang, kategori, dan periode ini sudah ada.');
         }
 
@@ -108,7 +110,7 @@ class BudgetController extends Controller
             return 0;
         }
 
-        $start = \Carbon\Carbon::createFromDate((int) $year, (int) $month, 1)->startOfMonth();
+        $start = Carbon::createFromDate((int) $year, (int) $month, 1)->startOfMonth();
         $end = $start->copy()->endOfMonth();
 
         if ($category === 'revenue') {

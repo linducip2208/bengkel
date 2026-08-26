@@ -10,6 +10,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Recall extends Model
 {
     protected $casts = ['issue_date' => 'date', 'is_active' => 'boolean'];
-    public function product(): BelongsTo { return $this->belongsTo(Product::class); }
-    public function vehicleBrand(): BelongsTo { return $this->belongsTo(VehicleBrand::class); }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function vehicleBrand(): BelongsTo
+    {
+        return $this->belongsTo(VehicleBrand::class);
+    }
 }

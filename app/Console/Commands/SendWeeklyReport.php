@@ -6,7 +6,6 @@ use App\Models\Customer;
 use App\Models\EmailLog;
 use App\Models\Service;
 use App\Models\StockRecord;
-use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -14,6 +13,7 @@ use Illuminate\Support\Facades\Mail;
 class SendWeeklyReport extends Command
 {
     protected $signature = 'reports:weekly-email';
+
     protected $description = 'Send weekly summary report email to admin/owner';
 
     public function handle(): int
@@ -49,9 +49,9 @@ class SendWeeklyReport extends Command
             ->whereRaw('quantity <= minimum_stock')
             ->count();
 
-        $topTechName = $topTechnician ? $topTechnician->name . ' (' . $topTechnician->job_count . ' jobs)' : 'N/A';
-        $formattedRevenue = 'Rp ' . number_format((float) $totalRevenue, 0, ',', '.');
-        $formattedDate = $startOfWeek->format('d M Y') . ' - ' . $endOfWeek->format('d M Y');
+        $topTechName = $topTechnician ? $topTechnician->name.' ('.$topTechnician->job_count.' jobs)' : 'N/A';
+        $formattedRevenue = 'Rp '.number_format((float) $totalRevenue, 0, ',', '.');
+        $formattedDate = $startOfWeek->format('d M Y').' - '.$endOfWeek->format('d M Y');
         $lowStockColor = $lowStockCount > 0 ? '#dc2626' : '#059669';
 
         $html = <<<HTML
@@ -123,7 +123,8 @@ HTML;
                 'error_message' => $e->getMessage(),
             ]);
 
-            $this->error("Failed to send weekly report: " . $e->getMessage());
+            $this->error('Failed to send weekly report: '.$e->getMessage());
+
             return self::FAILURE;
         }
 

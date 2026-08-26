@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\Supplier
+ * @mixin Supplier
  */
 class SupplierResource extends JsonResource
 {
@@ -23,8 +24,8 @@ class SupplierResource extends JsonResource
             'notes' => $this->notes,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'purchases_count' => $this->whenLoaded('purchases', fn() => $this->purchases->count()),
-            'products_count' => $this->whenLoaded('products', fn() => $this->products->count()),
+            'purchases_count' => $this->whenLoaded('purchases', fn () => $this->purchases->count()),
+            'products_count' => $this->whenLoaded('products', fn () => $this->products->count()),
         ];
     }
 }

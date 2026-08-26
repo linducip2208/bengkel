@@ -28,7 +28,7 @@ class CheckoutController extends Controller
         $service->checkoutResults()->delete();
 
         foreach ($request->input('results') as $item) {
-            if (!empty($item['checkout_category_id']) && !empty($item['result'])) {
+            if (! empty($item['checkout_category_id']) && ! empty($item['result'])) {
                 $service->checkoutResults()->create([
                     'checkout_category_id' => $item['checkout_category_id'],
                     'result' => $item['result'],
