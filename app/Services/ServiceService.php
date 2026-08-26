@@ -453,52 +453,59 @@ class ServiceService extends BaseService
     public function advanceWorkflow($id)
     {
         $service = Service::findOrFail($id);
+        $result = DB::transaction(function () use ($service) {
+            $locked = Service::query()->whereKey($service->id)->lockForUpdate()->firstOrFail();
 
-        if ($service->cancelled_at) {
-            return back()->with('error', 'Servis sudah dibatalkan.');
+            if ($locked->cancelled_at) {
+                return ['error' => 'Servis sudah dibatalkan.'];
+            }
+            $nextStatus = (int) $locked->workflow_status + 1;
+            if (! $locked->canTransitionTo($nextStatus)) {
+                return ['error' => 'Transisi status tidak valid dari '.$locked->status_label.'.'];
+            }
+
+            $data = ['workflow_status' => $nextStatus];
+
+            switch ($nextStatus) {
+                case 1: $data['checked_in_at'] = $service->checked_in_at ?? now();
+                    break;
+                case 2: $data['inspected_at'] = now();
+                    break;
+                case 4:
+                    $data['approved_at'] = now();
+                    $data['is_approved'] = true;
+                    break;
+                case 5: $data['started_at'] = $locked->started_at ?? now();
+                    break;
+                case 7:
+                    $data['qc_passed_at'] = now();
+                    // QC passed implies work finished.
+                    $data['done_status'] = max((int) $locked->done_status, 2);
+                    break;
+                case 9: $data['invoiced_at'] = now();
+                    break;
+                case 10: $data['paid_at'] = now();
+                    break;
+                case 11: $data['released_at'] = now();
+                    break;
+                case 12: $data['completed_at'] = now();
+                    break;
+            }
+
+            $locked->update($data);
+            ActivityLog::record('service.workflow_transition', $locked, 'Status berubah ke '.Service::WORKFLOW_LABELS[$nextStatus], [
+                'from' => (int) $service->workflow_status,
+                'to' => $nextStatus,
+            ]);
+
+            return ['status' => $nextStatus];
+        });
+
+        if (isset($result['error'])) {
+            return back()->with('error', $result['error']);
         }
-        if ((int) $service->workflow_status >= 12) {
-            return back()->with('error', 'Servis sudah selesai — tidak ada tahap berikutnya.');
-        }
 
-        $nextStatus = min((int) $service->workflow_status + 1, 12);
-        $data = ['workflow_status' => $nextStatus];
-
-        switch ($nextStatus) {
-            case 1: $data['checked_in_at'] = $service->checked_in_at ?? now();
-                break;
-            case 2: $data['inspected_at'] = now();
-                break;
-            case 4:
-                $data['approved_at'] = now();
-                $data['is_approved'] = true;
-                break;
-            case 5: $data['started_at'] = $data['started_at'] ?? now();
-                break;
-            case 7:
-                $data['qc_passed_at'] = now();
-                // QC passed implies work finished.
-                $data['done_status'] = max((int) $service->done_status, 2);
-                break;
-            case 9: $data['invoiced_at'] = now();
-                break;
-            case 10: $data['paid_at'] = now();
-                break;
-            case 11: $data['released_at'] = now();
-                break;
-            case 12: $data['completed_at'] = now();
-                break;
-        }
-
-        $service->update($data);
-
-        $labels = [
-            0 => 'Booked', 1 => 'Checked In', 2 => 'Inspection', 3 => 'Waiting Approval',
-            4 => 'Approved', 5 => 'In Progress', 6 => 'Waiting Parts', 7 => 'QC',
-            8 => 'Ready', 9 => 'Invoiced', 10 => 'Paid', 11 => 'Released', 12 => 'Completed',
-        ];
-
-        return back()->with('success', 'Status: '.$labels[$nextStatus]);
+        return back()->with('success', 'Status: '.Service::WORKFLOW_LABELS[$result['status']]);
     }
 
     public function uploadImage(Request $request, $id)

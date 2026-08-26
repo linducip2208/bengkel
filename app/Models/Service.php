@@ -18,6 +18,22 @@ class Service extends Model
 {
     use HasBranchScope, HasFactory, SoftDeletes;
 
+    public const WORKFLOW_LABELS = [
+        0 => 'Booked', 1 => 'Checked In', 2 => 'Inspection', 3 => 'Waiting Approval',
+        4 => 'Approved', 5 => 'In Progress', 6 => 'Waiting Parts', 7 => 'QC',
+        8 => 'Ready', 9 => 'Invoiced', 10 => 'Paid', 11 => 'Released', 12 => 'Completed',
+    ];
+
+    public const WORKFLOW_TRANSITIONS = [
+        0 => [1], 1 => [2], 2 => [3], 3 => [4], 4 => [5], 5 => [6, 7],
+        6 => [5], 7 => [8], 8 => [9], 9 => [10], 10 => [11], 11 => [12], 12 => [],
+    ];
+
+    public function canTransitionTo(int $target): bool
+    {
+        return in_array($target, self::WORKFLOW_TRANSITIONS[(int) $this->workflow_status] ?? [], true);
+    }
+
     protected function casts(): array
     {
         return [
@@ -114,14 +130,7 @@ class Service extends Model
     public function getStatusLabelAttribute(): string
     {
         if ($this->workflow_status !== null) {
-            return match ((int) $this->workflow_status) {
-                0 => 'Booked', 1 => 'Checked In', 2 => 'Inspection',
-                3 => 'Waiting Approval', 4 => 'Approved', 5 => 'In Progress',
-                6 => 'Waiting Parts', 7 => 'QC', 8 => 'Ready',
-                9 => 'Invoiced', 10 => 'Paid', 11 => 'Released',
-                12 => 'Completed',
-                default => 'Booked',
-            };
+            return self::WORKFLOW_LABELS[(int) $this->workflow_status] ?? 'Booked';
         }
 
         return match ((int) $this->done_status) {
