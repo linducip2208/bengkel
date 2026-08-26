@@ -108,6 +108,15 @@ class GatePassController extends Controller
 
     public function markExit(GatePass $gatePass)
     {
+        if ($gatePass->service_id) {
+            $service = Service::with('invoice')->find($gatePass->service_id);
+            if ($service && (int) ($service->invoice?->payment_status ?? 0) !== 2) {
+                return back()->withErrors([
+                    'gate_pass' => 'Kendaraan belum dapat keluar sebelum invoice lunas.',
+                ]);
+            }
+        }
+
         $gatePass->update([
             'exit_date' => now(),
             'status' => 'out',
