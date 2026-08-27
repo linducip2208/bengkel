@@ -36,7 +36,7 @@ class BranchController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => ['required', 'string', 'max:20', Rule::unique('branches', 'code')->whereNull('deleted_at')],
+            'code' => ['required', 'string', 'max:20', Rule::unique('branches', 'code')],
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:30',
             'email' => 'nullable|email|max:255',
@@ -77,7 +77,7 @@ class BranchController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => ['required', 'string', 'max:20', Rule::unique('branches', 'code')->whereNull('deleted_at')->ignore($branch->id)],
+            'code' => ['required', 'string', 'max:20', Rule::unique('branches', 'code')->ignore($branch->id)],
             'address' => 'nullable|string',
             'phone' => 'nullable|string|max:30',
             'email' => 'nullable|email|max:255',

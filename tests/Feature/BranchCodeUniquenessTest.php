@@ -41,4 +41,23 @@ class BranchCodeUniquenessTest extends TestCase
             ->assertSessionHasErrors('code');
         $this->assertSame(1, Branch::count());
     }
+
+    public function test_soft_deleted_branch_code_cannot_be_reused(): void
+    {
+        $branch = Branch::create([
+            'name' => 'Jakarta',
+            'code' => 'JKT01',
+        ]);
+        $branch->delete();
+
+        $response = $this->from(route('branches.create'))->post(route('branches.store'), [
+            'name' => 'Jakarta Baru',
+            'code' => ' jkt01 ',
+        ]);
+
+        $response->assertRedirect(route('branches.create'))
+            ->assertSessionHasErrors('code');
+        $this->assertSame(0, Branch::count());
+        $this->assertSame(1, Branch::withTrashed()->where('code', 'JKT01')->count());
+    }
 }
