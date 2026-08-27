@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\VehicleType;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class VehicleTypeController extends Controller
@@ -34,9 +33,8 @@ class VehicleTypeController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        VehicleType::create([
+        VehicleType::createWithUniqueSlug([
             'vehicle_type' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
             'description' => $validated['description'] ?? null,
             'is_active' => $request->boolean('is_active', true),
         ]);
@@ -57,9 +55,8 @@ class VehicleTypeController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        $vehicleType->update([
+        $vehicleType->updateWithUniqueSlug([
             'vehicle_type' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
             'description' => $validated['description'] ?? null,
             'is_active' => $request->boolean('is_active', true),
         ]);

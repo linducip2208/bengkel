@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class BlogController extends Controller
@@ -31,6 +30,10 @@ class BlogController extends Controller
 
     public function store(Request $request)
     {
+        $request->merge([
+            'slug' => BlogPost::generateUniqueSlug((string) ($request->input('slug') ?: $request->input('title'))),
+        ]);
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('blog_posts', 'slug')],
@@ -44,9 +47,9 @@ class BlogController extends Controller
             'published_at' => 'nullable|date',
         ]);
 
-        BlogPost::create([
+        BlogPost::createWithUniqueSlug([
             'title' => $validated['title'],
-            'slug' => $validated['slug'] ?: Str::slug($validated['title']),
+            'slug' => ($validated['slug'] ?? null) ?: $validated['title'],
             'category_id' => $validated['category_id'] ?? null,
             'author_id' => auth()->id(),
             'excerpt' => $validated['excerpt'] ?? null,
@@ -70,6 +73,10 @@ class BlogController extends Controller
 
     public function update(Request $request, BlogPost $post)
     {
+        $request->merge([
+            'slug' => BlogPost::generateUniqueSlug((string) ($request->input('slug') ?: $request->input('title')), $post->id),
+        ]);
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('blog_posts', 'slug')->ignore($post->id)],
@@ -83,9 +90,9 @@ class BlogController extends Controller
             'published_at' => 'nullable|date',
         ]);
 
-        $post->update([
+        $post->updateWithUniqueSlug([
             'title' => $validated['title'],
-            'slug' => $validated['slug'] ?: Str::slug($validated['title']),
+            'slug' => ($validated['slug'] ?? null) ?: $validated['title'],
             'category_id' => $validated['category_id'] ?? null,
             'excerpt' => $validated['excerpt'] ?? null,
             'content' => $validated['content'],
@@ -116,14 +123,19 @@ class BlogController extends Controller
 
     public function categoryStore(Request $request)
     {
+        $request->merge([
+            'slug' => BlogCategory::generateUniqueSlug((string) $request->input('name')),
+        ]);
+
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', Rule::unique('blog_categories', 'slug')],
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', Rule::unique('blog_categories', 'slug')],
             'description' => 'nullable|string',
         ]);
 
-        BlogCategory::create([
+        BlogCategory::createWithUniqueSlug([
             'name' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
+            'slug' => $validated['slug'],
             'description' => $validated['description'] ?? null,
         ]);
 
@@ -132,15 +144,20 @@ class BlogController extends Controller
 
     public function categoryUpdate(Request $request, BlogCategory $category)
     {
+        $request->merge([
+            'slug' => BlogCategory::generateUniqueSlug((string) $request->input('name'), $category->id),
+        ]);
+
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', Rule::unique('blog_categories', 'slug')->ignore($category->id)],
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', Rule::unique('blog_categories', 'slug')->ignore($category->id)],
             'description' => 'nullable|string',
             'is_active' => 'nullable|boolean',
         ]);
 
-        $category->update([
+        $category->updateWithUniqueSlug([
             'name' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
+            'slug' => $validated['slug'],
             'description' => $validated['description'] ?? null,
             'is_active' => $request->boolean('is_active', true),
         ]);

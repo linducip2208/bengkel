@@ -37,7 +37,7 @@ class NotificationTemplateController extends Controller
 
         $validated['is_active'] = $request->boolean('is_active');
 
-        NotificationTemplate::create($validated);
+        NotificationTemplate::createWithUniqueSlug($validated);
 
         return redirect()->route('notification-templates.index')->with('success', 'Template berhasil dibuat.');
     }
@@ -71,7 +71,7 @@ class NotificationTemplateController extends Controller
 
         $validated['is_active'] = $request->boolean('is_active');
 
-        $template->update($validated);
+        $template->updateWithUniqueSlug($validated);
 
         return redirect()->route('notification-templates.index')->with('success', 'Template berhasil diperbarui.');
     }

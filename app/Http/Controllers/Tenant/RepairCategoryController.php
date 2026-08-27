@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\RepairCategory;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class RepairCategoryController extends Controller
@@ -34,9 +33,8 @@ class RepairCategoryController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        RepairCategory::create([
+        RepairCategory::createWithUniqueSlug([
             'repair_category_name' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
             'description' => $validated['description'] ?? null,
             'is_active' => $request->boolean('is_active', true),
         ]);
@@ -57,9 +55,8 @@ class RepairCategoryController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        $repairCategory->update([
+        $repairCategory->updateWithUniqueSlug([
             'repair_category_name' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
             'description' => $validated['description'] ?? null,
             'is_active' => $request->boolean('is_active', true),
         ]);

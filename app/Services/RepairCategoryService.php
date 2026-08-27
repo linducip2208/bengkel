@@ -26,7 +26,7 @@ class RepairCategoryService extends BaseService
             'is_active' => 'boolean',
         ]);
 
-        return RepairCategory::create($validated);
+        return RepairCategory::createWithUniqueSlug($validated);
     }
 
     public function show($id)
@@ -43,7 +43,7 @@ class RepairCategoryService extends BaseService
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
-        $model->update($validated);
+        $model->updateWithUniqueSlug($validated);
 
         return $model;
     }

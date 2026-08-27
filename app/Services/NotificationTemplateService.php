@@ -28,7 +28,7 @@ class NotificationTemplateService extends BaseService
             'is_active' => 'boolean',
         ]);
 
-        return NotificationTemplate::create($validated);
+        return NotificationTemplate::createWithUniqueSlug($validated);
     }
 
     public function show($id)
@@ -47,7 +47,7 @@ class NotificationTemplateService extends BaseService
             'body' => 'required|string',
             'is_active' => 'boolean',
         ]);
-        $model->update($validated);
+        $model->updateWithUniqueSlug($validated);
 
         return $model;
     }

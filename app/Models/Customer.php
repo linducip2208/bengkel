@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\IdentityNormalizer;
 use App\Traits\HasBranchScope;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +16,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Customer extends Model
 {
     use HasBranchScope, HasFactory, SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $customer): void {
+            $customer->email = IdentityNormalizer::email($customer->email);
+            $customer->phone = IdentityNormalizer::indonesianPhone($customer->phone);
+        });
+    }
 
     protected function casts(): array
     {

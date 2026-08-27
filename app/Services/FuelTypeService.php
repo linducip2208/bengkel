@@ -26,7 +26,7 @@ class FuelTypeService extends BaseService
             'is_active' => 'boolean',
         ]);
 
-        return FuelType::create($validated);
+        return FuelType::createWithUniqueSlug($validated);
     }
 
     public function show($id)
@@ -43,7 +43,7 @@ class FuelTypeService extends BaseService
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
-        $model->update($validated);
+        $model->updateWithUniqueSlug($validated);
 
         return $model;
     }

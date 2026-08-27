@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
+use App\Support\IdentityNormalizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ApiCustomerController extends Controller
 {
@@ -37,10 +39,12 @@ class ApiCustomerController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $this->normalizeIdentity($request);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'nullable|email|unique:customers,email',
-            'phone' => 'required|string|max:20',
+            'email' => ['nullable', 'email', Rule::unique('customers', 'email')],
+            'phone' => ['required', 'string', 'max:20', Rule::unique('customers', 'phone')],
             'address' => 'nullable|string',
         ]);
 
@@ -51,10 +55,12 @@ class ApiCustomerController extends Controller
 
     public function update(Request $request, Customer $customer): JsonResponse
     {
+        $this->normalizeIdentity($request);
+
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'email' => 'nullable|email|unique:customers,email,'.$customer->id,
-            'phone' => 'sometimes|string|max:20',
+            'email' => ['nullable', 'email', Rule::unique('customers', 'email')->ignore($customer->id)],
+            'phone' => ['sometimes', 'string', 'max:20', Rule::unique('customers', 'phone')->ignore($customer->id)],
             'address' => 'nullable|string',
         ]);
 
@@ -68,5 +74,17 @@ class ApiCustomerController extends Controller
         $customer->delete();
 
         return response()->json(['message' => 'Customer deleted.']);
+    }
+
+    private function normalizeIdentity(Request $request): void
+    {
+        $normalized = [];
+        if ($request->exists('email')) {
+            $normalized['email'] = IdentityNormalizer::email($request->input('email'));
+        }
+        if ($request->exists('phone')) {
+            $normalized['phone'] = IdentityNormalizer::indonesianPhone($request->input('phone'));
+        }
+        $request->merge($normalized);
     }
 }

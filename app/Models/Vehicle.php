@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\IdentityNormalizer;
 use App\Traits\HasBranchScope;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +16,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Vehicle extends Model
 {
     use HasBranchScope, HasFactory, SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $vehicle): void {
+            $vehicle->number_plate = IdentityNormalizer::vehiclePlate($vehicle->number_plate);
+            $vehicle->chassis_number = IdentityNormalizer::serialNumber($vehicle->chassis_number);
+            $vehicle->engine_number = IdentityNormalizer::serialNumber($vehicle->engine_number);
+        });
+    }
 
     protected function casts(): array
     {

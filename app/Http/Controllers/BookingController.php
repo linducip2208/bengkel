@@ -13,6 +13,7 @@ use App\Models\Vehicle;
 use App\Models\VehicleBrand;
 use App\Models\VehicleType;
 use App\Services\ServiceService;
+use App\Support\IdentityNormalizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -124,23 +125,29 @@ class BookingController extends Controller
                 }
 
                 // Find or create customer by phone
+                $phone = IdentityNormalizer::indonesianPhone($locked->phone);
+                $email = IdentityNormalizer::email($locked->email);
                 $customer = Customer::withoutGlobalScopes()->firstOrCreate(
-                    ['phone' => $locked->phone],
-                    ['name' => $locked->name, 'email' => $locked->email]
+                    ['phone' => $phone],
+                    ['name' => $locked->name, 'email' => $email]
                 );
 
                 // services.vehicle_id is NOT NULL: reuse the customer's first
                 // matching vehicle or register one from the booking.
                 $vehicle = null;
                 if ($locked->vehicle_plate) {
-                    $vehicle = Vehicle::withoutGlobalScopes()->firstOrCreate(
-                        ['number_plate' => $locked->vehicle_plate, 'customer_id' => $customer->id],
-                        [
+                    $plate = IdentityNormalizer::vehiclePlate($locked->vehicle_plate);
+                    $vehicle = Vehicle::withoutGlobalScopes()->where('number_plate', $plate)->first();
+                    if ($vehicle && $vehicle->customer_id !== $customer->id) {
+                        throw new \RuntimeException('Nomor polisi sudah terdaftar pada pelanggan lain; periksa identitas booking.');
+                    }
+                    if (! $vehicle) {
+                        $vehicle = Vehicle::withoutGlobalScopes()->create([
                             'customer_id' => $customer->id,
-                            'number_plate' => $locked->vehicle_plate,
+                            'number_plate' => $plate,
                             'model_name' => trim(($locked->vehicle_brand ?: '').' '.($locked->vehicle_model ?: '')) ?: null,
-                        ]
-                    );
+                        ]);
+                    }
                 } else {
                     $vehicle = Vehicle::withoutGlobalScopes()
                         ->where('customer_id', $customer->id)
@@ -172,9 +179,8 @@ class BookingController extends Controller
                 $repairCategoryId = $locked->repair_category_id
                     ?? RepairCategory::query()->value('id');
                 if (! $repairCategoryId) {
-                    $repairCategoryId = RepairCategory::create([
+                    $repairCategoryId = RepairCategory::createWithUniqueSlug([
                         'repair_category_name' => 'Lain-lain',
-                        'slug' => 'lain-lain',
                         'is_active' => true,
                     ])->id;
                 }

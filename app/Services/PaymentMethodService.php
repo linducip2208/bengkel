@@ -26,7 +26,7 @@ class PaymentMethodService extends BaseService
             'is_active' => 'boolean',
         ]);
 
-        return PaymentMethod::create($validated);
+        return PaymentMethod::createWithUniqueSlug($validated);
     }
 
     public function show($id)
@@ -43,7 +43,7 @@ class PaymentMethodService extends BaseService
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
-        $model->update($validated);
+        $model->updateWithUniqueSlug($validated);
 
         return $model;
     }

@@ -33,7 +33,7 @@ class ProductTypeController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        ProductType::create([
+        ProductType::createWithUniqueSlug([
             'type' => $validated['name'],
             'description' => $validated['description'] ?? null,
             'is_active' => $request->boolean('is_active', true),
@@ -55,7 +55,7 @@ class ProductTypeController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        $productType->update([
+        $productType->updateWithUniqueSlug([
             'type' => $validated['name'],
             'description' => $validated['description'] ?? null,
             'is_active' => $request->boolean('is_active', true),

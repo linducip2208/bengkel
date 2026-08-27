@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Company;
+use App\Support\IdentityNormalizer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -31,6 +32,8 @@ class BranchController extends Controller
 
     public function store(Request $request)
     {
+        $request->merge(['code' => IdentityNormalizer::branchCode($request->input('code'))]);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => ['required', 'string', 'max:20', Rule::unique('branches', 'code')->whereNull('deleted_at')],
@@ -43,7 +46,7 @@ class BranchController extends Controller
 
         Branch::create([
             'name' => $validated['name'],
-            'code' => strtoupper($validated['code']),
+            'code' => $validated['code'],
             'company_id' => $validated['company_id'] ?? null,
             'address' => $validated['address'] ?? null,
             'phone' => $validated['phone'] ?? null,
@@ -70,6 +73,8 @@ class BranchController extends Controller
 
     public function update(Request $request, Branch $branch)
     {
+        $request->merge(['code' => IdentityNormalizer::branchCode($request->input('code'))]);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => ['required', 'string', 'max:20', Rule::unique('branches', 'code')->whereNull('deleted_at')->ignore($branch->id)],
@@ -82,7 +87,7 @@ class BranchController extends Controller
 
         $branch->update([
             'name' => $validated['name'],
-            'code' => strtoupper($validated['code']),
+            'code' => $validated['code'],
             'company_id' => $validated['company_id'] ?? null,
             'address' => $validated['address'] ?? null,
             'phone' => $validated['phone'] ?? null,

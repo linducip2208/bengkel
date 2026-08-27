@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\VehicleResource;
 use App\Models\Vehicle;
+use App\Support\IdentityNormalizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ApiVehicleController extends Controller
 {
@@ -40,14 +42,16 @@ class ApiVehicleController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $this->normalizeIdentity($request);
+
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'vehicle_type_id' => 'required|exists:vehicle_types,id',
             'vehicle_brand_id' => 'required|exists:vehicle_brands,id',
             'fuel_type_id' => 'required|exists:fuel_types,id',
-            'number_plate' => 'required|string|max:20|unique:vehicles,number_plate',
-            'chassis_number' => 'nullable|string|max:50',
-            'engine_number' => 'nullable|string|max:50',
+            'number_plate' => ['required', 'string', 'max:20', Rule::unique('vehicles', 'number_plate')],
+            'chassis_number' => ['nullable', 'string', 'max:50', Rule::unique('vehicles', 'chassis_number')],
+            'engine_number' => ['nullable', 'string', 'max:50', Rule::unique('vehicles', 'engine_number')],
             'model_name' => 'nullable|string|max:100',
             'model_year' => 'nullable|integer|min:1990|max:'.(now()->year + 1),
             'color' => 'nullable|string|max:50',
@@ -61,14 +65,16 @@ class ApiVehicleController extends Controller
 
     public function update(Request $request, Vehicle $vehicle): JsonResponse
     {
+        $this->normalizeIdentity($request);
+
         $validated = $request->validate([
             'customer_id' => 'sometimes|exists:customers,id',
             'vehicle_type_id' => 'sometimes|exists:vehicle_types,id',
             'vehicle_brand_id' => 'sometimes|exists:vehicle_brands,id',
             'fuel_type_id' => 'sometimes|exists:fuel_types,id',
-            'number_plate' => 'sometimes|string|max:20|unique:vehicles,number_plate,'.$vehicle->id,
-            'chassis_number' => 'nullable|string|max:50',
-            'engine_number' => 'nullable|string|max:50',
+            'number_plate' => ['sometimes', 'string', 'max:20', Rule::unique('vehicles', 'number_plate')->ignore($vehicle->id)],
+            'chassis_number' => ['nullable', 'string', 'max:50', Rule::unique('vehicles', 'chassis_number')->ignore($vehicle->id)],
+            'engine_number' => ['nullable', 'string', 'max:50', Rule::unique('vehicles', 'engine_number')->ignore($vehicle->id)],
             'model_name' => 'nullable|string|max:100',
             'model_year' => 'nullable|integer|min:1990|max:'.(now()->year + 1),
             'color' => 'nullable|string|max:50',
@@ -85,5 +91,19 @@ class ApiVehicleController extends Controller
         $vehicle->delete();
 
         return response()->json(['message' => 'Vehicle deleted.']);
+    }
+
+    private function normalizeIdentity(Request $request): void
+    {
+        $normalized = [];
+        foreach (['number_plate', 'chassis_number', 'engine_number'] as $field) {
+            if (! $request->exists($field)) {
+                continue;
+            }
+            $normalized[$field] = $field === 'number_plate'
+                ? IdentityNormalizer::vehiclePlate($request->input($field))
+                : IdentityNormalizer::serialNumber($request->input($field));
+        }
+        $request->merge($normalized);
     }
 }

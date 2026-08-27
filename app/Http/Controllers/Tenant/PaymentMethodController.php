@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Income;
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class PaymentMethodController extends Controller
@@ -35,9 +34,8 @@ class PaymentMethodController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        PaymentMethod::create([
+        PaymentMethod::createWithUniqueSlug([
             'payment' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
             'description' => $validated['description'] ?? null,
             'is_active' => $request->boolean('is_active', true),
         ]);
@@ -58,9 +56,8 @@ class PaymentMethodController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        $paymentMethod->update([
+        $paymentMethod->updateWithUniqueSlug([
             'payment' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
             'description' => $validated['description'] ?? null,
             'is_active' => $request->boolean('is_active', true),
         ]);

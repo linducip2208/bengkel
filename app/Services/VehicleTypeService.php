@@ -26,7 +26,7 @@ class VehicleTypeService extends BaseService
             'is_active' => 'boolean',
         ]);
 
-        return VehicleType::create($validated);
+        return VehicleType::createWithUniqueSlug($validated);
     }
 
     public function show($id)
@@ -43,7 +43,7 @@ class VehicleTypeService extends BaseService
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
-        $model->update($validated);
+        $model->updateWithUniqueSlug($validated);
 
         return $model;
     }

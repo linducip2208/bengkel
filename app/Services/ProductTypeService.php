@@ -26,7 +26,7 @@ class ProductTypeService extends BaseService
             'is_active' => 'boolean',
         ]);
 
-        return ProductType::create($validated);
+        return ProductType::createWithUniqueSlug($validated);
     }
 
     public function show($id)
@@ -43,7 +43,7 @@ class ProductTypeService extends BaseService
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
-        $model->update($validated);
+        $model->updateWithUniqueSlug($validated);
 
         return $model;
     }

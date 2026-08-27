@@ -2,17 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasRaceSafeUniqueSlug;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 
 #[Fillable(['type', 'slug', 'description', 'is_active'])]
 class ProductType extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasRaceSafeUniqueSlug, SoftDeletes;
+
+    protected const UNIQUE_SLUG_SOURCE = 'type';
 
     protected static function booted(): void
     {
@@ -21,22 +23,6 @@ class ProductType extends Model
                 $model->slug = static::generateUniqueSlug((string) $model->type, $model->id);
             }
         });
-    }
-
-    public static function generateUniqueSlug(string $name, ?int $ignoreId = null): string
-    {
-        $base = Str::slug($name) ?: 'tipe-produk';
-        $slug = $base;
-        $counter = 2;
-
-        while (static::withTrashed()
-            ->when($ignoreId !== null, fn ($query) => $query->whereKeyNot($ignoreId))
-            ->where('slug', $slug)
-            ->exists()) {
-            $slug = $base.'-'.$counter++;
-        }
-
-        return $slug;
     }
 
     protected function casts(): array

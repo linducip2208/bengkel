@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasRaceSafeUniqueSlug;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['vehicle_type', 'slug', 'description', 'is_active'])]
 class VehicleType extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasRaceSafeUniqueSlug, SoftDeletes;
+
+    protected const UNIQUE_SLUG_SOURCE = 'vehicle_type';
 
     protected function casts(): array
     {

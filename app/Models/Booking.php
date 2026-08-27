@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\IdentityNormalizer;
 use App\Traits\HasBranchScope;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -17,6 +18,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Booking extends Model
 {
     use HasBranchScope;
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $booking): void {
+            $booking->phone = IdentityNormalizer::indonesianPhone($booking->phone);
+            $booking->email = IdentityNormalizer::email($booking->email);
+            $booking->vehicle_plate = IdentityNormalizer::vehiclePlate($booking->vehicle_plate);
+        });
+    }
 
     protected $casts = ['booking_at' => 'datetime'];
 
