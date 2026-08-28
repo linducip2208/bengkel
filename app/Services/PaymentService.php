@@ -109,9 +109,4 @@ class PaymentService extends BaseService
             return $payment;
         });
     }
-
-    public function getTotalCollected($start, $end): float
-    {
-        return PaymentRecord::whereBetween('created_at', [$start, $end])->sum('amount');
-    }
 }

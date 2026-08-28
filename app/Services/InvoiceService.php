@@ -151,6 +151,10 @@ class InvoiceService extends BaseService
                 }
             }
 
+            // Re-align the posted accounting with the new financials (only runs
+            // for unpaid invoices, which update() already guarantees).
+            app(AutoJournalService::class)->realignInvoiceAccounting($invoice);
+
             return $invoice->fresh();
         });
     }

@@ -84,6 +84,27 @@ class AutoJournalService
         $this->journalCogs($invoice);
     }
 
+    /**
+     * Re-issue the accounting for an edited invoice.
+     *
+     * Canonical edits are only allowed while the invoice is unpaid (see
+     * InvoiceService::update), so it is safe to drop the prior AR/COGS entries
+     * (the UNIQUE (reference_type, reference_id, entry_type) constraint forces
+     * this instead of trying to UPDATE amounts) and repost against the new
+     * line breakdown.
+     */
+    public function realignInvoiceAccounting(Invoice $invoice): void
+    {
+        $types = ['ar_invoice', 'ar_invoice_reversal', 'cogs'];
+
+        JournalEntry::where('reference_type', Invoice::class)
+            ->where('reference_id', $invoice->id)
+            ->whereIn('entry_type', $types)
+            ->delete();
+
+        $this->journalInvoiceIssued($invoice->fresh());
+    }
+
     /** Reverse an unpaid issued invoice (void/cancel). */
     public function reverseJournalInvoiceIssued(Invoice $invoice): void
     {
@@ -131,6 +152,7 @@ class AutoJournalService
         $items = InvoiceItem::withoutGlobalScopes()
             ->where('invoice_id', $invoice->id)
             ->whereNotNull('product_id')
+            ->whereNull('deleted_at')
             ->with(['product' => fn ($q) => $q->withoutGlobalScopes()])
             ->get();
 
