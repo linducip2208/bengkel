@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\InvoiceItem;
 use App\Models\WarrantyClaim;
+use App\Services\WarrantyClaimService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -36,12 +36,11 @@ class ApiWarrantyController extends Controller
             'complaint' => 'required|string|max:1000',
         ]);
 
-        $item = InvoiceItem::with('invoice')->findOrFail($validated['invoice_item_id']);
-
-        $claim = WarrantyClaim::create($validated + [
-            'customer_id' => $item->invoice->customer_id,
-            'status' => 'submitted',
-        ]);
+        try {
+            $claim = app(WarrantyClaimService::class)->create($validated);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         return response()->json($claim->load(['customer', 'invoiceItem.product']), 201);
     }
@@ -53,9 +52,17 @@ class ApiWarrantyController extends Controller
             'resolution' => 'nullable|string|max:1000',
         ]);
 
-        $warrantyClaim->update($validated);
+        try {
+            $claim = app(WarrantyClaimService::class)->transition(
+                $warrantyClaim,
+                $validated['status'],
+                $validated['resolution'] ?? null
+            );
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
-        return response()->json($warrantyClaim->load(['customer', 'invoiceItem.product']));
+        return response()->json($claim->load(['customer', 'invoiceItem.product']));
     }
 
     public function destroy(WarrantyClaim $warrantyClaim): JsonResponse

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Services\BookingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -74,5 +75,20 @@ class ApiBookingController extends Controller
         $booking->delete();
 
         return response()->json(['message' => 'Booking deleted.']);
+    }
+
+    public function convert(Booking $booking): JsonResponse
+    {
+        try {
+            $service = app(BookingService::class)->convertToService($booking);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'message' => 'Booking dikonversi ke service.',
+            'service_id' => $service->id,
+            'job_no' => $service->job_no,
+        ], 201);
     }
 }

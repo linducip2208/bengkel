@@ -2,20 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ActivityLog;
 use App\Models\Booking;
 use App\Models\Branch;
-use App\Models\Customer;
-use App\Models\FuelType;
 use App\Models\RepairCategory;
 use App\Models\User;
-use App\Models\Vehicle;
-use App\Models\VehicleBrand;
-use App\Models\VehicleType;
-use App\Services\ServiceService;
-use App\Support\IdentityNormalizer;
+use App\Services\BookingService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
@@ -113,105 +105,10 @@ class BookingController extends Controller
     public function convertToService(Booking $booking)
     {
         try {
-            return DB::transaction(function () use ($booking) {
-                // Lock + re-check: concurrent double-click converts once only.
-                $locked = Booking::query()->whereKey($booking->id)->lockForUpdate()->first();
+            $service = app(BookingService::class)->convertToService($booking);
 
-                if ($locked->status !== 'pending' && $locked->status !== 'confirmed') {
-                    return back()->with('error', 'Hanya booking dengan status pending/confirmed yang bisa dikonversi.');
-                }
-                if ($locked->service_id) {
-                    return back()->with('error', 'Booking ini sudah dikonversi ke service.');
-                }
-
-                // Find or create customer by phone
-                $phone = IdentityNormalizer::indonesianPhone($locked->phone);
-                $email = IdentityNormalizer::email($locked->email);
-                $customer = Customer::withoutGlobalScopes()->firstOrCreate(
-                    ['phone' => $phone],
-                    ['name' => $locked->name, 'email' => $email]
-                );
-
-                // services.vehicle_id is NOT NULL: reuse the customer's first
-                // matching vehicle or register one from the booking.
-                $vehicle = null;
-                if ($locked->vehicle_plate) {
-                    $plate = IdentityNormalizer::vehiclePlate($locked->vehicle_plate);
-                    $vehicle = Vehicle::withoutGlobalScopes()->where('number_plate', $plate)->first();
-                    if ($vehicle && $vehicle->customer_id !== $customer->id) {
-                        throw new \RuntimeException('Nomor polisi sudah terdaftar pada pelanggan lain; periksa identitas booking.');
-                    }
-                    if (! $vehicle) {
-                        $vehicle = Vehicle::withoutGlobalScopes()->create([
-                            'customer_id' => $customer->id,
-                            'number_plate' => $plate,
-                            'model_name' => trim(($locked->vehicle_brand ?: '').' '.($locked->vehicle_model ?: '')) ?: null,
-                        ]);
-                    }
-                } else {
-                    $vehicle = Vehicle::withoutGlobalScopes()
-                        ->where('customer_id', $customer->id)
-                        ->first();
-                    if (! $vehicle) {
-                        // Minimal placeholder so the job card can be opened;
-                        // the service advisor completes it at check-in.
-                        $fuelId = FuelType::query()->value('id');
-                        $typeId = VehicleType::query()->value('id');
-                        $brand = $typeId ? VehicleBrand::where('vehicle_type_id', $typeId)->value('id') : null;
-
-                        if (! $typeId || ! $brand || ! $fuelId) {
-                            throw new \RuntimeException('Data master kendaraan (tipe/merek/bahan bakar) belum lengkap — lengkapi terlebih dahulu.');
-                        }
-
-                        $vehicle = Vehicle::create([
-                            'customer_id' => $customer->id,
-                            'vehicle_type_id' => $typeId,
-                            'vehicle_brand_id' => $brand,
-                            'fuel_type_id' => $fuelId,
-                            'number_plate' => 'PLAT-BELUM-DISET-'.$locked->id,
-                            'model_name' => trim(($locked->vehicle_brand ?: '').' '.($locked->vehicle_model ?: '')) ?: 'Belum diisi',
-                        ]);
-                    }
-                }
-
-                // services.repair_category_id is NOT NULL: fall back to a
-                // general category instead of crashing on un-categorized bookings.
-                $repairCategoryId = $locked->repair_category_id
-                    ?? RepairCategory::query()->value('id');
-                if (! $repairCategoryId) {
-                    $repairCategoryId = RepairCategory::createWithUniqueSlug([
-                        'repair_category_name' => 'Lain-lain',
-                        'is_active' => true,
-                    ])->id;
-                }
-
-                // Create service
-                $jobNo = app(ServiceService::class)->generateJobNo();
-                $service = \App\Models\Service::create([
-                    'job_no' => $jobNo,
-                    'customer_id' => $customer->id,
-                    'vehicle_id' => $vehicle->id,
-                    'repair_category_id' => $repairCategoryId,
-                    'service_date' => $locked->booking_at,
-                    'description' => $locked->complaint,
-                    'title' => $locked->complaint ?: 'Servis dari booking',
-                    'done_status' => 0,
-                    'workflow_status' => 0,
-                    'created_by' => auth()->id() ?? 1,
-                    'branch_id' => $locked->branch_id,
-                ]);
-
-                $locked->update([
-                    'customer_id' => $customer->id,
-                    'service_id' => $service->id,
-                    'status' => 'confirmed',
-                ]);
-
-                ActivityLog::record('booking.convert', $locked, "Booking dikonversi ke Service {$jobNo}");
-
-                return redirect()->route('services.show', $service)
-                    ->with('success', 'Booking berhasil dikonversi ke Service #'.$jobNo);
-            });
+            return redirect()->route('services.show', $service)
+                ->with('success', 'Booking berhasil dikonversi ke Service #'.$service->job_no);
         } catch (\RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         }

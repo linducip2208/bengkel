@@ -106,6 +106,7 @@ Route::prefix('v1')->name('api.')->group(function () {
         Route::get('/bookings/{booking}', [ApiBookingController::class, 'show'])->name('bookings.show');
         Route::post('/bookings', [ApiBookingController::class, 'store'])->name('bookings.store')->middleware('role:super_admin|admin|manager|service_advisor');
         Route::match(['put', 'patch'], '/bookings/{booking}', [ApiBookingController::class, 'update'])->name('bookings.update')->middleware('role:super_admin|admin|manager|service_advisor');
+        Route::post('/bookings/{booking}/convert', [ApiBookingController::class, 'convert'])->name('bookings.convert')->middleware('role:super_admin|admin|manager|service_advisor');
         Route::delete('/bookings/{booking}', [ApiBookingController::class, 'destroy'])->name('bookings.destroy')->middleware('role:super_admin|admin');
 
         Route::get('/warranty-claims', [ApiWarrantyController::class, 'index'])->name('warranty-claims.index');

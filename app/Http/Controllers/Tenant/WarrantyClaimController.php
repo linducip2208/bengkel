@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\InvoiceItem;
 use App\Models\WarrantyClaim;
+use App\Services\WarrantyClaimService;
 use Illuminate\Http\Request;
 
 class WarrantyClaimController extends Controller
@@ -40,13 +41,15 @@ class WarrantyClaimController extends Controller
             'complaint' => 'required|string|max:1000',
         ]);
 
-        $item = InvoiceItem::with('invoice')->findOrFail($validated['invoice_item_id']);
-        $claim = WarrantyClaim::create($validated + [
-            'customer_id' => $item->invoice->customer_id,
-            'status' => 'submitted',
-        ]);
+        try {
+            $claim = app(WarrantyClaimService::class)->create($validated);
+        } catch (\RuntimeException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
 
-        ActivityLog::record('warranty.create', $claim, "Klaim garansi untuk {$item->description}");
+        /** @var InvoiceItem|null $invoiceItem */
+        $invoiceItem = $claim->invoiceItem;
+        ActivityLog::record('warranty.create', $claim, 'Klaim garansi untuk '.($invoiceItem ? $invoiceItem->description : ''));
 
         return redirect()->route('warranty-claims.index')->with('success', 'Klaim garansi dibuat.');
     }
@@ -57,8 +60,18 @@ class WarrantyClaimController extends Controller
             'status' => 'required|in:submitted,approved,rejected,resolved',
             'resolution' => 'nullable|string|max:1000',
         ]);
-        $warrantyClaim->update($validated);
-        ActivityLog::record('warranty.update', $warrantyClaim, "Update klaim ke {$validated['status']}");
+
+        try {
+            $claim = app(WarrantyClaimService::class)->transition(
+                $warrantyClaim,
+                $validated['status'],
+                $validated['resolution'] ?? null
+            );
+        } catch (\RuntimeException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+
+        ActivityLog::record('warranty.update', $claim, "Update klaim ke {$claim->status}");
 
         return back()->with('success', 'Status klaim diperbarui.');
     }
