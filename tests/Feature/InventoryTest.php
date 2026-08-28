@@ -200,7 +200,7 @@ class InventoryTest extends TestCase
             'return_date' => now()->toDateString(),
             'reason' => 'Barang rusak',
             'items' => [
-                ['product_id' => $product->id, 'quantity' => 2, 'unit_price' => 75000],
+                ['product_id' => $product->id, 'quantity' => 1.25, 'unit_price' => 75000],
             ],
         ]);
 
@@ -209,23 +209,23 @@ class InventoryTest extends TestCase
         $sellReturn = SellReturn::where('customer_id', $customer->id)->first();
         $this->assertNotNull($sellReturn);
         $this->assertEquals('completed', $sellReturn->status);
-        $this->assertEquals(150000, (float) $sellReturn->refund_amount);
+        $this->assertEquals(93750, (float) $sellReturn->refund_amount);
 
         $this->assertDatabaseHas('sell_return_items', [
             'sell_return_id' => $sellReturn->id,
             'product_id' => $product->id,
-            'quantity' => 2,
+            'quantity' => 1.25,
         ]);
 
-        // Stock incremented back 8 -> 10
+        // Fractional stock is restored precisely: 8 + 1.25 = 9.25.
         $stock = StockRecord::withoutGlobalScopes()->where('product_id', $product->id)->first();
-        $this->assertEquals(10, $stock->quantity);
+        $this->assertEquals(9.25, $stock->quantity);
 
         $this->assertDatabaseHas('stock_histories', [
             'product_id' => $product->id,
             'type' => 'sell_return',
-            'quantity_change' => 2,
-            'new_stock' => 10,
+            'quantity_change' => 1.25,
+            'new_stock' => 9.25,
         ]);
     }
 }

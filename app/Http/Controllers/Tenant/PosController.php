@@ -375,17 +375,25 @@ class PosController extends Controller
                     );
                 }
 
-                $firstPayment = null;
-                foreach ($payments as $pmt) {
+                $appliedPaymentTotal = 0.0;
+                $paymentRecords = [];
+                foreach ($payments as $paymentIndex => $pmt) {
+                    $remaining = round($grandTotal - $appliedPaymentTotal, 2);
+                    $appliedAmount = min(round((float) $pmt['amount'], 2), max($remaining, 0));
+                    if ($appliedAmount <= 0) {
+                        continue;
+                    }
+
                     $record = PaymentRecord::create([
                         'invoice_id' => $invoice->id,
                         'payment_method_id' => $pmt['method_id'],
-                        'amount' => round((float) $pmt['amount'], 2),
+                        'amount' => $appliedAmount,
                         'payment_date' => now(),
-                        'reference_number' => $invoiceNumber,
+                        'reference_number' => $invoiceNumber.'-'.($paymentIndex + 1),
                         'notes' => 'POS payment',
                     ]);
-                    $firstPayment = $firstPayment ?? $record;
+                    $appliedPaymentTotal = round($appliedPaymentTotal + $appliedAmount, 2);
+                    $paymentRecords[] = $record;
                 }
 
                 Income::create([
@@ -400,10 +408,10 @@ class PosController extends Controller
 
                 app(AutoJournalService::class)->journalInvoiceIssued($invoice);
 
-                if ($firstPayment) {
+                foreach ($paymentRecords as $paymentRecord) {
                     try {
                         // Book only the net amount — cash change is NOT revenue.
-                        app(AutoJournalService::class)->journalInvoicePayment($firstPayment, min($grandTotal, (float) $firstPayment->amount));
+                        app(AutoJournalService::class)->journalInvoicePayment($paymentRecord, (float) $paymentRecord->amount);
                     } catch (\Throwable $e) {
                         Log::error("POS auto-journal: {$e->getMessage()}");
                     }

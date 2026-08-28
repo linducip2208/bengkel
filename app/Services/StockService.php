@@ -43,7 +43,7 @@ class StockService
 
         return DB::transaction(function () use ($productId, $quantity, $type, $reason, $referenceType, $referenceId) {
             $record = self::lockOrCreate($productId);
-            $previous = (int) $record->quantity;
+            $previous = self::normalize($record->quantity);
             $newStock = $previous - $quantity;
 
             if ($newStock < 0 && ! config('stock.allow_negative', false)) {
@@ -74,7 +74,7 @@ class StockService
 
         return DB::transaction(function () use ($productId, $quantity, $type, $reason, $referenceType, $referenceId) {
             $record = self::lockOrCreate($productId);
-            $previous = (int) $record->quantity;
+            $previous = self::normalize($record->quantity);
             $newStock = $previous + $quantity;
 
             $record->quantity = $newStock;
@@ -99,7 +99,7 @@ class StockService
 
         return (float) DB::transaction(function () use ($productId, $newStock, $type, $reason, $referenceType, $referenceId) {
             $record = self::lockOrCreate($productId);
-            $previous = (int) $record->quantity;
+            $previous = self::normalize($record->quantity);
             $delta = $newStock - $previous;
 
             if ($delta === 0) {

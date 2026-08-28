@@ -139,7 +139,7 @@ class SellReturnController extends Controller
 
     private function addStock(int $productId, $quantity, SellReturn $sellReturn): void
     {
-        $quantity = (int) round($quantity);
+        $quantity = round((float) $quantity, 2);
         if ($quantity <= 0) {
             return;
         }

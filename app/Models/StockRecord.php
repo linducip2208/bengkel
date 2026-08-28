@@ -17,7 +17,8 @@ class StockRecord extends Model
     protected function casts(): array
     {
         return [
-            'quantity' => 'integer',
+            'quantity' => 'decimal:2',
+            'minimum_stock' => 'decimal:2',
         ];
     }
 

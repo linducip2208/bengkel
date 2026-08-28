@@ -7,6 +7,7 @@ use App\Models\Branch;
 use App\Models\Income;
 use App\Models\Invoice;
 use App\Models\PaymentMethod;
+use App\Models\PaymentRecord;
 use App\Models\PosSession;
 use App\Models\Product;
 use App\Models\ProductType;
@@ -157,5 +158,53 @@ class PosCheckoutTest extends TestCase
 
         $income = Income::withoutGlobalScopes()->where('invoice_number', $invoice->invoice_number)->first();
         $this->assertEquals(100000, (float) $income->amount);
+    }
+
+    public function test_pos_caps_split_payments_at_invoice_total_and_keeps_tendered_amount(): void
+    {
+        $kasir = $this->makeUser('kasir');
+        $this->actingAs($kasir);
+
+        $branch = Branch::create(['name' => 'Cabang Split', 'is_active' => true]);
+        $type = ProductType::create(['type' => 'Oli', 'slug' => 'oli-split', 'is_active' => true]);
+        $unit = ProductUnit::create(['name' => 'Liter', 'abbreviation' => 'ltr', 'is_active' => true]);
+        $product = Product::create([
+            'product_no' => 'P-SPLIT', 'code' => 'SPLIT-001', 'name' => 'Oli Split',
+            'product_type_id' => $type->id, 'unit_id' => $unit->id,
+            'price' => 100000, 'cost_price' => 70000, 'branch_id' => $branch->id,
+        ]);
+        StockRecord::create(['product_id' => $product->id, 'quantity' => 5, 'branch_id' => $branch->id]);
+
+        $cash = PaymentMethod::create(['payment' => 'Cash Split', 'slug' => 'cash-split', 'is_active' => true]);
+        $card = PaymentMethod::create(['payment' => 'Card Split', 'slug' => 'card-split', 'is_active' => true]);
+
+        $this->withSession(['current_branch_id' => $branch->id])->post('/pos/open', ['opening_balance' => 0]);
+        $session = PosSession::withoutGlobalScopes()->where('user_id', $kasir->id)->firstOrFail();
+
+        $response = $this->withSession(['current_branch_id' => $branch->id])->post('/pos/checkout', [
+            'session_id' => $session->id,
+            'items' => [[
+                'product_id' => $product->id, 'quantity' => 1, 'unit_price' => 100000,
+                'discount' => 0,
+            ]],
+            'payments' => [
+                ['method_id' => $cash->id, 'amount' => 60000],
+                ['method_id' => $card->id, 'amount' => 50000],
+            ],
+        ]);
+        $response->assertSessionHasNoErrors();
+        $this->assertNull(session('error'), (string) session('error'));
+        $response->assertRedirect();
+
+        $invoice = Invoice::withoutGlobalScopes()->where('pos_session_id', $session->id)->firstOrFail();
+
+        $this->assertSame(100000.0, (float) $invoice->paid_amount);
+        $this->assertSame(110000.0, (float) $invoice->amount_received);
+        $this->assertSame(100000.0, (float) PaymentRecord::where('invoice_id', $invoice->id)->sum('amount'));
+        $this->assertDatabaseHas('payment_records', [
+            'invoice_id' => $invoice->id,
+            'payment_method_id' => $card->id,
+            'amount' => 40000,
+        ]);
     }
 }

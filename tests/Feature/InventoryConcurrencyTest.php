@@ -103,6 +103,21 @@ class InventoryConcurrencyTest extends TestCase
         StockService::decrement($product->id, 3, 'usage');
     }
 
+    public function test_fractional_sale_quantity_is_deducted_without_rounding_stock(): void
+    {
+        $product = $this->makeProduct(10);
+
+        StockService::decrement($product->id, 0.75, 'pos');
+
+        $record = StockRecord::withoutGlobalScopes()->where('product_id', $product->id)->firstOrFail();
+        $history = StockHistory::where('product_id', $product->id)->latest('id')->firstOrFail();
+
+        $this->assertSame('9.25', $record->quantity);
+        $this->assertSame('-0.75', $history->quantity_change);
+        $this->assertSame('10.00', $history->previous_stock);
+        $this->assertSame('9.25', $history->new_stock);
+    }
+
     public function test_ledger_snapshots_reconstruct_current_quantity(): void
     {
         $product = $this->makeProduct(10);
