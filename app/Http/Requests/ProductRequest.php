@@ -23,8 +23,9 @@ class ProductRequest extends FormRequest
             'cost_price' => ['nullable', 'numeric', 'min:0'],
             'warranty' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'initial_stock' => $isCreate ? ['nullable', 'integer', 'min:0'] : [],
-            'minimum_stock' => ['nullable', 'integer', 'min:0'],
+            'initial_stock' => $isCreate ? ['nullable', 'numeric', 'min:0'] : [],
+            'current_stock' => $isCreate ? [] : ['required', 'numeric', 'min:0'],
+            'minimum_stock' => ['nullable', 'numeric', 'min:0'],
             'rack_location' => ['nullable', 'string', 'max:100'],
         ];
     }
@@ -41,6 +42,7 @@ class ProductRequest extends FormRequest
             'cost_price' => 'Harga Beli',
             'warranty' => 'Garansi',
             'initial_stock' => 'Stok Awal',
+            'current_stock' => 'Stok Saat Ini',
             'minimum_stock' => 'Stok Minimum',
             'rack_location' => 'Lokasi Rak',
         ];

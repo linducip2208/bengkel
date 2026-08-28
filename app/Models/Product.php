@@ -111,14 +111,14 @@ class Product extends Model
         return max(0, (float) $this->current_stock - $this->reserved_quantity);
     }
 
-    public function getCurrentStockAttribute(): int
+    public function getCurrentStockAttribute(): float
     {
-        return $this->stockRecord?->quantity ?? 0;
+        return (float) ($this->stockRecord?->quantity ?? 0);
     }
 
-    public function getMinimumStockAttribute(): ?int
+    public function getMinimumStockAttribute(): ?float
     {
-        return $this->stockRecord?->minimum_stock ?? null;
+        return $this->stockRecord ? (float) $this->stockRecord->minimum_stock : null;
     }
 
     public function getRackLocationAttribute(): ?string

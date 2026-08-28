@@ -12,6 +12,7 @@ use App\Models\Purchase;
 use App\Models\PurchaseOrder;
 use App\Models\SellReturn;
 use App\Models\StockAdjustment;
+use App\Models\StockHistory;
 use App\Models\StockRecord;
 use App\Models\Supplier;
 use App\Models\User;
@@ -64,6 +65,102 @@ class InventoryTest extends TestCase
             'cost_price' => 50000,
             'branch_id' => $branch->id,
         ]);
+    }
+
+    public function test_product_initial_stock_is_not_doubled_when_created(): void
+    {
+        $admin = $this->makeUser('super_admin');
+        $this->actingAs($admin);
+        $type = ProductType::create(['type' => 'Oli', 'slug' => 'oli-create', 'is_active' => true]);
+        $unit = ProductUnit::create(['name' => 'Liter', 'abbreviation' => 'ltr-create', 'is_active' => true]);
+
+        $this->post('/products', [
+            'code' => 'INIT-008',
+            'name' => 'Produk Stok Awal',
+            'product_type_id' => $type->id,
+            'unit_id' => $unit->id,
+            'price' => 50000,
+            'cost_price' => 35000,
+            'initial_stock' => 8,
+            'minimum_stock' => 2,
+        ])->assertRedirect(route('products.index'));
+
+        $product = Product::where('code', 'INIT-008')->firstOrFail();
+        $this->assertSame(8.0, (float) $product->fresh('stockRecord')->current_stock);
+        $this->assertDatabaseHas('stock_histories', [
+            'product_id' => $product->id,
+            'quantity_change' => 8,
+            'previous_stock' => 0,
+            'new_stock' => 8,
+            'type' => 'initial',
+        ]);
+    }
+
+    public function test_api_product_create_applies_current_stock_as_initial_stock(): void
+    {
+        $admin = $this->makeUser('super_admin');
+        $token = $admin->createToken('ci')->plainTextToken;
+        $type = ProductType::create(['type' => 'Bearing', 'slug' => 'bearing-create', 'is_active' => true]);
+        $unit = ProductUnit::create(['name' => 'Pcs', 'abbreviation' => 'pcs-api', 'is_active' => true]);
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/v1/products', [
+                'code' => 'API-INIT-001',
+                'name' => 'Produk Dari Api',
+                'product_type_id' => $type->id,
+                'unit_id' => $unit->id,
+                'price' => 25000,
+                'cost_price' => 15000,
+                'current_stock' => 12,
+                'minimum_stock' => 3,
+            ]);
+        if ($response->getStatusCode() !== 201) {
+            $this->fail($response->getContent());
+        }
+
+        $product = Product::where('code', 'API-INIT-001')->firstOrFail();
+        $this->assertSame(12.0, (float) $product->fresh('stockRecord')->current_stock);
+        $this->assertDatabaseHas('stock_histories', [
+            'product_id' => $product->id,
+            'quantity_change' => 12,
+            'previous_stock' => 0,
+            'new_stock' => 12,
+            'type' => 'initial',
+        ]);
+    }
+
+    public function test_product_edit_sets_final_stock_and_records_only_the_difference(): void
+    {
+        $admin = $this->makeUser('super_admin');
+        $this->actingAs($admin);
+        $branch = $this->makeBranch('Cabang Edit');
+        $product = $this->makeProduct($branch);
+        StockRecord::create(['product_id' => $product->id, 'quantity' => 2, 'minimum_stock' => 1]);
+
+        $this->put("/products/{$product->id}", [
+            'code' => $product->code,
+            'name' => $product->name,
+            'product_type_id' => $product->product_type_id,
+            'unit_id' => $product->unit_id,
+            'supplier_id' => $product->supplier_id,
+            'price' => $product->price,
+            'cost_price' => $product->cost_price,
+            'current_stock' => 8,
+            'minimum_stock' => 3,
+            'rack_location' => 'R-A1',
+        ])->assertRedirect(route('products.index'));
+
+        $product->refresh()->load('stockRecord');
+        $this->assertSame(8.0, $product->current_stock);
+        $this->assertSame(3.0, $product->minimum_stock);
+        $this->assertDatabaseHas('stock_histories', [
+            'product_id' => $product->id,
+            'quantity_change' => 6,
+            'previous_stock' => 2,
+            'new_stock' => 8,
+            'type' => 'product_edit',
+        ]);
+        $this->assertSame(1, StockHistory::where('product_id', $product->id)->count());
     }
 
     public function test_stock_adjustment_approve_updates_stock_and_creates_history(): void

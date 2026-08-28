@@ -52,10 +52,10 @@ class ProductService
     public function create(array $data): Product
     {
         return DB::transaction(function () use ($data) {
-            $initialStock = $data['initial_stock'] ?? 0;
+            $initialStock = $data['initial_stock'] ?? $data['current_stock'] ?? 0;
             $minimumStock = $data['minimum_stock'] ?? null;
             $rackLocation = $data['rack_location'] ?? null;
-            unset($data['initial_stock'], $data['minimum_stock'], $data['rack_location']);
+            unset($data['initial_stock'], $data['current_stock'], $data['minimum_stock'], $data['rack_location']);
 
             $data['product_no'] = $this->generateProductNo();
             $product = Product::create($data);
@@ -63,7 +63,7 @@ class ProductService
             StockRecord::create([
                 'product_id' => $product->id,
                 'supplier_id' => $data['supplier_id'] ?? null,
-                'quantity' => $initialStock,
+                'quantity' => 0,
                 'minimum_stock' => $minimumStock ?? 0,
                 'rack_location' => $rackLocation,
             ]);
@@ -78,23 +78,42 @@ class ProductService
 
     public function update(Product $product, array $data): Product
     {
-        $stockData = [];
-        if (isset($data['minimum_stock'])) {
-            $stockData['minimum_stock'] = $data['minimum_stock'];
-            unset($data['minimum_stock']);
-        }
-        if (isset($data['rack_location'])) {
-            $stockData['rack_location'] = $data['rack_location'];
-            unset($data['rack_location']);
-        }
+        return DB::transaction(function () use ($product, $data) {
+            $currentStock = array_key_exists('current_stock', $data)
+                ? round((float) $data['current_stock'], 2)
+                : null;
+            $stockData = array_filter([
+                'minimum_stock' => $data['minimum_stock'] ?? null,
+                'rack_location' => $data['rack_location'] ?? null,
+            ], fn ($value) => $value !== null);
 
-        $product->update($data);
+            unset($data['current_stock'], $data['minimum_stock'], $data['rack_location']);
+            $product->update($data);
 
-        if (! empty($stockData) && $product->stockRecord) {
-            $product->stockRecord->update($stockData);
-        }
+            $currentQuantity = (float) ($product->stockRecord()
+                ->withoutGlobalScopes()
+                ->value('quantity') ?? 0);
 
-        return $product->fresh(['productType', 'unit', 'supplier', 'stockRecord']);
+            if (! empty($stockData)) {
+                $product->stockRecord()->withoutGlobalScopes()->updateOrCreate(
+                    ['product_id' => $product->id],
+                    $stockData,
+                );
+            }
+
+            if ($currentStock !== null && $currentStock !== round($currentQuantity, 2)) {
+                StockService::set(
+                    $product->id,
+                    $currentStock,
+                    'product_edit',
+                    'Stok diubah melalui form edit produk',
+                    Product::class,
+                    $product->id,
+                );
+            }
+
+            return $product->fresh(['productType', 'unit', 'supplier', 'stockRecord']);
+        });
     }
 
     public function adjustStock(Product $product, int $quantity, string $reason): StockHistory
@@ -107,7 +126,7 @@ class ProductService
         );
     }
 
-    public function setStock(Product $product, int $newStock, string $reason): ?StockHistory
+    public function setStock(Product $product, int|float $newStock, string $reason): ?StockHistory
     {
         return StockService::set($product->id, $newStock, 'opname', $reason);
     }

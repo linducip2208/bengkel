@@ -86,12 +86,12 @@
 
                 <div class="col-md-4">
                     <label for="initial_stock" class="form-label">Stok Awal</label>
-                    <input type="number" name="initial_stock" id="initial_stock" class="form-control form-control-sm @error('initial_stock') is-invalid @enderror" value="{{ old('initial_stock', 0) }}" min="0" step="1">
+                    <input type="number" name="initial_stock" id="initial_stock" class="form-control form-control-sm @error('initial_stock') is-invalid @enderror" value="{{ old('initial_stock', 0) }}" min="0" step="0.01">
                     @error('initial_stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-4">
                     <label for="minimum_stock" class="form-label">Stok Minimum</label>
-                    <input type="number" name="minimum_stock" id="minimum_stock" class="form-control form-control-sm @error('minimum_stock') is-invalid @enderror" value="{{ old('minimum_stock') }}" min="0" step="1" placeholder="Peringatan jika stok di bawah ini">
+                    <input type="number" name="minimum_stock" id="minimum_stock" class="form-control form-control-sm @error('minimum_stock') is-invalid @enderror" value="{{ old('minimum_stock') }}" min="0" step="0.01" placeholder="Peringatan jika stok di bawah ini">
                     @error('minimum_stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-4">

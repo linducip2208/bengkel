@@ -85,8 +85,14 @@
                 </div>
 
                 <div class="col-md-4">
+                    <label for="current_stock" class="form-label">Stok Saat Ini</label>
+                    <input type="number" name="current_stock" id="current_stock" class="form-control form-control-sm @error('current_stock') is-invalid @enderror" value="{{ old('current_stock', $product->current_stock) }}" min="0" step="0.01" required>
+                    <small class="text-muted">Isi nilai stok akhir. Perubahan dicatat di riwayat stok.</small>
+                    @error('current_stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="col-md-4">
                     <label for="minimum_stock" class="form-label">Stok Minimum</label>
-                    <input type="number" name="minimum_stock" id="minimum_stock" class="form-control form-control-sm" value="{{ old('minimum_stock', $product->minimum_stock) }}" min="0">
+                    <input type="number" name="minimum_stock" id="minimum_stock" class="form-control form-control-sm" value="{{ old('minimum_stock', $product->minimum_stock) }}" min="0" step="0.01">
                 </div>
                 <div class="col-md-4">
                     <label for="rack_location" class="form-label">Lokasi Rak</label>
