@@ -50,7 +50,7 @@ jobs:
         run: vendor/bin/pint --test
 
       - name: Static analysis (PHPStan level 5)
-        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+        run: php vendor/bin/phpstan analyse --no-progress --memory-limit=1G --error-format=github
 
       - name: Validate routes and production configuration
         run: |
