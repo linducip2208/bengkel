@@ -7,6 +7,7 @@ use App\Models\ProductType;
 use App\Models\ProductUnit;
 use App\Models\StockRecord;
 use App\Services\DocumentNumberService;
+use App\Services\StockService;
 use Maatwebsite\Excel\Concerns\RemembersRowNumber;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -52,11 +53,27 @@ class ProductsImport implements SkipsOnError, ToModel, WithHeadingRow
             }
 
             $minimumStock = $this->nullableInt($row['minimum_stock'] ?? null);
-            if ($minimumStock !== null) {
-                StockRecord::withoutGlobalScopes()->updateOrCreate(
-                    ['product_id' => $product->id],
-                    ['minimum_stock' => $minimumStock]
-                );
+            $stockRecord = StockRecord::withoutGlobalScopes()->firstOrCreate(
+                ['product_id' => $product->id],
+                ['quantity' => 0, 'minimum_stock' => $minimumStock ?? 0],
+            );
+
+            if ($minimumStock !== null && (int) $stockRecord->minimum_stock !== $minimumStock) {
+                $stockRecord->update(['minimum_stock' => $minimumStock]);
+            }
+
+            // Stock columns are initial values only. Re-importing an existing
+            // product must never add the same opening balance a second time.
+            if ($product->wasRecentlyCreated) {
+                $initialStock = $this->nullableFloat($row['initial_stock'] ?? $row['current_stock'] ?? null) ?? 0;
+                if ($initialStock > 0) {
+                    StockService::increment(
+                        $product->id,
+                        $initialStock,
+                        'initial',
+                        'Stok awal dari import produk',
+                    );
+                }
             }
 
             $this->imported++;

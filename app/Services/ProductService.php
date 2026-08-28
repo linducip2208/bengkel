@@ -52,7 +52,7 @@ class ProductService
     public function create(array $data): Product
     {
         return DB::transaction(function () use ($data) {
-            $initialStock = $data['initial_stock'] ?? $data['current_stock'] ?? 0;
+            $initialStock = round((float) ($data['initial_stock'] ?? $data['current_stock'] ?? 0), 2);
             $minimumStock = $data['minimum_stock'] ?? null;
             $rackLocation = $data['rack_location'] ?? null;
             unset($data['initial_stock'], $data['current_stock'], $data['minimum_stock'], $data['rack_location']);
@@ -63,6 +63,8 @@ class ProductService
             StockRecord::create([
                 'product_id' => $product->id,
                 'supplier_id' => $data['supplier_id'] ?? null,
+                // Bootstrap metadata only. StockService applies the opening
+                // balance once and writes the matching StockHistory ledger.
                 'quantity' => 0,
                 'minimum_stock' => $minimumStock ?? 0,
                 'rack_location' => $rackLocation,
@@ -116,7 +118,7 @@ class ProductService
         });
     }
 
-    public function adjustStock(Product $product, int $quantity, string $reason): StockHistory
+    public function adjustStock(Product $product, int|float $quantity, string $reason): ?StockHistory
     {
         return StockService::adjust(
             $product->id,
@@ -126,7 +128,7 @@ class ProductService
         );
     }
 
-    public function setStock(Product $product, int|float $newStock, string $reason): ?StockHistory
+    public function setStock(Product $product, int|float $newStock, string $reason): float
     {
         return StockService::set($product->id, $newStock, 'opname', $reason);
     }
@@ -174,10 +176,20 @@ class ProductService
                     StockRecord::create([
                         'product_id' => $product->id,
                         'supplier_id' => $row['supplier_id'] ?? null,
-                        'quantity' => (int) ($row['current_stock'] ?? 0),
+                        'quantity' => 0,
                         'minimum_stock' => (int) ($row['minimum_stock'] ?? 0),
                         'rack_location' => $row['rack_location'] ?? null,
                     ]);
+
+                    $initialStock = round((float) ($row['initial_stock'] ?? $row['current_stock'] ?? 0), 2);
+                    if ($initialStock > 0) {
+                        StockService::increment(
+                            $product->id,
+                            $initialStock,
+                            'initial',
+                            'Stok awal dari import produk',
+                        );
+                    }
 
                     $imported++;
                 } catch (\Exception $e) {

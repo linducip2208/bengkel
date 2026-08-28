@@ -16,6 +16,8 @@ use App\Models\StockHistory;
 use App\Models\StockRecord;
 use App\Models\Supplier;
 use App\Models\User;
+use App\Services\ProductService;
+use App\Services\StockService;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
@@ -65,6 +67,80 @@ class InventoryTest extends TestCase
             'cost_price' => 50000,
             'branch_id' => $branch->id,
         ]);
+    }
+
+    private function createProductWithInitialStock(int $initialStock, string $suffix): Product
+    {
+        $type = ProductType::create([
+            'type' => 'Tipe '.$suffix,
+            'slug' => 'tipe-'.strtolower($suffix),
+            'is_active' => true,
+        ]);
+        $unit = ProductUnit::create([
+            'name' => 'Unit '.$suffix,
+            'abbreviation' => 'u-'.strtolower($suffix),
+            'is_active' => true,
+        ]);
+
+        return app(ProductService::class)->create([
+            'code' => 'INIT-'.$suffix,
+            'name' => 'Produk '.$suffix,
+            'product_type_id' => $type->id,
+            'unit_id' => $unit->id,
+            'price' => 50000,
+            'cost_price' => 35000,
+            'initial_stock' => $initialStock,
+            'minimum_stock' => 2,
+        ]);
+    }
+
+    public function test_create_product_with_initial_stock_four_results_in_four(): void
+    {
+        $product = $this->createProductWithInitialStock(4, 'FOUR');
+
+        $this->assertSame(4.0, (float) $product->fresh('stockRecord')->current_stock);
+        $this->assertSame(1, StockHistory::where('product_id', $product->id)->where('type', 'initial')->count());
+        $this->assertSame(1, StockRecord::withoutGlobalScopes()->where('product_id', $product->id)->count());
+    }
+
+    public function test_create_product_with_initial_stock_ten_results_in_ten(): void
+    {
+        $product = $this->createProductWithInitialStock(10, 'TEN');
+
+        $this->assertSame(10.0, (float) $product->fresh('stockRecord')->current_stock);
+        $this->assertSame(1, StockHistory::where('product_id', $product->id)->where('type', 'initial')->count());
+        $this->assertSame(1, StockRecord::withoutGlobalScopes()->where('product_id', $product->id)->count());
+    }
+
+    public function test_create_product_with_zero_initial_stock_stays_zero_without_fake_history(): void
+    {
+        $product = $this->createProductWithInitialStock(0, 'ZERO');
+
+        $this->assertSame(0.0, (float) $product->fresh('stockRecord')->current_stock);
+        $this->assertSame(0, StockHistory::where('product_id', $product->id)->where('type', 'initial')->count());
+        $this->assertSame(1, StockRecord::withoutGlobalScopes()->where('product_id', $product->id)->count());
+    }
+
+    public function test_add_reduce_and_set_adjustments_apply_exactly_once(): void
+    {
+        $product = $this->createProductWithInitialStock(4, 'ADJUST');
+
+        StockService::increment($product->id, 5, 'adjustment_add', 'Tambah lima');
+        $this->assertSame(9.0, (float) $product->fresh('stockRecord')->current_stock);
+
+        StockService::decrement($product->id, 2, 'adjustment_reduce', 'Kurangi dua');
+        $this->assertSame(7.0, (float) $product->fresh('stockRecord')->current_stock);
+
+        StockService::set($product->id, 20, 'opname', 'Set menjadi dua puluh');
+        $this->assertSame(20.0, (float) $product->fresh('stockRecord')->current_stock);
+        $this->assertDatabaseHas('stock_histories', [
+            'product_id' => $product->id,
+            'type' => 'opname',
+            'quantity_change' => 13,
+            'previous_stock' => 7,
+            'new_stock' => 20,
+        ]);
+        $this->assertSame(1, StockRecord::withoutGlobalScopes()->where('product_id', $product->id)->count());
     }
 
     public function test_product_initial_stock_is_not_doubled_when_created(): void
