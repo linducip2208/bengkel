@@ -93,9 +93,26 @@ Route::prefix('v1')->name('api.')->group(function () {
         Route::match(['put', 'patch'], '/expenses/{expense}', [ApiExpenseController::class, 'update'])->name('expenses.update')->middleware('role:super_admin|admin|manager');
         Route::delete('/expenses/{expense}', [ApiExpenseController::class, 'destroy'])->name('expenses.destroy')->middleware('role:super_admin|admin');
 
-        Route::apiResource('jobcards', ApiJobcardController::class);
-        Route::apiResource('bookings', ApiBookingController::class);
-        Route::apiResource('warranty-claims', ApiWarrantyController::class);
+        // Jobcards / bookings / warranty-claims — reads stay open to staff,
+        // but writes are role-gated like every other financial/operational doc.
+        Route::get('/jobcards', [ApiJobcardController::class, 'index'])->name('jobcards.index');
+        Route::get('/jobcards/{service}', [ApiJobcardController::class, 'show'])->name('jobcards.show');
+        Route::post('/jobcards', [ApiJobcardController::class, 'store'])->name('jobcards.store')->middleware('role:super_admin|admin|manager|service_advisor');
+        Route::match(['put', 'patch'], '/jobcards/{service}', [ApiJobcardController::class, 'update'])->name('jobcards.update')->middleware('role:super_admin|admin|manager|service_advisor');
+        Route::post('/jobcards/{service}/complete', [ApiJobcardController::class, 'complete'])->name('jobcards.complete')->middleware('role:super_admin|admin|manager|service_advisor');
+        Route::delete('/jobcards/{service}', [ApiJobcardController::class, 'destroy'])->name('jobcards.destroy')->middleware('role:super_admin|admin');
+
+        Route::get('/bookings', [ApiBookingController::class, 'index'])->name('bookings.index');
+        Route::get('/bookings/{booking}', [ApiBookingController::class, 'show'])->name('bookings.show');
+        Route::post('/bookings', [ApiBookingController::class, 'store'])->name('bookings.store')->middleware('role:super_admin|admin|manager|service_advisor');
+        Route::match(['put', 'patch'], '/bookings/{booking}', [ApiBookingController::class, 'update'])->name('bookings.update')->middleware('role:super_admin|admin|manager|service_advisor');
+        Route::delete('/bookings/{booking}', [ApiBookingController::class, 'destroy'])->name('bookings.destroy')->middleware('role:super_admin|admin');
+
+        Route::get('/warranty-claims', [ApiWarrantyController::class, 'index'])->name('warranty-claims.index');
+        Route::get('/warranty-claims/{warrantyClaim}', [ApiWarrantyController::class, 'show'])->name('warranty-claims.show');
+        Route::post('/warranty-claims', [ApiWarrantyController::class, 'store'])->name('warranty-claims.store')->middleware('role:super_admin|admin|manager|service_advisor');
+        Route::match(['put', 'patch'], '/warranty-claims/{warrantyClaim}', [ApiWarrantyController::class, 'update'])->name('warranty-claims.update')->middleware('role:super_admin|admin|manager');
+        Route::delete('/warranty-claims/{warrantyClaim}', [ApiWarrantyController::class, 'destroy'])->name('warranty-claims.destroy')->middleware('role:super_admin|admin');
         Route::get('/commissions', [ApiCommissionController::class, 'index'])->name('commissions.index')->middleware('role:super_admin|admin|manager|kasir');
         Route::post('/commissions/{serviceTechnician}/mark-paid', [ApiCommissionController::class, 'markPaid'])->name('commissions.mark-paid')->middleware('role:super_admin|admin|manager');
         Route::post('/pos/open', [ApiPosController::class, 'openSession'])->name('pos.open')->middleware('role:super_admin|admin|manager|kasir');

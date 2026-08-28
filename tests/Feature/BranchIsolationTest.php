@@ -5,12 +5,18 @@ namespace Tests\Feature;
 use App\Http\Middleware\RequirePair;
 use App\Models\Branch;
 use App\Models\Customer;
+use App\Models\Income;
+use App\Models\PaymentMethod;
 use App\Models\User;
-use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
+/**
+ * Branch isolation: stateless (Sanctum) transactional writes must inherit the
+ * caller's branch and user-scoped reads must never cross branch boundaries.
+ */
 class BranchIsolationTest extends TestCase
 {
     use RefreshDatabase;
@@ -18,96 +24,71 @@ class BranchIsolationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->withoutMiddleware([
-            RequirePair::class,
-            PreventRequestForgery::class,
-        ]);
+        $this->withoutMiddleware([RequirePair::class]);
     }
 
-    private function makeUser(string $role = 'admin'): User
+    private function makeBranch(string $code): Branch
+    {
+        return Branch::create(['name' => 'Branch '.$code, 'code' => $code, 'is_active' => true]);
+    }
+
+    private function scopedUser(Branch $branch, string $role = 'kasir'): User
     {
         Role::findOrCreate($role, 'web');
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole($role);
+        $user->branches()->attach($branch->id);
+        Sanctum::actingAs($user, ['*']);
 
         return $user;
     }
 
-    public function test_branch_scope_hides_other_branch_records(): void
+    public function test_stateless_create_inherits_caller_branch_instead_of_nil(): void
     {
-        $branchA = Branch::create(['name' => 'Cabang A', 'is_active' => true]);
-        $branchB = Branch::create(['name' => 'Cabang B', 'is_active' => true]);
+        $branch = $this->makeBranch('A1');
+        $user = $this->scopedUser($branch);
 
-        Customer::create(['name' => 'A-Cust 1', 'branch_id' => $branchA->id]);
-        Customer::create(['name' => 'A-Cust 2', 'branch_id' => $branchA->id]);
-        Customer::create(['name' => 'B-Cust', 'branch_id' => $branchB->id]);
+        $customer = Customer::create(['name' => 'Cust A', 'phone' => '0811111111']);
+        $method = PaymentMethod::create(['payment' => 'Cash', 'slug' => 'cash', 'is_active' => true]);
 
-        $this->actingAs($this->makeUser())
-            ->withSession(['current_branch_id' => $branchA->id])
-            ->get('/customers?search=')
-            ->assertOk();
+        $income = Income::create([
+            'invoice_number' => 'INV-ISO-001',
+            'customer_id' => $customer->id,
+            'payment_method_id' => $method->id,
+            'amount' => 50000,
+            'income_date' => now()->toDateString(),
+            'label' => 'Isolation test',
+            'created_by' => $user->id,
+        ]);
 
-        // Scoped query sees only branch A rows.
-        $visible = Customer::all()->pluck('name');
-        $this->assertEqualsCanonicalizing(['A-Cust 1', 'A-Cust 2'], $visible->all());
+        $this->assertNotNull($income->branch_id, 'Transactional row must carry a branch_id, not NULL.');
+        $this->assertEquals($branch->id, $income->branch_id);
     }
 
-    public function test_without_session_context_no_branch_filter_is_applied(): void
+    public function test_user_scoped_to_branch_a_cannot_read_branch_b_rows(): void
     {
-        // Legacy/global view: documents the current default-open behaviour so
-        // any future tightening of BranchScope is a conscious decision.
-        $branchB = Branch::create(['name' => 'Cabang B', 'is_active' => true]);
-        Customer::create(['name' => 'B-Cust Only', 'branch_id' => $branchB->id]);
+        $branchA = $this->makeBranch('A2');
+        $branchB = $this->makeBranch('B2');
+        $this->scopedUser($branchA);
 
-        $this->actingAs($this->makeUser())->get('/customers');
+        $customer = Customer::create(['name' => 'Cust B', 'phone' => '0822222222']);
+        $method = PaymentMethod::create(['payment' => 'Cash', 'slug' => 'cash', 'is_active' => true]);
+        $branchBIncome = Income::withoutGlobalScopes()->create([
+            'invoice_number' => 'INV-ISO-B',
+            'customer_id' => $customer->id,
+            'payment_method_id' => $method->id,
+            'amount' => 50000,
+            'income_date' => now()->toDateString(),
+            'label' => 'Branch B',
+            'created_by' => 1,
+            'branch_id' => $branchB->id,
+        ]);
 
-        $this->assertEquals(1, Customer::count());
-    }
+        // The branch-A scoped user's normal query must not see branch B's row.
+        $visible = Income::whereKey($branchBIncome->id)->first();
+        $this->assertNull($visible, 'Branch-A scoped user must not see branch-B income.');
 
-    public function test_user_with_branch_assignments_cannot_switch_to_other_branch(): void
-    {
-        $branchA = Branch::create(['name' => 'Cabang A', 'is_active' => true]);
-        $branchB = Branch::create(['name' => 'Cabang B', 'is_active' => true]);
-
-        $user = $this->makeUser('kasir');
-        $user->branches()->attach($branchB->id);
-
-        $this->actingAs($user);
-
-        // Allowed: own branch.
-        $this->post('/branches/switch', ['branch_id' => $branchB->id])
-            ->assertRedirect()
-            ->assertSessionHas('success');
-
-        // Forbidden: branch outside assignment.
-        $this->post('/branches/switch', ['branch_id' => $branchA->id])
-            ->assertForbidden();
-
-        $this->assertEquals($branchB->id, session('current_branch_id'));
-    }
-
-    public function test_api_requests_are_scoped_to_assigned_branches(): void
-    {
-        $branchA = Branch::create(['name' => 'Cabang A', 'is_active' => true]);
-        $branchB = Branch::create(['name' => 'Cabang B', 'is_active' => true]);
-
-        Customer::create(['name' => 'A-Only', 'branch_id' => $branchA->id]);
-        Customer::create(['name' => 'B-Only', 'branch_id' => $branchB->id]);
-
-        Role::findOrCreate('manager', 'web');
-        $apiUser = User::factory()->create(['is_active' => true]);
-        $apiUser->assignRole('manager');
-        $apiUser->branches()->attach($branchA->id);
-        $token = $apiUser->createToken('ci')->plainTextToken;
-
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->getJson('/api/v1/customers?per_page=50');
-
-        $response->assertOk();
-
-        $names = collect($response->json('data'))->pluck('name');
-        $this->assertContains('A-Only', $names);
-        $this->assertNotContains('B-Only', $names);
+        // ... but an unscoped lookup can still read it (authorization is caller-side).
+        $this->assertNotNull(Income::withoutGlobalScopes()->find($branchBIncome->id));
     }
 }

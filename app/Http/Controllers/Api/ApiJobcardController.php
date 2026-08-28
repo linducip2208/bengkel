@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Service;
+use App\Services\ServiceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -57,9 +58,11 @@ class ApiJobcardController extends Controller
             'description' => 'nullable|string',
             'service_date' => 'required|date',
             'charge' => 'nullable|numeric|min:0',
-            'done_status' => 'nullable|integer|in:0,1,2',
         ]);
 
+        // done_status is system-managed — never accepted from the client. A
+        // jobcard is opened (0) and reaches "completed" via the controlled
+        // workflow, never by injecting a status value.
         $service = Service::create([
             'customer_id' => $validated['customer_id'],
             'vehicle_id' => $validated['vehicle_id'],
@@ -68,7 +71,7 @@ class ApiJobcardController extends Controller
             'description' => $validated['description'] ?? null,
             'service_date' => $validated['service_date'],
             'charge' => $validated['charge'] ?? 0,
-            'done_status' => $validated['done_status'] ?? 0,
+            'done_status' => 0,
         ]);
 
         return response()->json($service->load('jobcardDetail'), 201);
@@ -76,18 +79,34 @@ class ApiJobcardController extends Controller
 
     public function update(Request $request, Service $service): JsonResponse
     {
+        // done_status / workflow_status are system-owned; only descriptive and
+        // scheduling fields may be patched, and never the completion state.
         $validated = $request->validate([
             'repair_category_id' => 'nullable|exists:repair_categories,id',
             'title' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
             'service_date' => 'sometimes|date',
             'charge' => 'nullable|numeric|min:0',
-            'done_status' => 'nullable|integer|in:0,1,2',
         ]);
 
         $service->update($validated);
 
         return response()->json($service->load('jobcardDetail'));
+    }
+
+    public function complete(Service $service): JsonResponse
+    {
+        try {
+            $result = app(ServiceService::class)->executeComplete($service);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'message' => $result['already'] ? 'Jobcard sudah selesai sebelumnya.' : 'Jobcard selesai.',
+            'already_processed' => $result['already'],
+            'invoice_id' => $result['invoice']?->id,
+        ]);
     }
 
     public function destroy(Service $service): JsonResponse

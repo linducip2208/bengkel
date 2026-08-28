@@ -114,10 +114,14 @@ class PaymentIdempotencyTest extends TestCase
         $this->assertEquals(2, $invoice->payment_status);
         $this->assertEquals(100000, (float) $invoice->paid_amount);
 
-        // Income recorded exactly once at settlement
+        // Income recorded once per actual payment (each cash movement reconciled)
         $this->assertEquals(
-            1,
+            2,
             Income::where('invoice_number', $invoice->invoice_number)->count()
+        );
+        $this->assertEquals(
+            100000,
+            (float) Income::where('invoice_number', $invoice->invoice_number)->sum('amount')
         );
     }
 

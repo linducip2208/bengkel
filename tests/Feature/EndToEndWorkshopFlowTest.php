@@ -160,10 +160,14 @@ class EndToEndWorkshopFlowTest extends TestCase
         $this->assertEquals(2, $invoice->payment_status, 'Settled after full payment.');
         $this->assertEquals(220000.0, (float) $invoice->paid_amount);
 
-        // Income booked once for the settled invoice
+        // Income booked once per actual payment; Kas ledger reconciles to collected cash
         $this->assertEquals(
-            1,
+            2,
             Income::where('invoice_number', $invoice->invoice_number)->count()
+        );
+        $this->assertEquals(
+            220000.0,
+            (float) Income::where('invoice_number', $invoice->invoice_number)->sum('amount')
         );
 
         // Every journal in the whole flow balances

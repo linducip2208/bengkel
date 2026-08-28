@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Invoice;
 use App\Models\PaymentGateway;
 use App\Models\PaymentLink;
-use App\Models\PaymentRecord;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -196,9 +195,15 @@ class PaymentGatewayService
                 'gateway_response' => array_merge($link->gateway_response ?? [], ['callback' => $payload]),
             ]);
 
-            // Kalau paid → catat PaymentRecord otomatis
-            if ($newStatus === 'paid' && ! $link->invoice->paymentRecords()->where('reference_number', $link->token)->exists()) {
-                $invoice = Invoice::query()->whereKey($link->invoice_id)->lockForUpdate()->firstOrFail();
+            // Kalau paid → reconcile via the canonical PaymentService so the
+            // Kas/Income ledger, journal, activity log and loyalty stay
+            // consistent with every other payment entry point.
+            if ($newStatus === 'paid') {
+                if (! $link->invoice) {
+                    throw new \RuntimeException('Payment link tidak memiliki invoice.');
+                }
+                /** @var Invoice $invoice */
+                $invoice = $link->invoice;
 
                 $reportedAmount = $payload['gross_amount'] ?? $payload['amount'] ?? null;
                 if (is_array($reportedAmount)) {
@@ -208,26 +213,14 @@ class PaymentGatewayService
                     throw new \RuntimeException('Nominal callback tidak sesuai dengan payment link.');
                 }
 
-                $paidAmount = round((float) ($invoice->paid_amount ?? 0) + (float) $link->amount, 2);
-
-                $payment = PaymentRecord::create([
-                    'invoice_id' => $link->invoice_id,
-                    'payment_method_id' => $link->invoice->payment_method_id,
+                app(PaymentService::class)->process($invoice, [
                     'amount' => round((float) $link->amount, 2),
-                    'payment_date' => now(),
+                    'payment_method_id' => $invoice->payment_method_id,
+                    'payment_date' => now()->toDateTimeString(),
                     'reference_number' => $link->token,
                     'notes' => 'Auto-paid via '.($link->gateway?->name ?? 'PG'),
                     'idempotency_key' => 'gateway:'.$link->token,
                 ]);
-
-                // Accumulate (never overwrite) and only mark settled when fully paid.
-                $invoice->update([
-                    'paid_amount' => $paidAmount,
-                    'amount_received' => $paidAmount,
-                    'payment_status' => $paidAmount >= (float) $invoice->grand_total - 0.009 ? 2 : 1,
-                ]);
-
-                app(AutoJournalService::class)->journalInvoicePayment($payment);
             }
 
             return $link->fresh();

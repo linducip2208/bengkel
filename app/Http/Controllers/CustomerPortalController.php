@@ -116,9 +116,11 @@ class CustomerPortalController extends Controller
 
         $path = $request->file('payment_proof')->store('payment-proofs/'.$invoice->id, 'local');
 
+        // Uploading a proof is only an evidence submission. It must NOT mutate
+        // payment_status / paid_amount — those are owned by PaymentService and
+        // only change after admin verifies and records the actual payment.
         $invoice->update([
             'payment_proof' => $path,
-            'payment_status' => $invoice->payment_status > 0 ? $invoice->payment_status : 1,
         ]);
 
         ActivityLog::record('payment.proof_upload', $invoice, "Customer upload bukti bayar invoice {$invoice->invoice_number}");
