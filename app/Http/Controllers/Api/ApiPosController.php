@@ -16,7 +16,6 @@ use App\Services\StockService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class ApiPosController extends Controller
 {
@@ -24,9 +23,17 @@ class ApiPosController extends Controller
     {
         $validated = $request->validate([
             'opening_balance' => 'required|numeric|min:0',
-            'branch_id' => 'nullable|exists:branches,id',
+            'branch_id' => 'required|exists:branches,id',
             'notes' => 'nullable|string',
         ]);
+
+        $branchId = isset($validated['branch_id']) ? (int) $validated['branch_id'] : null;
+        $user = auth()->user();
+        $hasExplicitAccess = $user->hasUnrestrictedBranchAccess()
+            || $user->branches()->whereKey($branchId)->exists();
+        if (! $hasExplicitAccess) {
+            return response()->json(['message' => 'Cabang tidak dapat diakses.'], 403);
+        }
 
         $existing = PosSession::open()->forUser(auth()->id())->exists();
         if ($existing) {
@@ -90,8 +97,7 @@ class ApiPosController extends Controller
             'customer_id' => 'nullable|exists:customers,id',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.quantity' => 'required|numeric|min:0.01',
             'items.*.discount' => 'nullable|numeric|min:0',
             'items.*.discount_type' => 'nullable|in:fixed,percent',
             'discount' => 'nullable|numeric|min:0',
@@ -115,6 +121,20 @@ class ApiPosController extends Controller
         if ($session->status !== 'open' || $session->user_id !== auth()->id()) {
             return response()->json(['message' => 'Sesi tidak valid.'], 422);
         }
+        $user = auth()->user();
+        if ($session->branch_id === null || (! $user->hasUnrestrictedBranchAccess() && ! $user->branches()->whereKey($session->branch_id)->exists())) {
+            return response()->json(['message' => 'Cabang sesi tidak dapat diakses.'], 403);
+        }
+
+        foreach ($validated['items'] as &$item) {
+            $product = Product::withoutGlobalScopes()
+                ->whereKey($item['product_id'])
+                ->where('branch_id', $session->branch_id)
+                ->firstOrFail();
+            $groupId = Customer::with('customerGroup')->find($validated['customer_id'] ?? null)?->customerGroup?->selling_price_group_id;
+            $item['unit_price'] = round($product->getPriceFor($groupId), 2);
+        }
+        unset($item);
 
         usort($validated['items'], fn ($a, $b) => $a['product_id'] <=> $b['product_id']);
 
@@ -167,7 +187,10 @@ class ApiPosController extends Controller
                 ]);
 
                 foreach ($validated['items'] as $item) {
-                    $product = Product::withoutGlobalScopes()->findOrFail($item['product_id']);
+                    $product = Product::withoutGlobalScopes()
+                        ->whereKey($item['product_id'])
+                        ->where('branch_id', $session->branch_id)
+                        ->firstOrFail();
 
                     InvoiceItem::create([
                         'invoice_id' => $invoice->id,
@@ -182,7 +205,7 @@ class ApiPosController extends Controller
 
                     StockService::decrement(
                         $product->id,
-                        (int) $item['quantity'],
+                        (float) $item['quantity'],
                         'pos',
                         'POS sale '.$invoiceNumber,
                         Invoice::class,
@@ -212,11 +235,7 @@ class ApiPosController extends Controller
 
                 app(AutoJournalService::class)->journalInvoiceIssued($invoice);
 
-                try {
-                    app(AutoJournalService::class)->journalInvoicePayment($payment, min($grandTotal, (float) $payment->amount));
-                } catch (\Throwable $e) {
-                    Log::error("API POS auto-journal payment: {$e->getMessage()}");
-                }
+                app(AutoJournalService::class)->journalInvoicePayment($payment, min($grandTotal, (float) $payment->amount));
 
                 return $invoice;
             });

@@ -24,7 +24,7 @@ class ServiceRequest extends FormRequest
             'products' => 'nullable|array',
             'products.*.product_id' => 'required_with:products|exists:products,id',
             'products.*.product_name' => 'required|string|max:255',
-            'products.*.quantity' => 'required|integer|min:1',
+            'products.*.quantity' => 'required|numeric|min:0.01',
             'products.*.price' => 'required|numeric|min:0',
         ];
     }

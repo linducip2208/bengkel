@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
     'purchase_order_id', 'product_id', 'description',
-    'quantity', 'unit_price', 'total_price',
+    'quantity', 'received_quantity', 'unit_price', 'total_price',
 ])]
 class PurchaseOrderItem extends Model
 {
@@ -19,6 +19,7 @@ class PurchaseOrderItem extends Model
     {
         return [
             'quantity' => 'decimal:2',
+            'received_quantity' => 'decimal:2',
             'unit_price' => 'decimal:2',
             'total_price' => 'decimal:2',
         ];

@@ -54,8 +54,8 @@ class ApiProductController extends Controller
             'price' => 'required|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'warranty' => 'nullable|string|max:100',
-            'current_stock' => 'nullable|integer|min:0',
-            'minimum_stock' => 'nullable|integer|min:0',
+            'current_stock' => 'nullable|numeric|min:0',
+            'minimum_stock' => 'nullable|numeric|min:0',
             'rack_location' => 'nullable|string|max:50',
             'description' => 'nullable|string',
         ]);
@@ -78,7 +78,7 @@ class ApiProductController extends Controller
             'price' => 'sometimes|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'warranty' => 'nullable|string|max:100',
-            'minimum_stock' => 'nullable|integer|min:0',
+            'minimum_stock' => 'nullable|numeric|min:0',
             'rack_location' => 'nullable|string|max:50',
             'description' => 'nullable|string',
         ]);
@@ -98,7 +98,7 @@ class ApiProductController extends Controller
     public function stockAdjust(Request $request, Product $product): JsonResponse
     {
         $validated = $request->validate([
-            'quantity' => 'required|integer|min:0',
+            'quantity' => 'required|numeric|min:0',
             'type' => 'required|in:add,subtract,set',
             'notes' => 'nullable|string',
         ]);
@@ -108,13 +108,13 @@ class ApiProductController extends Controller
             // stale property mutation with no transaction or sufficiency check.
             match ($validated['type']) {
                 'add' => StockService::increment(
-                    $product->id, (int) $validated['quantity'], 'adjustment_add', $validated['notes'] ?? null,
+                    $product->id, (float) $validated['quantity'], 'adjustment_add', $validated['notes'] ?? null,
                 ),
                 'subtract' => StockService::decrement(
-                    $product->id, (int) $validated['quantity'], 'adjustment_reduce', $validated['notes'] ?? null,
+                    $product->id, (float) $validated['quantity'], 'adjustment_reduce', $validated['notes'] ?? null,
                 ),
                 'set' => StockService::set(
-                    $product->id, (int) $validated['quantity'], 'opname', $validated['notes'] ?? null,
+                    $product->id, (float) $validated['quantity'], 'opname', $validated['notes'] ?? null,
                 ),
             };
         } catch (\RuntimeException $e) {
@@ -126,7 +126,7 @@ class ApiProductController extends Controller
 
         return response()->json([
             'product_id' => $product->id,
-            'quantity_after' => (int) ($stock?->quantity ?? 0),
+            'quantity_after' => (float) ($stock?->quantity ?? 0),
             'notes' => $validated['notes'] ?? null,
         ]);
     }

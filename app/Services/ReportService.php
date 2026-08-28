@@ -291,13 +291,13 @@ class ReportService
 
     public function arAgingReport(): array
     {
-        $now = Carbon::now();
+        $today = Carbon::today();
         $invoices = Invoice::where('payment_status', '!=', 2)
             ->with('customer')
             ->get()
-            ->map(function ($inv) use ($now) {
-                $daysDue = $now->diffInDays($inv->due_date ?? $inv->invoice_date, false);
-                $inv->days_overdue = max(0, $daysDue);
+            ->map(function ($inv) use ($today) {
+                $dueDate = Carbon::parse($inv->due_date ?? $inv->invoice_date)->startOfDay();
+                $inv->days_overdue = $dueDate->lt($today) ? (int) $dueDate->diffInDays($today) : 0;
                 $inv->remaining = max($inv->grand_total - ($inv->paid_amount ?? 0), 0);
                 $inv->age_group = match (true) {
                     $inv->days_overdue <= 0 => 'current',

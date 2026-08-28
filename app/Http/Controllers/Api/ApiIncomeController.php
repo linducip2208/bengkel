@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\IncomeResource;
 use App\Models\Income;
+use App\Services\IncomeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -34,7 +35,7 @@ class ApiIncomeController extends Controller
         return response()->json(new IncomeResource($income));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, IncomeService $incomeService): JsonResponse
     {
         $validated = $request->validate([
             'amount' => 'required|numeric|min:1',
@@ -45,19 +46,12 @@ class ApiIncomeController extends Controller
             'customer_id' => 'required|exists:customers,id',
         ]);
 
-        $income = Income::create([
-            'amount' => $validated['amount'],
-            'income_date' => $validated['income_date'],
-            'label' => $validated['label'],
-            'description' => $validated['description'] ?? null,
-            'payment_method_id' => $validated['payment_method_id'],
-            'customer_id' => $validated['customer_id'],
-        ]);
+        $income = $incomeService->create($validated);
 
         return response()->json(new IncomeResource($income), 201);
     }
 
-    public function update(Request $request, Income $income): JsonResponse
+    public function update(Request $request, Income $income, IncomeService $incomeService): JsonResponse
     {
         $validated = $request->validate([
             'amount' => 'sometimes|numeric|min:1',
@@ -66,7 +60,7 @@ class ApiIncomeController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $income->update($validated);
+        $incomeService->update($income, $validated);
 
         return response()->json(new IncomeResource($income));
     }

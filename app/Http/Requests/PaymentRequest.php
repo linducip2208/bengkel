@@ -14,6 +14,7 @@ class PaymentRequest extends FormRequest
             'payment_date' => ['required', 'date'],
             'reference_number' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
+            'idempotency_key' => ['nullable', 'string', 'max:64'],
         ];
     }
 }

@@ -36,9 +36,10 @@ class InvoiceService extends BaseService
             $data['total_amount'] = round($totalAmount, 2);
             $data['grand_total'] = round($totalAmount + ($data['tax_amount'] ?? 0) - ($data['discount'] ?? 0), 2);
 
-            // Set dp_status based on dp_amount
-            $dpAmount = (float) ($data['dp_amount'] ?? 0);
-            $data['dp_status'] = $dpAmount > 0 ? 'dp_paid' : 'none';
+            $data['dp_status'] = 'none';
+            $data['payment_status'] = 0;
+            $data['paid_amount'] = 0;
+            $data['amount_received'] = 0;
 
             $invoice = Invoice::create($data);
 
@@ -78,7 +79,7 @@ class InvoiceService extends BaseService
     public function update(Invoice $invoice, array $data): Invoice
     {
         return DB::transaction(function () use ($invoice, $data) {
-            abort_if((float) $invoice->paid_amount > 0 && $invoice->payment_status >= 2, 403, 'Invoice lunas tidak bisa diubah.');
+            abort_if((float) $invoice->paid_amount > 0 || $invoice->paymentRecords()->exists(), 403, 'Invoice yang sudah memiliki pembayaran tidak dapat mengubah data finansial.');
 
             $items = $data['items'] ?? [];
             unset($data['items']);
@@ -117,9 +118,8 @@ class InvoiceService extends BaseService
             $data['total_amount'] = round($totalAmount, 2);
             $data['grand_total'] = round($totalAmount + ($data['tax_amount'] ?? 0) - ($data['discount'] ?? 0), 2);
 
-            // Update dp_status if dp_amount changed
-            $dpAmount = (float) ($data['dp_amount'] ?? $invoice->dp_amount ?? 0);
-            $data['dp_status'] = $dpAmount > 0 ? 'dp_paid' : 'none';
+            $data['dp_status'] = 'none';
+            unset($data['payment_status'], $data['paid_amount'], $data['amount_received']);
 
             ksort($deltas); // deterministic lock order
 

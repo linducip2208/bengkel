@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\PurchaseHistoryRecord;
 use App\Models\Supplier;
@@ -18,7 +19,7 @@ class PurchaseReturnController extends Controller
     {
         $purchases = Purchase::query()
             ->with(['supplier', 'items'])
-            ->where('status', 'received')
+            ->whereIn('status', ['received', 'partially_returned'])
             ->when($request->filled('search'), function ($q) use ($request) {
                 $q->where('purchase_no', 'like', '%'.$request->search.'%');
             })
@@ -37,7 +38,7 @@ class PurchaseReturnController extends Controller
 
     public function create(Purchase $purchase)
     {
-        if ($purchase->status !== 'received') {
+        if (! in_array($purchase->status, ['received', 'partially_returned'], true)) {
             return redirect()->route('purchases.return.index')
                 ->with('error', 'Hanya purchase order dengan status "Diterima" yang dapat diretur.');
         }
@@ -49,7 +50,7 @@ class PurchaseReturnController extends Controller
 
     public function store(Request $request, Purchase $purchase)
     {
-        if ($purchase->status !== 'received') {
+        if (! in_array($purchase->status, ['received', 'partially_returned'], true)) {
             return redirect()->route('purchases.return.index')
                 ->with('error', 'Hanya purchase order dengan status "Diterima" yang dapat diretur.');
         }
@@ -57,7 +58,7 @@ class PurchaseReturnController extends Controller
         $validated = $request->validate([
             'return_items' => ['required', 'array'],
             'return_items.*.product_id' => ['required', 'exists:products,id'],
-            'return_items.*.quantity' => ['required', 'integer', 'min:1'],
+            'return_items.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'return_reason' => ['required', 'string', 'max:500'],
         ]);
 
@@ -68,7 +69,7 @@ class PurchaseReturnController extends Controller
             $returnedAny = DB::transaction(function () use ($purchase, $validated) {
                 // Lock + re-check status so a concurrent second submit aborts.
                 $locked = Purchase::query()->whereKey($purchase->id)->lockForUpdate()->first();
-                if ($locked->status !== 'received') {
+                if (! in_array($locked->status, ['received', 'partially_returned'], true)) {
                     throw new \RuntimeException('Purchase order ini sudah tidak dapat diretur.');
                 }
 
@@ -77,17 +78,24 @@ class PurchaseReturnController extends Controller
 
                 foreach ($validated['return_items'] as $returnItem) {
                     $productId = (int) $returnItem['product_id'];
-                    $returnQty = (int) $returnItem['quantity'];
+                    $returnQty = round((float) $returnItem['quantity'], 2);
 
-                    $purchaseItem = $locked->items()->where('product_id', $productId)->first();
-                    if (! $purchaseItem) {
+                    $purchaseItems = $locked->items()->where('product_id', $productId);
+                    $receivedQuantity = round((float) (clone $purchaseItems)->sum('quantity'), 2);
+                    $unitPrice = (clone $purchaseItems)->value('unit_price');
+                    $product = Product::withoutGlobalScopes()->find($productId);
+                    if ($receivedQuantity <= 0 || $unitPrice === null || ! $product) {
                         continue;
                     }
 
-                    $maxReturn = (int) $purchaseItem->quantity;
-                    $returnQty = min($returnQty, $maxReturn);
-                    if ($returnQty <= 0) {
-                        continue;
+                    $alreadyReturned = abs((float) $product->stockHistories()
+                        ->where('type', 'return')
+                        ->where('reference_type', Purchase::class)
+                        ->where('reference_id', $locked->id)
+                        ->sum('quantity_change'));
+                    $returnable = round($receivedQuantity - $alreadyReturned, 2);
+                    if ($returnQty > $returnable) {
+                        throw new \RuntimeException("Jumlah retur {$product->name} melebihi sisa yang dapat diretur ({$returnable}).");
                     }
 
                     StockService::decrement(
@@ -99,22 +107,32 @@ class PurchaseReturnController extends Controller
                         $locked->id,
                     );
 
-                    $returnedValue += (float) $purchaseItem->unit_price * $returnQty;
+                    $returnedValue += (float) $unitPrice * $returnQty;
                     $returnedAny = true;
                 }
 
                 if ($returnedAny) {
-                    $locked->update(['status' => 'returned']);
+                    $hasRemaining = $locked->items->groupBy('product_id')->contains(function ($items, $productId) use ($locked) {
+                        $returned = abs((float) $items->first()->product->stockHistories()
+                            ->where('type', 'return')
+                            ->where('reference_type', Purchase::class)
+                            ->where('reference_id', $locked->id)
+                            ->sum('quantity_change'));
 
-                    PurchaseHistoryRecord::create([
+                        return round((float) $items->sum('quantity') - $returned, 2) > 0;
+                    });
+                    $status = $hasRemaining ? 'partially_returned' : 'returned';
+                    $locked->update(['status' => $status]);
+
+                    $returnEvent = PurchaseHistoryRecord::create([
                         'purchase_id' => $locked->id,
-                        'status' => 'returned',
+                        'status' => $status,
                         'notes' => 'Retur diproses: '.$validated['return_reason'],
                         'changed_at' => now(),
                     ]);
 
                     // Reverse the inventory/AP posting of the original receive.
-                    app(AutoJournalService::class)->journalPurchaseReturn($locked, round($returnedValue, 2));
+                    app(AutoJournalService::class)->journalPurchaseReturn($locked, round($returnedValue, 2), $returnEvent);
                 }
 
                 return $returnedAny;

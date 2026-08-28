@@ -144,7 +144,7 @@ class SaleController extends Controller
         usort($items, fn ($a, $b) => $a['product_id'] <=> $b['product_id']);
 
         foreach ($items as $item) {
-            $quantity = (int) $item['quantity'];
+            $quantity = round((float) $item['quantity'], 2);
             $unitPrice = round((float) $item['unit_price'], 2);
 
             SaleItem::create([

@@ -39,12 +39,15 @@ class PurchaseService
     {
         return DB::transaction(function () use ($data) {
             $totalAmount = 0;
+            $status = in_array($data['status'] ?? 'ordered', ['draft', 'ordered'], true)
+                ? ($data['status'] ?? 'ordered')
+                : 'draft';
 
             $purchase = Purchase::create([
                 'purchase_no' => $this->generatePurchaseNo(),
                 'supplier_id' => $data['supplier_id'],
                 'purchase_date' => $data['purchase_date'],
-                'status' => $data['status'] ?? 'ordered',
+                'status' => $status,
                 'notes' => $data['notes'] ?? null,
                 'total_amount' => 0,
                 'created_by' => auth()->id(),
@@ -67,7 +70,7 @@ class PurchaseService
 
             PurchaseHistoryRecord::create([
                 'purchase_id' => $purchase->id,
-                'status' => $data['status'] ?? 'ordered',
+                'status' => $status,
                 'notes' => 'Purchase order dibuat',
                 'changed_at' => now(),
             ]);
@@ -131,11 +134,7 @@ class PurchaseService
 
             $locked->update(['status' => 'received']);
 
-            try {
-                app(AutoJournalService::class)->journalPurchase($locked);
-            } catch (\Throwable $e) {
-                \Log::warning("AutoJournal purchase: {$e->getMessage()}");
-            }
+            app(AutoJournalService::class)->journalPurchase($locked);
 
             PurchaseHistoryRecord::create([
                 'purchase_id' => $locked->id,

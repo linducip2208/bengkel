@@ -140,13 +140,13 @@ class ProductController extends Controller
 
         $request->validate([
             'adjustment_type' => ['required', 'in:add,reduce,set'],
-            'quantity' => ['required', 'integer', 'min:1'],
+            'quantity' => ['required', 'numeric', 'min:0.01'],
             'reason' => ['required', 'string', 'max:500'],
-            'minimum_stock' => ['nullable', 'integer', 'min:0'],
+            'minimum_stock' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $type = $request->adjustment_type;
-        $quantity = (int) $request->quantity;
+        $quantity = round((float) $request->quantity, 2);
         $reason = $request->reason;
 
         if ($type === 'add') {
@@ -158,7 +158,7 @@ class ProductController extends Controller
         }
 
         if ($request->filled('minimum_stock') && $product->stockRecord) {
-            $product->stockRecord->update(['minimum_stock' => (int) $request->minimum_stock]);
+            $product->stockRecord->update(['minimum_stock' => round((float) $request->minimum_stock, 2)]);
         }
 
         return redirect()->route('products.show', $product)
@@ -176,16 +176,17 @@ class ProductController extends Controller
         $request->validate([
             'products' => ['required', 'array'],
             'products.*.id' => ['required', 'exists:products,id'],
-            'products.*.physical_stock' => ['required', 'integer', 'min:0'],
+            'products.*.physical_stock' => ['required', 'numeric', 'min:0'],
         ]);
 
         $updated = 0;
         foreach ($request->products as $item) {
             $product = Product::find($item['id']);
-            if ($product && (int) $item['physical_stock'] !== $product->current_stock) {
+            $physicalStock = round((float) $item['physical_stock'], 2);
+            if ($product && $physicalStock !== round((float) $product->current_stock, 2)) {
                 $this->productService->setStock(
                     $product,
-                    (int) $item['physical_stock'],
+                    $physicalStock,
                     'Hasil stock opname'
                 );
                 $updated++;

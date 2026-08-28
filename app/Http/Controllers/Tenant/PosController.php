@@ -244,8 +244,7 @@ class PosController extends Controller
             'customer_id' => 'nullable|exists:customers,id',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.quantity' => 'required|numeric|min:0.01',
             'items.*.discount' => 'nullable|numeric|min:0',
             'items.*.discount_type' => 'nullable|in:fixed,percent',
             'items.*.serial_number' => 'nullable|string|max:255',
@@ -275,6 +274,16 @@ class PosController extends Controller
         if ($session->status !== 'open' || $session->user_id !== auth()->id()) {
             return back()->with('error', 'Sesi tidak valid.');
         }
+
+        foreach ($validated['items'] as &$item) {
+            $product = Product::withoutGlobalScopes()
+                ->whereKey($item['product_id'])
+                ->where('branch_id', $session->branch_id)
+                ->firstOrFail();
+            $groupId = Customer::with('customerGroup')->find($validated['customer_id'] ?? null)?->customerGroup?->selling_price_group_id;
+            $item['unit_price'] = round($product->getPriceFor($groupId), 2);
+        }
+        unset($item);
 
         // Sort items by product_id for a consistent lock order (deadlock prevention).
         usort($validated['items'], fn ($a, $b) => $a['product_id'] <=> $b['product_id']);
@@ -349,7 +358,10 @@ class PosController extends Controller
                 ]);
 
                 foreach ($validated['items'] as $item) {
-                    $product = Product::withoutGlobalScopes()->findOrFail($item['product_id']);
+                    $product = Product::withoutGlobalScopes()
+                        ->whereKey($item['product_id'])
+                        ->where('branch_id', $session->branch_id)
+                        ->firstOrFail();
 
                     InvoiceItem::create([
                         'invoice_id' => $invoice->id,
@@ -367,7 +379,7 @@ class PosController extends Controller
 
                     StockService::decrement(
                         $product->id,
-                        (int) $item['quantity'],
+                        (float) $item['quantity'],
                         'pos',
                         'POS sale '.$invoiceNumber,
                         Invoice::class,
@@ -473,7 +485,7 @@ class PosController extends Controller
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.name' => 'nullable|string|max:255',
-            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.quantity' => 'required|numeric|min:0.01',
             'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.discount' => 'nullable|numeric|min:0',
             'items.*.discount_type' => 'nullable|in:fixed,percent',

@@ -46,13 +46,13 @@ class StockAdjustmentController extends Controller
             'product_id' => ['required', 'exists:products,id'],
             'warehouse_id' => ['nullable', 'exists:warehouses,id'],
             'branch_id' => ['required', 'exists:branches,id'],
-            'new_quantity' => ['required', 'integer', 'min:0'],
+            'new_quantity' => ['required', 'numeric', 'min:0'],
             'reason' => ['required', 'string', 'max:1000'],
         ]);
 
         $product = Product::with('stockRecord')->findOrFail($request->product_id);
         $previousQuantity = $product->current_stock;
-        $newQuantity = (int) $request->new_quantity;
+        $newQuantity = round((float) $request->new_quantity, 2);
         $quantityChange = $newQuantity - $previousQuantity;
 
         StockAdjustment::create([
@@ -93,8 +93,8 @@ class StockAdjustmentController extends Controller
             $product = Product::with(['stockRecord' => fn ($q) => $q->withoutGlobalScopes()])
                 ->withoutGlobalScopes()
                 ->findOrFail($locked->product_id);
-            $currentStock = (int) ($product->stockRecord->quantity ?? 0);
-            $snapshotStock = (int) $locked->previous_quantity;
+            $currentStock = round((float) ($product->stockRecord->quantity ?? 0), 2);
+            $snapshotStock = round((float) $locked->previous_quantity, 2);
 
             if ($currentStock !== $snapshotStock) {
                 throw new \RuntimeException(
@@ -110,7 +110,7 @@ class StockAdjustmentController extends Controller
 
             StockService::set(
                 $product->id,
-                (int) $locked->new_quantity,
+                (float) $locked->new_quantity,
                 'adjustment',
                 'Adjustment approved: '.$locked->reason,
                 StockAdjustment::class,

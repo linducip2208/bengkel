@@ -375,7 +375,10 @@ Route::middleware(['auth'])->group(function () {
     Route::redirect('/sales-orders', '/pos/terminal');
 
     // --- Purchase Orders custom routes (before resource) ---
-    Route::post('/purchase-orders/{purchaseOrder}/mark-received', [PurchaseOrderController::class, 'markReceived'])->name('purchase-orders.mark-received');
+    Route::post('/purchase-orders/{purchaseOrder}/mark-received', [PurchaseOrderController::class, 'markReceived'])->name('purchase-orders.mark-received')->middleware('role:super_admin|admin|manager|inventory');
+    Route::post('/purchase-orders/{purchaseOrder}/{action}', [PurchaseOrderController::class, 'transition'])
+        ->whereIn('action', ['submit', 'approve', 'close'])->name('purchase-orders.transition')
+        ->middleware('role:super_admin|admin|manager|inventory');
 
     // --- Purchase Requisitions custom routes (before resource) ---
     Route::post('/purchase-requisitions/{purchaseRequisition}/submit', [PurchaseRequisitionController::class, 'submit'])->name('purchase-requisitions.submit');

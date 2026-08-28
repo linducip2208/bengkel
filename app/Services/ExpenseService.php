@@ -3,20 +3,19 @@
 namespace App\Services;
 
 use App\Models\Expense;
+use Illuminate\Support\Facades\DB;
 
 class ExpenseService extends BaseService
 {
     public function create(array $data): Expense
     {
-        $data['created_by'] = auth()->id() ?? 1;
-        $expense = Expense::create($data);
-        try {
+        return DB::transaction(function () use ($data) {
+            $data['created_by'] = auth()->id() ?? 1;
+            $expense = Expense::create($data);
             app(AutoJournalService::class)->journalExpense($expense);
-        } catch (\Throwable $e) {
-            \Log::warning("AutoJournal expense: {$e->getMessage()}");
-        }
 
-        return $expense;
+            return $expense;
+        });
     }
 
     public function update(Expense $expense, array $data): Expense

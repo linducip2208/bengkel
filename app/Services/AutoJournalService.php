@@ -221,18 +221,18 @@ class AutoJournalService
     }
 
     /** Reverse inventory/AP of a purchase that was returned to the supplier. */
-    public function journalPurchaseReturn(Purchase $purchase, float $amount): void
+    public function journalPurchaseReturn(Purchase $purchase, float $amount, ?object $returnEvent = null): void
     {
-        if ($this->entryExists($purchase, 'purchase_return') || $amount <= 0) {
+        if ($amount <= 0) {
             return;
         }
 
         $this->createEntry(
-            'PURR-'.$purchase->id,
+            'PURR-'.$purchase->id.'-'.($returnEvent?->id ?? 1),
             'purchase_return',
             now(),
             'Retur pembelian '.($purchase->purchase_no ?? '#'.$purchase->id),
-            $purchase,
+            $returnEvent ?? $purchase,
             [
                 [$this->getDefaultAccount('liability', 'Accounts Payable'), $amount, 0.0, 'Pengurangan utang dagang'],
                 [$this->getDefaultAccount('asset', 'Inventory'), 0.0, $amount, 'Persediaan retur ke supplier'],

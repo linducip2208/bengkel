@@ -17,12 +17,12 @@ class PartReservationController extends Controller
     {
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
+            'quantity' => 'required|numeric|min:0.01',
             'notes' => 'nullable|string|max:255',
         ]);
 
         $product = Product::findOrFail($validated['product_id']);
-        $quantity = (int) $validated['quantity'];
+        $quantity = round((float) $validated['quantity'], 2);
 
         try {
             DB::transaction(function () use ($product, $quantity, $service, $validated) {
@@ -33,9 +33,9 @@ class PartReservationController extends Controller
                     ->where('product_id', $product->id)
                     ->lockForUpdate()
                     ->first();
-                $onHand = (int) ($record->quantity ?? 0);
+                $onHand = (float) ($record->quantity ?? 0);
 
-                $reserved = (int) PartReservation::where('product_id', $product->id)
+                $reserved = (float) PartReservation::where('product_id', $product->id)
                     ->where('status', 'reserved')
                     ->lockForUpdate()
                     ->sum('quantity');
@@ -95,7 +95,7 @@ class PartReservationController extends Controller
 
             app(ProductService::class)->useInService(
                 $locked->product()->withoutGlobalScopes()->first(),
-                (int) $locked->quantity,
+                (float) $locked->quantity,
                 $locked->service_id
             );
 

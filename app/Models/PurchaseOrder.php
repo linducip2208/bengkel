@@ -53,7 +53,11 @@ class PurchaseOrder extends Model
         return match ($this->status) {
             'draft' => '<span class="badge bg-secondary">Draft</span>',
             'sent' => '<span class="badge bg-primary">Terkirim</span>',
+            'submitted' => '<span class="badge bg-info">Diajukan</span>',
+            'approved' => '<span class="badge bg-primary">Disetujui</span>',
+            'partially_received' => '<span class="badge bg-warning text-dark">Diterima Sebagian</span>',
             'received' => '<span class="badge bg-success">Diterima</span>',
+            'closed' => '<span class="badge bg-dark">Ditutup</span>',
             'cancelled' => '<span class="badge bg-danger">Dibatalkan</span>',
             default => '<span class="badge bg-secondary">'.$this->status.'</span>',
         };

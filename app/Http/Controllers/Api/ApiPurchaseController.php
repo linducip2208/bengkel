@@ -5,13 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PurchaseResource;
 use App\Models\Purchase;
-use App\Models\PurchaseItem;
-use App\Services\AutoJournalService;
-use App\Services\DocumentNumberService;
-use App\Services\StockService;
+use App\Models\PurchaseOrder;
+use App\Services\PurchaseOrderReceiptService;
+use App\Services\PurchaseOrderWorkflowService;
+use App\Services\PurchaseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ApiPurchaseController extends Controller
 {
@@ -47,35 +46,11 @@ class ApiPurchaseController extends Controller
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|numeric|min:1',
+            'items.*.quantity' => 'required|numeric|min:0.01',
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
 
-        $purchase = DB::transaction(function () use ($validated) {
-            $totalAmount = round(collect($validated['items'])->sum(fn ($i) => (float) $i['quantity'] * (float) $i['unit_price']), 2);
-
-            $purchase = Purchase::create([
-                'purchase_no' => DocumentNumberService::generate(DocumentNumberService::PURCHASES, 'PO', 'Ymd', 4),
-                'supplier_id' => $validated['supplier_id'],
-                'purchase_date' => $validated['purchase_date'],
-                'total_amount' => $totalAmount,
-                'notes' => $validated['notes'] ?? null,
-                'status' => 'ordered',
-                'created_by' => auth()->id(),
-            ]);
-
-            foreach ($validated['items'] as $itemData) {
-                PurchaseItem::create([
-                    'purchase_id' => $purchase->id,
-                    'product_id' => $itemData['product_id'],
-                    'quantity' => $itemData['quantity'],
-                    'unit_price' => round((float) $itemData['unit_price'], 2),
-                    'total_price' => round((float) $itemData['quantity'] * (float) $itemData['unit_price'], 2),
-                ]);
-            }
-
-            return $purchase;
-        });
+        $purchase = app(PurchaseService::class)->create($validated);
 
         return response()->json(new PurchaseResource($purchase->load('items')), 201);
     }
@@ -85,8 +60,11 @@ class ApiPurchaseController extends Controller
         $validated = $request->validate([
             'purchase_date' => 'sometimes|date',
             'notes' => 'nullable|string',
-            'status' => 'sometimes|in:draft,ordered,received,cancelled',
         ]);
+
+        if ($purchase->status !== 'draft') {
+            return response()->json(['message' => 'Hanya purchase Draft yang dapat diubah.'], 422);
+        }
 
         $purchase->update($validated);
 
@@ -95,6 +73,9 @@ class ApiPurchaseController extends Controller
 
     public function destroy(Purchase $purchase): JsonResponse
     {
+        if ($purchase->status !== 'draft') {
+            return response()->json(['message' => 'Hanya purchase Draft yang dapat dihapus. Gunakan reversal untuk transaksi yang sudah diproses.'], 422);
+        }
         $purchase->delete();
 
         return response()->json(['message' => 'Deleted successfully']);
@@ -103,35 +84,47 @@ class ApiPurchaseController extends Controller
     public function markReceived(Purchase $purchase): JsonResponse
     {
         try {
-            DB::transaction(function () use ($purchase) {
-                // Guard + lock inside the transaction: concurrent double-submit aborts.
-                $locked = Purchase::query()->whereKey($purchase->id)->lockForUpdate()->first();
-                if ($locked->status === 'received') {
-                    throw new \RuntimeException('already_received');
-                }
-
-                foreach ($locked->items as $item) {
-                    StockService::increment(
-                        (int) $item->product_id,
-                        (float) $item->quantity,
-                        'purchase',
-                        "PO #{$locked->purchase_no}",
-                        Purchase::class,
-                        $locked->id,
-                    );
-                }
-
-                $locked->update(['status' => 'received']);
-
-                app(AutoJournalService::class)->journalPurchase($locked);
-            });
+            $purchase = app(PurchaseService::class)->markReceived($purchase);
         } catch (\RuntimeException $e) {
-            if ($e->getMessage() === 'already_received') {
-                return response()->json(['message' => 'Purchase already received.'], 422);
-            }
-            throw $e;
+            return response()->json(['message' => $e->getMessage()], 422);
         }
 
         return response()->json(new PurchaseResource($purchase->fresh('items')));
+    }
+
+    public function receivePurchaseOrder(Request $request, PurchaseOrder $purchaseOrder): JsonResponse
+    {
+        if (! auth()->user()?->hasAnyRole(['super_admin', 'admin', 'manager', 'inventory'])) {
+            return response()->json(['message' => 'Anda tidak berhak menerima purchase order.'], 403);
+        }
+        $validated = $request->validate([
+            'receipt_items' => ['nullable', 'array'],
+            'receipt_items.*.purchase_order_item_id' => ['required', 'integer', 'exists:purchase_order_items,id'],
+            'receipt_items.*.quantity' => ['required', 'numeric', 'min:0.01'],
+        ]);
+        try {
+            $purchase = app(PurchaseOrderReceiptService::class)->receive($purchaseOrder, $validated['receipt_items'] ?? []);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(new PurchaseResource($purchase), 201);
+    }
+
+    public function transitionPurchaseOrder(PurchaseOrder $purchaseOrder, string $action): JsonResponse
+    {
+        $roles = $action === 'submit'
+            ? ['super_admin', 'admin', 'manager', 'inventory']
+            : ['super_admin', 'admin', 'manager'];
+        if (! auth()->user()?->hasAnyRole($roles)) {
+            return response()->json(['message' => 'Anda tidak berhak mengubah status purchase order.'], 403);
+        }
+        try {
+            $updated = app(PurchaseOrderWorkflowService::class)->transition($purchaseOrder, $action);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['id' => $updated->id, 'status' => $updated->status]);
     }
 }

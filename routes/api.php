@@ -61,6 +61,9 @@ Route::prefix('v1')->name('api.')->group(function () {
         Route::match(['put', 'patch'], '/purchases/{purchase}', [ApiPurchaseController::class, 'update'])->name('purchases.update')->middleware('role:super_admin|admin|manager');
         Route::delete('/purchases/{purchase}', [ApiPurchaseController::class, 'destroy'])->name('purchases.destroy')->middleware('role:super_admin|admin');
         Route::post('/purchases/{purchase}/receive', [ApiPurchaseController::class, 'markReceived'])->name('purchases.receive')->middleware('role:super_admin|admin|manager|inventory');
+        Route::post('/purchase-orders/{purchaseOrder}/receive', [ApiPurchaseController::class, 'receivePurchaseOrder'])->name('purchase-orders.receive');
+        Route::post('/purchase-orders/{purchaseOrder}/{action}', [ApiPurchaseController::class, 'transitionPurchaseOrder'])
+            ->whereIn('action', ['submit', 'approve', 'close'])->name('purchase-orders.transition');
 
         Route::apiResource('sales', ApiSaleController::class);
         Route::apiResource('suppliers', ApiSupplierController::class);

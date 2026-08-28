@@ -20,9 +20,9 @@ class StockAdjustment extends Model
     protected function casts(): array
     {
         return [
-            'previous_quantity' => 'integer',
-            'new_quantity' => 'integer',
-            'quantity_change' => 'integer',
+            'previous_quantity' => 'decimal:2',
+            'new_quantity' => 'decimal:2',
+            'quantity_change' => 'decimal:2',
             'approved_at' => 'datetime',
         ];
     }

@@ -8,6 +8,7 @@ use App\Models\Income;
 use App\Models\Invoice;
 use App\Models\PaymentRecord;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\UniqueConstraintViolationException;
 
 class PaymentService extends BaseService
 {
@@ -27,7 +28,7 @@ class PaymentService extends BaseService
         $idempotencyKey = $data['idempotency_key'] ?? null;
 
         if ($idempotencyKey) {
-            $existing = PaymentRecord::where('invoice_id', $invoice->id)
+            $existing = PaymentRecord::withoutBranchScope()->where('invoice_id', $invoice->id)
                 ->where('idempotency_key', $idempotencyKey)
                 ->first();
             if ($existing) {
@@ -57,9 +58,21 @@ class PaymentService extends BaseService
             }
 
             $data['amount'] = $amount;
-            $data['created_by'] = auth()->id() ?? 1;
+            $data['created_by'] = auth()->id() ?? $locked->created_by ?? 1;
+            $data['branch_id'] = $locked->branch_id;
             $data['idempotency_key'] = $idempotencyKey;
-            $payment = $locked->paymentRecords()->create($data);
+            try {
+                $payment = $locked->paymentRecords()->create($data);
+            } catch (UniqueConstraintViolationException $exception) {
+                if (! $idempotencyKey) {
+                    throw $exception;
+                }
+
+                return PaymentRecord::withoutBranchScope()
+                    ->where('invoice_id', $locked->id)
+                    ->where('idempotency_key', $idempotencyKey)
+                    ->firstOrFail();
+            }
 
             $wasAlreadyPaid = $locked->payment_status >= 2;
             $newPaid = round($alreadyPaid + $amount, 2);
@@ -69,19 +82,18 @@ class PaymentService extends BaseService
                 'payment_status' => $newPaid >= $grandTotal - 0.009 ? 2 : 1,
             ]);
 
-            if (! $wasAlreadyPaid && $locked->payment_status === 2) {
-                Income::firstOrCreate(
-                    ['invoice_number' => $locked->invoice_number],
-                    [
-                        'customer_id' => $locked->customer_id,
-                        'payment_method_id' => $data['payment_method_id'],
-                        'amount' => $grandTotal,
-                        'income_date' => now(),
-                        'label' => 'Pembayaran Invoice '.$locked->invoice_number,
-                        'created_by' => auth()->id() ?? 1,
-                    ]
-                );
+            Income::create([
+                'invoice_number' => $locked->invoice_number,
+                'customer_id' => $locked->customer_id,
+                'payment_method_id' => $data['payment_method_id'],
+                'amount' => $amount,
+                'income_date' => $data['payment_date'] ?? now(),
+                'label' => 'Pembayaran Invoice '.$locked->invoice_number,
+                'created_by' => auth()->id() ?? $locked->created_by ?? 1,
+                'branch_id' => $locked->branch_id,
+            ]);
 
+            if (! $wasAlreadyPaid && (int) $locked->payment_status === 2) {
                 LoyaltyController::earnFromInvoice($locked);
             }
 

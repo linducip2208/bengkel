@@ -133,7 +133,7 @@ class ProductService
         return StockService::set($product->id, $newStock, 'opname', $reason);
     }
 
-    public function useInService(Product $product, int $quantity, ?int $serviceId = null): void
+    public function useInService(Product $product, int|float $quantity, ?int $serviceId = null): void
     {
         StockService::decrement(
             $product->id,

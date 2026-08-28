@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\SaleItem;
 use App\Models\SellReturn;
+use App\Models\SellReturnItem;
 use App\Services\AutoJournalService;
 use App\Services\DocumentNumberService;
 use App\Services\StockService;
@@ -55,16 +58,55 @@ class SellReturnController extends Controller
                 $items = $validated['items'];
                 unset($validated['items']);
 
-                $customerId = $validated['customer_id'];
+                $customerId = $validated['customer_id'] ?? null;
 
+                $sourceType = null;
+                $sourceId = null;
                 if (! empty($validated['sale_id'])) {
-                    $customerId = Sale::find($validated['sale_id'])?->customer_id;
+                    $source = Sale::query()->whereKey($validated['sale_id'])->lockForUpdate()->firstOrFail();
+                    $customerId = $source->customer_id;
+                    $sourceType = 'sale';
+                    $sourceId = $source->id;
                 } elseif (! empty($validated['invoice_id'])) {
-                    $customerId = Invoice::find($validated['invoice_id'])?->customer_id;
+                    $source = Invoice::query()->whereKey($validated['invoice_id'])->lockForUpdate()->firstOrFail();
+                    $customerId = $source->customer_id;
+                    $sourceType = 'invoice';
+                    $sourceId = $source->id;
                 }
 
                 if (! $customerId) {
                     throw new \RuntimeException('Customer wajib diisi atau pilih penjualan/invoice terkait.');
+                }
+
+                if (! $sourceType) {
+                    throw new \RuntimeException('Retur wajib terkait penjualan atau invoice asli.');
+                }
+
+                $requested = collect($items)->groupBy('product_id')->map(fn ($rows) => round((float) $rows->sum('quantity'), 2));
+                $items = [];
+                foreach ($requested as $productId => $quantity) {
+                    $originalQuery = $sourceType === 'sale'
+                        ? SaleItem::where('sale_id', $sourceId)->where('product_id', $productId)
+                        : InvoiceItem::where('invoice_id', $sourceId)->where('product_id', $productId);
+                    $soldQuantity = round((float) (clone $originalQuery)->sum('quantity'), 2);
+                    $originalPrice = (clone $originalQuery)->value('unit_price');
+                    if ($soldQuantity <= 0 || $originalPrice === null) {
+                        throw new \RuntimeException("Produk #{$productId} tidak ada pada transaksi asli.");
+                    }
+                    $alreadyReturned = (float) SellReturnItem::query()
+                        ->join('sell_returns', 'sell_returns.id', '=', 'sell_return_items.sell_return_id')
+                        ->where("sell_returns.{$sourceType}_id", $sourceId)
+                        ->where('sell_return_items.product_id', $productId)
+                        ->sum('sell_return_items.quantity');
+                    $returnable = round($soldQuantity - $alreadyReturned, 2);
+                    if ($quantity > $returnable) {
+                        throw new \RuntimeException("Jumlah retur produk #{$productId} melebihi sisa yang dapat diretur ({$returnable}).");
+                    }
+                    $items[] = [
+                        'product_id' => (int) $productId,
+                        'quantity' => $quantity,
+                        'unit_price' => round((float) $originalPrice, 2),
+                    ];
                 }
 
                 $refundAmount = $this->sumTotal($items);
@@ -126,7 +168,7 @@ class SellReturnController extends Controller
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.unit_price' => 'nullable|numeric|min:0',
         ]);
     }
 

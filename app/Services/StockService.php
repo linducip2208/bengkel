@@ -102,7 +102,7 @@ class StockService
             $previous = self::normalize($record->quantity);
             $delta = $newStock - $previous;
 
-            if ($delta === 0) {
+            if (abs($delta) < 0.005) {
                 return 0;
             }
 
@@ -127,7 +127,7 @@ class StockService
         ?string $referenceType = null,
         ?int $referenceId = null,
     ): ?StockHistory {
-        $delta = self::normalize($delta);
+        $delta = self::normalizeSigned($delta);
         if ($delta === 0) {
             return null;
         }
@@ -202,5 +202,10 @@ class StockService
         }
 
         return $value;
+    }
+
+    private static function normalizeSigned(int|float $value): float
+    {
+        return round((float) $value, 2);
     }
 }

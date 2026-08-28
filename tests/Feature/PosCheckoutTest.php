@@ -97,7 +97,8 @@ class PosCheckoutTest extends TestCase
         $this->assertEquals('Oli Mesin 1L', $search->json('0.name'));
         $this->assertEquals(10, $search->json('0.stock'));
 
-        // Checkout 2 pcs @ 50.000 = 100.000
+        // Client mencoba memalsukan harga menjadi Rp1; server wajib memakai
+        // harga produk Rp50.000 sehingga total tetap Rp100.000.
         $response = $this->withSession(['current_branch_id' => $branch->id])
             ->post('/pos/checkout', [
                 'session_id' => $session->id,
@@ -106,7 +107,7 @@ class PosCheckoutTest extends TestCase
                     [
                         'product_id' => $product->id,
                         'quantity' => 2,
-                        'unit_price' => 50000,
+                        'unit_price' => 1,
                         'discount' => 0,
                         'discount_type' => null,
                     ],
@@ -124,6 +125,7 @@ class PosCheckoutTest extends TestCase
         $this->assertNotNull($invoice);
         $this->assertEquals('pos', $invoice->invoice_type);
         $this->assertEquals(100000, (float) $invoice->grand_total);
+        $this->assertEquals(50000, (float) $invoice->items()->firstOrFail()->unit_price);
         $this->assertEquals(2, (int) $invoice->payment_status);
 
         // InvoiceItem created
@@ -206,5 +208,23 @@ class PosCheckoutTest extends TestCase
             'payment_method_id' => $card->id,
             'amount' => 40000,
         ]);
+    }
+
+    public function test_api_pos_cannot_open_session_for_unassigned_branch(): void
+    {
+        $kasir = $this->makeUser('kasir');
+        $allowed = Branch::create(['name' => 'Cabang Diizinkan', 'is_active' => true]);
+        $forbidden = Branch::create(['name' => 'Cabang Terlarang', 'is_active' => true]);
+        $kasir->branches()->attach($allowed->id);
+        $token = $kasir->createToken('pos-branch-test')->plainTextToken;
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/v1/pos/open', [
+                'opening_balance' => 0,
+                'branch_id' => $forbidden->id,
+            ])
+            ->assertForbidden();
+
+        $this->assertSame(0, PosSession::withoutGlobalScopes()->count());
     }
 }

@@ -113,7 +113,7 @@ class ServiceService extends BaseService
                 foreach ($request->products as $productData) {
                     $product = Product::find($productData['id'] ?? $productData['product_id'] ?? null);
                     if ($product && ($productData['quantity'] ?? 0) > 0) {
-                        $productService->useInService($product, (int) $productData['quantity'], $service->id);
+                        $productService->useInService($product, (float) $productData['quantity'], $service->id);
                     }
                 }
             }

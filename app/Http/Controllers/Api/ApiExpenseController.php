@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ExpenseResource;
 use App\Models\Expense;
+use App\Services\ExpenseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -36,7 +37,7 @@ class ApiExpenseController extends Controller
         return response()->json(new ExpenseResource($expense));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, ExpenseService $expenseService): JsonResponse
     {
         $validated = $request->validate([
             'amount' => 'required|numeric|min:1',
@@ -45,17 +46,12 @@ class ApiExpenseController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $expense = Expense::create([
-            'amount' => $validated['amount'],
-            'expense_date' => $validated['expense_date'],
-            'label' => $validated['label'],
-            'description' => $validated['description'] ?? null,
-        ]);
+        $expense = $expenseService->create($validated);
 
         return response()->json(new ExpenseResource($expense), 201);
     }
 
-    public function update(Request $request, Expense $expense): JsonResponse
+    public function update(Request $request, Expense $expense, ExpenseService $expenseService): JsonResponse
     {
         $validated = $request->validate([
             'amount' => 'sometimes|numeric|min:1',
@@ -64,7 +60,7 @@ class ApiExpenseController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $expense->update($validated);
+        $expenseService->update($expense, $validated);
 
         return response()->json(new ExpenseResource($expense));
     }

@@ -5,15 +5,13 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Branch;
-use App\Models\Purchase;
 use App\Models\PurchaseOrder;
 use App\Models\Supplier;
-use App\Services\AutoJournalService;
 use App\Services\DocumentNumberService;
-use App\Services\StockService;
+use App\Services\PurchaseOrderReceiptService;
+use App\Services\PurchaseOrderWorkflowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class PurchaseOrderController extends Controller
@@ -62,6 +60,7 @@ class PurchaseOrderController extends Controller
                 'subtotal' => $subtotal,
                 'grand_total' => $subtotal + $taxAmount,
                 'created_by' => auth()->id(),
+                'status' => 'draft',
             ]));
 
             $this->createItems($purchaseOrder, $items);
@@ -104,6 +103,7 @@ class PurchaseOrderController extends Controller
         }
 
         $validated = $this->validateData($request);
+        unset($validated['status']);
 
         DB::transaction(function () use ($purchaseOrder, $validated) {
             $items = $validated['items'];
@@ -138,69 +138,45 @@ class PurchaseOrderController extends Controller
             ->with('success', 'Purchase order berhasil dihapus.');
     }
 
-    public function markReceived(PurchaseOrder $purchaseOrder)
+    public function markReceived(Request $request, PurchaseOrder $purchaseOrder)
     {
+        abort_unless(auth()->user()?->hasAnyRole(['super_admin', 'admin', 'manager', 'inventory']), 403);
         if ($purchaseOrder->items()->whereNull('product_id')->exists()) {
             return redirect()->route('purchase-orders.show', $purchaseOrder)
                 ->with('error', 'Ada item tanpa produk terkait. Penerimaan hanya bisa dilakukan jika semua item terhubung ke produk.');
         }
 
+        $validated = $request->validate([
+            'receipt_items' => ['nullable', 'array'],
+            'receipt_items.*.purchase_order_item_id' => ['required', 'integer', 'exists:purchase_order_items,id'],
+            'receipt_items.*.quantity' => ['required', 'numeric', 'min:0.01'],
+        ]);
         try {
-            $purchase = DB::transaction(function () use ($purchaseOrder) {
-                // Guard + lock inside the transaction (concurrent double-receive aborts).
-                $locked = PurchaseOrder::query()->whereKey($purchaseOrder->id)->lockForUpdate()->first();
-                if ($locked->status === 'received') {
-                    throw new \RuntimeException('Purchase order sudah diterima.');
-                }
-
-                $purchase = Purchase::create([
-                    'purchase_no' => DocumentNumberService::generate(DocumentNumberService::PURCHASES, 'PO', 'Ymd', 4),
-                    'supplier_id' => $locked->supplier_id,
-                    'purchase_date' => now()->toDateString(),
-                    'status' => 'received',
-                    'total_amount' => $locked->grand_total,
-                    'notes' => 'Diterima dari purchase order #'.$locked->po_number,
-                    'created_by' => auth()->id(),
-                    'branch_id' => $locked->branch_id,
-                ]);
-
-                foreach ($locked->items as $item) {
-                    $purchase->items()->create([
-                        'product_id' => $item->product_id,
-                        'quantity' => (int) round($item->quantity),
-                        'unit_price' => round((float) $item->unit_price, 2),
-                        'total_price' => round((float) $item->total_price, 2),
-                    ]);
-
-                    StockService::increment(
-                        (int) $item->product_id,
-                        (float) $item->quantity,
-                        'purchase',
-                        "Purchase #{$purchase->purchase_no}",
-                        Purchase::class,
-                        $purchase->id,
-                    );
-                }
-
-                $locked->update(['status' => 'received']);
-
-                return $purchase;
-            });
+            $purchase = app(PurchaseOrderReceiptService::class)->receive($purchaseOrder, $validated['receipt_items'] ?? []);
         } catch (\RuntimeException $e) {
             return redirect()->route('purchase-orders.show', $purchaseOrder)
                 ->with('error', $e->getMessage());
-        }
-
-        try {
-            app(AutoJournalService::class)->journalPurchase($purchase);
-        } catch (\Throwable $e) {
-            Log::warning("PO auto-journal: {$e->getMessage()}");
         }
 
         ActivityLog::record('purchase-order.receive', $purchaseOrder, "Purchase order {$purchaseOrder->po_number} diterima menjadi purchase {$purchase->purchase_no}");
 
         return redirect()->route('purchase-orders.show', $purchaseOrder)
             ->with('success', 'Barang diterima. Purchase order diubah menjadi purchase & stok bertambah.');
+    }
+
+    public function transition(PurchaseOrder $purchaseOrder, string $action)
+    {
+        $roles = $action === 'submit'
+            ? ['super_admin', 'admin', 'manager', 'inventory']
+            : ['super_admin', 'admin', 'manager'];
+        abort_unless(auth()->user()?->hasAnyRole($roles), 403);
+        try {
+            $updated = app(PurchaseOrderWorkflowService::class)->transition($purchaseOrder, $action);
+        } catch (\RuntimeException $e) {
+            abort(422, $e->getMessage());
+        }
+
+        return back()->with('success', 'Status purchase order diperbarui menjadi '.$updated->status.'.');
     }
 
     private function validateData(Request $request): array
@@ -212,7 +188,7 @@ class PurchaseOrderController extends Controller
             'branch_id' => 'nullable|exists:branches,id',
             'order_date' => 'required|date',
             'expected_date' => 'nullable|date',
-            'status' => ['required', Rule::in(['draft', 'sent', 'received', 'cancelled'])],
+            'status' => ['nullable', Rule::in(['draft', 'cancelled'])],
             'tax_amount' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
