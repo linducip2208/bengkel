@@ -52,17 +52,17 @@ class ApiInvoiceController extends Controller
         $validated = $request->validate([
             'service_id' => ['required', 'exists:services,id'],
             'invoice_date' => 'required|date',
-            'payment_status' => 'nullable|integer|in:0,1,2',
             'discount' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
         ]);
 
-        // Idempotent: reuse the service's existing invoice instead of creating
-        // a broken one (previously missing invoice_number/customer/totals).
+        // payment_status is ALWAYS system-determined. A newly created invoice
+        // is unpaid (0) until PaymentService records an actual payment. A
+        // client-supplied payment_status is ignored/never accepted.
         $service = Service::withoutGlobalScopes()->findOrFail($validated['service_id']);
 
         if ($invoice = Invoice::where('service_id', $service->id)->first()) {
-            return response()->json(new InvoiceResource($invoice->load('service')), 200);
+            return response()->json(new InvoiceResource($invoice->load('service.customer')), 200);
         }
 
         $totalAmount = round((float) ($service->charge ?? 0), 2);
@@ -74,7 +74,9 @@ class ApiInvoiceController extends Controller
             'service_id' => $service->id,
             'vehicle_id' => $service->vehicle_id,
             'invoice_date' => $validated['invoice_date'],
-            'payment_status' => $validated['payment_status'] ?? 0,
+            'payment_status' => 0,
+            'paid_amount' => 0,
+            'amount_received' => 0,
             'discount' => $discount,
             'total_amount' => $totalAmount,
             'grand_total' => max(round($totalAmount - $discount, 2), 0),
@@ -83,18 +85,29 @@ class ApiInvoiceController extends Controller
             'branch_id' => $service->branch_id,
         ]);
 
-        return response()->json(new InvoiceResource($invoice->load('service')), 201);
+        return response()->json(new InvoiceResource($invoice->load('service.customer')), 201);
     }
 
     public function update(Request $request, Invoice $invoice): JsonResponse
     {
+        // payment_status / paid_amount are owned by PaymentService — they can
+        // never be supplied by the client. Only non-financial metadata may be
+        // edited here; financial correction requires reversal/credit note flow.
         $validated = $request->validate([
-            'payment_status' => 'nullable|integer|in:0,1,2',
             'notes' => 'nullable|string',
         ]);
 
-        // payment_status/paid_amount are owned by PaymentService — do not
-        // allow arbitrary API overrides.
+        if ($request->has('payment_status')) {
+            return response()->json(['message' => 'payment_status ditentukan sistem, tidak bisa diubah manual.'], 422);
+        }
+
+        // Locked once paid (partial or full): financial fields cannot change.
+        if ((float) $invoice->paid_amount > 0 || $invoice->paymentRecords()->exists()) {
+            if ($request->hasAny(['customer_id', 'items', 'quantity', 'price', 'discount', 'tax', 'total_amount', 'grand_total', 'service_id'])) {
+                return response()->json(['message' => 'Invoice yang sudah dibayar (parsial/lunas) tidak dapat mengubah data finansial. Gunakan credit note/koreksi.'], 422);
+            }
+        }
+
         $invoice->update($validated);
 
         return response()->json(new InvoiceResource($invoice));

@@ -14,9 +14,16 @@ return new class extends Migration
             $table->index(['branch_id', 'payment_date'], 'payments_branch_date_index');
         });
 
-        DB::table('payment_records')->join('invoices', 'invoices.id', '=', 'payment_records.invoice_id')
-            ->whereNull('payment_records.branch_id')
-            ->update(['payment_records.branch_id' => DB::raw('invoices.branch_id')]);
+        // Correlated subquery keeps the backfill portable across MySQL and
+        // SQLite (SQLite does not support multi-table UPDATE ... JOIN).
+        DB::table('payment_records')
+            ->whereNull('branch_id')
+            ->whereNotNull('invoice_id')
+            ->update([
+                'branch_id' => DB::raw(
+                    '(select invoices.branch_id from invoices where invoices.id = payment_records.invoice_id)'
+                ),
+            ]);
     }
 
     public function down(): void

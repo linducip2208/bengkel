@@ -159,7 +159,7 @@ class SaleController extends Controller
         }
     }
 
-    protected function reduceStock(int $productId, int $quantity, Sale $sale): void
+    protected function reduceStock(int $productId, int|float $quantity, Sale $sale): void
     {
         StockService::decrement(
             $productId,
@@ -171,7 +171,7 @@ class SaleController extends Controller
         );
     }
 
-    protected function restoreStock(int $productId, int $quantity, Sale $sale): void
+    protected function restoreStock(int $productId, int|float $quantity, Sale $sale): void
     {
         StockService::increment(
             $productId,

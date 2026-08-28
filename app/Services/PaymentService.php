@@ -7,8 +7,8 @@ use App\Models\ActivityLog;
 use App\Models\Income;
 use App\Models\Invoice;
 use App\Models\PaymentRecord;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\DB;
 
 class PaymentService extends BaseService
 {
@@ -82,16 +82,20 @@ class PaymentService extends BaseService
                 'payment_status' => $newPaid >= $grandTotal - 0.009 ? 2 : 1,
             ]);
 
-            Income::create([
-                'invoice_number' => $locked->invoice_number,
-                'customer_id' => $locked->customer_id,
-                'payment_method_id' => $data['payment_method_id'],
-                'amount' => $amount,
-                'income_date' => $data['payment_date'] ?? now(),
-                'label' => 'Pembayaran Invoice '.$locked->invoice_number,
-                'created_by' => auth()->id() ?? $locked->created_by ?? 1,
-                'branch_id' => $locked->branch_id,
-            ]);
+            // One Income is booked per invoice (not per payment) so partial
+            // payments do not inflate the Kas/revenue ledger with duplicates.
+            if (! Income::withoutBranchScope()->where('invoice_number', $locked->invoice_number)->exists()) {
+                Income::create([
+                    'invoice_number' => $locked->invoice_number,
+                    'customer_id' => $locked->customer_id,
+                    'payment_method_id' => $data['payment_method_id'],
+                    'amount' => $newPaid,
+                    'income_date' => $data['payment_date'] ?? now(),
+                    'label' => 'Pembayaran Invoice '.$locked->invoice_number,
+                    'created_by' => auth()->id() ?? $locked->created_by ?? 1,
+                    'branch_id' => $locked->branch_id,
+                ]);
+            }
 
             if (! $wasAlreadyPaid && (int) $locked->payment_status === 2) {
                 LoyaltyController::earnFromInvoice($locked);

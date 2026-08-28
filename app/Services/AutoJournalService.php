@@ -11,6 +11,7 @@ use App\Models\JournalEntryLine;
 use App\Models\PaymentRecord;
 use App\Models\Product;
 use App\Models\Purchase;
+use App\Models\PurchaseHistoryRecord;
 use App\Models\SellReturn;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
@@ -221,14 +222,14 @@ class AutoJournalService
     }
 
     /** Reverse inventory/AP of a purchase that was returned to the supplier. */
-    public function journalPurchaseReturn(Purchase $purchase, float $amount, ?object $returnEvent = null): void
+    public function journalPurchaseReturn(Purchase $purchase, float $amount, ?PurchaseHistoryRecord $returnEvent = null): void
     {
         if ($amount <= 0) {
             return;
         }
 
         $this->createEntry(
-            'PURR-'.$purchase->id.'-'.($returnEvent?->id ?? 1),
+            'PURR-'.$purchase->id.'-'.($returnEvent !== null ? $returnEvent->id : 1),
             'purchase_return',
             now(),
             'Retur pembelian '.($purchase->purchase_no ?? '#'.$purchase->id),

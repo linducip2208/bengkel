@@ -276,20 +276,73 @@ class ServiceService extends BaseService
     {
         $service = Service::findOrFail($id);
 
-        $result = DB::transaction(function () use ($service) {
+        try {
+            $result = $this->executeComplete($service);
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        if (! empty($result['already'])) {
+            return redirect()
+                ->route('services.show', $service)
+                ->with('info', 'Servis sudah selesai sebelumnya — tidak ada invoice baru.');
+        }
+
+        // Reload stamps written inside the transaction (survey_token etc).
+        $service = $service->fresh();
+
+        if ($service->customer) {
+            $this->notifyCustomer($service, 'service-completed', [
+                'service' => $service,
+                'workshop_name' => config('app.name'),
+                'survey_link' => $service->survey_token ? route('survey.show', $service->survey_token) : null,
+            ]);
+        }
+
+        // Auto-generate next service reminder
+        $this->createNextServiceReminder($service);
+
+        ActivityLog::record('service.complete', $service, "Service {$service->job_no} selesai");
+
+        return redirect()
+            ->route('services.show', $service)
+            ->with('success', 'Servis selesai.');
+    }
+
+    /**
+     * Execute the full service-completion business flow atomically and
+     * idempotently. Used by both the web flow and the API endpoint.
+     *
+     * Guarantees when called more than once:
+     *  - stock is never decremented twice (parts were already consumed at
+     *    use-time; completion only records them on the invoice),
+     *  - only ONE invoice is ever created per service,
+     *  - the accounting journal is idempotent (see AutoJournalService),
+     *  - completed_at/jobcard stamps are only set the first time.
+     *
+     * @return array{invoice: Invoice|null, already: bool}
+     *
+     * @throws \RuntimeException when the service is cancelled or already final.
+     */
+    public function executeComplete(Service $service): array
+    {
+        return DB::transaction(function () use ($service) {
             // Lock the row: a concurrent double-click re-reads state and
             // short-circuits instead of creating a second invoice.
             $locked = Service::query()->whereKey($service->id)->lockForUpdate()->first();
 
+            if (! $locked) {
+                throw new \RuntimeException('Service tidak ditemukan.');
+            }
+
             if ($locked->cancelled_at) {
-                return ['error' => 'Servis ini sudah dibatalkan dan tidak bisa diselesaikan.'];
+                throw new \RuntimeException('Servis ini sudah dibatalkan dan tidak bisa diselesaikan.');
             }
 
             if ($locked->done_status >= 2 || $locked->workflow_status >= 12) {
                 $existing = Invoice::where('service_id', $locked->id)->first();
-                if ($existing) {
-                    return ['already' => true, 'invoice' => $existing];
-                }
+
+                return ['already' => true, 'invoice' => $existing];
             }
 
             $locked->update([
@@ -381,6 +434,7 @@ class ServiceService extends BaseService
             } catch (\Throwable $e) {
                 Log::error("Service completion auto-journal: {$e->getMessage()}");
 
+                // Journal failure must roll back the whole completion.
                 throw $e;
             }
 
@@ -398,38 +452,8 @@ class ServiceService extends BaseService
                 ]);
             }
 
-            return ['invoice' => $invoice];
+            return ['already' => false, 'invoice' => $invoice];
         });
-
-        if (isset($result['error'])) {
-            return back()->with('error', $result['error']);
-        }
-
-        if (! empty($result['already'])) {
-            return redirect()
-                ->route('services.show', $service)
-                ->with('info', 'Servis sudah selesai sebelumnya — tidak ada invoice baru.');
-        }
-
-        // Reload stamps written inside the transaction (survey_token etc).
-        $service = $service->fresh();
-
-        if ($service->customer) {
-            $this->notifyCustomer($service, 'service-completed', [
-                'service' => $service,
-                'workshop_name' => config('app.name'),
-                'survey_link' => $service->survey_token ? route('survey.show', $service->survey_token) : null,
-            ]);
-        }
-
-        // Auto-generate next service reminder
-        $this->createNextServiceReminder($service);
-
-        ActivityLog::record('service.complete', $service, "Service {$service->job_no} selesai");
-
-        return redirect()
-            ->route('services.show', $service)
-            ->with('success', 'Servis selesai.');
     }
 
     public function startService($id)

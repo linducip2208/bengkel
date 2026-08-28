@@ -7,6 +7,7 @@ use App\Models\ActivityLog;
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\PurchaseHistoryRecord;
+use App\Models\PurchaseItem;
 use App\Models\Supplier;
 use App\Services\AutoJournalService;
 use App\Services\StockService;
@@ -113,7 +114,11 @@ class PurchaseReturnController extends Controller
 
                 if ($returnedAny) {
                     $hasRemaining = $locked->items->groupBy('product_id')->contains(function ($items, $productId) use ($locked) {
-                        $returned = abs((float) $items->first()->product->stockHistories()
+                        /** @var PurchaseItem $firstItem */
+                        $firstItem = $items->first();
+                        /** @var Product $product */
+                        $product = $firstItem->product;
+                        $returned = abs((float) $product->stockHistories()
                             ->where('type', 'return')
                             ->where('reference_type', Purchase::class)
                             ->where('reference_id', $locked->id)

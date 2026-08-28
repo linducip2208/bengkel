@@ -7,19 +7,13 @@ use App\Models\ActivityLog;
 use App\Models\CashDenomination;
 use App\Models\Customer;
 use App\Models\HeldPosTransaction;
-use App\Models\Income;
 use App\Models\Invoice;
-use App\Models\InvoiceItem;
 use App\Models\PaymentMethod;
-use App\Models\PaymentRecord;
 use App\Models\PosSession;
 use App\Models\Product;
 use App\Models\ProductSellingPrice;
 use App\Models\Voucher;
-use App\Models\VoucherUsage;
-use App\Services\AutoJournalService;
-use App\Services\DocumentNumberService;
-use App\Services\StockService;
+use App\Services\PosService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -275,36 +269,6 @@ class PosController extends Controller
             return back()->with('error', 'Sesi tidak valid.');
         }
 
-        foreach ($validated['items'] as &$item) {
-            $product = Product::withoutGlobalScopes()
-                ->whereKey($item['product_id'])
-                ->where('branch_id', $session->branch_id)
-                ->firstOrFail();
-            $groupId = Customer::with('customerGroup')->find($validated['customer_id'] ?? null)?->customerGroup?->selling_price_group_id;
-            $item['unit_price'] = round($product->getPriceFor($groupId), 2);
-        }
-        unset($item);
-
-        // Sort items by product_id for a consistent lock order (deadlock prevention).
-        usort($validated['items'], fn ($a, $b) => $a['product_id'] <=> $b['product_id']);
-
-        $subtotal = 0;
-        foreach ($validated['items'] as $i) {
-            $subtotal += $this->lineTotal($i);
-        }
-        $discount = (float) ($validated['discount'] ?? 0);
-        $voucherDiscount = 0;
-        $voucher = null;
-
-        if (! empty($validated['voucher_id'])) {
-            $voucher = Voucher::find($validated['voucher_id']);
-            if ($voucher && $voucher->isUsable() && $subtotal >= $voucher->min_purchase) {
-                $voucherDiscount = $voucher->calculateDiscount($subtotal - $discount);
-            }
-        }
-
-        $grandTotal = max(round($subtotal - $discount - $voucherDiscount, 2), 0);
-
         // Support split payment (multi metode) or single payment
         $payments = [];
         if (! empty($validated['payments'])) {
@@ -314,138 +278,29 @@ class PosController extends Controller
         }
 
         $totalPaid = round(array_sum(array_column($payments, 'amount')), 2);
-        if ($totalPaid < $grandTotal) {
-            return back()->withInput()->with('error', 'Total bayar kurang dari total belanja (kurang Rp '.number_format($grandTotal - $totalPaid, 0, ',', '.').').');
-        }
 
-        if ($discount > 0) {
-            ActivityLog::record('pos.discount', null, 'Diskon POS Rp '.number_format($discount, 0, ',', '.').' (subtotal Rp '.number_format($subtotal, 0, ',', '.').')');
+        $voucher = null;
+        if (! empty($validated['voucher_id'])) {
+            $voucher = Voucher::find($validated['voucher_id']);
         }
 
         try {
-            $invoice = DB::transaction(function () use ($validated, $session, $subtotal, $discount, $grandTotal, $totalPaid, $payments, $voucher, $voucherDiscount) {
-                $invoiceNumber = DocumentNumberService::generate(DocumentNumberService::POS_INVOICES, 'POS', 'Ymd', 4);
-
-                // Walk-in customer fallback (kolom invoices.customer_id NOT NULL)
-                $customerId = $validated['customer_id'] ?? null;
-                if (! $customerId) {
-                    $walkIn = Customer::withoutGlobalScopes()->firstOrCreate(
-                        ['name' => 'Walk-in Customer', 'phone' => null],
-                        ['address' => 'POS Counter']
-                    );
-                    $customerId = $walkIn->id;
-                }
-
-                $invoice = Invoice::create([
-                    'invoice_number' => $invoiceNumber,
-                    'customer_id' => $customerId,
-                    'service_id' => null,
-                    'sale_id' => null,
-                    'pos_session_id' => $session->id,
-                    'payment_method_id' => $payments[0]['method_id'] ?? null,
-                    'payment_status' => 2,
-                    'total_amount' => round($subtotal, 2),
-                    'discount' => round($discount + $voucherDiscount, 2),
-                    'tax_amount' => 0,
-                    'grand_total' => $grandTotal,
-                    'paid_amount' => $grandTotal,
-                    'amount_received' => $totalPaid,
-                    'invoice_date' => now()->toDateString(),
-                    'invoice_type' => 'pos',
-                    'created_by' => auth()->id(),
-                    'branch_id' => $session->branch_id,
-                    'idempotency_key' => $validated['idempotency_key'] ?? null,
-                ]);
-
-                foreach ($validated['items'] as $item) {
-                    $product = Product::withoutGlobalScopes()
-                        ->whereKey($item['product_id'])
-                        ->where('branch_id', $session->branch_id)
-                        ->firstOrFail();
-
-                    InvoiceItem::create([
-                        'invoice_id' => $invoice->id,
-                        'product_id' => $product->id,
-                        'description' => $product->name,
-                        'quantity' => $item['quantity'],
-                        'unit_price' => $item['unit_price'],
-                        'total_price' => $this->lineTotal($item),
-                        'discount' => $item['discount'] ?? 0,
-                        'discount_type' => $item['discount_type'] ?? null,
-                        'serial_number' => $item['serial_number'] ?? null,
-                        'warranty_expiry' => $item['warranty_expiry'] ?? null,
-                        'sold_date' => $item['sold_date'] ?? null,
-                    ]);
-
-                    StockService::decrement(
-                        $product->id,
-                        (float) $item['quantity'],
-                        'pos',
-                        'POS sale '.$invoiceNumber,
-                        Invoice::class,
-                        $invoice->id,
-                    );
-                }
-
-                $appliedPaymentTotal = 0.0;
-                $paymentRecords = [];
-                foreach ($payments as $paymentIndex => $pmt) {
-                    $remaining = round($grandTotal - $appliedPaymentTotal, 2);
-                    $appliedAmount = min(round((float) $pmt['amount'], 2), max($remaining, 0));
-                    if ($appliedAmount <= 0) {
-                        continue;
-                    }
-
-                    $record = PaymentRecord::create([
-                        'invoice_id' => $invoice->id,
-                        'payment_method_id' => $pmt['method_id'],
-                        'amount' => $appliedAmount,
-                        'payment_date' => now(),
-                        'reference_number' => $invoiceNumber.'-'.($paymentIndex + 1),
-                        'notes' => 'POS payment',
-                    ]);
-                    $appliedPaymentTotal = round($appliedPaymentTotal + $appliedAmount, 2);
-                    $paymentRecords[] = $record;
-                }
-
-                Income::create([
-                    'invoice_number' => $invoiceNumber,
-                    'customer_id' => $customerId,
-                    'payment_method_id' => $payments[0]['method_id'] ?? null,
-                    'amount' => $grandTotal,
-                    'income_date' => now(),
-                    'label' => 'POS '.$invoiceNumber,
-                    'created_by' => auth()->id(),
-                ]);
-
-                app(AutoJournalService::class)->journalInvoiceIssued($invoice);
-
-                foreach ($paymentRecords as $paymentRecord) {
-                    try {
-                        // Book only the net amount — cash change is NOT revenue.
-                        app(AutoJournalService::class)->journalInvoicePayment($paymentRecord, (float) $paymentRecord->amount);
-                    } catch (\Throwable $e) {
-                        Log::error("POS auto-journal: {$e->getMessage()}");
-                    }
-                }
-
-                if ($voucher && $voucherDiscount > 0) {
-                    // Lock voucher row so concurrent redemptions cannot exceed usage limit.
-                    $lockedVoucher = Voucher::query()->whereKey($voucher->id)->lockForUpdate()->first();
-                    $lockedVoucher->increment('used_count');
-                    VoucherUsage::create([
-                        'voucher_id' => $lockedVoucher->id,
-                        'invoice_id' => $invoice->id,
-                        'customer_id' => $customerId,
-                        'discount_applied' => $voucherDiscount,
-                    ]);
-                }
-
-                return $invoice;
-            });
+            $result = app(PosService::class)->checkout([
+                'session' => $session,
+                'user_id' => auth()->id(),
+                'customer_id' => $validated['customer_id'] ?? null,
+                'items' => $validated['items'],
+                'discount' => $validated['discount'] ?? 0,
+                'paid_total' => $totalPaid,
+                'payments' => $payments,
+                'voucher' => $voucher,
+                'idempotency_key' => $validated['idempotency_key'] ?? null,
+            ]);
         } catch (\RuntimeException $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }
+
+        $invoice = $result['invoice'];
 
         try {
             if ($invoice->customer_id) {
@@ -455,6 +310,13 @@ class PosController extends Controller
             Log::warning("Loyalty earn failed for POS: {$e->getMessage()}");
         }
 
+        $grandTotal = (float) $invoice->grand_total;
+        $discount = (float) $request->input('discount', 0);
+        if ($discount > 0) {
+            ActivityLog::record('pos.discount', null, 'Diskon POS Rp '.number_format($discount, 0, ',', '.').' (subtotal Rp '.number_format($grandTotal, 0, ',', '.').')');
+        }
+
+        $voucherDiscount = (float) ($validated['voucher_discount'] ?? 0);
         $changeAmount = max($totalPaid - $grandTotal, 0);
         $message = 'Transaksi POS sukses. Total: '.number_format($grandTotal, 0, ',', '.');
         if ($voucher && $voucherDiscount > 0) {

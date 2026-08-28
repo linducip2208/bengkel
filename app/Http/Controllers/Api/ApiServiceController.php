@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ServiceResource;
 use App\Models\Service;
+use App\Services\ServiceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -117,10 +118,17 @@ class ApiServiceController extends Controller
 
     public function complete(Service $service): JsonResponse
     {
-        $service->update([
-            'done_status' => 2,
-        ]);
+        try {
+            $result = app(ServiceService::class)->executeComplete($service);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
-        return response()->json(new ServiceResource($service));
+        return response()->json([
+            'message' => $result['already'] ? 'Service sudah selesai sebelumnya.' : 'Service selesai.',
+            'already_processed' => $result['already'],
+            'service' => new ServiceResource($service->fresh(['invoice', 'technicians'])),
+            'invoice_id' => $result['invoice']?->id,
+        ]);
     }
 }

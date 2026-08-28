@@ -53,6 +53,10 @@ class ApiIncomeController extends Controller
 
     public function update(Request $request, Income $income, IncomeService $incomeService): JsonResponse
     {
+        if ($this->isSystemGenerated($income)) {
+            return response()->json(['message' => 'Pendapatan yang berasal dari pembayaran invoice/POS tidak dapat diubah manual. Gunakan koreksi/credit note.'], 422);
+        }
+
         $validated = $request->validate([
             'amount' => 'sometimes|numeric|min:1',
             'income_date' => 'sometimes|date',
@@ -67,8 +71,22 @@ class ApiIncomeController extends Controller
 
     public function destroy(Income $income): JsonResponse
     {
+        if ($this->isSystemGenerated($income)) {
+            return response()->json(['message' => 'Pendapatan yang berasal dari pembayaran invoice/POS tidak dapat dihapus manual. Gunakan reversal resmi.'], 422);
+        }
+
         $income->delete();
 
         return response()->json(['message' => 'Deleted successfully']);
+    }
+
+    /**
+     * Incomes generated automatically by PaymentService / POS always carry an
+     * invoice_number linking them to the originating invoice. Manually entered
+     * incomes do not, and remain editable/deletable.
+     */
+    private function isSystemGenerated(Income $income): bool
+    {
+        return ! empty($income->invoice_number);
     }
 }

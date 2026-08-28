@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderItem;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class PurchaseOrderReceiptService
@@ -17,13 +20,15 @@ class PurchaseOrderReceiptService
             }
 
             $locked->load('items.product');
-            if ($locked->items->contains(fn ($item) => ! $item->product_id)) {
+            /** @var Collection<int, PurchaseOrderItem> $items */
+            $items = $locked->items;
+            if ($items->contains(fn ($item) => ! $item->product_id)) {
                 throw new \RuntimeException('Semua item penerimaan wajib terhubung ke produk.');
             }
 
             $requestedByItem = collect($requested)->keyBy(fn ($item) => (int) $item['purchase_order_item_id']);
             $receiptLines = [];
-            foreach ($locked->items->sortBy('product_id') as $item) {
+            foreach ($items->sortBy('product_id') as $item) {
                 $remaining = round((float) $item->quantity - (float) $item->received_quantity, 2);
                 $quantity = $requestedByItem->has($item->id)
                     ? round((float) $requestedByItem->get($item->id)['quantity'], 2)
@@ -31,8 +36,10 @@ class PurchaseOrderReceiptService
                 if ($quantity < 0.01) {
                     continue;
                 }
+                /** @var Product $product */
+                $product = $item->product;
                 if ($quantity > $remaining) {
-                    throw new \RuntimeException("Penerimaan {$item->product->name} melebihi sisa PO ({$remaining}).");
+                    throw new \RuntimeException("Penerimaan {$product->name} melebihi sisa PO ({$remaining}).");
                 }
                 $receiptLines[] = [$item, $quantity];
             }
@@ -64,7 +71,9 @@ class PurchaseOrderReceiptService
             }
 
             $locked->refresh()->load('items');
-            $complete = $locked->items->every(fn ($item) => round((float) $item->received_quantity, 2) >= round((float) $item->quantity, 2));
+            /** @var Collection<int, PurchaseOrderItem> $items */
+            $items = $locked->items;
+            $complete = $items->every(fn ($item) => round((float) $item->received_quantity, 2) >= round((float) $item->quantity, 2));
             $locked->update(['status' => $complete ? 'received' : 'partially_received']);
             app(AutoJournalService::class)->journalPurchase($purchase);
 
