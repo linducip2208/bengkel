@@ -9,6 +9,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string $vehicle_brand
+ */
 #[Fillable(['vehicle_type_id', 'vehicle_brand'])]
 class VehicleBrand extends Model
 {

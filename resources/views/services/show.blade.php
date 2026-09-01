@@ -56,6 +56,7 @@
     <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-info"><i class="fas fa-info-circle me-1"></i>Info</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-jobcard"><i class="fas fa-id-card me-1"></i>Jobcard</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-checklist"><i class="fas fa-tasks me-1"></i>Checklist</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-estimate"><i class="fas fa-file-signature me-1"></i>Estimasi</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-photos"><i class="fas fa-images me-1"></i>Foto</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-checkout"><i class="fas fa-clipboard-check me-1"></i>Checkout</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-invoice"><i class="fas fa-file-invoice me-1"></i>Invoice</button></li>
@@ -367,7 +368,10 @@
         </div>
     </div>
 
-    {{-- Tab 4: Photos --}}
+    {{-- Tab 4: Estimasi --}}
+    @include('estimates.tab')
+
+    {{-- Tab 5: Photos --}}
     <div class="tab-pane fade" id="tab-photos">
         <div class="card">
             <div class="card-body">

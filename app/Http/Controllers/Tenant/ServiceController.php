@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Service;
+use App\Models\ServiceEstimate;
 use App\Models\User;
+use App\Services\EstimateService;
 use App\Services\JobcardService;
 use App\Services\ServiceService;
 use Illuminate\Http\Request;
@@ -142,6 +144,12 @@ class ServiceController extends Controller
         $phone = preg_replace('/[^0-9]/', '', $phone);
         if (substr($phone, 0, 1) === '0') {
             $phone = '62'.substr($phone, 1);
+        }
+
+        // Prefer the dedicated estimate flow when an estimate exists.
+        $estimate = app(EstimateService::class)->latestActiveEstimate($service);
+        if ($estimate !== null && $estimate->status !== ServiceEstimate::STATUS_DRAFT) {
+            return app(EstimateController::class)->sendWA($estimate);
         }
 
         $token = $service->getOrCreateApprovalToken();

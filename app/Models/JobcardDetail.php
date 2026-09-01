@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property int|null $odometer_in
+ * @property int|null $odometer_out
+ */
 #[Fillable(['service_id', 'jobcard_no', 'customer_id', 'vehicle_id', 'odometer_in', 'odometer_out', 'in_date', 'out_date', 'next_service_date', 'next_service_km', 'done_status', 'reminder_sent'])]
 class JobcardDetail extends Model
 {

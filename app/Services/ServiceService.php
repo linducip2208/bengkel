@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\Reminder;
 use App\Models\RepairCategory;
 use App\Models\Service;
+use App\Models\ServiceEstimate;
 use App\Models\ServiceTechnician;
 use App\Models\StockHistory;
 use App\Models\User;
@@ -138,6 +139,7 @@ class ServiceService extends BaseService
             'images', 'checkoutResults.checkoutCategory', 'invoice',
             'serviceAdvisor', 'serviceTechnicians.user',
             'activityLogs.user',
+            'estimates' => fn ($q) => $q->with(['items.product'])->orderByDesc('version'),
         ])->findOrFail($id);
 
         $nextService = $service->jobcardDetail
@@ -181,14 +183,21 @@ class ServiceService extends BaseService
 
         $invoice = Invoice::query()->where('service_id', $service->id)->first();
         $paidAmount = $invoice ? (float) $invoice->paymentRecords()->sum('amount') : 0.0;
+
+        $estimateSummary = app(EstimateService::class)->reconciliation($service);
+        // Source of truth before invoicing = active approved estimate.
+        $estimatedAmount = $estimateSummary['approved_estimate'] > 0
+            ? $estimateSummary['approved_estimate']
+            : (float) ($service->charge ?? 0);
+
         $financialSummary = [
-            'estimated' => (float) ($service->charge ?? 0),
+            'estimated' => $estimatedAmount,
             'invoiced' => (float) ($invoice ? $invoice->grand_total : 0),
             'paid' => $paidAmount,
             'outstanding' => max(0, (float) ($invoice ? $invoice->grand_total : 0) - $paidAmount),
         ];
 
-        return view('services.show', compact('service', 'nextService', 'partsUsed', 'reservations', 'products', 'reservedMap', 'financialSummary'));
+        return view('services.show', compact('service', 'nextService', 'partsUsed', 'reservations', 'products', 'reservedMap', 'financialSummary', 'estimateSummary'));
     }
 
     public function edit($id)
@@ -496,6 +505,19 @@ class ServiceService extends BaseService
             $nextStatus = (int) $locked->workflow_status + 1;
             if (! $locked->canTransitionTo($nextStatus)) {
                 return ['error' => 'Transisi status tidak valid dari '.$locked->status_label.'.'];
+            }
+
+            // Workflow guards tied to the Estimate lifecycle.
+            $estimateService = app(EstimateService::class);
+            $activeEstimate = $estimateService->latestActiveEstimate($locked);
+
+            if ($nextStatus === 3 && $activeEstimate === null) {
+                return ['error' => 'Transisi ke Waiting Approval memerlukan Estimasi. Buat estimasi pada tab Estimasi terlebih dahulu.'];
+            }
+
+            if ($nextStatus === 4 && $activeEstimate !== null && $activeEstimate->status !== ServiceEstimate::STATUS_APPROVED) {
+                return ['error' => 'Estimasi '.$activeEstimate->estimate_number.' belum disetujui pelanggan ('
+                        .$activeEstimate->statusLabel().'). Tunggu persetujuan customer atau gunakan override manager dengan alasan.'];
             }
 
             $data = ['workflow_status' => $nextStatus];

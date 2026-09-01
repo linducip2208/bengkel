@@ -92,6 +92,10 @@ class RequirePair
         if (str_starts_with($path, '/track/')) {
             return true;
         }
+        // Public estimate approval link (token-based, customer-facing)
+        if ($path === '/estimate' || str_starts_with($path, '/estimate/')) {
+            return true;
+        }
 
         // Localhost dev bypass
         if (config('license.dev_bypass') && app()->environment('local')) {

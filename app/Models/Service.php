@@ -14,6 +14,11 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
+/**
+ * Work order / job.
+ *
+ * @property JobcardDetail|null $jobcardDetail
+ */
 #[Fillable(['customer_id', 'vehicle_id', 'repair_category_id', 'title', 'description', 'service_date', 'charge', 'actual_cost', 'estimated_hours', 'started_at', 'completed_at', 'done_status', 'workflow_status', 'checked_in_at', 'qc_passed_at', 'mot_status', 'is_quotation', 'is_approved', 'created_by', 'branch_id', 'job_no', 'approval_token', 'repeat_of', 'assign_to', 'service_advisor_id', 'inspected_at', 'approved_at', 'invoiced_at', 'paid_at', 'released_at', 'cancelled_at', 'cancel_reason', 'survey_token'])]
 class Service extends Model
 {
@@ -116,6 +121,11 @@ class Service extends Model
     public function invoice(): HasOne
     {
         return $this->hasOne(Invoice::class);
+    }
+
+    public function estimates(): HasMany
+    {
+        return $this->hasMany(ServiceEstimate::class);
     }
 
     public function reservations(): HasMany

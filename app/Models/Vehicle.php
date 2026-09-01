@@ -12,6 +12,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string|null $number_plate
+ * @property string|null $model_name
+ * @property int|null $model_year
+ * @property int|null $odometer
+ * @property VehicleType|null $vehicleType
+ * @property VehicleBrand|null $vehicleBrand
+ */
 #[Fillable(['customer_id', 'vehicle_type_id', 'vehicle_brand_id', 'fuel_type_id', 'number_plate', 'chassis_number', 'engine_number', 'model_name', 'model_year', 'color', 'odometer', 'branch_id', 'price', 'description'])]
 class Vehicle extends Model
 {

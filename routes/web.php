@@ -11,6 +11,7 @@ use App\Http\Controllers\DocsController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ObservationController;
 use App\Http\Controllers\ProgrammaticSeoController;
+use App\Http\Controllers\PublicEstimateController;
 use App\Http\Controllers\PublicInvoiceController;
 use App\Http\Controllers\PublicSurveyController;
 use App\Http\Controllers\SitemapController;
@@ -34,6 +35,7 @@ use App\Http\Controllers\Tenant\CustomerGroupController;
 use App\Http\Controllers\Tenant\CustomFieldController;
 use App\Http\Controllers\Tenant\EmailLogController;
 use App\Http\Controllers\Tenant\EquipmentController;
+use App\Http\Controllers\Tenant\EstimateController;
 use App\Http\Controllers\Tenant\ExpenseController;
 use App\Http\Controllers\Tenant\FleetContractController;
 use App\Http\Controllers\Tenant\FuelTypeController;
@@ -128,6 +130,12 @@ Route::get('/approve/{token}', [ApprovalController::class, 'showApprove'])->name
 Route::post('/approve/{token}', [ApprovalController::class, 'approve'])->name('public.approval.approve.store');
 Route::get('/reject/{token}', [ApprovalController::class, 'showReject'])->name('public.approval.reject');
 Route::post('/reject/{token}', [ApprovalController::class, 'reject'])->name('public.approval.reject.store');
+
+// Public estimate document (token-based, no auth) — current estimate version
+Route::get('/estimate/{token}', [PublicEstimateController::class, 'show'])->name('public.estimate.show');
+Route::get('/estimate/{token}/pdf', [PublicEstimateController::class, 'pdf'])->name('public.estimate.pdf');
+Route::post('/estimate/{token}/approve', [PublicEstimateController::class, 'approve'])->name('public.estimate.approve');
+Route::post('/estimate/{token}/reject', [PublicEstimateController::class, 'reject'])->name('public.estimate.reject');
 
 // Payment Gateway webhook callback (PUBLIC — gateway POST tanpa session)
 Route::any('/payment/callback/{token}', [PaymentGatewayController::class, 'callback'])->name('payment.callback');
@@ -319,6 +327,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/services/{service}/sticker', [ServiceController::class, 'printNextServiceSticker'])->name('services.sticker');
     Route::get('/services/{service}/condition-report', [ServiceController::class, 'printConditionReport'])->name('services.condition-report');
     Route::get('/services/{service}/send-wa', [ServiceController::class, 'sendWA'])->name('services.sendWA');
+
+    // --- Service Estimates (quotation documents) ---
+    Route::post('/services/{service}/estimates', [EstimateController::class, 'store'])->name('services.estimates.store');
+    Route::get('/estimates/{estimate}/pdf', [EstimateController::class, 'pdf'])->name('estimates.pdf');
+    Route::get('/estimates/{estimate}/preview', [EstimateController::class, 'preview'])->name('estimates.preview');
+    Route::get('/estimates/{estimate}/print', [EstimateController::class, 'print'])->name('estimates.print');
+    Route::post('/estimates/{estimate}/send-wa', [EstimateController::class, 'sendWA'])->name('estimates.send-wa');
+    Route::post('/estimates/{estimate}/send-email', [EstimateController::class, 'sendEmail'])->name('estimates.send-email');
+    Route::post('/estimates/{estimate}/revise', [EstimateController::class, 'revise'])->name('estimates.revise');
+    Route::post('/estimates/{estimate}/override-approve', [EstimateController::class, 'overrideApprove'])->name('estimates.override-approve');
+    Route::post('/estimates/{estimate}/convert-invoice', [EstimateController::class, 'convertToInvoice'])->name('estimates.convert-invoice');
+    Route::put('/estimates/{estimate}', [EstimateController::class, 'update'])->name('estimates.update');
 
     // --- Parts Reservation ---
     Route::post('/services/{service}/reservations', [PartReservationController::class, 'store'])->name('services.reservations.store');

@@ -2,6 +2,7 @@
 
 use App\Models\Customer;
 use App\Models\LoyaltyTransaction;
+use App\Services\EstimateService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -85,4 +86,10 @@ Schedule::command('reports:weekly-email')
 // Auto-close stale POS sessions (kasir lupa tutup) — every hour
 Schedule::command('pos:close-stale-sessions --hours=12')
     ->hourly()
+    ->withoutOverlapping();
+
+// Estimate expiry: mark lapsed waiting-approval estimates as expired (daily 01:15)
+Schedule::call(fn () => app(EstimateService::class)->expireLapsed())
+    ->name('estimates.expire-lapsed')
+    ->dailyAt('01:15')
     ->withoutOverlapping();

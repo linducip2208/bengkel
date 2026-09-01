@@ -33,6 +33,8 @@ class DocumentNumberService
 
     public const SERVICES = 'services';
 
+    public const ESTIMATES = 'estimates';
+
     public const STOCK_TRANSFERS = 'stock_transfers';
 
     public const GATE_PASSES = 'gate_passes';

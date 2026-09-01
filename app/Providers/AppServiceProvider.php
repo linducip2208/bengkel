@@ -48,6 +48,8 @@ class AppServiceProvider extends ServiceProvider
         $roleGates = [
             'invoices.manage' => ['admin', 'manager'],
             'invoices.delete' => ['admin'],
+            'estimates.override' => ['admin', 'manager'],
+            'estimates.convert_invoice' => ['admin', 'manager', 'kasir'],
             'payments.process' => ['admin', 'manager', 'kasir'],
             'stock-adjustments.approve' => ['admin', 'manager'],
             'users.manage' => ['admin'],
