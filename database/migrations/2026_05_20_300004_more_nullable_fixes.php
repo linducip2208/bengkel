@@ -1,49 +1,80 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
  * Reconcile remaining columns where inline validators say `nullable`
  * but DB still enforces NOT NULL. Found by scripts/check_nullable_inline.php.
+ *
+ * Uses the schema builder (portable across MySQL and SQLite) instead of raw
+ * `ALTER TABLE ... MODIFY`, which is MySQL-only and fails silently elsewhere.
  */
 return new class extends Migration
 {
     public function up(): void
     {
-        $changes = [
-            'sales' => ['vehicle_id BIGINT UNSIGNED NULL'],
-            'services' => ['repair_category_id BIGINT UNSIGNED NULL'],
-            'countries' => ['code VARCHAR(50) NULL', 'phone_code VARCHAR(50) NULL'],
-            'currencies' => ['symbol VARCHAR(50) NULL'],
-            'gate_passes' => ['service_id BIGINT UNSIGNED NULL'],
-            'holidays' => ['branch_id BIGINT UNSIGNED NULL'],
-            'inspection_points_library' => [
-                'observation_type_id BIGINT UNSIGNED NULL',
-                'category VARCHAR(255) NULL',
-            ],
-            'notification_templates' => ['subject VARCHAR(255) NULL'],
-            'invoices' => ['customer_id BIGINT UNSIGNED NULL'],
-            'washbays' => ['branch_id BIGINT UNSIGNED NULL'],
-        ];
+        if (Schema::hasTable('sales')) {
+            Schema::table('sales', function (Blueprint $table) {
+                $table->unsignedBigInteger('vehicle_id')->nullable()->change();
+            });
+        }
 
-        foreach ($changes as $table => $colDefs) {
-            if (! Schema::hasTable($table)) {
-                continue;
-            }
-            foreach ($colDefs as $colDef) {
-                $colName = explode(' ', $colDef)[0];
-                if (! Schema::hasColumn($table, $colName)) {
-                    continue;
-                }
-                try {
-                    DB::statement("ALTER TABLE `$table` MODIFY $colDef");
-                } catch (Throwable $e) {
-                    Log::warning("could not modify $table.$colName: ".$e->getMessage());
-                }
-            }
+        if (Schema::hasTable('services')) {
+            Schema::table('services', function (Blueprint $table) {
+                $table->unsignedBigInteger('repair_category_id')->nullable()->change();
+            });
+        }
+
+        if (Schema::hasTable('countries')) {
+            Schema::table('countries', function (Blueprint $table) {
+                $table->string('code', 50)->nullable()->change();
+                $table->string('phone_code', 50)->nullable()->change();
+            });
+        }
+
+        if (Schema::hasTable('currencies')) {
+            Schema::table('currencies', function (Blueprint $table) {
+                $table->string('symbol', 50)->nullable()->change();
+            });
+        }
+
+        if (Schema::hasTable('gate_passes')) {
+            Schema::table('gate_passes', function (Blueprint $table) {
+                $table->unsignedBigInteger('service_id')->nullable()->change();
+            });
+        }
+
+        if (Schema::hasTable('holidays')) {
+            Schema::table('holidays', function (Blueprint $table) {
+                $table->unsignedBigInteger('branch_id')->nullable()->change();
+            });
+        }
+
+        if (Schema::hasTable('inspection_points_library')) {
+            Schema::table('inspection_points_library', function (Blueprint $table) {
+                $table->unsignedBigInteger('observation_type_id')->nullable()->change();
+                $table->string('category')->nullable()->change();
+            });
+        }
+
+        if (Schema::hasTable('notification_templates')) {
+            Schema::table('notification_templates', function (Blueprint $table) {
+                $table->string('subject')->nullable()->change();
+            });
+        }
+
+        if (Schema::hasTable('invoices')) {
+            Schema::table('invoices', function (Blueprint $table) {
+                $table->unsignedBigInteger('customer_id')->nullable()->change();
+            });
+        }
+
+        if (Schema::hasTable('washbays')) {
+            Schema::table('washbays', function (Blueprint $table) {
+                $table->unsignedBigInteger('branch_id')->nullable()->change();
+            });
         }
     }
 

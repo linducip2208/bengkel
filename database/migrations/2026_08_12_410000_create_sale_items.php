@@ -2,8 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -25,11 +23,9 @@ return new class extends Migration
 
         // Spare part sales support walk-in customers → customer_id becomes nullable.
         if (Schema::hasColumn('sales', 'customer_id')) {
-            try {
-                DB::statement('ALTER TABLE `sales` MODIFY `customer_id` BIGINT UNSIGNED NULL');
-            } catch (Throwable $e) {
-                Log::warning('could not modify sales.customer_id: '.$e->getMessage());
-            }
+            Schema::table('sales', function (Blueprint $table) {
+                $table->unsignedBigInteger('customer_id')->nullable()->change();
+            });
         }
     }
 

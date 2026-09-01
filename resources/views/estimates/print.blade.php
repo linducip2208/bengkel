@@ -14,8 +14,9 @@
 <div class="card"><div class="card-body">
     @include('estimates.form-reference', ['estimate' => $estimate, 'company' => $estimate->snapshotCompany(), 'customer' => $estimate->snapshotCustomer(), 'vehicle' => $estimate->snapshotVehicle(), 'service' => $estimate->snapshotService()])
 </div></div>
+@endsection
 
-@section('styles')
+@push('styles')
 <style>
     @media print {
         .no-print, aside, nav, footer { display: none !important; }
@@ -24,4 +25,4 @@
         .card { border: none !important; box-shadow: none !important; }
     }
 </style>
-@endsection
+@endpush
