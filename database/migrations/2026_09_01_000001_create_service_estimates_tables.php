@@ -16,7 +16,9 @@ return new class extends Migration
             $table->foreignId('vehicle_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
 
-            // Revision chain: same estimate_number, incrementing version.
+            // Revision chain: every revision is a fresh document with its own
+            // unique estimate_number, linked to the version it supersedes via
+            // previous_estimate_id; version increments per service.
             $table->unsignedInteger('version')->default(1);
             $table->foreignId('previous_estimate_id')->nullable()->constrained('service_estimates')->nullOnDelete();
 
@@ -96,8 +98,13 @@ return new class extends Migration
         });
 
         // Idempotent estimate → invoice conversion + reconciliation trail.
+        // One invoice may reference at most one estimate; the FK keeps the
+        // link valid and nulls out if the estimate row is ever hard-deleted.
         Schema::table('invoices', function (Blueprint $table) {
-            $table->foreignId('service_estimate_id')->nullable();
+            $table->foreignId('service_estimate_id')
+                ->nullable()
+                ->constrained('service_estimates')
+                ->nullOnDelete();
             $table->unique('service_estimate_id');
         });
     }
@@ -105,8 +112,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('invoices', function (Blueprint $table) {
+            // The FK must be dropped before the unique index it relies on
+            // (MySQL error 1553 otherwise).
+            $table->dropForeign(['service_estimate_id']);
             $table->dropUnique(['service_estimate_id']);
-            $table->dropConstrainedForeignId('service_estimate_id');
+            $table->dropColumn('service_estimate_id');
         });
         Schema::dropIfExists('service_estimate_items');
         Schema::dropIfExists('service_estimates');

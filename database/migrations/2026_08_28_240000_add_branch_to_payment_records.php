@@ -29,8 +29,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('payment_records', function (Blueprint $table): void {
+            // The FK must be dropped before the index it relies on, otherwise
+            // MySQL refuses with error 1553 (index needed by FK constraint).
+            $table->dropForeign(['branch_id']);
             $table->dropIndex('payments_branch_date_index');
-            $table->dropConstrainedForeignId('branch_id');
+            $table->dropColumn('branch_id');
         });
     }
 };

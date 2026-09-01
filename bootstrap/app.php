@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Middleware\RequirePair;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
@@ -38,6 +40,14 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (Throwable $e, $request) {
+            // Laravel handles these natively (redirect back with validation
+            // errors, redirect guests to the login page). Never hijack them,
+            // otherwise form validation and auth redirects break in
+            // production (APP_DEBUG=false) and in CI.
+            if ($e instanceof ValidationException || $e instanceof AuthenticationException) {
+                return null;
+            }
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
