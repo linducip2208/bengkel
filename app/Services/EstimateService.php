@@ -720,7 +720,7 @@ class EstimateService
             // superseded version keeps its historical decision evidence.
             foreach ($locked->groups()->orderBy('sort_order')->get() as $oldGroup) {
                 /** @var ServiceEstimateGroup $oldGroup */
-                ServiceEstimateGroup::create([
+                $newGroup = ServiceEstimateGroup::create([
                     'service_estimate_id' => $revision->id,
                     'service_work_package_id' => $oldGroup->service_work_package_id,
                     'service_finding_id' => $oldGroup->service_finding_id,
@@ -732,6 +732,12 @@ class EstimateService
                     'customer_decision' => ServiceEstimateGroup::DECISION_PENDING,
                     'sort_order' => $oldGroup->sort_order,
                 ]);
+
+                // Remap the carried-over items to the NEW group ids — the old
+                // ids belong to the superseded version's groups.
+                ServiceEstimateItem::where('service_estimate_id', $revision->id)
+                    ->where('estimate_group_id', $oldGroup->id)
+                    ->update(['estimate_group_id' => $newGroup->id]);
             }
             if ($locked->groups()->exists()) {
                 $this->flow()->recalculateEstimateFromGroups($revision);

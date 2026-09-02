@@ -115,6 +115,17 @@ Reports - {{ config('app.name') }}
         </a>
     </div>
     <div class="col-md-3 mb-3">
+        <a href="{{ route('reports.work-time') }}" class="text-decoration-none">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="bi bi-stopwatch display-4"></i>
+                    <h5>Waktu Kerja</h5>
+                    <p class="small mb-0">Standard vs actual per pekerjaan & teknisi</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 mb-3">
         <a href="{{ route('reports.customer-lifetime') }}" class="text-decoration-none">
             <div class="card bg-danger text-white" style="background:linear-gradient(135deg,#8b5cf6,#ec4899)!important">
                 <div class="card-body text-center">

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\ActivityLog;
 use App\Models\ObservationPoint;
 use App\Models\Service;
 use App\Models\ServiceObservationPoint;
@@ -26,7 +27,8 @@ class ObservationService
      */
     public function saveCheckResults(Service $service, array $points): void
     {
-        DB::transaction(function () use ($service, $points) {
+        $changed = DB::transaction(function () use ($service, $points) {
+            $changed = 0;
             foreach ($points as $pointId => $data) {
                 $condition = $data['condition_status'] ?? null;
 
@@ -46,6 +48,10 @@ class ObservationService
                     ? round((float) $data['measurement_value'], 3)
                     : null;
 
+                $existing = ServiceObservationPoint::where('service_id', $service->id)
+                    ->where('observation_point_id', $pointId)
+                    ->first();
+
                 ServiceObservationPoint::updateOrCreate(
                     [
                         'service_id' => $service->id,
@@ -59,8 +65,24 @@ class ObservationService
                         'comment' => $data['comment'] ?? null,
                     ]
                 );
+
+                if ($existing === null || $existing->condition_status !== $condition) {
+                    $changed++;
+                }
             }
+
+            return $changed;
         });
+
+        if ($changed > 0) {
+            $progress = $this->flow->checklistProgress($service);
+            ActivityLog::record('checklist.updated', $service, "Checklist {$service->job_no} diperbarui: {$progress['checked_count']}/{$progress['total_points']} diperiksa, {$progress['critical_count']} kritis", [
+                'changed_points' => $changed,
+                'checked_count' => $progress['checked_count'],
+                'total_points' => $progress['total_points'],
+                'critical_count' => $progress['critical_count'],
+            ]);
+        }
 
         // Checklist state now drives the Finding domain (idempotent sync).
         $this->flow->syncFindingsFromChecklist($service);
