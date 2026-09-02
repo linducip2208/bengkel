@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Branch;
 use App\Models\EmailLog;
 use App\Models\Invoice;
 use App\Models\Service;
@@ -20,6 +21,94 @@ use Illuminate\Support\Facades\Mail;
 class EstimateController extends Controller
 {
     public function __construct(protected EstimateService $estimates) {}
+
+    // ------------------------------------------------------------------
+    // Index — central estimate management/monitoring page
+    // ------------------------------------------------------------------
+
+    public function index(Request $request)
+    {
+        abort_unless((bool) auth()->user()?->can('estimates.view'), 403, 'Tidak punya izin melihat estimasi.');
+
+        $filters = [
+            'search' => trim((string) $request->input('search', '')),
+            'status' => (string) $request->input('status', ''),
+            'date_from' => (string) $request->input('date_from', ''),
+            'date_to' => (string) $request->input('date_to', ''),
+            'branch_id' => (string) $request->input('branch_id', ''),
+            'valid_until' => (string) $request->input('valid_until', ''),
+            'version' => (string) $request->input('version', ''),
+        ];
+
+        $estimates = ServiceEstimate::query()
+            ->with(['service:id,job_no', 'customer:id,name,phone', 'vehicle:id,number_plate,model_name,vehicle_brand_id', 'vehicle.vehicleBrand:id,vehicle_brand', 'invoice:id,invoice_number,service_estimate_id'])
+            ->when($filters['search'] !== '', function ($q) use ($filters) {
+                $term = "%{$filters['search']}%";
+                $q->where(function ($q) use ($term) {
+                    $q->where('estimate_number', 'like', $term)
+                        ->orWhereHas('service', fn ($s) => $s->where('job_no', 'like', $term))
+                        ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', $term)->orWhere('phone', 'like', $term))
+                        ->orWhereHas('vehicle', fn ($v) => $v->where('number_plate', 'like', $term));
+                });
+            })
+            ->when($filters['status'] !== '' && $filters['status'] !== 'all', fn ($q) => $q->where('status', $filters['status']))
+            ->when($filters['date_from'] !== '', fn ($q) => $q->whereDate('estimate_date', '>=', $filters['date_from']))
+            ->when($filters['date_to'] !== '', fn ($q) => $q->whereDate('estimate_date', '<=', $filters['date_to']))
+            ->when($filters['branch_id'] !== '', fn ($q) => $q->where('branch_id', $filters['branch_id']))
+            ->when($filters['valid_until'] !== '', fn ($q) => $q->whereDate('valid_until', $filters['valid_until']))
+            ->when($filters['version'] !== '', fn ($q) => $q->where('version', (int) $filters['version']))
+            ->orderByDesc('id')
+            ->paginate(15)
+            ->withQueryString();
+
+        // Status counts respect the same filters except status itself.
+        $statusCounts = ServiceEstimate::query()
+            ->when($filters['search'] !== '', function ($q) use ($filters) {
+                $term = "%{$filters['search']}%";
+                $q->where(function ($q) use ($term) {
+                    $q->where('estimate_number', 'like', $term)
+                        ->orWhereHas('service', fn ($s) => $s->where('job_no', 'like', $term))
+                        ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', $term)->orWhere('phone', 'like', $term))
+                        ->orWhereHas('vehicle', fn ($v) => $v->where('number_plate', 'like', $term));
+                });
+            })
+            ->when($filters['date_from'] !== '', fn ($q) => $q->whereDate('estimate_date', '>=', $filters['date_from']))
+            ->when($filters['date_to'] !== '', fn ($q) => $q->whereDate('estimate_date', '<=', $filters['date_to']))
+            ->when($filters['branch_id'] !== '', fn ($q) => $q->where('branch_id', $filters['branch_id']))
+            ->when($filters['valid_until'] !== '', fn ($q) => $q->whereDate('valid_until', $filters['valid_until']))
+            ->when($filters['version'] !== '', fn ($q) => $q->where('version', (int) $filters['version']))
+            ->selectRaw('status, count(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        $counts = [
+            'all' => $statusCounts->sum(),
+            ServiceEstimate::STATUS_DRAFT => $statusCounts->get(ServiceEstimate::STATUS_DRAFT, 0),
+            ServiceEstimate::STATUS_WAITING_APPROVAL => $statusCounts->get(ServiceEstimate::STATUS_WAITING_APPROVAL, 0),
+            ServiceEstimate::STATUS_APPROVED => $statusCounts->get(ServiceEstimate::STATUS_APPROVED, 0),
+            ServiceEstimate::STATUS_REJECTED => $statusCounts->get(ServiceEstimate::STATUS_REJECTED, 0),
+            ServiceEstimate::STATUS_EXPIRED => $statusCounts->get(ServiceEstimate::STATUS_EXPIRED, 0),
+            ServiceEstimate::STATUS_CONVERTED => $statusCounts->get(ServiceEstimate::STATUS_CONVERTED, 0),
+        ];
+
+        $branches = Branch::query()->orderBy('name')->get(['id', 'name']);
+
+        // Chooser for "+ Buat Estimasi" — never creates an estimate directly.
+        $services = Service::query()
+            ->with(['customer:id,name', 'vehicle:id,number_plate,model_name'])
+            ->whereDoesntHave('estimates', fn ($q) => $q->whereIn('status', [
+                ServiceEstimate::STATUS_DRAFT,
+                ServiceEstimate::STATUS_SENT,
+                ServiceEstimate::STATUS_WAITING_APPROVAL,
+                ServiceEstimate::STATUS_APPROVED,
+            ]))
+            ->whereIn('workflow_status', [2, 3])
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get(['id', 'job_no', 'title', 'customer_id', 'vehicle_id']);
+
+        return view('estimates.index', compact('estimates', 'counts', 'branches', 'services', 'filters'));
+    }
 
     // ------------------------------------------------------------------
     // Create / update draft (idempotent â€” duplicate submits never duplicate)

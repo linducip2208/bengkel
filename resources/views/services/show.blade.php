@@ -338,9 +338,14 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="mb-0">Hasil Observasi</h6>
-                    <a href="{{ route('observations.checklist', $service) }}" class="btn btn-sm btn-danger">
-                        <i class="fas fa-edit me-1"></i> Edit Checklist
-                    </a>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('observations.checklist.print', $service) }}" target="_blank" class="btn btn-sm btn-outline-dark">
+                            <i class="fas fa-print me-1"></i> Print Checklist
+                        </a>
+                        <a href="{{ route('observations.checklist', $service) }}" class="btn btn-sm btn-danger">
+                            <i class="fas fa-edit me-1"></i> Buka Checklist
+                        </a>
+                    </div>
                 </div>
                 @php $grouped = $service->serviceObservationPoints->groupBy(fn($r) => $r->observationPoint?->observationType?->observation_type ?? 'Lainnya'); @endphp
                 @forelse($grouped as $type => $results)

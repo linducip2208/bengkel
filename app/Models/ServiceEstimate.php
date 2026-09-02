@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -56,6 +57,7 @@ use Illuminate\Support\Str;
  * @property Vehicle|null $vehicle
  * @property Collection<int, ServiceEstimateItem> $items
  * @property ServiceEstimate|null $previousEstimate
+ * @property Invoice|null $invoice
  */
 #[Fillable([
     'estimate_number', 'service_id', 'customer_id', 'vehicle_id', 'branch_id',
@@ -171,6 +173,12 @@ class ServiceEstimate extends Model
     public function previousEstimate(): BelongsTo
     {
         return $this->belongsTo(self::class, 'previous_estimate_id');
+    }
+
+    /** Invoice produced from this estimate (read accessor, set on conversion). */
+    public function invoice(): HasOne
+    {
+        return $this->hasOne(Invoice::class);
     }
 
     public function revisions(): HasMany

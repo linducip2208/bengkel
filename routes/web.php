@@ -308,6 +308,7 @@ Route::middleware(['auth'])->group(function () {
 
     // --- Observations ---
     Route::get('/observations/{service}/checklist', [ObservationController::class, 'checklist'])->name('observations.checklist');
+    Route::get('/observations/{service}/checklist/print', [ObservationController::class, 'printChecklist'])->name('observations.checklist.print');
     Route::post('/observations/{service}/save-checklist', [ObservationController::class, 'saveChecklist'])->name('observations.save-checklist');
     Route::get('/observations-by-type/{type}', [ObservationController::class, 'getByType'])->name('observations.by-type');
 
@@ -329,6 +330,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/services/{service}/send-wa', [ServiceController::class, 'sendWA'])->name('services.sendWA');
 
     // --- Service Estimates (quotation documents) ---
+    Route::get('/estimates', [EstimateController::class, 'index'])->name('estimates.index');
     Route::post('/services/{service}/estimates', [EstimateController::class, 'store'])->name('services.estimates.store');
     Route::get('/estimates/{estimate}/pdf', [EstimateController::class, 'pdf'])->name('estimates.pdf');
     Route::get('/estimates/{estimate}/preview', [EstimateController::class, 'preview'])->name('estimates.preview');

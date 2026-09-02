@@ -8,9 +8,14 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-tasks text-danger me-2"></i>Checklist Observasi: {{ $service->job_no }}</span>
-                <a href="{{ route('services.show', $service) }}" class="btn btn-sm btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i> Kembali
-                </a>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('observations.checklist.print', $service) }}" target="_blank" class="btn btn-sm btn-outline-dark">
+                        <i class="fas fa-print me-1"></i> Print Checklist
+                    </a>
+                    <a href="{{ route('services.show', $service) }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Kembali
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 <form action="{{ route('observations.save-checklist', $service) }}" method="POST">

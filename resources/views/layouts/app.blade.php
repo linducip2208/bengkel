@@ -486,16 +486,17 @@
             @endcanany
 
             {{-- 3. SERVICE MANAGEMENT --}}
-            @canany(['service.view','jobcard.view','subcontractor.view','service-package.view'])
+            @canany(['service.view','jobcard.view','subcontractor.view','service-package.view','estimates.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuServiceMgmt"
-                    aria-expanded="{{ request()->routeIs('services.*','jobcards.*','subcontractors.*','service-packages.*') ? 'true' : 'false' }}">
+                    aria-expanded="{{ request()->routeIs('services.*','estimates.*','jobcards.*','subcontractors.*','service-packages.*') ? 'true' : 'false' }}">
                     <i class="fas fa-tools"></i> {{ __('Service Management') }}
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <ul class="collapse submenu {{ request()->routeIs('services.*','jobcards.*','subcontractors.*','service-packages.*') ? 'show' : '' }}" id="menuServiceMgmt">
+                <ul class="collapse submenu {{ request()->routeIs('services.*','estimates.*','jobcards.*','subcontractors.*','service-packages.*') ? 'show' : '' }}" id="menuServiceMgmt">
                     @can('service-package.view')<li><a href="{{ route('service-packages.index') }}" class="nav-link {{ request()->is('service-packages*') ? 'active' : '' }}"><i class="fas fa-cubes me-1"></i> Service Packages</a></li>@endcan
                     @can('service.view')<li><a href="{{ route('services.index') }}" class="nav-link {{ request()->routeIs('services.index') ? 'active' : '' }}"><i class="fas fa-list me-1"></i> All Services</a></li>@endcan
+                    @can('estimates.view')<li><a href="{{ route('estimates.index') }}" class="nav-link {{ request()->routeIs('estimates.index') ? 'active' : '' }}"><i class="fas fa-file-signature me-1"></i> Estimasi</a></li>@endcan
                     @can('jobcard.view')<li><a href="{{ route('jobcards.index') }}" class="nav-link {{ request()->routeIs('jobcards.*') ? 'active' : '' }}"><i class="fas fa-clipboard-list me-1"></i> Job Cards</a></li>@endcan
                     @can('subcontractor.view')<li><a href="{{ route('subcontractors.index') }}" class="nav-link {{ request()->routeIs('subcontractors.*') ? 'active' : '' }}"><i class="fas fa-user-gear me-1"></i> Subcontractors</a></li>@endcan
                 </ul>
