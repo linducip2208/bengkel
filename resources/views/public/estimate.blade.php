@@ -49,7 +49,75 @@
                     </table>
                 </div>
 
-                <h6 class="border-bottom pb-2">Rincian Pekerjaan</h6>
+                @if($estimate->groups->isNotEmpty())
+                {{-- ============================ PER WORK PACKAGE DECISION ============================ --}}
+                <h6 class="border-bottom pb-2">Pilih Pekerjaan yang Disetujui</h6>
+                @php
+                    $approvedAmount = (float) $estimate->groups->where('customer_decision', 'approved')->sum('grand_total');
+                    $rejectedAmount = (float) $estimate->groups->where('customer_decision', 'rejected')->sum('grand_total');
+                    $totalAmount = (float) $estimate->groups->sum('grand_total');
+                @endphp
+                <form method="POST" action="{{ route('public.estimate.decide', $estimate->public_token) }}" id="decideForm">
+                    @csrf
+                    @foreach($estimate->groups as $group)
+                    <div class="border rounded p-3 mb-2 {{ $group->customer_decision === 'rejected' ? 'opacity-75' : '' }}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ $group->title }}</strong>
+                                @if($group->severity_snapshot === 'critical')
+                                    <span class="badge bg-danger">🔴 dari checklist kritis</span>
+                                @elseif($group->severity_snapshot === 'repair_required')
+                                    <span class="badge bg-warning text-dark">🟠 dari checklist perlu perbaikan</span>
+                                @elseif($group->severity_snapshot === 'attention')
+                                    <span class="badge bg-warning bg-opacity-50 text-dark">🟡 dari checklist perlu perhatian</span>
+                                @else
+                                    <span class="badge bg-secondary">manual</span>
+                                @endif
+                                @if($group->standard_minutes > 0)<small class="text-muted d-block">Standar waktu: {{ $group->standard_minutes }} menit</small>@endif
+                            </div>
+                            <strong>Rp {{ number_format((float) $group->grand_total, 0, ',', '.') }}</strong>
+                        </div>
+                        @if($group->items->isNotEmpty())
+                        <details class="small mt-1">
+                            <summary class="text-muted">Rincian item</summary>
+                            @foreach($group->items as $item)
+                            <div class="d-flex justify-content-between"><span>{{ ['labor' => 'Jasa', 'part' => 'Part', 'other' => 'Lain'][$item->item_type] ?? '' }}: {{ $item->description }} × {{ $item->quantity }}</span><span>Rp {{ number_format((float) $item->line_total, 0, ',', '.') }}</span></div>
+                            @endforeach
+                        </details>
+                        @endif
+
+                        @if($group->customer_decision === 'pending' && $approvable)
+                        <div class="d-flex gap-2 mt-2">
+                            <label class="btn btn-success btn-sm mb-0">
+                                <input type="radio" name="decisions[{{ $group->id }}][decision]" value="approved" class="me-1" data-amount="{{ $group->grand_total }}" required> SETUJUI
+                            </label>
+                            <label class="btn btn-outline-danger btn-sm mb-0">
+                                <input type="radio" name="decisions[{{ $group->id }}][decision]" value="rejected" class="me-1" data-amount="0"> TOLAK
+                            </label>
+                            <input type="hidden" name="decisions[{{ $group->id }}][group_id]" value="{{ $group->id }}">
+                        </div>
+                        @else
+                        <div class="mt-2">
+                            @if($group->customer_decision === 'approved')<span class="badge bg-success"><i class="bi bi-check me-1"></i>Disetujui</span>
+                            @elseif($group->customer_decision === 'rejected')<span class="badge bg-danger"><i class="bi bi-x me-1"></i>Ditolak</span>
+                            @else<span class="badge bg-warning text-dark">Menunggu</span>@endif
+                        </div>
+                        @endif
+                    </div>
+                    @endforeach
+
+                    @if($approvable)
+                    <div class="card card-body bg-light mb-3 small">
+                        <div class="d-flex justify-content-between"><span>Total Estimate:</span><strong>Rp {{ number_format($totalAmount, 0, ',', '.') }}</strong></div>
+                        <div class="d-flex justify-content-between text-success"><span>Disetujui:</span><strong id="approvedSum">Rp {{ number_format($approvedAmount, 0, ',', '.') }}</strong></div>
+                        <div class="d-flex justify-content-between text-danger"><span>Ditolak:</span><strong id="rejectedSum">Rp {{ number_format($rejectedAmount, 0, ',', '.') }}</strong></div>
+                        <button class="btn btn-success w-100 mt-2" id="confirmDecisions"><i class="bi bi-check2-all me-1"></i>KONFIRMASI KEPUTUSAN</button>
+                        <small class="text-muted mt-1 d-block">Keputusan bersifat final. Pekerjaan yang ditolak tidak akan dikerjakan dan tidak ditagihkan.</small>
+                    </div>
+                    @endif
+                </form>
+                @else
+                {{-- Legacy: whole-document approval --}}
                 <div class="table-responsive mb-3">
                     <table class="table table-sm table-bordered align-middle mb-0">
                         <thead class="table-light">
@@ -93,6 +161,7 @@
                         </tfoot>
                     </table>
                 </div>
+                @endif
 
                 @if($estimate->notes)
                 <div class="mb-3">
@@ -107,7 +176,15 @@
                 </div>
                 @endif
 
-                @if($estimate->status === \App\Models\ServiceEstimate::STATUS_APPROVED)
+                @if($estimate->groups->isNotEmpty() && $estimate->status === \App\Models\ServiceEstimate::STATUS_APPROVED)
+                <div class="alert alert-success text-center mb-0">
+                    <i class="bi bi-check-circle-fill me-1"></i>Semua pekerjaan <strong>disetujui</strong> pada {{ $estimate->approved_at?->format('d M Y H:i') }}.
+                </div>
+                @elseif($estimate->groups->isNotEmpty() && $estimate->status === \App\Models\ServiceEstimate::STATUS_PARTIALLY_APPROVED)
+                <div class="alert alert-info text-center mb-0">
+                    <i class="bi bi-check2-all me-1"></i>Pekerjaan <strong>disetujui sebagian</strong>: Rp {{ number_format((float) $estimate->approved_total, 0, ',', '.') }}. Pekerjaan yang ditolak tidak akan dikerjakan.
+                </div>
+                @elseif($estimate->status === \App\Models\ServiceEstimate::STATUS_APPROVED)
                 <div class="alert alert-success text-center mb-0">
                     <i class="bi bi-check-circle-fill me-1"></i>Estimasi ini sudah <strong>disetujui</strong> pada {{ $estimate->approved_at?->format('d M Y H:i') }}.
                 </div>
@@ -119,7 +196,7 @@
                 <div class="alert alert-warning text-center mb-0">
                     <i class="bi bi-hourglass-split me-1"></i>Estimasi sudah kedaluwarsa. Hubungi kami untuk revisi harga terbaru.
                 </div>
-                @elseif($approvable)
+                @elseif($approvable && $estimate->groups->isEmpty())
                 <div class="d-grid gap-2">
                     <form method="POST" action="{{ route('public.estimate.approve', $estimate->public_token) }}">
                         @csrf
@@ -147,5 +224,27 @@
             </div>
         </div>
     </div>
+
+    <script>
+    (function () {
+        function refresh() {
+            var approved = 0, rejected = 0, decided = 0, radios = document.querySelectorAll('#decideForm input[type=radio]');
+            radios.forEach(function (r) {
+                if (! r.checked) { return; }
+                decided++;
+                if (r.value === 'approved') { approved += parseFloat(r.getAttribute('data-amount') || '0'); }
+            });
+            var total = document.querySelectorAll('#decideForm input[type=radio][value=approved]').length;
+            var a = document.getElementById('approvedSum'), rj = document.getElementById('rejectedSum');
+            if (a) { a.textContent = 'Rp ' + approved.toLocaleString('id-ID'); }
+            var confirmBtn = document.getElementById('confirmDecisions');
+            if (confirmBtn) { confirmBtn.disabled = decided < total; }
+        }
+        document.querySelectorAll('#decideForm input[type=radio]').forEach(function (r) {
+            r.addEventListener('change', refresh);
+        });
+        refresh();
+    })();
+    </script>
 </body>
 </html>

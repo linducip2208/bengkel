@@ -38,9 +38,15 @@
         table.points th, table.points td { border: 1px solid #aaa; padding: 4px 6px; vertical-align: top; }
         table.points th { background: #f7f7f7; font-size: 11px; text-transform: uppercase; }
         table.points td.no { width: 6%; text-align: center; }
-        table.points td.status { width: 16%; text-align: center; font-weight: bold; }
-        table.points td.note { width: 32%; }
+        table.points td.status { width: 18%; text-align: center; font-weight: bold; }
+        table.points td.measurement { width: 14%; text-align: center; }
         tr { page-break-inside: avoid; }
+
+        .cond-not_checked { color: #555; }
+        .cond-ok { color: #0a7a0a; }
+        .cond-attention { color: #8a6d00; }
+        .cond-repair_required { color: #b35900; }
+        .cond-critical { color: #b30000; }
 
         .inspection-note { margin-top: 14px; page-break-inside: avoid; }
         .inspection-note .lbl { font-weight: bold; margin-bottom: 2px; }
@@ -62,7 +68,7 @@
 </head>
 <body>
     <div class="print-actions">
-        <button type="button" onclick="window.print()"><i>&#128424;</i> Print</button>
+        <button type="button" onclick="window.print()">&#128424; Print</button>
         <a href="{{ route('observations.checklist', $service) }}">Kembali</a>
     </div>
 
@@ -123,8 +129,9 @@
                 <tr>
                     <th class="no">No</th>
                     <th>Poin Pemeriksaan</th>
-                    <th class="status">Status</th>
-                    <th class="note">Catatan</th>
+                    <th class="status">Kondisi</th>
+                    <th class="measurement">Pengukuran</th>
+                    <th>Catatan</th>
                 </tr>
             </thead>
             <tbody>
@@ -133,8 +140,11 @@
                 <tr>
                     <td class="no">{{ $loop->iteration }}</td>
                     <td>{{ $point->observation_point }}</td>
-                    <td class="status">{{ ($result && $result->checked) ? 'OK' : 'Belum Dicek' }}</td>
-                    <td class="note">{{ $result?->comment ?: '-' }}</td>
+                    <td class="status cond-{{ $result?->condition_status ?? 'not_checked' }}">
+                        {{ $result?->conditionLabel() ?? 'Belum Diperiksa' }}
+                    </td>
+                    <td class="measurement">{{ $result?->measurementLabel() ?? '-' }}</td>
+                    <td>{{ $result?->comment ?: '-' }}</td>
                 </tr>
                 @endforeach
             </tbody>

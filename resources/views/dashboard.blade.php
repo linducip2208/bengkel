@@ -34,6 +34,68 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
 </div>
 @endif
 
+{{-- Workshop Operating System pipeline counters --}}
+@if(isset($flowStats))
+<div class="row mb-3">
+    <div class="col-6 col-md-4 col-lg mb-2">
+        <a href="{{ route('services.index') }}" class="text-decoration-none">
+            <div class="card border-start border-secondary border-4 h-100"><div class="card-body py-2 px-3">
+                <small class="text-muted">Checklist Belum Lengkap</small>
+                <h5 class="mb-0 text-secondary">{{ $flowStats['incomplete_checklists'] }}</h5>
+            </div></div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg mb-2">
+        <a href="{{ route('services.index') }}" class="text-decoration-none">
+            <div class="card border-start border-danger border-4 h-100"><div class="card-body py-2 px-3">
+                <small class="text-muted">Temuan Kritis</small>
+                <h5 class="mb-0 text-danger">{{ $flowStats['critical_findings'] }}</h5>
+            </div></div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg mb-2">
+        <a href="{{ route('estimates.index', ['status' => 'waiting_approval']) }}" class="text-decoration-none">
+            <div class="card border-start border-warning border-4 h-100"><div class="card-body py-2 px-3">
+                <small class="text-muted">Menunggu Approval</small>
+                <h5 class="mb-0 text-warning">{{ $flowStats['pending_estimates'] }}</h5>
+            </div></div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg mb-2">
+        <a href="{{ route('services.index') }}" class="text-decoration-none">
+            <div class="card border-start border-primary border-4 h-100"><div class="card-body py-2 px-3">
+                <small class="text-muted">Pekerjaan Disetujui</small>
+                <h5 class="mb-0 text-primary">{{ $flowStats['approved_packages'] }}</h5>
+            </div></div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg mb-2">
+        <a href="{{ route('services.index') }}" class="text-decoration-none">
+            <div class="card border-start border-info border-4 h-100"><div class="card-body py-2 px-3">
+                <small class="text-muted">Sedang Dikerjakan</small>
+                <h5 class="mb-0 text-info">{{ $flowStats['in_progress_tasks'] }}</h5>
+            </div></div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg mb-2">
+        <a href="{{ route('services.index') }}" class="text-decoration-none">
+            <div class="card border-start border-dark border-4 h-100"><div class="card-body py-2 px-3">
+                <small class="text-muted">Menunggu QC</small>
+                <h5 class="mb-0">{{ $flowStats['awaiting_qc'] }}</h5>
+            </div></div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg mb-2">
+        <a href="{{ route('services.index') }}" class="text-decoration-none">
+            <div class="card border-start border-success border-4 h-100"><div class="card-body py-2 px-3">
+                <small class="text-muted">Ready</small>
+                <h5 class="mb-0 text-success">{{ $flowStats['ready_services'] }}</h5>
+            </div></div>
+        </a>
+    </div>
+</div>
+@endif
+
 {{-- Role Widgets --}}
 @if(in_array('role_widgets', $enabledWidgets) && !empty($roleWidgets))
 <div class="row mb-3">

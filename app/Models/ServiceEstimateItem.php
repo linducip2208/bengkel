@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'service_estimate_id', 'product_id', 'item_type', 'description',
     'quantity', 'unit_price', 'discount', 'discount_type',
     'tax_rate', 'tax_amount', 'line_total', 'sort_order',
+    'estimate_group_id',
 ])]
 class ServiceEstimateItem extends Model
 {
@@ -43,5 +44,10 @@ class ServiceEstimateItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(ServiceEstimateGroup::class, 'estimate_group_id');
     }
 }

@@ -59,8 +59,7 @@ class ChecklistPrintTest extends TestCase
             'odometer' => 42000,
         ]);
 
-        return Service::create([
-            'customer_id' => $customer->id,
+        return Service::create(['customer_id' => $customer->id,
             'vehicle_id' => $vehicle->id,
             'repair_category_id' => $category->id,
             'job_no' => app(ServiceService::class)->generateJobNo(),
@@ -121,8 +120,8 @@ class ChecklistPrintTest extends TestCase
             ->assertSee('Air Radiator')
             ->assertSee('Kampas Rem')
             ->assertSee('Kurang 0.5L')
-            // Checked point renders OK, the rest render plain un-checked values.
-            ->assertSee('Belum Dicek')
+            // Un-inspected points render plain un-checked values.
+            ->assertSee('Belum Diperiksa')
             // Plain document values, no editable form controls.
             ->assertDontSee('<input', false)
             ->assertDontSee('<checkbox', false);

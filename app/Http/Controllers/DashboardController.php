@@ -29,6 +29,7 @@ class DashboardController extends Controller
         $enabledWidgets = $this->getEnabledWidgets($user);
 
         $stats = $reportService->getDashboardStats();
+        $flowStats = $reportService->getWorkshopFlowStats();
         $recentServices = Service::with(['customer', 'vehicle'])
             ->latest()
             ->limit(10)
@@ -56,7 +57,7 @@ class DashboardController extends Controller
         return view('dashboard', compact(
             'stats', 'recentServices', 'upcomingServices',
             'chartData', 'statusChart', 'roleWidgets', 'lowStockAlert',
-            'lowStockReorder', 'enabledWidgets'
+            'lowStockReorder', 'enabledWidgets', 'flowStats'
         ));
     }
 

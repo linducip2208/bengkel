@@ -120,12 +120,13 @@ class EstimateController extends Controller
 
         $data = $this->validateHeader($request);
         $items = $this->normalizeItems($request);
+        $packages = array_map('intval', (array) $request->input('packages', []));
 
-        if (count($items) === 0) {
-            return back()->with('error', 'Estimasi harus memiliki minimal satu item.');
+        if (count($items) === 0 && count($packages) === 0) {
+            return back()->with('error', 'Estimasi harus memiliki minimal satu item atau work package.');
         }
 
-        $estimate = $this->estimates->createDraft($service, $data, $items);
+        $estimate = $this->estimates->createDraft($service, $data, $items, $packages);
 
         return redirect()
             ->to(route('services.show', $service->id).'#tab-estimate')
@@ -149,12 +150,13 @@ class EstimateController extends Controller
 
         $data = $this->validateHeader($request);
         $items = $this->normalizeItems($request);
+        $packages = array_map('intval', (array) $request->input('packages', []));
 
-        if (count($items) === 0) {
-            return back()->with('error', 'Estimasi harus memiliki minimal satu item.');
+        if (count($items) === 0 && count($packages) === 0) {
+            return back()->with('error', 'Estimasi harus memiliki minimal satu item atau work package.');
         }
 
-        $this->estimates->updateDraft($estimate, $data, $items);
+        $this->estimates->updateDraft($estimate, $data, $items, $packages);
 
         return redirect()
             ->to(route('services.show', $estimate->service_id).'#tab-estimate')
