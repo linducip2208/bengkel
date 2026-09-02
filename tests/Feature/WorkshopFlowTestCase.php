@@ -44,9 +44,9 @@ abstract class WorkshopFlowTestCase extends TestCase
         $this->actingAs($this->user);
     }
 
-    protected function makeService(): Service
+    protected function makeService(array $overrides = []): Service
     {
-        $customer = Customer::create(['name' => 'Budi Santoso', 'phone' => '0812'.str_pad((string) random_int(1000000, 9999999), 8, '0', STR_PAD_LEFT)]);
+        $customer = Customer::create(['name' => 'Budi Santoso '.substr(uniqid(), -5), 'phone' => '0812'.str_pad((string) random_int(1000000, 9999999), 8, '0', STR_PAD_LEFT)]);
         $type = VehicleType::create(['vehicle_type' => 'MPV', 'slug' => uniqid()]);
         $brand = VehicleBrand::create(['vehicle_type_id' => $type->id, 'vehicle_brand' => 'Toyota']);
         $fuel = FuelType::create(['fuel_type' => 'Bensin', 'slug' => uniqid()]);
@@ -63,7 +63,7 @@ abstract class WorkshopFlowTestCase extends TestCase
             'odometer' => 42000,
         ]);
 
-        return Service::create([
+        return Service::create(array_merge([
             'customer_id' => $customer->id,
             'vehicle_id' => $vehicle->id,
             'repair_category_id' => $category->id,
@@ -72,7 +72,7 @@ abstract class WorkshopFlowTestCase extends TestCase
             'service_date' => now()->toDateString(),
             'workflow_status' => 2,
             'created_by' => $this->user->id,
-        ]);
+        ], $overrides));
     }
 
     protected function makeProduct(string $name = 'KAMPAS REM DEPAN', float $price = 180000): Product

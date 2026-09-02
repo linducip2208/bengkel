@@ -22,14 +22,66 @@
 @endphp
 
 @section('content')
+{{-- Post-create success: keep user in the estimate workflow with quick actions --}}
+@if(session('success') && session('created_estimate_id'))
+@php $createdEstimate = \App\Models\ServiceEstimate::withoutGlobalScopes()->find(session('created_estimate_id')); @endphp
+@if($createdEstimate)
+<div class="alert alert-success d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div><i class="fas fa-check-circle me-1"></i> Estimasi <strong>{{ $createdEstimate->estimate_number }}</strong> berhasil dibuat.</div>
+    <div class="d-flex gap-2">
+        <a href="{{ route('estimates.preview', $createdEstimate) }}" target="_blank" class="btn btn-sm btn-outline-success"><i class="fas fa-eye me-1"></i> Lihat Estimasi</a>
+        <a href="{{ route('services.show', $createdEstimate->service_id) }}#tab-estimate" class="btn btn-sm btn-outline-secondary"><i class="fas fa-toolbox me-1"></i> Buka Service</a>
+    </div>
+</div>
+@endif
+@endif
+
+{{-- Generic flash --}}
+@if(session('success') && ! session('created_estimate_id'))
+<div class="alert alert-success py-2"><i class="fas fa-check-circle me-1"></i>{{ session('success') }}</div>
+@endif
+@if(session('error'))
+<div class="alert alert-danger py-2"><i class="fas fa-triangle-exclamation me-1"></i>{{ session('error') }}</div>
+@endif
+
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h4 class="mb-0"><i class="fas fa-file-signature text-warning me-2"></i>Estimasi Servis</h4>
     @if($canCreate)
-    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#chooseServiceModal">
+    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#serviceSelectModal">
         <i class="fas fa-plus me-1"></i>+ Buat Estimasi
     </button>
     @endif
 </div>
+
+{{-- ============ SERVICE SELECT MODAL (searchable dropdown, stays in Estimasi) ============ --}}
+@if($canCreate)
+<div class="modal fade" id="serviceSelectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title"><i class="fas fa-file-signature me-1"></i> Pilih Service / Work Order</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="svcSelectSearch" class="form-control mb-2"
+                       placeholder="Cari No Service / pelanggan / no HP / plat kendaraan..." autocomplete="off">
+                <div class="d-flex gap-2 mb-2 flex-wrap" id="svcQuickFilters">
+                    <button type="button" class="btn btn-sm btn-primary" data-filter="">Belum Ada Estimasi</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="all">Semua Service</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="draft">Ada Draft</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="waiting">Menunggu Approval</button>
+                </div>
+                <div id="svcSelectResults" class="list-group list-group-flush overflow-auto" style="max-height:380px">
+                    <div class="text-muted text-center py-3">Memuat...</div>
+                </div>
+                <div class="text-center mt-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary d-none" id="svcLoadMore">Muat lebih banyak</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 
 {{-- ============================ SUMMARY CARDS ============================ --}}
 <div class="row g-2 mb-3">
@@ -219,42 +271,6 @@
     </div>
 </div>
 
-{{-- ============================ SERVICE CHOOSER (Buat Estimasi) ============================ --}}
-@if($canCreate)
-<div class="modal fade" id="chooseServiceModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h6 class="modal-title"><i class="fas fa-file-signature me-1"></i> Pilih Service / Work Order untuk Estimasi</h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p class="small text-muted">Estimasi selalu dibuat di dalam sebuah Service. Pilih work order di bawah — form estimasi terbuka pada tab Estimasi service tersebut.</p>
-                <input type="text" id="chooseServiceFilter" class="form-control form-control-sm mb-2" placeholder="Filter no service / pelanggan / plat...">
-                <div class="list-group list-group-flush overflow-auto" style="max-height:320px" id="chooseServiceList">
-                    @forelse($services as $svc)
-                    <a href="{{ route('services.show', $svc->id) }}#tab-estimate" class="list-group-item list-group-item-action choose-service-item"
-                       data-search="{{ strtolower($svc->job_no.' '.($svc->customer?->name ?? '').' '.($svc->vehicle?->number_plate ?? '')) }}">
-                        <div class="d-flex justify-content-between">
-                            <strong>{{ $svc->job_no }}</strong>
-                            <small class="text-muted">{{ $svc->customer?->name ?? '-' }}</small>
-                        </div>
-                        <small class="text-muted">{{ $svc->title }} · {{ $svc->vehicle?->number_plate ?? '-' }}</small>
-                    </a>
-                    @empty
-                    <div class="list-group-item text-muted">Tidak ada service aktif yang masih memerlukan estimasi.</div>
-                    @endforelse
-                </div>
-            </div>
-            <div class="modal-footer">
-                <a href="{{ route('services.index') }}" class="btn btn-sm btn-outline-secondary">Buka Daftar Servis</a>
-                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-dismiss="modal">Tutup</button>
-            </div>
-        </div>
-    </div>
-</div>
-@endif
-
 {{-- ============================ REVISE MODAL (shared) ============================ --}}
 @if($canRevise)
 <div class="modal fade" id="indexReviseModal" tabindex="-1" aria-hidden="true">
@@ -285,16 +301,116 @@
 <script>
 (function () {
     'use strict';
-    var filter = document.getElementById('chooseServiceFilter');
-    if (filter) {
-        filter.addEventListener('input', function () {
-            var term = this.value.toLowerCase();
-            document.querySelectorAll('.choose-service-item').forEach(function (item) {
-                item.style.display = (item.getAttribute('data-search') || '').indexOf(term) !== -1 ? '' : 'none';
-            });
+    var searchUrl = '{{ route('estimates.service-search') }}';
+    var modal = document.getElementById('serviceSelectModal');
+    if (! modal) { return; }
+
+    var input = document.getElementById('svcSelectSearch');
+    var results = document.getElementById('svcSelectResults');
+    var loadMoreBtn = document.getElementById('svcLoadMore');
+    var filterBtns = document.querySelectorAll('#svcQuickFilters button');
+    var currentFilter = '';
+    var currentPage = 1;
+    var hasMore = false;
+    var timer = null;
+    var lastLoaded = [];
+
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
         });
     }
 
+    function actionButton(s) {
+        if (s.action === 'continue_draft') {
+            return '<span class="btn btn-sm btn-warning">Lanjutkan Draft</span>';
+        }
+        if (s.action === 'view') {
+            return '<span class="btn btn-sm btn-outline-secondary">Lihat Estimasi</span>';
+        }
+        if (s.action === 'revise') {
+            return '<span class="btn btn-sm btn-outline-warning">Buat Revisi</span>';
+        }
+        return '<span class="btn btn-sm btn-warning">Buat Estimasi</span>';
+    }
+
+    function card(s) {
+        var badge = s.has_active_estimate
+            ? '<span class="badge bg-info ms-1">' + esc(s.estimate.status_label) + ' ' + esc(s.estimate.number) + '</span>'
+            : '';
+        var note = s.needs_inspection
+            ? '<small class="text-warning d-block"><i class="fas fa-triangle-exclamation me-1"></i>Checklist/inspection belum selesai</small>'
+            : '';
+        return '<a href="' + esc(s.url) + '" class="list-group-item list-group-item-action">'
+            + '<div class="d-flex justify-content-between align-items-center">'
+            + '<div>'
+            + '<strong>' + esc(s.job_no) + '</strong>' + badge
+            + '<div class="small">' + esc(s.customer || '-') + (s.phone ? ' · ' + esc(s.phone) : '') + '</div>'
+            + '<small class="text-muted">' + esc(s.model || '-') + ' · <strong>' + esc(s.plate || '-') + '</strong></small>'
+            + note
+            + '</div>'
+            + '<div class="text-end">'
+            + '<div class="small text-muted mb-1">Status: ' + esc(s.workflow_label) + '</div>'
+            + actionButton(s)
+            + '</div>'
+            + '</div>'
+            + '</a>';
+    }
+
+    function load(reset) {
+        if (reset) { currentPage = 1; }
+        var params = new URLSearchParams({ q: input.value.trim(), filter: currentFilter, page: currentPage });
+        results.querySelector('.svc-loading')?.remove();
+        if (reset) {
+            results.innerHTML = '<div class="text-muted text-center py-3 svc-loading">Memuat...</div>';
+        }
+        fetch(searchUrl + '?' + params.toString(), { headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                var html = (data.results || []).map(card).join('');
+                if (reset) {
+                    results.innerHTML = html !== ''
+                        ? html
+                        : (input.value.trim() !== ''
+                            ? '<div class="text-muted text-center py-4">Tidak ditemukan Service yang cocok dengan pencarian.</div>'
+                            : '<div class="text-muted text-center py-4">Belum ada Service / Work Order aktif.</div>');
+                } else {
+                    results.querySelector('.svc-loading')?.remove();
+                    if (html !== '') { results.insertAdjacentHTML('beforeend', html); }
+                }
+                hasMore = !!(data.pagination && data.pagination.more);
+                loadMoreBtn.classList.toggle('d-none', ! hasMore);
+                results.querySelectorAll('.svc-loading').forEach(function (el) { el.remove(); });
+            })
+            .catch(function () {
+                results.innerHTML = '<div class="text-danger text-center py-3">Gagal memuat. Coba lagi.</div>';
+            });
+    }
+
+    input.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () { load(true); }, 250);
+    });
+    filterBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            filterBtns.forEach(function (b) { b.className = 'btn btn-sm btn-outline-secondary'; });
+            btn.className = 'btn btn-sm btn-primary';
+            currentFilter = btn.getAttribute('data-filter');
+            load(true);
+        });
+    });
+    loadMoreBtn.addEventListener('click', function () {
+        currentPage++;
+        load(false);
+    });
+    modal.addEventListener('shown.bs.modal', function () {
+        input.value = '';
+        currentFilter = '';
+        load(true);
+        input.focus();
+    });
+
+    // ============ REVISE MODAL binding ============
     var reviseModal = document.getElementById('indexReviseModal');
     if (reviseModal) {
         reviseModal.addEventListener('show.bs.modal', function (event) {

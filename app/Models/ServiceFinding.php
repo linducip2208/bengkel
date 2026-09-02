@@ -74,6 +74,16 @@ class ServiceFinding extends Model
         self::SEVERITY_CRITICAL => 'Kritis',
     ];
 
+    public const STATUS_LABELS = [
+        self::STATUS_OPEN => 'Open',
+        self::STATUS_WORK_PROPOSED => 'Diajukan',
+        self::STATUS_APPROVED_FOR_WORK => 'Disetujui',
+        self::STATUS_IN_PROGRESS => 'Dikerjakan',
+        self::STATUS_RESOLVED => 'Selesai',
+        self::STATUS_DEFERRED => 'Ditunda',
+        self::STATUS_CANCELLED => 'Dibatalkan',
+    ];
+
     public const SEVERITY_COLORS = [
         self::SEVERITY_ATTENTION => 'warning',
         self::SEVERITY_REPAIR_REQUIRED => 'orange',

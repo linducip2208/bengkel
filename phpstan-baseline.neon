@@ -211,6 +211,90 @@ parameters:
 			path: app/Http/Controllers/Tenant/CommissionController.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$estimate_number\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Tenant/EstimateController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Tenant/EstimateController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$invoice\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Tenant/EstimateController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$model_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Tenant/EstimateController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Tenant/EstimateController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$number_plate\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Tenant/EstimateController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Tenant/EstimateController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Tenant/EstimateController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$vehicleBrand\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Tenant/EstimateController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$version\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Tenant/EstimateController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:statusLabel\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Tenant/EstimateController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>model_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Tenant/EstimateController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Tenant/EstimateController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>vehicle_brand" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Tenant/EstimateController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$vehicle\.$#'
 			identifier: property.notFound
 			count: 2

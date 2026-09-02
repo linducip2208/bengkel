@@ -10,8 +10,11 @@ use App\Models\Invoice;
 use App\Models\Service;
 use App\Models\ServiceEstimate;
 use App\Models\ServiceEstimateItem;
+use App\Models\ServiceFinding;
+use App\Models\ServiceWorkPackage;
 use App\Services\EstimateService;
 use App\Services\SettingsService;
+use App\Services\WorkshopFlowService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -93,21 +96,260 @@ class EstimateController extends Controller
 
         $branches = Branch::query()->orderBy('name')->get(['id', 'name']);
 
-        // Chooser for "+ Buat Estimasi" — never creates an estimate directly.
-        $services = Service::query()
-            ->with(['customer:id,name', 'vehicle:id,number_plate,model_name'])
-            ->whereDoesntHave('estimates', fn ($q) => $q->whereIn('status', [
+        return view('estimates.index', compact('estimates', 'counts', 'branches', 'filters'));
+    }
+
+    // ------------------------------------------------------------------
+    // Dedicated estimate builder page (choose WO → findings → packages)
+    // ------------------------------------------------------------------
+
+    /** Builder page: without service → WO search; with ?service_id → form. */
+    public function create(Request $request)
+    {
+        abort_unless((bool) auth()->user()?->can('estimates.create'), 403, 'Tidak punya izin membuat estimasi.');
+
+        $service = null;
+        $packages = collect();
+        $findings = collect();
+        $continuingDraft = null;
+        $lockedEstimate = null;
+
+        if ((int) $request->input('service_id', 0) > 0) {
+            /** @var Service|null $service */
+            $service = Service::query()->find((int) $request->input('service_id'));
+
+            // Branch-scoped out (or deleted) → stay inside the Estimate
+            // workflow, back at the search step.
+            if ($service === null) {
+                return redirect()
+                    ->route('estimates.create')
+                    ->with('error', 'Service tidak ditemukan pada cabang Anda.');
+            }
+
+            $service->load(['customer', 'vehicle.vehicleBrand', 'vehicle.vehicleType', 'repairCategory']);
+
+            // Existing non-draft estimate → show state + actions, no builder.
+            $lockedEstimate = $service->estimates()
+                ->whereIn('status', [
+                    ServiceEstimate::STATUS_SENT,
+                    ServiceEstimate::STATUS_WAITING_APPROVAL,
+                    ServiceEstimate::STATUS_APPROVED,
+                    ServiceEstimate::STATUS_PARTIALLY_APPROVED,
+                    ServiceEstimate::STATUS_CONVERTED,
+                ])
+                ->orderByDesc('version')
+                ->first();
+
+            $continuingDraft = $service->estimates()
+                ->where('status', ServiceEstimate::STATUS_DRAFT)
+                ->orderByDesc('version')
+                ->first();
+
+            if ($lockedEstimate !== null) {
+                return view('estimates.create', [
+                    'service' => $service,
+                    'packages' => $packages,
+                    'findings' => $findings,
+                    'continuingDraft' => null,
+                    'lockedEstimate' => $lockedEstimate,
+                ]);
+            }
+
+            $findings = $service->findings()
+                ->whereIn('status', [ServiceFinding::STATUS_OPEN, ServiceFinding::STATUS_WORK_PROPOSED])
+                ->orderByDesc('id')
+                ->get();
+
+            $packages = $service->workPackages()
+                ->whereIn('status', [ServiceWorkPackage::STATUS_DRAFT, ServiceWorkPackage::STATUS_PROPOSED])
+                ->with(['items', 'finding'])
+                ->orderByDesc('id')
+                ->get();
+        }
+
+        /** @var view-string $view */
+        $view = 'estimates.create';
+
+        return view($view, compact('service', 'packages', 'findings', 'continuingDraft', 'lockedEstimate'));
+    }
+
+    /**
+     * Searchable Service/Work Order dropdown source (Select2-compatible).
+     * Shows all OPEN services — never silently hides earlier workflow states.
+     */
+    public function searchServices(Request $request)
+    {
+        abort_unless((bool) auth()->user()?->can('estimates.create'), 403, 'Tidak punya izin membuat estimasi.');
+
+        $q = trim((string) $request->input('q', ''));
+        $filter = (string) $request->input('filter', 'none');
+        $page = max(1, (int) $request->input('page', 1));
+        $perPage = 20;
+
+        // Eligible: Booked..Ready (0-8). Cancelled / completed / closed are
+        // excluded — a new estimate for those belongs to a new Service.
+        $query = Service::query()
+            ->with(['customer:id,name,phone', 'vehicle:id,number_plate,model_name'])
+            ->whereNull('cancelled_at')
+            ->where('workflow_status', '<=', 8)
+            ->when(match ($filter) {
+                'draft' => fn ($qq) => $qq->whereHas('estimates', fn ($e) => $e->where('status', ServiceEstimate::STATUS_DRAFT)),
+                'waiting' => fn ($qq) => $qq->whereHas('estimates', fn ($e) => $e->whereIn('status', [ServiceEstimate::STATUS_SENT, ServiceEstimate::STATUS_WAITING_APPROVAL])),
+                'all' => fn ($qq) => $qq,
+                // Default "Belum Ada Estimasi" — prevents valid services from
+                // appearing to disappear just because they have a draft.
+                default => fn ($qq) => $qq->whereDoesntHave('estimates', fn ($e) => $e->whereIn('status', [
+                    ServiceEstimate::STATUS_DRAFT,
+                    ServiceEstimate::STATUS_SENT,
+                    ServiceEstimate::STATUS_WAITING_APPROVAL,
+                    ServiceEstimate::STATUS_APPROVED,
+                    ServiceEstimate::STATUS_PARTIALLY_APPROVED,
+                ])),
+            })
+            ->when($q !== '', fn ($qq) => $qq->where(function ($w) use ($q) {
+                $w->where('job_no', 'like', "%{$q}%")
+                    ->orWhere('title', 'like', "%{$q}%")
+                    ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', "%{$q}%")->orWhere('phone', 'like', "%{$q}%"))
+                    ->orWhereHas('vehicle', fn ($v) => $v->where('number_plate', 'like', "%{$q}%")->orWhere('model_name', 'like', "%{$q}%"));
+            }));
+
+        $total = (clone $query)->count();
+        $services = $query->orderByDesc('id')
+            ->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get(['id', 'job_no', 'title', 'customer_id', 'vehicle_id', 'workflow_status']);
+
+        return response()->json([
+            'results' => $services->map(fn (Service $s) => $this->serviceCard($s)),
+            'pagination' => ['more' => $page * $perPage < $total],
+            'total' => $total,
+        ]);
+    }
+
+    /**
+     * Operational summary for one service (modal preview): checklist
+     * progress, finding counts, work packages, latest estimate + the
+     * correct primary action. Read-only.
+     */
+    public function servicePreview(Service $service, WorkshopFlowService $flow)
+    {
+        abort_unless((bool) auth()->user()?->can('estimates.create'), 403, 'Tidak punya izin membuat estimasi.');
+
+        $service->load(['customer:id,name,phone', 'vehicle.vehicleBrand:id,vehicle_brand', 'vehicle:id,number_plate,model_name']);
+
+        $progress = $flow->checklistProgress($service);
+        $openFindings = $service->findings()
+            ->whereIn('status', [ServiceFinding::STATUS_OPEN, ServiceFinding::STATUS_WORK_PROPOSED])
+            ->get();
+        $criticalCount = $openFindings->where('severity', ServiceFinding::SEVERITY_CRITICAL)->count();
+        $workPackages = $service->workPackages()
+            ->whereIn('status', [ServiceWorkPackage::STATUS_DRAFT, ServiceWorkPackage::STATUS_PROPOSED])
+            ->count();
+
+        $latest = $service->estimates()
+            ->whereIn('status', [
                 ServiceEstimate::STATUS_DRAFT,
                 ServiceEstimate::STATUS_SENT,
                 ServiceEstimate::STATUS_WAITING_APPROVAL,
                 ServiceEstimate::STATUS_APPROVED,
-            ]))
-            ->whereIn('workflow_status', [2, 3])
-            ->orderByDesc('id')
-            ->limit(50)
-            ->get(['id', 'job_no', 'title', 'customer_id', 'vehicle_id']);
+                ServiceEstimate::STATUS_PARTIALLY_APPROVED,
+                ServiceEstimate::STATUS_CONVERTED,
+            ])
+            ->orderByDesc('version')
+            ->first();
 
-        return view('estimates.index', compact('estimates', 'counts', 'branches', 'services', 'filters'));
+        $primary = match ($latest?->status) {
+            ServiceEstimate::STATUS_DRAFT => ['label' => 'Lanjutkan Draft', 'url' => route('estimates.create', ['service_id' => $service->id])],
+            ServiceEstimate::STATUS_SENT, ServiceEstimate::STATUS_WAITING_APPROVAL,
+            ServiceEstimate::STATUS_APPROVED, ServiceEstimate::STATUS_PARTIALLY_APPROVED => ['label' => 'Lihat Estimasi', 'url' => route('estimates.create', ['service_id' => $service->id])],
+            ServiceEstimate::STATUS_CONVERTED => ['label' => 'Lihat Invoice', 'url' => route('invoices.show', $latest->invoice)],
+            default => ['label' => 'Buat Estimasi', 'url' => route('estimates.create', ['service_id' => $service->id])],
+        };
+
+        return response()->json([
+            'service' => [
+                'job_no' => $service->job_no,
+                'customer' => $service->customer?->name,
+                'phone' => $service->customer?->phone,
+                'vehicle' => trim(($service->vehicle?->vehicleBrand?->vehicle_brand ?? '').' '.($service->vehicle?->model_name ?? '')) ?: '-',
+                'plate' => $service->vehicle?->number_plate,
+                'workflow_label' => Service::WORKFLOW_LABELS[$service->workflow_status] ?? (string) $service->workflow_status,
+            ],
+            'checklist' => [
+                'checked_count' => $progress['checked_count'],
+                'total_points' => $progress['total_points'],
+            ],
+            'findings' => [
+                'open' => $openFindings->count(),
+                'critical' => $criticalCount,
+            ],
+            'work_packages' => $workPackages,
+            'latest_estimate' => $latest !== null ? [
+                'number' => $latest->estimate_number,
+                'status' => $latest->status,
+                'status_label' => $latest->statusLabel(),
+            ] : null,
+            'primary' => $primary,
+        ]);
+    }
+
+    /** Estimate-state summary card for one service (search + create page). */
+    protected function serviceCard(Service $s): array
+    {
+        $active = $s->estimates()->whereIn('status', [
+            ServiceEstimate::STATUS_DRAFT,
+            ServiceEstimate::STATUS_SENT,
+            ServiceEstimate::STATUS_WAITING_APPROVAL,
+            ServiceEstimate::STATUS_APPROVED,
+            ServiceEstimate::STATUS_PARTIALLY_APPROVED,
+            ServiceEstimate::STATUS_CONVERTED,
+        ])->orderByDesc('version')->first();
+
+        $action = 'create';
+        $viewInvoiceUrl = null;
+        if ($active !== null) {
+            $action = match ($active->status) {
+                ServiceEstimate::STATUS_DRAFT => 'continue_draft',
+                ServiceEstimate::STATUS_SENT, ServiceEstimate::STATUS_WAITING_APPROVAL,
+                ServiceEstimate::STATUS_CONVERTED => 'view',
+                ServiceEstimate::STATUS_APPROVED, ServiceEstimate::STATUS_PARTIALLY_APPROVED => 'revise',
+                default => 'view',
+            };
+            if ($action === 'view' && $active->status === ServiceEstimate::STATUS_CONVERTED) {
+                $invoice = $active->invoice;
+                $viewInvoiceUrl = $invoice !== null ? route('invoices.show', $invoice) : null;
+            }
+        }
+
+        return [
+            'id' => $s->id,
+            'text' => $s->job_no.' — '.($s->customer?->name ?? '-'),
+            'job_no' => $s->job_no,
+            'title' => $s->title,
+            'customer' => $s->customer?->name,
+            'phone' => $s->customer?->phone,
+            'plate' => $s->vehicle?->number_plate,
+            'model' => $s->vehicle?->model_name,
+            'workflow_label' => Service::WORKFLOW_LABELS[$s->workflow_status] ?? (string) $s->workflow_status,
+            'needs_inspection' => (int) $s->workflow_status < 2,
+            'has_active_estimate' => $active !== null,
+            'action' => $action,
+            'action_label' => match ($action) {
+                'continue_draft' => 'Lanjutkan Draft',
+                'view' => $viewInvoiceUrl !== null ? 'Lihat Invoice' : 'Lihat Estimasi',
+                'revise' => 'Buat Revisi',
+                default => 'Buat Estimasi',
+            },
+            'estimate' => $active !== null ? [
+                'id' => $active->id,
+                'number' => $active->estimate_number,
+                'version' => $active->version,
+                'status' => $active->status,
+                'status_label' => $active->statusLabel(),
+            ] : null,
+            'url' => $viewInvoiceUrl ?? route('estimates.create', ['service_id' => $s->id]),
+            'url_view_invoice' => $viewInvoiceUrl,
+        ];
     }
 
     // ------------------------------------------------------------------
@@ -127,6 +369,16 @@ class EstimateController extends Controller
         }
 
         $estimate = $this->estimates->createDraft($service, $data, $items, $packages);
+
+        // Central Buat Estimasi flow: keep the user inside the Estimate
+        // workflow — /estimates with quick actions, never the generic
+        // /services index.
+        if ($request->input('redirect_to') === 'estimates') {
+            return redirect()
+                ->route('estimates.index')
+                ->with('success', "Estimasi {$estimate->estimate_number} berhasil dibuat.")
+                ->with('created_estimate_id', $estimate->id);
+        }
 
         return redirect()
             ->to(route('services.show', $service->id).'#tab-estimate')
