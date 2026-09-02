@@ -37,6 +37,7 @@ use App\Http\Controllers\Tenant\EmailLogController;
 use App\Http\Controllers\Tenant\EquipmentController;
 use App\Http\Controllers\Tenant\EstimateController;
 use App\Http\Controllers\Tenant\ExpenseController;
+use App\Http\Controllers\Tenant\FindingController;
 use App\Http\Controllers\Tenant\FleetContractController;
 use App\Http\Controllers\Tenant\FuelTypeController;
 use App\Http\Controllers\Tenant\GatePassController;
@@ -100,6 +101,9 @@ use App\Http\Controllers\Tenant\VoucherController;
 use App\Http\Controllers\Tenant\WarehouseController;
 use App\Http\Controllers\Tenant\WarrantyClaimController;
 use App\Http\Controllers\Tenant\WashbayController;
+use App\Http\Controllers\Tenant\WorkPackageController;
+use App\Http\Controllers\Tenant\WorkQcController;
+use App\Http\Controllers\Tenant\WorkTaskController;
 use App\Http\Controllers\TrackingController;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
@@ -135,6 +139,7 @@ Route::post('/reject/{token}', [ApprovalController::class, 'reject'])->name('pub
 Route::get('/estimate/{token}', [PublicEstimateController::class, 'show'])->name('public.estimate.show');
 Route::get('/estimate/{token}/pdf', [PublicEstimateController::class, 'pdf'])->name('public.estimate.pdf');
 Route::post('/estimate/{token}/approve', [PublicEstimateController::class, 'approve'])->name('public.estimate.approve');
+Route::post('/estimate/{token}/decide', [PublicEstimateController::class, 'decide'])->name('public.estimate.decide');
 Route::post('/estimate/{token}/reject', [PublicEstimateController::class, 'reject'])->name('public.estimate.reject');
 
 // Payment Gateway webhook callback (PUBLIC — gateway POST tanpa session)
@@ -341,6 +346,21 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/estimates/{estimate}/override-approve', [EstimateController::class, 'overrideApprove'])->name('estimates.override-approve');
     Route::post('/estimates/{estimate}/convert-invoice', [EstimateController::class, 'convertToInvoice'])->name('estimates.convert-invoice');
     Route::put('/estimates/{estimate}', [EstimateController::class, 'update'])->name('estimates.update');
+
+    // --- Workshop flow: findings / work packages / tasks / QC ---
+    Route::get('/services/{service}/qc', [WorkQcController::class, 'show'])->name('work-packages.qc');
+    Route::post('/work-packages/{package}/qc', [WorkQcController::class, 'store'])->name('work-packages.qc.store');
+    Route::put('/work-packages/{package}', [WorkPackageController::class, 'update'])->name('work-packages.update');
+    Route::delete('/work-packages/{package}', [WorkPackageController::class, 'destroy'])->name('work-packages.destroy');
+    Route::post('/services/{service}/work-packages', [WorkPackageController::class, 'store'])->name('services.work-packages.store');
+    Route::post('/services/{service}/findings/defer/{finding}', [FindingController::class, 'defer'])->name('findings.defer');
+    Route::post('/findings/{finding}/resolve', [FindingController::class, 'resolve'])->name('findings.resolve');
+    Route::put('/findings/{finding}', [FindingController::class, 'update'])->name('findings.update');
+    Route::get('/work-tasks/{task}', [WorkTaskController::class, 'show'])->name('work-tasks.show');
+    Route::post('/work-tasks/{task}/start', [WorkTaskController::class, 'start'])->name('work-tasks.start');
+    Route::post('/work-tasks/{task}/pause', [WorkTaskController::class, 'pause'])->name('work-tasks.pause');
+    Route::post('/work-tasks/{task}/finish', [WorkTaskController::class, 'finish'])->name('work-tasks.finish');
+    Route::post('/work-tasks/{task}/assign', [WorkTaskController::class, 'assign'])->name('work-tasks.assign');
 
     // --- Parts Reservation ---
     Route::post('/services/{service}/reservations', [PartReservationController::class, 'store'])->name('services.reservations.store');

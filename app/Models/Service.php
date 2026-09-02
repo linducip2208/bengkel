@@ -12,12 +12,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
  * Work order / job.
  *
  * @property JobcardDetail|null $jobcardDetail
+ * @property Invoice|null $invoice
+ * @property Collection<int, ServiceFinding>|static $findings
+ * @property Collection<int, ServiceWorkPackage>|static $workPackages
+ * @property Collection<int, ServiceWorkTask>|static $workTasks
  */
 #[Fillable(['customer_id', 'vehicle_id', 'repair_category_id', 'title', 'description', 'service_date', 'charge', 'actual_cost', 'estimated_hours', 'started_at', 'completed_at', 'done_status', 'workflow_status', 'checked_in_at', 'qc_passed_at', 'mot_status', 'is_quotation', 'is_approved', 'created_by', 'branch_id', 'job_no', 'approval_token', 'repeat_of', 'assign_to', 'service_advisor_id', 'inspected_at', 'approved_at', 'invoiced_at', 'paid_at', 'released_at', 'cancelled_at', 'cancel_reason', 'survey_token'])]
 class Service extends Model
@@ -126,6 +131,21 @@ class Service extends Model
     public function estimates(): HasMany
     {
         return $this->hasMany(ServiceEstimate::class);
+    }
+
+    public function findings(): HasMany
+    {
+        return $this->hasMany(ServiceFinding::class);
+    }
+
+    public function workPackages(): HasMany
+    {
+        return $this->hasMany(ServiceWorkPackage::class);
+    }
+
+    public function workTasks(): HasMany
+    {
+        return $this->hasMany(ServiceWorkTask::class);
     }
 
     public function reservations(): HasMany

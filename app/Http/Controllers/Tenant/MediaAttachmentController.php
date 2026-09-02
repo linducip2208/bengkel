@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\MediaAttachment;
+use App\Models\ServiceObservationPoint;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +16,7 @@ class MediaAttachmentController extends Controller
     private const ATTACHABLE_MAP = [
         'customer' => Customer::class,
         'vehicle' => Vehicle::class,
+        'observation_point' => ServiceObservationPoint::class,
     ];
 
     public function store(Request $request)

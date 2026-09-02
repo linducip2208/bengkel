@@ -6,8 +6,11 @@ use App\Models\ActivityLog;
 use App\Models\Invoice;
 use App\Models\Service;
 use App\Models\ServiceEstimate;
+use App\Models\ServiceEstimateGroup;
 use App\Models\ServiceEstimateItem;
+use App\Models\ServiceWorkPackage;
 use App\Models\Setting;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -164,6 +167,24 @@ class EstimateService
                 'tax_amount' => (string) $item->tax_amount,
                 'line_total' => (string) $item->line_total,
             ])->all(),
+            // WHY this work was recommended — finding/work-package evidence
+            // survives master-data changes.
+            'groups' => $estimate->groups()->get()->map(function (ServiceEstimateGroup $group) {
+                return [
+                    'title' => $group->title,
+                    'severity_snapshot' => $group->severity_snapshot,
+                    'standard_minutes' => $group->standard_minutes,
+                    'grand_total' => (string) $group->grand_total,
+                    'customer_decision' => $group->customer_decision,
+                    'finding_number' => $group->finding?->finding_number,
+                    'finding_title' => $group->finding?->title,
+                    'finding_severity' => $group->finding?->severity,
+                    'finding_measurement' => $group->finding?->measurement_value !== null
+                        ? $group->finding->measurement_value.($group->finding->measurement_unit ? ' '.$group->finding->measurement_unit : '')
+                        : null,
+                    'work_package_title' => $group->workPackage?->title,
+                ];
+            })->all(),
         ];
     }
 
@@ -197,12 +218,15 @@ class EstimateService
      * idempotent: if the service already has a DRAFT, that exact row is
      * updated in place (same primary key, no new row).
      *
+     * $packages = work-package ids to attach as approval groups.
+     *
      * @param  array<string, mixed>  $data
      * @param  array<int, array<string, mixed>>  $items
+     * @param  array<int, int>  $packages
      */
-    public function createDraft(Service $service, array $data, array $items): ServiceEstimate
+    public function createDraft(Service $service, array $data, array $items, array $packages = []): ServiceEstimate
     {
-        return DB::transaction(function () use ($service, $data, $items) {
+        return DB::transaction(function () use ($service, $data, $items, $packages) {
             // Serialize concurrent create/update submissions per service.
             Service::query()->whereKey($service->id)->lockForUpdate()->firstOrFail();
 
@@ -212,18 +236,19 @@ class EstimateService
                 ->first();
 
             if ($existing !== null) {
-                return $this->updateDraft($existing, $data, $items);
+                return $this->updateDraft($existing, $data, $items, $packages);
             }
 
-            return $this->storeNewDraft($service, $data, $items);
+            return $this->storeNewDraft($service, $data, $items, $packages);
         });
     }
 
     /**
      * @param  array<string, mixed>  $data
      * @param  array<int, array<string, mixed>>  $items
+     * @param  array<int, int>  $packages
      */
-    protected function storeNewDraft(Service $service, array $data, array $items): ServiceEstimate
+    protected function storeNewDraft(Service $service, array $data, array $items, array $packages = []): ServiceEstimate
     {
         $totals = $this->computeTotals(
             $items,
@@ -254,6 +279,18 @@ class EstimateService
         ]);
 
         $this->persistItems($estimate, $totals['items']);
+
+        foreach (array_unique(array_map('intval', $packages)) as $packageId) {
+            $package = ServiceWorkPackage::query()->whereKey($packageId)->first();
+            if ($package !== null && (int) $package->service_id === (int) $service->id) {
+                $this->flow()->addWorkPackageToEstimate($estimate, $package);
+            }
+        }
+
+        if (count($packages) > 0) {
+            $this->flow()->recalculateEstimateFromGroups($estimate);
+        }
+
         $estimate->refresh();
 
         ActivityLog::record('estimate.created', $estimate, "Estimasi {$estimate->estimate_number} v{$estimate->version} dibuat", [
@@ -271,10 +308,11 @@ class EstimateService
      *
      * @param  array<string, mixed>  $data
      * @param  array<int, array<string, mixed>>  $items
+     * @param  array<int, int>  $packages
      */
-    public function updateDraft(ServiceEstimate $estimate, array $data, array $items): ServiceEstimate
+    public function updateDraft(ServiceEstimate $estimate, array $data, array $items, array $packages = []): ServiceEstimate
     {
-        return DB::transaction(function () use ($estimate, $data, $items) {
+        return DB::transaction(function () use ($estimate, $data, $items, $packages) {
             $locked = ServiceEstimate::query()->whereKey($estimate->id)->lockForUpdate()->firstOrFail();
 
             abort_unless($locked->isEditable(), 422, 'Estimasi sudah dikirim/disetujui — gunakan Buat Revisi untuk mengubahnya.');
@@ -303,6 +341,21 @@ class EstimateService
             $this->persistItems($locked, $totals['items']);
             $locked->refresh();
 
+            // Rebuild approval groups from the submitted package selection.
+            ServiceEstimateGroup::where('service_estimate_id', $locked->id)->delete();
+            foreach (array_unique(array_map('intval', $packages)) as $packageId) {
+                $package = ServiceWorkPackage::query()->whereKey($packageId)->first();
+                if ($package !== null && (int) $package->service_id === (int) $locked->service_id) {
+                    $this->flow()->addWorkPackageToEstimate($locked, $package);
+                }
+            }
+
+            if (count($packages) > 0) {
+                $this->flow()->recalculateEstimateFromGroups($locked);
+            }
+
+            $locked->refresh();
+
             ActivityLog::record('estimate.updated', $locked, "Estimasi {$locked->estimate_number} v{$locked->version} diperbarui", [
                 'old_total' => (string) $estimate->grand_total,
                 'new_total' => (string) $locked->grand_total,
@@ -329,6 +382,7 @@ class EstimateService
                 'tax_rate' => isset($item['tax_rate']) && $item['tax_rate'] !== '' ? (float) $item['tax_rate'] : null,
                 'tax_amount' => $item['tax_amount'] ?? 0,
                 'line_total' => $item['line_total'] ?? 0,
+                'estimate_group_id' => ! empty($item['estimate_group_id']) ? (int) $item['estimate_group_id'] : null,
                 'sort_order' => $index,
             ]);
         }
@@ -420,8 +474,24 @@ class EstimateService
 
             $hash = $this->contentHash($locked);
 
+            // Grouped estimates: override approval = approve ALL groups
+            // (per-group partial decisions happen via submitGroupDecisions()).
+            if ($locked->groups()->exists()) {
+                $hasPending = $locked->groups()->where('customer_decision', ServiceEstimateGroup::DECISION_PENDING)->exists();
+                if ($hasPending) {
+                    ServiceEstimateGroup::where('service_estimate_id', $locked->id)
+                        ->where('customer_decision', ServiceEstimateGroup::DECISION_PENDING)
+                        ->update([
+                            'customer_decision' => ServiceEstimateGroup::DECISION_APPROVED,
+                            'decided_at' => now(),
+                            'decision_reason' => $override ? 'Disetujui via override manager' : 'Disetujui keseluruhan',
+                        ]);
+                }
+            }
+
             $locked->forceFill([
                 'status' => ServiceEstimate::STATUS_APPROVED,
+                'decision_status' => ServiceEstimate::DECISION_APPROVED,
                 'approved_at' => now(),
                 'approval_method' => $method,
                 'approval_ip' => request()->ip(),
@@ -429,7 +499,10 @@ class EstimateService
                 'approved_hash' => $hash,
                 'snapshot' => $locked->snapshot ?? $this->buildSnapshot($locked),
             ])->save();
+            $this->recalculateApprovedAmounts($locked);
             $this->syncServiceApproved($locked);
+            $this->flow()->createTasksForApprovedGroups($locked);
+            $this->flow()->reservePartsForApprovedGroups($locked);
 
             $event = $override ? 'estimate.override_approved' : 'estimate.approved';
             ActivityLog::record($event, $locked, $override
@@ -472,8 +545,48 @@ class EstimateService
             $service->update(['workflow_status' => 4]);
         }
 
-        // Source of truth before invoicing = approved estimate grand_total.
-        $service->update(['charge' => $estimate->grand_total]);
+        // Source of truth before invoicing = approved amount only (never the
+        // full grand_total when part of the estimate was rejected).
+        $service->update(['charge' => $estimate->approved_total > 0 ? $estimate->approved_total : $estimate->grand_total]);
+    }
+
+    /** Derive approved/rejected amounts from group decisions (server-side). */
+    public function recalculateApprovedAmounts(ServiceEstimate $estimate): void
+    {
+        $groups = ServiceEstimateGroup::where('service_estimate_id', $estimate->id)->get();
+
+        if ($groups->isEmpty()) {
+            $estimate->forceFill([
+                'decision_status' => null,
+                'approved_total' => 0,
+                'rejected_total' => 0,
+            ])->save();
+
+            return;
+        }
+
+        $approvedTotal = round((float) $groups->where('customer_decision', ServiceEstimateGroup::DECISION_APPROVED)->sum('grand_total'), 2);
+        $rejectedTotal = round((float) $groups->where('customer_decision', ServiceEstimateGroup::DECISION_REJECTED)->sum('grand_total'), 2);
+        $approvedCount = $groups->where('customer_decision', ServiceEstimateGroup::DECISION_APPROVED)->count();
+        $rejectedCount = $groups->where('customer_decision', ServiceEstimateGroup::DECISION_REJECTED)->count();
+        $pendingCount = $groups->where('customer_decision', ServiceEstimateGroup::DECISION_PENDING)->count();
+
+        $decisionStatus = ServiceEstimate::DECISION_PENDING;
+        if ($pendingCount === 0) {
+            if ($rejectedCount === 0) {
+                $decisionStatus = ServiceEstimate::DECISION_APPROVED;
+            } elseif ($approvedCount === 0) {
+                $decisionStatus = ServiceEstimate::DECISION_REJECTED;
+            } else {
+                $decisionStatus = ServiceEstimate::DECISION_PARTIALLY_APPROVED;
+            }
+        }
+
+        $estimate->forceFill([
+            'decision_status' => $decisionStatus,
+            'approved_total' => $approvedTotal,
+            'rejected_total' => $rejectedTotal,
+        ])->save();
     }
 
     public function reject(ServiceEstimate $estimate, ?string $reason = null): ServiceEstimate
@@ -563,6 +676,7 @@ class EstimateService
                     'discount' => (float) $item->discount,
                     'discount_type' => $item->discount_type,
                     'tax_rate' => $item->tax_rate,
+                    'estimate_group_id' => $item->estimate_group_id,
                 ])->all();
             }
 
@@ -600,6 +714,28 @@ class EstimateService
             ]);
 
             $this->persistItems($revision, $totals['items']);
+
+            // Carry approval groups onto the new version — decisions reset to
+            // pending (the customer decides again on the new prices), while the
+            // superseded version keeps its historical decision evidence.
+            foreach ($locked->groups()->orderBy('sort_order')->get() as $oldGroup) {
+                /** @var ServiceEstimateGroup $oldGroup */
+                ServiceEstimateGroup::create([
+                    'service_estimate_id' => $revision->id,
+                    'service_work_package_id' => $oldGroup->service_work_package_id,
+                    'service_finding_id' => $oldGroup->service_finding_id,
+                    'title' => $oldGroup->title,
+                    'severity_snapshot' => $oldGroup->severity_snapshot,
+                    'standard_minutes' => $oldGroup->standard_minutes,
+                    'subtotal' => $oldGroup->subtotal,
+                    'grand_total' => $oldGroup->grand_total,
+                    'customer_decision' => ServiceEstimateGroup::DECISION_PENDING,
+                    'sort_order' => $oldGroup->sort_order,
+                ]);
+            }
+            if ($locked->groups()->exists()) {
+                $this->flow()->recalculateEstimateFromGroups($revision);
+            }
 
             // Previous version keeps its history but is no longer current.
             $locked->forceFill(['status' => ServiceEstimate::STATUS_SUPERSEDED])->save();
@@ -642,11 +778,44 @@ class EstimateService
                 return $existing; // idempotent
             }
 
-            abort_unless($locked->status === ServiceEstimate::STATUS_APPROVED, 422, 'Hanya estimasi yang disetujui yang bisa dibuatkan invoice.');
+            abort_unless(
+                in_array($locked->status, [ServiceEstimate::STATUS_APPROVED, ServiceEstimate::STATUS_PARTIALLY_APPROVED], true),
+                422,
+                'Hanya estimasi yang (sebagian) disetujui yang bisa dibuatkan invoice.'
+            );
             abort_if(Invoice::where('service_estimate_id', $locked->id)->exists(), 409, 'Invoice dari estimasi ini sudah ada.');
 
-            // All estimate money is already server-computed and stored; the
-            // invoice copies it verbatim (lines, totals, tax, discount).
+            // ONLY APPROVED groups/items are invoiceable commercial work.
+            // Rejected and pending groups never reach the invoice.
+            $groups = ServiceEstimateGroup::where('service_estimate_id', $locked->id)->get();
+            $approvedGroupIds = $groups->where('customer_decision', ServiceEstimateGroup::DECISION_APPROVED)->pluck('id');
+
+            /** @var Collection<int, ServiceEstimateItem> $estimateItems */
+            $estimateItems = $locked->items()->get();
+            $invoiceableItems = $estimateItems->filter(
+                fn (ServiceEstimateItem $item) => $item->estimate_group_id === null || $approvedGroupIds->contains($item->estimate_group_id)
+            );
+
+            $linesSubtotal = 0.0;
+            $linesDiscount = 0.0;
+            $linesTax = 0.0;
+            /** @var ServiceEstimateItem $item */
+            foreach ($invoiceableItems as $item) {
+                $linesSubtotal += round((float) $item->quantity * (float) $item->unit_price, 2);
+                $linesDiscount += (float) $item->discount;
+                $linesTax += (float) $item->tax_amount;
+            }
+            $linesSubtotal = round($linesSubtotal, 2);
+
+            // Proportional share of a document-level percent discount.
+            $headerDiscount = 0.0;
+            if ($locked->discount_type === 'percent') {
+                $base = max(0.0, (float) $locked->discount - $linesDiscount);
+                $headerDiscount = $linesSubtotal > 0 && $base > 0 ? $linesSubtotal * ($base / max($linesSubtotal, (float) $locked->subtotal)) : 0.0;
+            }
+            $headerDiscount = round(min($headerDiscount, $linesSubtotal - $linesDiscount), 2);
+            $invoiceGrand = round($linesSubtotal - $linesDiscount - $headerDiscount + $linesTax, 2);
+
             $invoice = Invoice::create([
                 'invoice_number' => $this->invoiceService->generateInvoiceNumber(),
                 'customer_id' => $locked->customer_id,
@@ -655,20 +824,21 @@ class EstimateService
                 'service_estimate_id' => $locked->id,
                 'payment_status' => 0,
                 'paid_amount' => 0,
-                'total_amount' => $locked->subtotal,
-                'discount' => $locked->discount,
+                'total_amount' => $linesSubtotal,
+                'discount' => round($linesDiscount + $headerDiscount, 2),
                 'discount_type' => $locked->discount_type,
-                'tax_amount' => $locked->tax_amount,
-                'grand_total' => $locked->grand_total,
+                'tax_amount' => round($linesTax, 2),
+                'grand_total' => $invoiceGrand,
                 'invoice_date' => $overrides['invoice_date'] ?? now()->toDateString(),
                 'due_date' => $overrides['due_date'] ?? null,
                 'invoice_type' => 'service',
-                'notes' => $overrides['notes'] ?? ('Dibuat dari Estimasi '.$locked->estimate_number.' v'.$locked->version),
+                'notes' => $overrides['notes'] ?? ('Dibuat dari Estimasi '.$locked->estimate_number.' v'.$locked->version.($locked->status === ServiceEstimate::STATUS_PARTIALLY_APPROVED ? ' (pekerjaan disetujui saja)' : '')),
                 'created_by' => auth()->id() ?? 1,
                 'branch_id' => $locked->branch_id,
             ]);
 
-            foreach ($locked->items as $item) {
+            /** @var ServiceEstimateItem $item */
+            foreach ($invoiceableItems as $item) {
                 $invoice->items()->create([
                     'product_id' => $item->product_id,
                     'description' => $item->description,
@@ -689,7 +859,7 @@ class EstimateService
             app(AutoJournalService::class)->journalInvoiceIssued($invoice);
 
             // Source of truth moves to the invoice after conversion.
-            $locked->service()->update(['charge' => $locked->grand_total]);
+            $locked->service()->update(['charge' => $invoice->grand_total]);
 
             ActivityLog::record('estimate.converted_to_invoice', $locked, "Estimasi {$locked->estimate_number} v{$locked->version} dikonversi ke Invoice {$invoice->invoice_number}", [
                 'invoice_id' => $invoice->id,
@@ -708,11 +878,17 @@ class EstimateService
     public function approvedCommercialTotal(Service $service): float
     {
         $latestApproved = ServiceEstimate::where('service_id', $service->id)
-            ->where('status', ServiceEstimate::STATUS_APPROVED)
+            ->whereIn('status', [ServiceEstimate::STATUS_APPROVED, ServiceEstimate::STATUS_PARTIALLY_APPROVED])
             ->orderByDesc('version')
             ->first();
 
-        return $latestApproved === null ? 0.0 : (float) $latestApproved->grand_total;
+        if ($latestApproved === null) {
+            return 0.0;
+        }
+
+        return $latestApproved->approved_total > 0
+            ? (float) $latestApproved->approved_total
+            : (float) $latestApproved->grand_total;
     }
 
     public function reconciliation(Service $service): array
@@ -750,5 +926,10 @@ class EstimateService
         return $custom !== null && $custom !== ''
             ? $custom
             : 'Harga estimasi dapat berubah apabila ditemukan kerusakan tambahan setelah pembongkaran/pemeriksaan. Pekerjaan tambahan hanya dilakukan setelah persetujuan pelanggan.';
+    }
+
+    protected function flow(): WorkshopFlowService
+    {
+        return app(WorkshopFlowService::class);
     }
 }

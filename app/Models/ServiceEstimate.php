@@ -56,6 +56,7 @@ use Illuminate\Support\Str;
  * @property Customer|null $customer
  * @property Vehicle|null $vehicle
  * @property Collection<int, ServiceEstimateItem> $items
+ * @property Collection<int, ServiceEstimateGroup> $groups
  * @property ServiceEstimate|null $previousEstimate
  * @property Invoice|null $invoice
  */
@@ -69,6 +70,7 @@ use Illuminate\Support\Str;
     'approval_method', 'approval_ip', 'approval_user_agent', 'approved_hash', 'approved_at',
     'rejected_at', 'rejection_reason', 'sent_at', 'converted_at',
     'created_by', 'updated_by',
+    'decision_status', 'approved_total', 'rejected_total', 'decision_evidence',
 ])]
 class ServiceEstimate extends Model
 {
@@ -90,12 +92,24 @@ class ServiceEstimate extends Model
 
     public const STATUS_CONVERTED = 'converted';
 
+    public const STATUS_PARTIALLY_APPROVED = 'partially_approved';
+
+    /** Derived commercial decision status (from per-group customer decisions). */
+    public const DECISION_PENDING = 'pending';
+
+    public const DECISION_PARTIALLY_APPROVED = 'partially_approved';
+
+    public const DECISION_APPROVED = 'approved';
+
+    public const DECISION_REJECTED = 'rejected';
+
     /** Commercial statuses that can still be acted upon by the workshop. */
     public const ACTIVE_STATUSES = [
         self::STATUS_DRAFT,
         self::STATUS_SENT,
         self::STATUS_WAITING_APPROVAL,
         self::STATUS_APPROVED,
+        self::STATUS_PARTIALLY_APPROVED,
     ];
 
     /** Statuses a customer may still approve/reject. */
@@ -109,6 +123,7 @@ class ServiceEstimate extends Model
         self::STATUS_SENT => 'Terkirim',
         self::STATUS_WAITING_APPROVAL => 'Menunggu Persetujuan',
         self::STATUS_APPROVED => 'Disetujui',
+        self::STATUS_PARTIALLY_APPROVED => 'Sebagian Disetujui',
         self::STATUS_REJECTED => 'Ditolak',
         self::STATUS_EXPIRED => 'Kedaluwarsa',
         self::STATUS_SUPERSEDED => 'Digantikan',
@@ -120,6 +135,7 @@ class ServiceEstimate extends Model
         self::STATUS_SENT => 'info',
         self::STATUS_WAITING_APPROVAL => 'warning',
         self::STATUS_APPROVED => 'success',
+        self::STATUS_PARTIALLY_APPROVED => 'info',
         self::STATUS_REJECTED => 'danger',
         self::STATUS_EXPIRED => 'dark',
         self::STATUS_SUPERSEDED => 'secondary',
@@ -141,6 +157,9 @@ class ServiceEstimate extends Model
             'approved_at' => 'datetime',
             'rejected_at' => 'datetime',
             'converted_at' => 'datetime',
+            'approved_total' => 'decimal:2',
+            'rejected_total' => 'decimal:2',
+            'decision_evidence' => 'array',
         ];
     }
 
@@ -179,6 +198,14 @@ class ServiceEstimate extends Model
     public function invoice(): HasOne
     {
         return $this->hasOne(Invoice::class);
+    }
+
+    /** Work-package groups within this estimate (per-package approval). */
+    public function groups(): HasMany
+    {
+        return $this->hasMany(ServiceEstimateGroup::class)
+            ->orderBy('sort_order')
+            ->orderBy('id');
     }
 
     public function revisions(): HasMany

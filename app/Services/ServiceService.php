@@ -139,6 +139,8 @@ class ServiceService extends BaseService
             'images', 'checkoutResults.checkoutCategory', 'invoice',
             'serviceAdvisor', 'serviceTechnicians.user',
             'activityLogs.user',
+            'findings' => fn ($q) => $q->orderByDesc('id'),
+            'workPackages' => fn ($q) => $q->with(['items.product', 'task.timeEntries', 'qcChecks', 'finding'])->orderByDesc('id'),
             'estimates' => fn ($q) => $q->with(['items.product'])->orderByDesc('version'),
         ])->findOrFail($id);
 

@@ -3,6 +3,35 @@
 @section('title', 'Detail Servis: ' . $service->job_no)
 
 @section('content')
+@php
+    $ws = $service->workflow_status ?? 0;
+    // Workflow progress strip: Check-in → Inspection → Estimate → Approval → Work → QC → Invoice → Complete
+    $flowSteps = [
+        ['label' => 'Check-in', 'done' => $ws >= 1],
+        ['label' => 'Inspection', 'done' => $ws >= 2],
+        ['label' => 'Estimate', 'done' => $service->estimates->where('status', '!=', 'draft')->count() > 0 || $ws >= 3],
+        ['label' => 'Approval', 'done' => $ws >= 4],
+        ['label' => 'Work', 'done' => $ws >= 7],
+        ['label' => 'QC', 'done' => $ws >= 8],
+        ['label' => 'Invoice', 'done' => $ws >= 9 || $service->invoice !== null],
+        ['label' => 'Complete', 'done' => $ws >= 12],
+    ];
+    $currentFlowIndex = collect($flowSteps)->search(fn ($s) => ! $s['done']);
+    if ($currentFlowIndex === false) { $currentFlowIndex = count($flowSteps) - 1; }
+@endphp
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <div class="d-flex flex-wrap align-items-center gap-1 small">
+            @foreach($flowSteps as $i => $step)
+                <span class="badge rounded-pill {{ $step['done'] ? 'bg-success' : ($i === $currentFlowIndex ? 'bg-warning text-dark' : 'bg-light text-muted') }}">
+                    @if($step['done'])<i class="fas fa-check me-1"></i>@endif{{ $step['label'] }}
+                </span>
+                @if(! $loop->last)<i class="fas fa-angle-right text-muted"></i>@endif
+            @endforeach
+        </div>
+    </div>
+</div>
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0"><i class="fas fa-clipboard-list text-warning me-2"></i>{{ $service->job_no }}</h5>
     <div>
@@ -56,9 +85,12 @@
     <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-info"><i class="fas fa-info-circle me-1"></i>Info</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-jobcard"><i class="fas fa-id-card me-1"></i>Jobcard</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-checklist"><i class="fas fa-tasks me-1"></i>Checklist</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-findings"><i class="fas fa-magnifying-glass me-1"></i>Temuan @if($service->findings->where('status', '!=', 'resolved')->count())<span class="badge bg-danger ms-1">{{ $service->findings->where('status', '!=', 'resolved')->count() }}</span>@endif</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-estimate"><i class="fas fa-file-signature me-1"></i>Estimasi</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-work"><i class="fas fa-briefcase me-1"></i>Pekerjaan</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-photos"><i class="fas fa-images me-1"></i>Foto</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-checkout"><i class="fas fa-clipboard-check me-1"></i>Checkout</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-qc"><i class="fas fa-award me-1"></i>QC</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-invoice"><i class="fas fa-file-invoice me-1"></i>Invoice</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-reservations"><i class="fas fa-boxes me-1"></i>Reservasi Parts</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-history"><i class="fas fa-clock-rotate-left me-1"></i>Riwayat</button></li>
@@ -373,10 +405,16 @@
         </div>
     </div>
 
-    {{-- Tab 4: Estimasi --}}
+    {{-- Tab 4: Temuan (findings) --}}
+    @include('services.tabs.findings')
+
+    {{-- Tab 5: Estimasi --}}
     @include('estimates.tab')
 
-    {{-- Tab 5: Photos --}}
+    {{-- Tab 6: Pekerjaan (work packages + tasks) --}}
+    @include('services.tabs.work')
+
+    {{-- Tab 7: Photos --}}
     <div class="tab-pane fade" id="tab-photos">
         <div class="card">
             <div class="card-body">
@@ -582,9 +620,16 @@
             </table></div>
         </div></div>
     </div>
+
+    {{-- Tab 11: QC --}}
+    @include('services.tabs.qc')
 </div>
 
 {{-- Modal Link Survey --}}
+@include('services.tabs.work-package-modal')
+@include('services.tabs.qc')
+@include('services.tabs.work-package-modal')
+
 <div class="modal fade" id="surveyModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">

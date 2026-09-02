@@ -9,6 +9,10 @@ use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\Service;
+use App\Models\ServiceEstimate;
+use App\Models\ServiceFinding;
+use App\Models\ServiceWorkPackage;
+use App\Models\ServiceWorkTask;
 use App\Models\StockHistory;
 use App\Models\StockRecord;
 use App\Models\SupplierPrice;
@@ -286,6 +290,43 @@ class ReportService
             'revenue_this_month' => $revenueThisMonth,
             'outstanding_invoices' => $outstandingInvoices,
             'low_stock_count' => $lowStockCount,
+        ];
+    }
+
+    /**
+     * Workshop Operating System counters (operational pipeline health).
+     */
+    public function getWorkshopFlowStats(): array
+    {
+        $criticalFindings = ServiceFinding::whereIn('status', [
+            ServiceFinding::STATUS_OPEN,
+            ServiceFinding::STATUS_WORK_PROPOSED,
+        ])->where('severity', ServiceFinding::SEVERITY_CRITICAL)->count();
+
+        $pendingEstimates = ServiceEstimate::whereIn('status', [
+            ServiceEstimate::STATUS_SENT,
+            ServiceEstimate::STATUS_WAITING_APPROVAL,
+        ])->count();
+
+        $approvedPackages = ServiceWorkPackage::where('status', ServiceWorkPackage::STATUS_APPROVED)->count();
+        $inProgressTasks = ServiceWorkTask::where('status', ServiceWorkTask::STATUS_IN_PROGRESS)->count();
+        $awaitingQc = ServiceWorkTask::where('status', ServiceWorkTask::STATUS_QC_PENDING)->count();
+        $readyServices = Service::where('workflow_status', 8)->count();
+
+        // Services still in inspection with an incomplete checklist.
+        $incompleteChecklists = Service::whereIn('workflow_status', [1, 2])
+            ->whereHas('serviceObservationPoints', fn ($q) => $q->where('condition_status', 'not_checked'))
+            ->whereHas('serviceObservationPoints')
+            ->count();
+
+        return [
+            'incomplete_checklists' => $incompleteChecklists,
+            'critical_findings' => $criticalFindings,
+            'pending_estimates' => $pendingEstimates,
+            'approved_packages' => $approvedPackages,
+            'in_progress_tasks' => $inProgressTasks,
+            'awaiting_qc' => $awaitingQc,
+            'ready_services' => $readyServices,
         ];
     }
 

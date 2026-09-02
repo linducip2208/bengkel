@@ -160,6 +160,37 @@
             {{-- ============================ BUILDER ============================ --}}
             <div class="border-top pt-3 mt-3">
                 <h6 class="mb-3">{{ $activeEstimate?->isEditable() ? 'Edit Estimasi' : 'Buat Estimasi Baru' }}</h6>
+
+                {{-- Source work packages (checklist/finding evidence) --}}
+                @if($service->workPackages->whereIn('status', ['draft', 'proposed', 'approved'])->isNotEmpty())
+                <div class="border rounded p-2 mb-3 bg-light">
+                    <strong class="small"><i class="fas fa-briefcase me-1"></i> Sumber Pekerjaan (Work Package)</strong>
+                    <small class="text-muted d-block mb-2">Pekerjaan yang dipilih menjadi grup estimasi dengan badge sumber — customer menyetujui per pekerjaan.</small>
+                    <div class="row g-1">
+                        @foreach($service->workPackages->whereIn('status', ['draft', 'proposed', 'approved']) as $wp)
+                        @php
+                            $wpTotals = $wp->computeTotals();
+                            $selected = $activeEstimate && $activeEstimate->groups->contains('service_work_package_id', $wp->id);
+                        @endphp
+                        <div class="col-md-6">
+                            <label class="border rounded p-2 d-flex justify-content-between align-items-center h-100 mb-0 bg-white {{ $selected ? 'border-warning' : '' }}" style="cursor:pointer">
+                                <span class="small">
+                                    <input type="checkbox" name="packages[]" value="{{ $wp->id }}" class="me-1" {{ $selected ? 'checked' : '' }}>
+                                    <strong>{{ $wp->title }}</strong>
+                                    @if($wp->finding)
+                                        <span class="badge {{ $wp->finding->severity === 'critical' ? 'bg-danger' : ($wp->finding->severity === 'repair_required' ? 'bg-warning text-dark' : 'bg-warning bg-opacity-50 text-dark') }} ms-1">dari checklist {{ $wp->finding->severity === 'critical' ? 'kritis' : 'perlu perbaikan' }}</span>
+                                    @else
+                                        <span class="badge bg-secondary ms-1">manual</span>
+                                    @endif
+                                    <small class="text-muted d-block">Std: {{ $wpTotals['standard_minutes'] }} mnt · Jasa Rp {{ number_format($wpTotals['labor_total'], 0, ',', '.') }} · Part Rp {{ number_format($wpTotals['part_total'], 0, ',', '.') }} · <strong>Rp {{ number_format($wpTotals['grand_total'], 0, ',', '.') }}</strong></small>
+                                </span>
+                            </label>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
                 <form method="POST" id="estimateForm"
                       action="{{ ($activeEstimate && $activeEstimate->isEditable()) ? route('estimates.update', $activeEstimate) : route('services.estimates.store', $service) }}">
                     @csrf
