@@ -61,9 +61,10 @@
                             @error('service_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Estimasi (jam)</label>
+                            <label class="form-label">Estimasi Durasi Pengerjaan</label>
                             <input type="number" name="estimated_hours" class="form-control @error('estimated_hours') is-invalid @enderror"
                                    value="{{ old('estimated_hours', $service->estimated_hours) }}" step="0.5" min="0.5" max="24" placeholder="2.5">
+                            <small class="text-muted">Perkiraan lama pengerjaan, bukan estimasi biaya.</small>
                             @error('estimated_hours') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
@@ -81,12 +82,42 @@
                         @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
+                    @php $hasEstimate = $service->estimates()->exists(); @endphp
+
+                    @if($hasEstimate)
+                    {{-- Commercial value is owned by ServiceEstimate — read-only here. --}}
+                    <div class="card border-warning mb-3">
+                        <div class="card-body py-2 px-3">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div class="small">
+                                    <strong><i class="fas fa-file-signature text-warning me-1"></i> Estimasi Biaya</strong>
+                                    <span class="text-muted d-block">Biaya komersial dikelola pada dokumen estimasi, bukan di form ini.</span>
+                                </div>
+                                <a href="{{ route('services.show', $service) }}#tab-estimate" class="btn btn-sm btn-outline-warning">
+                                    <i class="fas fa-up-right-from-square me-1"></i> Buka Estimasi
+                                </a>
+                            </div>
+                            <table class="table table-sm mb-0 mt-2">
+                                @php
+                                    $activeEstimate = $service->estimates()->with('groups')->orderByDesc('version')->first();
+                                    $commercialTotal = (float) ($activeEstimate->approved_total > 0 ? $activeEstimate->approved_total : $activeEstimate->grand_total);
+                                @endphp
+                                <tr><td class="text-muted">No Estimasi</td><td class="fw-semibold">{{ $activeEstimate->estimate_number }} <span class="badge bg-light text-dark">v{{ $activeEstimate->version }}</span></td></tr>
+                                <tr><td class="text-muted">Status</td><td><span class="badge bg-{{ $activeEstimate->statusColor() }}">{{ $activeEstimate->statusLabel() }}</span></td></tr>
+                                <tr><td class="text-muted">{{ $activeEstimate->approved_total > 0 ? 'Approved Amount' : 'Grand Total' }}</td><td class="fw-bold">Rp {{ number_format($commercialTotal, 0, ',', '.') }}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    @else
+                    {{-- Legacy service without estimate: keep charge editable, clearly labeled. --}}
                     <div class="mb-3">
-                        <label class="form-label">Biaya (Rp)</label>
+                        <label class="form-label">Biaya (Rp) <span class="badge bg-secondary">Legacy</span></label>
                         <input type="number" name="charge" class="form-control @error('charge') is-invalid @enderror"
                                value="{{ old('charge', $service->charge) }}" step="0.01" min="0">
+                        <small class="text-muted d-block">Harga manual lama — akan digantikan oleh Estimasi setelah dibuat.</small>
                         @error('charge') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
+                    @endif
 
                     <div class="mb-3">
                         <label class="form-label">Service Advisor</label>

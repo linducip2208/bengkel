@@ -4,7 +4,8 @@
 
 @php
     $progress = app(\App\Services\WorkshopFlowService::class)->checklistProgress($service);
-    $canUpdate = auth()->user()?->can('service.edit') || auth()->user()?->can('findings.create');
+    $canUpdate = $canUpdate ?? false;
+    $readOnly = ! $canUpdate;
 @endphp
 
 @section('content')
@@ -37,6 +38,7 @@
 
         <form action="{{ route('observations.save-checklist', $service) }}" method="POST" id="checklistForm">
             @csrf
+            <fieldset {{ $readOnly ? 'disabled' : '' }}>
             <div class="row g-3">
                 {{-- ============================ LEFT: KONDISI KOMPONEN ============================ --}}
                 <div class="col-lg-7">
@@ -126,17 +128,21 @@
                                 <button type="submit" class="btn btn-outline-secondary" name="action" value="draft">
                                     <i class="fas fa-save me-1"></i> Simpan sebagai Draft
                                 </button>
-                                <a href="{{ route('services.show', $service) }}#tab-findings"
-                                   class="btn btn-danger"
-                                   onclick="return confirmContinue();">
+                                <button type="submit" class="btn btn-danger" name="action" value="continue">
                                     <i class="fas fa-arrow-right me-1"></i> Lanjut ke Temuan / Estimasi
-                                </a>
+                                </button>
                             </div>
-                            <small class="text-muted d-block mt-2">Pemeriksaan belum lengkap tetap boleh disimpan — konfirmasi akan muncul bila ada poin yang belum diperiksa.</small>
+                            <small class="text-muted d-block mt-2">Kedua tombol menyimpan checklist — pemeriksaan tidak akan hilang. Pemeriksaan belum lengkap tetap boleh disimpan.</small>
+                            @if($readOnly)
+                            <div class="alert alert-secondary small mt-2 mb-0">
+                                <i class="fas fa-lock me-1"></i> Anda hanya dapat melihat checklist ini. Hubungi Service Advisor atau Mekanik untuk perubahan.
+                            </div>
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
+            </fieldset>
         </form>
     </div>
 </div>
@@ -175,6 +181,7 @@
         warning.classList.toggle('d-none', !(counts.critical > 0));
     }
 
+    // Incomplete-checklist warning: confirm before submitting "continue".
     function confirmContinue() {
         var selects = document.querySelectorAll('.condition-select');
         var unchecked = 0;
@@ -184,6 +191,16 @@
         }
         return true;
     }
+
+    // Both submit buttons save first — "continue" additionally confirms
+    // when the checklist is intentionally incomplete. State is never lost.
+    document.querySelectorAll('#checklistForm button[value="continue"]').forEach(function (btn) {
+        btn.addEventListener('click', function (event) {
+            if (! confirmContinue()) {
+                event.preventDefault();
+            }
+        });
+    });
 
     // Persist point rows on photo pick via existing MediaAttachment upload.
     document.querySelectorAll('.point-photo').forEach(function (input) {
@@ -208,7 +225,6 @@
     document.querySelectorAll('.condition-select').forEach(function (s) {
         s.addEventListener('change', refreshSummary);
     });
-    window.confirmContinue = confirmContinue;
 })();
 </script>
 @endpush

@@ -224,6 +224,13 @@ class ServiceService extends BaseService
             unset($validated['assign_to']);
             $validated['service_advisor_id'] = $validated['service_advisor_id'] ?? null;
 
+            // Commercial source of truth is the ServiceEstimate — service edit
+            // must never overwrite it once an estimate exists. `charge` becomes
+            // a derived/compatibility value (approved amount / invoice amount).
+            if ($service->estimates()->exists() && array_key_exists('charge', $validated)) {
+                unset($validated['charge']);
+            }
+
             $service->update($validated);
 
             if (! empty($technicianIds)) {

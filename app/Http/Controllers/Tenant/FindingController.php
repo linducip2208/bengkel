@@ -59,14 +59,14 @@ class FindingController extends Controller
             ->with('success', "Temuan {$finding->finding_number} diselesaikan.");
     }
 
-    public function defer(Request $request, ServiceFinding $finding, WorkshopFlowService $flow): RedirectResponse
+    public function defer(Request $request, Service $service, ServiceFinding $finding, WorkshopFlowService $flow): RedirectResponse
     {
         abort_unless((bool) auth()->user()?->can('findings.resolve'), 403, 'Tidak punya izin menunda temuan.');
 
         $flow->deferFinding($finding, $request->input('reason'));
 
         return redirect()
-            ->to(route('services.show', $finding->service_id).'#tab-findings')
+            ->to(route('services.show', $service->id).'#tab-findings')
             ->with('success', "Temuan {$finding->finding_number} ditunda (deferred).");
     }
 }
