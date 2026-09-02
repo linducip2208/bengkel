@@ -38,3 +38,6 @@ Thumbs.db
 *.zip
 
 bootstrap/cache/*.php
+
+# Local opencode (AI assistant) config
+/opencode.json
