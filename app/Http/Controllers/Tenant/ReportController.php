@@ -519,6 +519,18 @@ class ReportController extends Controller
         return view('reports.ar-aging', compact('report'));
     }
 
+    /** Standard vs actual time per work package + per technician (§38). */
+    public function workTime(Request $request, ReportService $reportService)
+    {
+        abort_unless((bool) auth()->user()?->can('report.view'), 403, 'Tidak punya izin melihat laporan.');
+
+        $filters = $request->only(['start_date', 'end_date']);
+        $packageReport = $reportService->workPackageTimeReport($filters['start_date'] ?? null, $filters['end_date'] ?? null);
+        $technicianReport = $reportService->technicianTimeReport();
+
+        return view('reports.work-time', compact('packageReport', 'technicianReport', 'filters'));
+    }
+
     public function partsUsage(Request $request, ReportService $reportService)
     {
         $filters = $request->only(['start_date', 'end_date']);

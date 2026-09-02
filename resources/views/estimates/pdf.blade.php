@@ -40,6 +40,11 @@
         .num { text-align: right; white-space: nowrap; }
         .ctr { text-align: center; }
         .item-type { font-size: 7.5px; text-transform: uppercase; color: #666; }
+        .src-badge { font-size: 8px; padding: 1px 5px; border-radius: 3px; margin-left: 4px; }
+        .src-critical { background: #b30000; color: #fff; }
+        .src-repair { background: #e8a33d; color: #111; }
+        .src-attention { background: #f5e08a; color: #111; }
+        .src-manual { background: #888; color: #fff; }
 
         table.totals { width: 62%; border-collapse: collapse; margin-top: 10px; margin-left: auto; page-break-inside: avoid; }
         table.totals td { padding: 4px 7px; font-size: 11px; }
@@ -114,17 +119,47 @@
     </table>
 
     <table class="items">
+        @php $renderedGroupIds = []; @endphp
         <thead>
             <tr>
-                <th style="width:4%">#</th>
+                <th style="width:4%">No</th>
                 <th>Deskripsi</th>
-                <th style="width:9%">Qty</th>
-                <th style="width:19%">Harga Satuan</th>
-                <th style="width:22%">Total</th>
+                <th style="width:10%" class="ctr">Qty</th>
+                <th style="width:16%" class="num">Harga Satuan</th>
+                <th style="width:18%" class="num">Total</th>
             </tr>
         </thead>
         <tbody>
             @forelse($items as $item)
+            @php
+                $group = $estimate->groups->firstWhere('id', $item->estimate_group_id);
+                $renderGroupHeader = $group !== null && ! in_array($group->id, $renderedGroupIds);
+                if ($renderGroupHeader) {
+                    $renderedGroupIds[] = $group->id;
+                }
+            @endphp
+            @if($renderGroupHeader)
+            <tr>
+                <td colspan="5" style="background:#efefef;">
+                    <strong>{{ $group->title }}</strong>
+                    @if($group->severity_snapshot === 'critical')
+                        <span class="src-badge src-critical">dari checklist kritis</span>
+                    @elseif($group->severity_snapshot === 'repair_required')
+                        <span class="src-badge src-repair">dari checklist perlu perbaikan</span>
+                    @elseif($group->severity_snapshot === 'attention')
+                        <span class="src-badge src-attention">dari checklist perlu perhatian</span>
+                    @else
+                        <span class="src-badge src-manual">manual</span>
+                    @endif
+                    @if($group->finding)
+                        <span style="color:#555;">Sumber: {{ $group->finding->finding_number }}</span>
+                    @endif
+                    @if($group->standard_minutes > 0)
+                        <div style="color:#555; font-size:9px;">Standar waktu: {{ $group->standard_minutes }} menit</div>
+                    @endif
+                </td>
+            </tr>
+            @endif
             <tr>
                 <td class="ctr">{{ $loop->iteration }}</td>
                 <td>

@@ -399,7 +399,7 @@ class EstimateController extends Controller
 
     protected function buildPdf(ServiceEstimate $estimate): \Barryvdh\DomPDF\PDF
     {
-        $estimate->loadMissing('items.product');
+        $estimate->loadMissing(['items.product', 'groups.workPackage', 'groups.finding']);
 
         $pdf = Pdf::loadView('estimates.pdf', [
             'estimate' => $estimate,

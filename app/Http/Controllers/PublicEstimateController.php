@@ -38,7 +38,7 @@ class PublicEstimateController extends Controller
     public function pdf(string $token)
     {
         $estimate = ServiceEstimate::withoutGlobalScopes()
-            ->with('items.product')
+            ->with(['items.product', 'groups.workPackage', 'groups.finding'])
             ->where('public_token', $token)
             ->firstOrFail();
 

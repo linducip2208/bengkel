@@ -454,4 +454,87 @@ class ReportService
             'net' => array_sum(array_column($daily, 'net')),
         ];
     }
+
+    /**
+     * Standard vs actual time per work package (variance reporting).
+     */
+    public function workPackageTimeReport(?string $startDate = null, ?string $endDate = null): array
+    {
+        $packages = ServiceWorkPackage::query()
+            ->with(['task', 'service:id,job_no', 'finding:id,finding_number,title'])
+            ->when($startDate !== null && $startDate !== '', fn ($q) => $q->whereDate('created_at', '>=', $startDate))
+            ->when($endDate !== null && $endDate !== '', fn ($q) => $q->whereDate('created_at', '<=', $endDate))
+            ->orderByDesc('id')
+            ->limit(200)
+            ->get();
+
+        $rows = $packages->map(function ($package) {
+            /** @var ServiceWorkPackage $package */
+            $task = $package->task;
+            $standard = (int) ($task?->standard_minutes ?? $package->standard_minutes);
+            $actual = $task !== null ? $task->actualMinutes() : null;
+
+            return [
+                'title' => $package->title,
+                'job_no' => $package->service?->job_no,
+                'finding_number' => $package->finding?->finding_number,
+                'status_label' => ServiceWorkPackage::STATUS_LABELS[$package->status] ?? $package->status,
+                'standard_minutes' => $standard,
+                'actual_minutes' => $actual,
+                'variance_minutes' => $actual !== null ? $actual - $standard : null,
+            ];
+        });
+
+        $measured = $rows->filter(fn ($r) => $r['actual_minutes'] !== null);
+        $totalStandard = (int) $measured->sum('standard_minutes');
+        $totalActual = (int) $measured->sum('actual_minutes');
+
+        return [
+            'rows' => $rows,
+            'total_standard_minutes' => $totalStandard,
+            'total_actual_minutes' => $totalActual,
+            'total_variance_minutes' => $totalActual - $totalStandard,
+            'efficiency' => $totalActual > 0 ? round($totalStandard / $totalActual * 100, 1) : null,
+        ];
+    }
+
+    /**
+     * Per-technician execution report: completed tasks + standard/actual minutes.
+     */
+    public function technicianTimeReport(): array
+    {
+        $tasks = ServiceWorkTask::query()
+            ->with(['assignee:id,name'])
+            ->whereNotNull('assigned_to')
+            ->get();
+
+        $byTechnician = [];
+
+        foreach ($tasks as $task) {
+            /** @var ServiceWorkTask $task */
+            $techId = (int) $task->assigned_to;
+            if (! isset($byTechnician[$techId])) {
+                $byTechnician[$techId] = [
+                    'technician_id' => $techId,
+                    'technician_name' => $task->assignee?->name ?? "User #{$techId}",
+                    'total_tasks' => 0,
+                    'completed_tasks' => 0,
+                    'standard_minutes' => 0,
+                    'actual_minutes' => 0,
+                ];
+            }
+
+            $byTechnician[$techId]['total_tasks']++;
+            $done = in_array($task->status, [ServiceWorkTask::STATUS_QC_PENDING, ServiceWorkTask::STATUS_QC_PASSED, ServiceWorkTask::STATUS_COMPLETED], true);
+            if ($done) {
+                $byTechnician[$techId]['completed_tasks']++;
+                $byTechnician[$techId]['standard_minutes'] += (int) $task->standard_minutes;
+                $byTechnician[$techId]['actual_minutes'] += $task->actualMinutes();
+            }
+        }
+
+        $rows = collect($byTechnician)->values()->sortByDesc('completed_tasks')->values()->all();
+
+        return ['rows' => $rows];
+    }
 }

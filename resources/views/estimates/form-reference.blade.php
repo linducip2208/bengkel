@@ -44,9 +44,39 @@
         </tr>
     </table>
     <table class="table table-sm table-bordered align-middle">
+        @php $renderedGroupIds = []; @endphp
         <thead><tr><th>#</th><th>Deskripsi</th><th class="text-center">Qty</th><th class="text-end">Harga Satuan</th><th class="text-end">Total</th></tr></thead>
         <tbody>
             @forelse($estimate->items as $item)
+            @php
+                $group = $estimate->groups->firstWhere('id', $item->estimate_group_id);
+                $renderGroupHeader = $group !== null && ! in_array($group->id, $renderedGroupIds);
+                if ($renderGroupHeader) {
+                    $renderedGroupIds[] = $group->id;
+                }
+            @endphp
+            @if($renderGroupHeader)
+                <tr class="table-light">
+                    <td colspan="5">
+                        <strong>{{ $group->title }}</strong>
+                        @if($group->severity_snapshot === 'critical')
+                            <span class="badge bg-danger">dari checklist kritis</span>
+                        @elseif($group->severity_snapshot === 'repair_required')
+                            <span class="badge bg-warning text-dark">dari checklist perlu perbaikan</span>
+                        @elseif($group->severity_snapshot === 'attention')
+                            <span class="badge bg-warning bg-opacity-50 text-dark">dari checklist perlu perhatian</span>
+                        @else
+                            <span class="badge bg-secondary">manual</span>
+                        @endif
+                        @if($group->service_finding_id && $group->finding)
+                            <small class="text-muted ms-1">Sumber: {{ $group->finding->finding_number }}</small>
+                        @endif
+                        @if($group->standard_minutes > 0)
+                            <small class="text-muted d-block">Standar waktu: {{ $group->standard_minutes }} menit</small>
+                        @endif
+                    </td>
+                </tr>
+            @endif
             <tr>
                 <td>{{ $loop->iteration }}</td>
                 <td>{{ $item->description }}</td>
