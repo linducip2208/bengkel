@@ -129,7 +129,7 @@
                                     <i class="fas fa-save me-1"></i> Simpan sebagai Draft
                                 </button>
                                 <button type="submit" class="btn btn-danger" name="action" value="continue">
-                                    <i class="fas fa-arrow-right me-1"></i> Lanjut ke Temuan / Estimasi
+                                    <i class="fas fa-arrow-right me-1"></i> Simpan &amp; Lanjut ke Temuan
                                 </button>
                             </div>
                             <small class="text-muted d-block mt-2">Kedua tombol menyimpan checklist — pemeriksaan tidak akan hilang. Pemeriksaan belum lengkap tetap boleh disimpan.</small>

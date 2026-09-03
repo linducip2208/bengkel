@@ -43,6 +43,7 @@
                         <th>Tgl Keluar</th>
                         <th>Servis Berikutnya</th>
                         <th>Status</th>
+                        <th>Tahap Saat Ini</th>
                         <th class="text-end">Aksi</th>
                     </tr>
                 </thead>
@@ -73,6 +74,8 @@
                                 {{ $labels[$service->done_status] }}
                             </span>
                         </td>
+                        @php $jobProgress = app(\App\Services\WorkshopProgressService::class)->calculate($service); @endphp
+                        <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ $jobProgress['steps'][$jobProgress['current_step']]['label'] }}</span></td>
                         <td class="text-end">
                             <a href="{{ route('jobcards.show', $service) }}" class="btn btn-sm btn-outline-primary" title="Detail">
                                 <i class="fas fa-eye"></i>
@@ -84,7 +87,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="10" class="text-center text-muted py-4">Belum ada data jobcard.</td>
+                        <td colspan="11" class="text-center text-muted py-4">Belum ada data jobcard.</td>
                     </tr>
                     @endforelse
                 </tbody>

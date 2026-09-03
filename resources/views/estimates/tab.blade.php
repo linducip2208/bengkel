@@ -84,6 +84,24 @@
                 </div>
             </div>
 
+            <div class="border rounded p-3 mb-3 bg-light">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong><i class="fas fa-user-check me-1 text-primary"></i>Approval Customer per Rencana Pekerjaan</strong>
+                    <span class="small text-muted">Hanya grup Disetujui yang dapat dibuatkan Work Task</span>
+                </div>
+                @forelse($activeEstimate->groups as $group)
+                    @php
+                        $decisionColor = $group->customer_decision === \App\Models\ServiceEstimateGroup::DECISION_APPROVED ? 'success' : ($group->customer_decision === \App\Models\ServiceEstimateGroup::DECISION_REJECTED ? 'danger' : 'warning');
+                    @endphp
+                    <div class="d-flex justify-content-between align-items-center border-top py-2 small gap-2">
+                        <span><strong>{{ $group->workPackage?->title ?? $group->title }}</strong>@if($group->finding)<span class="text-muted"> · {{ $group->finding->finding_number }}</span>@endif</span>
+                        <span class="badge bg-{{ $decisionColor }}{{ $decisionColor === 'warning' ? ' text-dark' : '' }}">{{ \App\Models\ServiceEstimateGroup::DECISION_LABELS[$group->customer_decision] ?? $group->customer_decision }}</span>
+                    </div>
+                @empty
+                    <div class="small text-muted">Belum ada grup Work Package pada estimasi ini.</div>
+                @endforelse
+            </div>
+
             {{-- Item summary table (desktop table, mobile cards) --}}
             <div class="table-responsive d-none d-md-block">
                 <table class="table table-sm table-striped align-middle">

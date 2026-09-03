@@ -55,7 +55,12 @@ class ServiceService extends BaseService
         $stats = $this->getStats();
         $technicians = User::role('mekanik')->get();
 
-        return view('services.index', compact('services', 'stats', 'technicians'));
+        $progressService = app(WorkshopProgressService::class);
+        $progressByService = $services->getCollection()->mapWithKeys(fn (Service $service) => [
+            $service->id => $progressService->calculate($service),
+        ]);
+
+        return view('services.index', compact('services', 'stats', 'technicians', 'progressByService'));
     }
 
     public function create()
@@ -133,7 +138,7 @@ class ServiceService extends BaseService
     public function show($id)
     {
         $service = Service::with([
-            'customer', 'vehicle.vehicleType', 'vehicle.vehicleBrand',
+            'customer', 'booking', 'vehicle.vehicleType', 'vehicle.vehicleBrand',
             'repairCategory', 'technicians', 'jobcardDetail',
             'serviceObservationPoints.observationPoint.observationType',
             'images', 'checkoutResults.checkoutCategory', 'invoice',
@@ -141,7 +146,7 @@ class ServiceService extends BaseService
             'activityLogs.user',
             'findings' => fn ($q) => $q->orderByDesc('id'),
             'workPackages' => fn ($q) => $q->with(['items.product', 'task.timeEntries', 'qcChecks', 'finding'])->orderByDesc('id'),
-            'estimates' => fn ($q) => $q->with(['items.product'])->orderByDesc('version'),
+            'estimates' => fn ($q) => $q->with(['items.product', 'groups.workPackage', 'groups.finding'])->orderByDesc('version'),
         ])->findOrFail($id);
 
         $nextService = $service->jobcardDetail
@@ -199,7 +204,9 @@ class ServiceService extends BaseService
             'outstanding' => max(0, (float) ($invoice ? $invoice->grand_total : 0) - $paidAmount),
         ];
 
-        return view('services.show', compact('service', 'nextService', 'partsUsed', 'reservations', 'products', 'reservedMap', 'financialSummary', 'estimateSummary'));
+        $progress = app(WorkshopProgressService::class)->calculate($service);
+
+        return view('services.show', compact('service', 'nextService', 'partsUsed', 'reservations', 'products', 'reservedMap', 'financialSummary', 'estimateSummary', 'progress'));
     }
 
     public function edit($id)

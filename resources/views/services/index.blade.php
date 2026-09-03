@@ -95,6 +95,7 @@
                         <th>Tanggal</th>
                         <th class="text-center">Durasi</th>
                         <th>Status</th>
+                        <th>Tahap Saat Ini</th>
                         <th>Teknisi</th>
                         <th>Biaya</th>
                         <th class="text-end">Aksi</th>
@@ -121,6 +122,13 @@
                                 <span class="badge bg-danger ms-1">⚠️ Repeat</span>
                             @endif
                         </td>
+                        @php $serviceProgress = $progressByService[$service->id] ?? null; @endphp
+                        <td>
+                            @if($serviceProgress)
+                                <span class="badge bg-primary bg-opacity-10 text-primary">{{ $serviceProgress['steps'][$serviceProgress['current_step']]['label'] }}</span>
+                                <small class="d-block text-muted">{{ $serviceProgress['steps'][$serviceProgress['current_step']]['detail'] }}</small>
+                            @else - @endif
+                        </td>
                         <td>
                             @foreach($service->technicians as $tech)
                                 <span class="badge bg-light text-dark">{{ $tech->name }}</span>
@@ -134,14 +142,6 @@
                             <a href="{{ route('services.edit', $service) }}" class="btn btn-sm btn-outline-warning" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            @if($service->workflow_status < 12)
-                            <form action="{{ route('services.complete', $service) }}" method="POST" class="d-inline">
-                                @csrf
-                                <button class="btn btn-sm btn-outline-success" title="Selesai" onclick="return confirm('Tandai servis ini selesai?')">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                            </form>
-                            @endif
                             <form action="{{ route('services.destroy', $service) }}" method="POST" class="d-inline">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger" title="Hapus" onclick="return confirm('Hapus servis ini?')">
@@ -152,7 +152,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="10" class="text-center text-muted py-4">Belum ada data servis.</td>
+                        <td colspan="11" class="text-center text-muted py-4">Belum ada data servis.</td>
                     </tr>
                     @endforelse
                 </tbody>

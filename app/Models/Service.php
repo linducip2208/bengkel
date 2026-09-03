@@ -73,6 +73,12 @@ class Service extends Model
         return $this->belongsTo(Customer::class);
     }
 
+    /** Booking source, when this work order came from a scheduled booking. */
+    public function booking(): HasOne
+    {
+        return $this->hasOne(Booking::class, 'service_id');
+    }
+
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(Vehicle::class);

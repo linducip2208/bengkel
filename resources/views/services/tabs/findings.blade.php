@@ -33,7 +33,7 @@
                                 data-finding-id="{{ $finding->id }}" data-finding-title="{{ $finding->title }}"
                                 data-severity="{{ $finding->severity }}"
                                 data-measurement="{{ $finding->measurement_value !== null ? $finding->measurement_value.($finding->measurement_unit ? ' '.$finding->measurement_unit : '') : '' }}">
-                            <i class="fas fa-briefcase me-1"></i> Buat Work Package
+                            <i class="fas fa-briefcase me-1"></i> Buat Rencana Pekerjaan
                         </button>
                         @endif
                         @if($canResolve && $finding->isActive())

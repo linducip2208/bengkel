@@ -8,7 +8,8 @@
 <div class="tab-pane fade" id="tab-work">
     <div class="card">
         <div class="card-body">
-            <h6 class="mb-3"><i class="fas fa-briefcase me-2 text-warning"></i>Work Packages &amp; Eksekusi</h6>
+            <h6 class="mb-3"><i class="fas fa-sitemap me-2 text-warning"></i>Rencana Pekerjaan</h6>
+            <p class="small text-muted">Work Package adalah jembatan dari Temuan ke Estimasi. Eksekusi teknisi tersedia di tab Pekerjaan setelah approval customer.</p>
 
             @forelse($packages as $package)
             @php
@@ -73,7 +74,7 @@
                         <form action="{{ route('work-tasks.finish', $task) }}" method="POST">@csrf <button class="btn btn-sm btn-outline-dark">Finish</button></form>
                         @endif
                         @if($canPerformQc && in_array($task->status, ['qc_pending', 'qc_failed'], true))
-                        <a href="{{ route('work-packages.qc', $package) }}" class="btn btn-sm btn-primary">QC</a>
+                        <a href="{{ route('work-packages.qc', $service) }}#package-{{ $package->id }}" class="btn btn-sm btn-primary">QC</a>
                         @endif
                     </div>
                 </div>
@@ -84,7 +85,7 @@
             @empty
             <div class="text-center py-4 text-muted">
                 <i class="fas fa-briefcase fa-2x mb-2"></i>
-                <p class="mb-0">Belum ada work package. Buat dari tab Temuan.</p>
+                <p class="mb-0">Belum ada rencana pekerjaan. Buat dari tab Temuan.</p>
             </div>
             @endforelse
 

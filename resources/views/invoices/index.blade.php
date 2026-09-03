@@ -56,6 +56,7 @@
                 <th>Dibayar</th>
                 <th>Sisa</th>
                 <th>Status</th>
+                <th>Tahap Service</th>
                 <th>Aksi</th>
             </tr>
         </thead>
@@ -85,6 +86,14 @@
                         @endif
                     </td>
                     <td>
+                        @if($invoice->service)
+                            @php $invoiceProgress = app(\App\Services\WorkshopProgressService::class)->calculate($invoice->service); @endphp
+                            <span class="badge bg-primary bg-opacity-10 text-primary">{{ $invoiceProgress['steps'][$invoiceProgress['current_step']]['label'] }}</span>
+                        @else
+                            <span class="text-muted">Sales</span>
+                        @endif
+                    </td>
+                    <td>
                         <div class="d-flex gap-1">
                             <a href="{{ route('invoices.show', $invoice) }}" class="btn btn-sm btn-info" title="Lihat"><i class="bi bi-eye"></i></a>
                             @can('invoice.pdf')
@@ -111,7 +120,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="11" class="text-center py-4 text-muted">Tidak ada invoice.</td></tr>
+                <tr><td colspan="12" class="text-center py-4 text-muted">Tidak ada invoice.</td></tr>
             @endforelse
         </tbody>
     </table>

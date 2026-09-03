@@ -137,7 +137,7 @@
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
             <strong><i class="fas fa-briefcase me-2 text-warning"></i>WORK PACKAGE</strong>
             <a href="{{ route('services.show', $service) }}#tab-work" class="btn btn-sm btn-outline-warning">
-                <i class="fas fa-plus me-1"></i> Kelola / Buat Work Package
+                <i class="fas fa-plus me-1"></i> Kelola / Buat Rencana Pekerjaan
             </a>
         </div>
         <div class="card-body py-2">

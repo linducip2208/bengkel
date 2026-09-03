@@ -5,56 +5,32 @@
 @section('content')
 @php
     $ws = $service->workflow_status ?? 0;
-    // Workflow progress strip: Check-in → Inspection → Estimate → Approval → Work → QC → Invoice → Complete
-    $flowSteps = [
-        ['label' => 'Check-in', 'done' => $ws >= 1],
-        ['label' => 'Inspection', 'done' => $ws >= 2],
-        ['label' => 'Estimate', 'done' => $service->estimates->where('status', '!=', 'draft')->count() > 0 || $ws >= 3],
-        ['label' => 'Approval', 'done' => $ws >= 4],
-        ['label' => 'Work', 'done' => $ws >= 7],
-        ['label' => 'QC', 'done' => $ws >= 8],
-        ['label' => 'Invoice', 'done' => $ws >= 9 || $service->invoice !== null],
-        ['label' => 'Complete', 'done' => $ws >= 12],
-    ];
-    $currentFlowIndex = collect($flowSteps)->search(fn ($s) => ! $s['done']);
-    if ($currentFlowIndex === false) { $currentFlowIndex = count($flowSteps) - 1; }
+    $progress = $progress ?? app(\App\Services\WorkshopProgressService::class)->calculate($service);
+    $flowSteps = $progress['steps'];
+    $nextAction = $progress['next_action'];
+    $stateClasses = ['completed' => 'bg-success text-white', 'current' => 'bg-primary text-white', 'warning' => 'bg-warning text-dark', 'blocked' => 'bg-danger text-white', 'pending' => 'bg-light text-muted border'];
 @endphp
 <div class="card mb-3">
     <div class="card-body py-2">
         <div class="d-flex flex-wrap align-items-center gap-1 small">
-            @foreach($flowSteps as $i => $step)
-                <span class="badge rounded-pill {{ $step['done'] ? 'bg-success' : ($i === $currentFlowIndex ? 'bg-warning text-dark' : 'bg-light text-muted') }}">
-                    @if($step['done'])<i class="fas fa-check me-1"></i>@endif{{ $step['label'] }}
+            @foreach($flowSteps as $step)
+                <span class="badge rounded-pill {{ $stateClasses[$step['state']] ?? 'bg-light text-muted' }}" title="{{ $step['detail'] }}">
+                    @if($step['state'] === 'completed')<i class="fas fa-check me-1"></i>@elseif($step['state'] === 'warning')<i class="fas fa-triangle-exclamation me-1"></i>@elseif($step['state'] === 'blocked')<i class="fas fa-lock me-1"></i>@else<i class="far fa-circle me-1"></i>@endif{{ $step['label'] }}
                 </span>
                 @if(! $loop->last)<i class="fas fa-angle-right text-muted"></i>@endif
             @endforeach
         </div>
+        <div class="small text-muted mt-2">Tahap saat ini: <strong>{{ $flowSteps[$progress['current_step']]['label'] }}</strong> — {{ $flowSteps[$progress['current_step']]['detail'] }}</div>
     </div>
 </div>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0"><i class="fas fa-clipboard-list text-warning me-2"></i>{{ $service->job_no }}</h5>
+    <h5 class="mb-0"><i class="fas fa-clipboard-list text-warning me-2"></i>{{ $service->job_no }}
+        <span class="badge bg-light text-dark align-middle ms-2"><i class="fas fa-{{ $service->booking ? 'calendar-check' : 'person-walking' }} me-1"></i>{{ $service->booking ? 'Booking' : 'Walk-In' }}</span>
+    </h5>
     <div>
         @php $ws = $service->workflow_status ?? 0; @endphp
-        @if($ws < 12)
-        <form action="{{ route('services.advance', $service) }}" method="POST" class="d-inline">
-            @csrf
-            @php $steps = ['Start','Check In','Inspect','Wait Approval','Approve','In Progress','Wait Parts','QC','Ready','Invoice','Paid','Release']; @endphp
-            <button class="btn btn-primary btn-sm" onclick="return confirm('Lanjut ke step berikutnya?')">
-                <i class="fas fa-arrow-right me-1"></i> {{ $steps[$ws] ?? 'Advance' }}
-            </button>
-        </form>
-        @else
-        <span class="badge bg-success fs-6">Completed</span>
-        @endif
-        @if($ws < 12)
-        <form action="{{ route('services.complete', $service) }}" method="POST" class="d-inline ms-1">
-            @csrf
-            <button class="btn btn-success btn-sm" onclick="return confirm('Tandai selesai?')">
-                <i class="fas fa-check me-1"></i> Force Complete
-            </button>
-        </form>
-        @endif
+        <a href="#{{ $nextAction['target'] }}" class="btn btn-primary btn-sm"><i class="fas fa-arrow-right me-1"></i> {{ $nextAction['label'] }}</a>
         <a href="{{ route('services.edit', $service) }}" class="btn btn-warning btn-sm">
             <i class="fas fa-edit me-1"></i> Edit
         </a>
@@ -82,12 +58,13 @@
 </div>
 
 <ul class="nav nav-tabs mb-4" id="serviceTabs" role="tablist">
-    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-info"><i class="fas fa-info-circle me-1"></i>Info</button></li>
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-info"><i class="fas fa-info-circle me-1"></i>Ringkasan</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-jobcard"><i class="fas fa-id-card me-1"></i>Jobcard</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-checklist"><i class="fas fa-tasks me-1"></i>Checklist</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-findings"><i class="fas fa-magnifying-glass me-1"></i>Temuan @if($service->findings->where('status', '!=', 'resolved')->count())<span class="badge bg-danger ms-1">{{ $service->findings->where('status', '!=', 'resolved')->count() }}</span>@endif</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-estimate"><i class="fas fa-file-signature me-1"></i>Estimasi</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-work"><i class="fas fa-briefcase me-1"></i>Pekerjaan</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-work"><i class="fas fa-sitemap me-1"></i>Rencana Pekerjaan</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-work-execution"><i class="fas fa-tools me-1"></i>Pekerjaan</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-photos"><i class="fas fa-images me-1"></i>Foto</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-checkout"><i class="fas fa-clipboard-check me-1"></i>Checkout</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-qc"><i class="fas fa-award me-1"></i>QC</button></li>
@@ -414,6 +391,9 @@
     {{-- Tab 6: Pekerjaan (work packages + tasks) --}}
     @include('services.tabs.work')
 
+    {{-- Actual execution tasks --}}
+    @include('services.tabs.work-execution')
+
     {{-- Tab 7: Photos --}}
     <div class="tab-pane fade" id="tab-photos">
         <div class="card">
@@ -625,9 +605,7 @@
     @include('services.tabs.qc')
 </div>
 
-{{-- Modal Link Survey --}}
-@include('services.tabs.work-package-modal')
-@include('services.tabs.qc')
+{{-- Work package modal lives outside the tab panes so it can be opened from Findings and Rencana Pekerjaan. --}}
 @include('services.tabs.work-package-modal')
 
 <div class="modal fade" id="surveyModal" tabindex="-1" aria-hidden="true">
@@ -653,6 +631,16 @@
 
 <script>
 (function() {
+    function activateHashTab() {
+        const hash = window.location.hash;
+        const trigger = document.querySelector('[data-bs-target="' + hash + '"]');
+        if (trigger && window.bootstrap) {
+            bootstrap.Tab.getOrCreateInstance(trigger).show();
+        }
+    }
+    activateHashTab();
+    window.addEventListener('hashchange', activateHashTab);
+
     const btn = document.getElementById('surveyBtn');
     if (!btn) return;
     btn.addEventListener('click', async () => {

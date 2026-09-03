@@ -90,7 +90,7 @@ class ObservationController extends Controller
         if ($action === 'continue') {
             return redirect()
                 ->to(route('services.show', $service->id).'#tab-findings')
-                ->with('success', 'Checklist tersimpan — lanjut ke Temuan / Estimasi.');
+                ->with('success', 'Checklist tersimpan — lanjut ke Temuan.');
         }
 
         return redirect()
