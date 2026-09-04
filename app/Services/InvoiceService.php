@@ -6,13 +6,27 @@ use App\Models\ActivityLog;
 use App\Models\Invoice;
 use App\Models\InvoiceScheme;
 use App\Models\Product;
+use App\Models\Service;
 use App\Models\StockRecord;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class InvoiceService extends BaseService
 {
     public function create(array $data): Invoice
     {
+        if (($data['invoice_type'] ?? null) === 'service' && ! empty($data['service_id'])) {
+            /** @var Service $service */
+            $service = Service::query()->findOrFail($data['service_id']);
+            $guard = app(WorkshopInvoiceGuard::class);
+            if ($guard->isModernWorkshopService($service)) {
+                throw ValidationException::withMessages([
+                    'service_id' => 'Invoice Service modern harus dibuat melalui konversi Estimasi setelah pekerjaan dan QC selesai.',
+                ]);
+            }
+            $guard->assertCanCreateServiceInvoice($service);
+        }
+
         return DB::transaction(function () use ($data) {
             $data['invoice_number'] = $this->generateInvoiceNumber();
             $data['created_by'] = auth()->id() ?? 1;
@@ -78,6 +92,15 @@ class InvoiceService extends BaseService
 
     public function update(Invoice $invoice, array $data): Invoice
     {
+        $linkedService = $invoice->service;
+        if ($invoice->invoice_type === 'service' && $invoice->service_id
+            && $linkedService instanceof Service
+            && app(WorkshopInvoiceGuard::class)->isModernWorkshopService($linkedService)) {
+            throw ValidationException::withMessages([
+                'service_id' => 'Invoice Service modern berasal dari scope Estimasi dan tidak dapat diubah melalui form generic.',
+            ]);
+        }
+
         return DB::transaction(function () use ($invoice, $data) {
             abort_if((float) $invoice->paid_amount > 0 || $invoice->paymentRecords()->exists(), 403, 'Invoice yang sudah memiliki pembayaran tidak dapat mengubah data finansial.');
 

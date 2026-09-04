@@ -8,6 +8,7 @@ use App\Models\Invoice;
 use App\Models\Service;
 use App\Services\InvoiceService;
 use App\Services\SettingsService;
+use App\Services\WorkshopInvoiceGuard;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -59,7 +60,13 @@ class ApiInvoiceController extends Controller
         // payment_status is ALWAYS system-determined. A newly created invoice
         // is unpaid (0) until PaymentService records an actual payment. A
         // client-supplied payment_status is ignored/never accepted.
-        $service = Service::withoutGlobalScopes()->findOrFail($validated['service_id']);
+        $service = Service::query()->findOrFail($validated['service_id']);
+
+        if (app(WorkshopInvoiceGuard::class)->isModernWorkshopService($service)) {
+            return response()->json([
+                'message' => 'Invoice Service modern harus dibuat melalui konversi Estimasi setelah pekerjaan dan QC selesai.',
+            ], 422);
+        }
 
         if ($invoice = Invoice::where('service_id', $service->id)->first()) {
             return response()->json(new InvoiceResource($invoice->load('service.customer')), 200);

@@ -8,6 +8,8 @@ use App\Models\ObservationType;
 use App\Models\ServiceEstimate;
 use App\Models\ServiceFinding;
 use App\Models\ServiceWorkPackage;
+use App\Models\ServiceWorkQcCheck;
+use App\Models\ServiceWorkTask;
 use App\Models\User;
 use App\Services\EstimateService;
 use App\Services\ObservationService;
@@ -104,6 +106,9 @@ class EstimateServiceDropdownTest extends WorkshopFlowTestCase
         $flow->submitGroupDecisions($estimate->fresh(), [
             ['group_id' => $estimate->groups()->firstOrFail()->id, 'decision' => 'approved'],
         ], 'public_link');
+        $task = ServiceWorkTask::where('service_work_package_id', $package->id)->firstOrFail();
+        $flow->finishTask($task);
+        $flow->submitQc($package->fresh(), ServiceWorkQcCheck::RESULT_PASSED, 'Lulus');
         $invoice = app(EstimateService::class)->convertToInvoice($estimate->fresh());
 
         $row = collect($this->get(route('estimates.service-search', ['q' => $service->job_no, 'filter' => 'all']))->json('results'))

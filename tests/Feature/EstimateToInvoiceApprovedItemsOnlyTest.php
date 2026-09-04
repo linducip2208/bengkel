@@ -9,6 +9,7 @@ use App\Models\ObservationType;
 use App\Models\ServiceEstimate;
 use App\Models\ServiceFinding;
 use App\Models\ServiceWorkPackage;
+use App\Models\ServiceWorkQcCheck;
 use App\Models\ServiceWorkTask;
 use App\Models\StockRecord;
 use App\Services\EstimateService;
@@ -58,6 +59,10 @@ class EstimateToInvoiceApprovedItemsOnlyTest extends WorkshopFlowTestCase
             ['group_id' => $estimate->groups()->where('service_work_package_id', $packageA->id)->firstOrFail()->id, 'decision' => 'approved'],
             ['group_id' => $estimate->groups()->where('service_work_package_id', $packageB->id)->firstOrFail()->id, 'decision' => 'rejected'],
         ], 'public_link');
+
+        $task = ServiceWorkTask::where('service_work_package_id', $packageA->id)->firstOrFail();
+        $flow->finishTask($task);
+        $flow->submitQc($packageA->fresh(), ServiceWorkQcCheck::RESULT_PASSED, 'Lulus');
 
         return [$estimate->fresh(), $service, $packageA, $packageB];
     }
@@ -139,7 +144,7 @@ class EstimateToInvoiceApprovedItemsOnlyTest extends WorkshopFlowTestCase
 
     public function test_fully_approved_estimate_converts_entirely(): void
     {
-        [$estimate] = $this->makePartiallyApprovedEstimate();
+        [$estimate, , , $packageB] = $this->makePartiallyApprovedEstimate();
         $flow = app(WorkshopFlowService::class);
 
         // Flip the rejected group to approved → full approval conversion.
@@ -147,6 +152,11 @@ class EstimateToInvoiceApprovedItemsOnlyTest extends WorkshopFlowTestCase
         $rejectedGroup->forceFill(['customer_decision' => 'approved', 'decided_at' => now()])->save();
         app(EstimateService::class)->recalculateApprovedAmounts($estimate);
         $estimate->forceFill(['status' => ServiceEstimate::STATUS_APPROVED, 'decision_status' => ServiceEstimate::DECISION_APPROVED])->save();
+
+        $flow->createTasksForApprovedGroups($estimate->fresh());
+        $taskB = ServiceWorkTask::where('service_work_package_id', $packageB->id)->firstOrFail();
+        $flow->finishTask($taskB);
+        $flow->submitQc($packageB->fresh(), ServiceWorkQcCheck::RESULT_PASSED, 'Lulus');
 
         $invoice = app(EstimateService::class)->convertToInvoice($estimate);
         $this->assertEqualsWithDelta(285000.0, (float) $invoice->grand_total, 0.01);

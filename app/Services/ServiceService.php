@@ -351,6 +351,10 @@ class ServiceService extends BaseService
      */
     public function executeComplete(Service $service): array
     {
+        if (app(WorkshopInvoiceGuard::class)->isModernWorkshopService($service)) {
+            throw new \RuntimeException('Service modern harus mengikuti pekerjaan, QC, invoice, pembayaran, dan Gate Pass sebelum selesai.');
+        }
+
         return DB::transaction(function () use ($service) {
             // Lock the row: a concurrent double-click re-reads state and
             // short-circuits instead of creating a second invoice.

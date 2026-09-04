@@ -9,7 +9,7 @@
         <a href="{{ route('gate-passes.print', $gatePass) }}" class="btn btn-secondary"><i class="bi bi-printer"></i> Print</a>
         @if($gatePass->status === 'in')
         <form action="{{ route('gate-passes.mark-exit', $gatePass) }}" method="POST" class="d-inline" onsubmit="return confirm('Mark this vehicle as exited?')">
-            @csrf @method('PUT')
+            @csrf
             <button class="btn btn-success"><i class="bi bi-box-arrow-right"></i> Mark Exit</button>
         </form>
         @endif

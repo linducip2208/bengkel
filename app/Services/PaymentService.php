@@ -7,6 +7,7 @@ use App\Models\ActivityLog;
 use App\Models\Income;
 use App\Models\Invoice;
 use App\Models\PaymentRecord;
+use App\Models\Service;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
@@ -81,6 +82,18 @@ class PaymentService extends BaseService
                 'amount_received' => $newPaid,
                 'payment_status' => $newPaid >= $grandTotal - 0.009 ? 2 : 1,
             ]);
+
+            if ($locked->service_id && (int) $locked->payment_status === 2) {
+                /** @var Service|null $service */
+                $service = $locked->service()->lockForUpdate()->first();
+                if ($service && ! $service->cancelled_at) {
+                    $service->forceFill([
+                        'paid_at' => $service->paid_at ?? now(),
+                        'workflow_status' => max((int) $service->workflow_status, 10),
+                    ])->save();
+                    ActivityLog::record('service.paid', $service, "Service {$service->job_no} lunas");
+                }
+            }
 
             // A transfer (fresh cash movement) is booked once against the
             // Kas/Income ledger. One Income row per payment keeps the revenue

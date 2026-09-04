@@ -8,6 +8,7 @@ use App\Models\ObservationType;
 use App\Models\ServiceEstimate;
 use App\Models\ServiceFinding;
 use App\Models\ServiceWorkPackage;
+use App\Models\ServiceWorkQcCheck;
 use App\Models\ServiceWorkTask;
 use App\Services\EstimateService;
 use App\Services\ObservationService;
@@ -20,6 +21,13 @@ use App\Services\WorkshopFlowService;
  */
 class AdditionalWorkRequiresApprovalTest extends WorkshopFlowTestCase
 {
+    protected function finishAndPass(ServiceWorkPackage $package): void
+    {
+        $task = ServiceWorkTask::where('service_work_package_id', $package->id)->firstOrFail();
+        app(WorkshopFlowService::class)->finishTask($task);
+        app(WorkshopFlowService::class)->submitQc($package->fresh(), ServiceWorkQcCheck::RESULT_PASSED, 'Lulus');
+    }
+
     protected function makeApprovedRunningEstimate(): array
     {
         $service = $this->makeService();
@@ -66,7 +74,7 @@ class AdditionalWorkRequiresApprovalTest extends WorkshopFlowTestCase
 
     public function test_additional_work_package_does_not_enter_estimate_automatically(): void
     {
-        [$service, $flow, $estimate] = $this->makeApprovedRunningEstimate();
+        [$service, $flow, $estimate, $originalPackage] = $this->makeApprovedRunningEstimate();
 
         $boot = ObservationPoint::create(['observation_type_id' => ObservationType::create(['observation_type' => 'STEERING'])->id, 'observation_point' => 'Boot Rack Steering']);
         app(ObservationService::class)->saveCheckResults($service, [
@@ -145,6 +153,7 @@ class AdditionalWorkRequiresApprovalTest extends WorkshopFlowTestCase
             ['item_type' => 'labor', 'description' => 'Jasa Rack', 'quantity' => 1, 'unit_price' => 200000],
         ]);
 
+        $this->finishAndPass($estimate->groups()->firstOrFail()->workPackage);
         $invoice = app(EstimateService::class)->convertToInvoice($estimate->fresh());
         $invoice->load('items');
 
@@ -156,7 +165,7 @@ class AdditionalWorkRequiresApprovalTest extends WorkshopFlowTestCase
 
     public function test_partial_approval_of_revision_invoices_approved_work_only(): void
     {
-        [$service, $flow, $estimate] = $this->makeApprovedRunningEstimate();
+        [$service, $flow, $estimate, $originalPackage] = $this->makeApprovedRunningEstimate();
 
         $boot = ObservationPoint::create(['observation_type_id' => ObservationType::create(['observation_type' => 'STEERING'])->id, 'observation_point' => 'Boot Rack Steering']);
         app(ObservationService::class)->saveCheckResults($service, [
@@ -182,6 +191,8 @@ class AdditionalWorkRequiresApprovalTest extends WorkshopFlowTestCase
         app(EstimateService::class)->recalculateApprovedAmounts($revision);
 
         $flow->createTasksForApprovedGroups($revision->fresh());
+
+        $this->finishAndPass($originalPackage);
 
         // Only the original work got a task.
         $this->assertSame(1, ServiceWorkTask::count());

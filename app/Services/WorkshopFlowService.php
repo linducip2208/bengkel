@@ -738,6 +738,19 @@ class WorkshopFlowService
                 $locked->forceFill(['status' => ServiceWorkPackage::STATUS_QC_PASSED])->save();
                 $task?->forceFill(['status' => ServiceWorkTask::STATUS_QC_PASSED])->save();
 
+                $service = Service::query()->whereKey($locked->service_id)->lockForUpdate()->first();
+                if ($service && $service->workPackages()->whereIn('status', [
+                    ServiceWorkPackage::STATUS_APPROVED,
+                    ServiceWorkPackage::STATUS_IN_PROGRESS,
+                    ServiceWorkPackage::STATUS_COMPLETED,
+                    ServiceWorkPackage::STATUS_QC_FAILED,
+                ])->doesntExist()) {
+                    $service->forceFill([
+                        'qc_passed_at' => $service->qc_passed_at ?? now(),
+                        'workflow_status' => max((int) $service->workflow_status, 8),
+                    ])->save();
+                }
+
                 ActivityLog::record('qc.passed', $check, "QC lolos: {$locked->title}", [
                     'work_package_id' => $locked->id,
                     'notes' => $notes,

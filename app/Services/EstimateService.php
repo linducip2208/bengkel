@@ -776,6 +776,7 @@ class EstimateService
     {
         return DB::transaction(function () use ($estimate, $overrides) {
             $locked = ServiceEstimate::query()->whereKey($estimate->id)->lockForUpdate()->firstOrFail();
+            $service = Service::query()->whereKey($locked->service_id)->lockForUpdate()->firstOrFail();
 
             if ($locked->status === ServiceEstimate::STATUS_CONVERTED) {
                 $existing = Invoice::where('service_estimate_id', $locked->id)->first();
@@ -789,6 +790,8 @@ class EstimateService
                 422,
                 'Hanya estimasi yang (sebagian) disetujui yang bisa dibuatkan invoice.'
             );
+            $invoiceGuard = app(WorkshopInvoiceGuard::class);
+            $invoiceGuard->assertCanCreateServiceInvoice($service);
             abort_if(Invoice::where('service_estimate_id', $locked->id)->exists(), 409, 'Invoice dari estimasi ini sudah ada.');
 
             // ONLY APPROVED groups/items are invoiceable commercial work.
@@ -799,7 +802,9 @@ class EstimateService
             /** @var Collection<int, ServiceEstimateItem> $estimateItems */
             $estimateItems = $locked->items()->get();
             $invoiceableItems = $estimateItems->filter(
-                fn (ServiceEstimateItem $item) => $item->estimate_group_id === null || $approvedGroupIds->contains($item->estimate_group_id)
+                fn (ServiceEstimateItem $item) => ! $invoiceGuard->isModernWorkshopService($service)
+                    ? $item->estimate_group_id === null || $approvedGroupIds->contains($item->estimate_group_id)
+                    : $approvedGroupIds->contains($item->estimate_group_id)
             );
 
             $linesSubtotal = 0.0;
@@ -854,6 +859,16 @@ class EstimateService
                     'discount' => $item->discount,
                     'discount_type' => $item->discount_type,
                 ]);
+                if ($item->product_id) {
+                    StockService::decrement(
+                        (int) $item->product_id,
+                        (float) $item->quantity,
+                        'out',
+                        'Invoice #'.$invoice->invoice_number.' dari Estimasi '.$locked->estimate_number,
+                        Invoice::class,
+                        $invoice->id,
+                    );
+                }
             }
 
             $locked->forceFill([
