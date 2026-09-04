@@ -11,7 +11,7 @@
                 <small class="text-muted d-block">Telp: {{ $company['phone'] }} | Email: {{ $company['email'] }}@if(!empty($company['tax_id'])) | NPWP: {{ $company['tax_id'] }}@endif</small>
             </td>
             <td class="text-end">
-                <h3 class="mb-0">ESTIMASI</h3>
+                <h3 class="mb-0">ESTIMASI SERVIS</h3>
                 <strong>{{ $estimate->estimate_number }}</strong>
                 <div><span class="badge bg-{{ $estimate->statusColor() }}">v{{ $estimate->version }} — {{ $estimate->statusLabel() }}</span></div>
             </td>
@@ -69,7 +69,8 @@
                             <span class="badge bg-secondary">manual</span>
                         @endif
                         @if($group->service_finding_id && $group->finding)
-                            <small class="text-muted ms-1">Sumber: {{ $group->finding->finding_number }}</small>
+                            <small class="text-muted ms-1">Temuan: {{ $group->finding->finding_number }} · {{ $group->finding->title }} (Sumber: {{ $group->finding->finding_number }})</small>
+                            @if($group->finding->recommendation)<small class="text-muted d-block">Rekomendasi: {{ $group->finding->recommendation }}</small>@endif
                         @endif
                         @if($group->standard_minutes > 0)
                             <small class="text-muted d-block">Standar waktu: {{ $group->standard_minutes }} menit</small>
@@ -103,5 +104,5 @@
     <div class="mb-2"><small class="text-muted text-uppercase fw-bold">Catatan</small><p class="mb-0">{{ $estimate->notes }}</p></div>
     @endif
     <hr>
-    <small class="text-muted">Dokumen ini adalah estimasi — bukan invoice dan bukan bukti pembayaran.</small>
+    <small class="text-muted">Dokumen ini adalah estimasi, bukan tagihan.</small>
 </div>

@@ -8,25 +8,34 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        body { background: linear-gradient(135deg, #166534 0%, #22c55e 100%); min-height: 100vh; padding: 1.5rem 1rem; }
-        .container { max-width: 760px; }
-        .card { border-radius: 16px; overflow: hidden; }
-        .table th { font-size: .78rem; text-transform: uppercase; letter-spacing: .4px; color: #666; }
+        body { background: #f4f6f8; min-height: 100vh; padding: 1.5rem 1rem; color: #1f2937; }
+        .container { max-width: 900px; }
+        .card { border: 0; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 32px rgba(15,23,42,.08); }
+        .estimate-head { border-bottom: 1px solid #e5e7eb; }
+        .group-card { border: 1px solid #e5e7eb; border-left: 4px solid #64748b; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+        .group-card[data-severity="critical"] { border-left-color: #dc2626; }
+        .group-card[data-severity="repair_required"] { border-left-color: #f59e0b; }
+        .group-card[data-severity="attention"] { border-left-color: #eab308; }
+        .money { white-space: nowrap; }
+        .table th { font-size: .72rem; text-transform: uppercase; letter-spacing: .4px; color: #64748b; }
+        @media print { body { background: #fff; padding: 0; } .no-print { display: none !important; } .card { box-shadow: none; } .group-card { break-inside: avoid; } }
+        @media (max-width: 640px) { body { padding: .5rem; } .card-body { padding: 1rem !important; } .approval-actions .btn { min-height: 44px; flex: 1; } }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card">
             <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="estimate-head d-flex justify-content-between align-items-start mb-3 pb-3">
                     <div>
                         <h4 class="mb-0">{{ $company['name'] ?? config('app.name') }}</h4>
                         <small class="text-muted">{{ $company['address'] }}@if($company['phone']) · {{ $company['phone'] }}@endif</small>
                     </div>
                     <div class="text-end">
-                        <h5 class="mb-0">ESTIMASI</h5>
+                        <h5 class="mb-0">ESTIMASI SERVIS</h5>
                         <code>{{ $estimate->estimate_number }}</code>
-                        <div><span class="badge bg-{{ $estimate->statusColor() }} mt-1">v{{ $estimate->version }} — {{ $estimate->statusLabel() }}</span></div>
+                        <div><span class="badge bg-{{ $estimate->statusColor() }} mt-1">{{ $estimate->statusLabel() }}</span></div>
+                        <small class="text-muted d-block mt-1">v{{ $estimate->version }}</small>
                     </div>
                 </div>
 
@@ -53,41 +62,42 @@
                 {{-- ============================ PER WORK PACKAGE DECISION ============================ --}}
                 <h6 class="border-bottom pb-2">Pilih Pekerjaan yang Disetujui</h6>
                 @php
-                    $approvedAmount = (float) $estimate->groups->where('customer_decision', 'approved')->sum('grand_total');
-                    $rejectedAmount = (float) $estimate->groups->where('customer_decision', 'rejected')->sum('grand_total');
-                    $totalAmount = (float) $estimate->groups->sum('grand_total');
+                    $approvedAmount = $approvalSummary['approved'];
+                    $rejectedAmount = $approvalSummary['rejected'];
+                    $pendingAmount = $approvalSummary['pending'];
+                    $totalAmount = (float) $estimate->grand_total;
                 @endphp
                 <form method="POST" action="{{ route('public.estimate.decide', $estimate->public_token) }}" id="decideForm">
                     @csrf
                     @foreach($estimate->groups as $group)
-                    <div class="border rounded p-3 mb-2 {{ $group->customer_decision === 'rejected' ? 'opacity-75' : '' }}">
+                    @php $finding = $group->finding; @endphp
+                    <div class="group-card {{ $group->customer_decision === 'rejected' ? 'opacity-75' : '' }}" data-severity="{{ $finding?->severity ?? $group->severity_snapshot }}">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <strong>{{ $group->title }}</strong>
-                                @if($group->severity_snapshot === 'critical')
-                                    <span class="badge bg-danger">🔴 dari checklist kritis</span>
-                                @elseif($group->severity_snapshot === 'repair_required')
-                                    <span class="badge bg-warning text-dark">🟠 dari checklist perlu perbaikan</span>
-                                @elseif($group->severity_snapshot === 'attention')
-                                    <span class="badge bg-warning bg-opacity-50 text-dark">🟡 dari checklist perlu perhatian</span>
+                                <h6 class="mb-1">{{ $group->title }}</h6>
+                                @if($finding)
+                                    <div class="small text-muted">Temuan: {{ $finding->finding_number }} · {{ $finding->title }}</div>
+                                    <span class="badge bg-{{ (\App\Models\ServiceFinding::SEVERITY_COLORS[$finding->severity] ?? 'secondary') === 'orange' ? 'warning text-dark' : (\App\Models\ServiceFinding::SEVERITY_COLORS[$finding->severity] ?? 'secondary') }} mt-2">{{ \App\Models\ServiceFinding::SEVERITY_LABELS[$finding->severity] ?? $finding->severity }}</span>
+                                    <small class="text-muted ms-1">dari checklist {{ strtolower(\App\Models\ServiceFinding::SEVERITY_LABELS[$finding->severity] ?? $finding->severity) }}</small>
+                                    @if($finding->measurement_value !== null)<div class="small mt-2"><strong>Hasil Pemeriksaan:</strong> {{ $finding->measurement_value }} {{ $finding->measurement_unit }}</div>@endif
+                                    @if($finding->recommendation)<div class="small mt-1"><strong>Rekomendasi:</strong> {{ $finding->recommendation }}</div>@endif
                                 @else
-                                    <span class="badge bg-secondary">manual</span>
+                                    <span class="badge bg-secondary mt-2">Pekerjaan Tambahan / Manual</span>
                                 @endif
-                                @if($group->standard_minutes > 0)<small class="text-muted d-block">Standar waktu: {{ $group->standard_minutes }} menit</small>@endif
+                                @if($group->standard_minutes > 0)<small class="text-muted d-block mt-2">Estimasi waktu: {{ $group->standard_minutes }} menit</small>@endif
                             </div>
-                            <strong>Rp {{ number_format((float) $group->grand_total, 0, ',', '.') }}</strong>
+                            <strong class="money">Rp {{ number_format((float) $group->grand_total, 0, ',', '.') }}</strong>
                         </div>
                         @if($group->items->isNotEmpty())
-                        <details class="small mt-1">
-                            <summary class="text-muted">Rincian item</summary>
+                        <div class="table-responsive mt-3"><table class="table table-sm align-middle mb-0"><thead><tr><th>Item</th><th class="text-center">Qty</th><th class="text-end">Harga</th><th class="text-end">Total</th></tr></thead><tbody>
                             @foreach($group->items as $item)
-                            <div class="d-flex justify-content-between"><span>{{ ['labor' => 'Jasa', 'part' => 'Part', 'other' => 'Lain'][$item->item_type] ?? '' }}: {{ $item->description }} × {{ $item->quantity }}</span><span>Rp {{ number_format((float) $item->line_total, 0, ',', '.') }}</span></div>
+                            <tr><td><span class="badge bg-light text-dark me-1">{{ [\App\Models\ServiceEstimateItem::TYPE_LABOR => 'Jasa', \App\Models\ServiceEstimateItem::TYPE_PART => 'Parts', \App\Models\ServiceEstimateItem::TYPE_OTHER => 'Lainnya'][$item->item_type] ?? 'Lainnya' }}</span>{{ $item->description }}</td><td class="text-center">{{ $item->quantity }}</td><td class="text-end money">Rp {{ number_format((float) $item->unit_price, 0, ',', '.') }}</td><td class="text-end money">Rp {{ number_format((float) $item->line_total, 0, ',', '.') }}</td></tr>
                             @endforeach
-                        </details>
+                        </tbody></table></div>
                         @endif
 
                         @if($group->customer_decision === 'pending' && $approvable)
-                        <div class="d-flex gap-2 mt-2">
+                        <div class="approval-actions d-flex gap-2 mt-3">
                             <label class="btn btn-success btn-sm mb-0">
                                 <input type="radio" name="decisions[{{ $group->id }}][decision]" value="approved" class="me-1" data-amount="{{ $group->grand_total }}" required> SETUJUI
                             </label>
@@ -96,6 +106,7 @@
                             </label>
                             <input type="hidden" name="decisions[{{ $group->id }}][group_id]" value="{{ $group->id }}">
                         </div>
+                        <input type="text" name="decisions[{{ $group->id }}][reason]" class="form-control form-control-sm mt-2" maxlength="255" placeholder="Alasan jika ditolak (opsional)">
                         @else
                         <div class="mt-2">
                             @if($group->customer_decision === 'approved')<span class="badge bg-success"><i class="bi bi-check me-1"></i>Disetujui</span>
@@ -108,9 +119,10 @@
 
                     @if($approvable)
                     <div class="card card-body bg-light mb-3 small">
-                        <div class="d-flex justify-content-between"><span>Total Estimate:</span><strong>Rp {{ number_format($totalAmount, 0, ',', '.') }}</strong></div>
+                        <div class="d-flex justify-content-between"><span>Total Estimasi:</span><strong>Rp {{ number_format($totalAmount, 0, ',', '.') }}</strong></div>
                         <div class="d-flex justify-content-between text-success"><span>Disetujui:</span><strong id="approvedSum">Rp {{ number_format($approvedAmount, 0, ',', '.') }}</strong></div>
                         <div class="d-flex justify-content-between text-danger"><span>Ditolak:</span><strong id="rejectedSum">Rp {{ number_format($rejectedAmount, 0, ',', '.') }}</strong></div>
+                        <div class="d-flex justify-content-between text-warning"><span>Menunggu:</span><strong>Rp {{ number_format($pendingAmount, 0, ',', '.') }}</strong></div>
                         <button class="btn btn-success w-100 mt-2" id="confirmDecisions"><i class="bi bi-check2-all me-1"></i>KONFIRMASI KEPUTUSAN</button>
                         <small class="text-muted mt-1 d-block">Keputusan bersifat final. Pekerjaan yang ditolak tidak akan dikerjakan dan tidak ditagihkan.</small>
                     </div>
@@ -220,7 +232,7 @@
                     </a>
                 </div>
 
-                <p class="text-center text-muted small mt-3 mb-0">Dokumen ini adalah estimasi — bukan invoice dan bukan bukti pembayaran.</p>
+                <p class="text-center text-muted small mt-3 mb-0">Dokumen ini adalah estimasi, bukan tagihan.</p>
             </div>
         </div>
     </div>

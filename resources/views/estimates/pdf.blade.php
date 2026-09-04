@@ -80,7 +80,7 @@
             <td class="doc-title">
                 <h1>ESTIMASI</h1>
                 <div class="doc-number">{{ $estimate->estimate_number }}</div>
-                <div class="doc-version">Versi {{ $estimate->version }}{{ $issued ? '' : ' (DRAFT)' }}</div>
+                <div class="doc-version">Versi {{ $estimate->version }} · {{ $estimate->statusLabel() }}</div>
             </td>
         </tr>
     </table>
@@ -152,11 +152,14 @@
                         <span class="src-badge src-manual">manual</span>
                     @endif
                     @if($group->finding)
-                        <span style="color:#555;">Sumber: {{ $group->finding->finding_number }}</span>
+                        <div style="color:#555; margin-top:3px;">Temuan: {{ $group->finding->finding_number }} · {{ $group->finding->title }}</div>
+                        @if($group->finding->measurement_value !== null)<div style="color:#555; font-size:9px;">Hasil: {{ $group->finding->measurement_value }} {{ $group->finding->measurement_unit }}</div>@endif
+                        @if($group->finding->recommendation)<div style="color:#555; font-size:9px;">Rekomendasi: {{ $group->finding->recommendation }}</div>@endif
                     @endif
                     @if($group->standard_minutes > 0)
                         <div style="color:#555; font-size:9px;">Standar waktu: {{ $group->standard_minutes }} menit</div>
                     @endif
+                    <div style="color:#555; font-size:9px;">Status persetujuan: {{ \App\Models\ServiceEstimateGroup::DECISION_LABELS[$group->customer_decision] ?? $group->customer_decision }}</div>
                 </td>
             </tr>
             @endif

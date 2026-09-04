@@ -928,6 +928,19 @@ class EstimateService
             'variance' => round($invoiceAmount - $approvedEstimate, 2),
             'estimate' => $latestActive,
             'invoice' => $invoice,
+            'approval_summary' => $latestActive ? $this->approvalSummary($latestActive) : ['approved' => 0.0, 'rejected' => 0.0, 'pending' => 0.0],
+        ];
+    }
+
+    /** Persisted group totals for presentation; never used to price an estimate. */
+    public function approvalSummary(ServiceEstimate $estimate): array
+    {
+        $groups = $estimate->groups()->get(['customer_decision', 'grand_total']);
+
+        return [
+            'approved' => (float) $groups->where('customer_decision', ServiceEstimateGroup::DECISION_APPROVED)->sum('grand_total'),
+            'rejected' => (float) $groups->where('customer_decision', ServiceEstimateGroup::DECISION_REJECTED)->sum('grand_total'),
+            'pending' => (float) $groups->where('customer_decision', ServiceEstimateGroup::DECISION_PENDING)->sum('grand_total'),
         ];
     }
 

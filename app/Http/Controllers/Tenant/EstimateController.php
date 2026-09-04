@@ -558,7 +558,7 @@ class EstimateController extends Controller
     {
         abort_unless((bool) auth()->user()?->can('estimates.view'), 403, 'Tidak punya izin melihat estimasi.');
 
-        $estimate->load('items.product');
+        $estimate->load(['items.product', 'groups.items', 'groups.workPackage.items', 'groups.finding.observationPointResult']);
 
         return view('estimates.print', ['estimate' => $estimate]);
     }
@@ -687,7 +687,7 @@ class EstimateController extends Controller
 
     protected function buildPdf(ServiceEstimate $estimate): \Barryvdh\DomPDF\PDF
     {
-        $estimate->loadMissing(['items.product', 'groups.workPackage', 'groups.finding']);
+        $estimate->loadMissing(['items.product', 'groups.items', 'groups.workPackage.items', 'groups.finding.observationPointResult']);
 
         $pdf = Pdf::loadView('estimates.pdf', [
             'estimate' => $estimate,

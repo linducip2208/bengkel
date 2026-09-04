@@ -70,6 +70,22 @@ class EstimatePdfGroupRenderingTest extends WorkshopFlowTestCase
         $this->assertSame('%PDF', substr((string) $response->getContent(), 0, 4));
     }
 
+    public function test_public_estimate_shows_finding_recommendation_and_customer_facing_terms(): void
+    {
+        $estimate = $this->makeGroupedIssuedEstimate();
+        $finding = $estimate->groups()->firstOrFail()->finding;
+
+        $this->get(route('public.estimate.show', $estimate->public_token))
+            ->assertOk()
+            ->assertSee('ESTIMASI SERVIS')
+            ->assertSee('Temuan: '.$finding->finding_number)
+            ->assertSee('Hasil Pemeriksaan:')
+            ->assertSee('1.2 mm')
+            ->assertSee('Total Estimasi:')
+            ->assertDontSee('Sisa Pembayaran')
+            ->assertDontSee('Belum Dibayar');
+    }
+
     public function test_manual_packages_render_manual_badge(): void
     {
         $service = $this->makeService();

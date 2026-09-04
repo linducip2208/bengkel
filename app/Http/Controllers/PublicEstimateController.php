@@ -19,7 +19,7 @@ class PublicEstimateController extends Controller
     public function show(string $token)
     {
         $estimate = ServiceEstimate::withoutGlobalScopes()
-            ->with(['items.product', 'service', 'customer', 'vehicle.vehicleBrand', 'vehicle.vehicleType'])
+            ->with(['items.product', 'groups.items', 'groups.workPackage.items', 'groups.finding.observationPointResult', 'service', 'customer', 'vehicle.vehicleBrand', 'vehicle.vehicleType'])
             ->where('public_token', $token)
             ->firstOrFail();
 
@@ -32,13 +32,14 @@ class PublicEstimateController extends Controller
             'vehicle' => $estimate->snapshotVehicle(),
             'service' => $estimate->snapshotService(),
             'approvable' => in_array($estimate->status, ServiceEstimate::APPROVABLE_STATUSES, true) && ! $estimate->isExpiredByDate(),
+            'approvalSummary' => $this->estimates->approvalSummary($estimate),
         ]);
     }
 
     public function pdf(string $token)
     {
         $estimate = ServiceEstimate::withoutGlobalScopes()
-            ->with(['items.product', 'groups.workPackage', 'groups.finding'])
+            ->with(['items.product', 'groups.items', 'groups.workPackage.items', 'groups.finding.observationPointResult'])
             ->where('public_token', $token)
             ->firstOrFail();
 

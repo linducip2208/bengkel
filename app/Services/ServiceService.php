@@ -146,7 +146,7 @@ class ServiceService extends BaseService
             'activityLogs.user',
             'findings' => fn ($q) => $q->orderByDesc('id'),
             'workPackages' => fn ($q) => $q->with(['items.product', 'task.timeEntries', 'qcChecks', 'finding'])->orderByDesc('id'),
-            'estimates' => fn ($q) => $q->with(['items.product', 'groups.workPackage', 'groups.finding'])->orderByDesc('version'),
+            'estimates' => fn ($q) => $q->with(['items.product', 'groups.items', 'groups.workPackage.items', 'groups.finding.observationPointResult'])->orderByDesc('version'),
         ])->findOrFail($id);
 
         $nextService = $service->jobcardDetail
