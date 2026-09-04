@@ -46,7 +46,9 @@ class AppServiceProvider extends ServiceProvider
          * route definition can never expose a sensitive action.
          */
         $roleGates = [
-            'invoices.manage' => ['admin', 'manager'],
+            // Kasir has invoice.create/edit permissions in PermissionSeeder and
+            // must be able to use the web invoice form as well.
+            'invoices.manage' => ['admin', 'manager', 'kasir'],
             'invoices.delete' => ['admin'],
             'estimates.override' => ['admin', 'manager'],
             'estimates.convert_invoice' => ['admin', 'manager', 'kasir'],

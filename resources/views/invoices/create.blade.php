@@ -9,6 +9,17 @@
 @section('content')
 <h4 class="mb-3">Buat Invoice Baru</h4>
 
+@if ($errors->any())
+    <div class="alert alert-danger" role="alert">
+        <strong>Invoice belum disimpan.</strong>
+        <ul class="mb-0 mt-1">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 <form method="POST" action="{{ route('invoices.store') }}" id="invoiceForm">
     @csrf
 
@@ -106,9 +117,10 @@
                 <input type="hidden" name="items[{{ $i }}][product_id]" class="product-id-input" value="{{ $item['product_id'] ?? '' }}">
                 <button type="button" class="btn btn-sm btn-outline-secondary pick-product" title="Cari dari Inventory" onclick="openProductPicker(this)"><i class="bi bi-search"></i></button>
             </div>
+            @error("items.$i.description") <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
         </td>
-                        <td><input type="number" name="items[{{ $i }}][quantity]" class="form-control qty" value="{{ $item['quantity'] ?? 1 }}" min="0.01" step="0.01" oninput="calcRow(this)" required></td>
-                        <td><input type="number" name="items[{{ $i }}][unit_price]" class="form-control price" value="{{ $item['unit_price'] ?? 0 }}" min="0" step="100" oninput="calcRow(this)" required></td>
+                        <td><input type="number" name="items[{{ $i }}][quantity]" class="form-control qty @error("items.$i.quantity") is-invalid @enderror" value="{{ $item['quantity'] ?? 1 }}" min="0.01" step="0.01" oninput="calcRow(this)" required></td>
+                        <td><input type="number" name="items[{{ $i }}][unit_price]" class="form-control price @error("items.$i.unit_price") is-invalid @enderror" value="{{ $item['unit_price'] ?? 0 }}" min="0" step="100" oninput="calcRow(this)" required></td>
                         <td>
                             <div class="input-group input-group-sm">
                                 <input type="number" name="items[{{ $i }}][discount]" class="form-control discount" value="{{ $item['discount'] ?? 0 }}" min="0" step="100" oninput="calcRow(this)">
