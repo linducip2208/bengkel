@@ -6,8 +6,9 @@
 @php
     $ws = $service->workflow_status ?? 0;
     $progress = $progress ?? app(\App\Services\WorkshopProgressService::class)->calculate($service);
-    $flowSteps = $progress['steps'];
-    $nextAction = $progress['next_action'];
+    $simpleProgress = app(\App\Services\WorkshopProgressService::class)->simplePreEstimateProgress($service);
+    $flowSteps = $simpleProgress['steps'];
+    $nextAction = $simpleProgress['next_action'];
     $stateClasses = ['completed' => 'bg-success text-white', 'current' => 'bg-primary text-white', 'warning' => 'bg-warning text-dark', 'blocked' => 'bg-danger text-white', 'pending' => 'bg-light text-muted border'];
 @endphp
 <div class="card mb-3">
@@ -20,7 +21,7 @@
                 @if(! $loop->last)<i class="fas fa-angle-right text-muted"></i>@endif
             @endforeach
         </div>
-        <div class="small text-muted mt-2">Tahap saat ini: <strong>{{ $flowSteps[$progress['current_step']]['label'] }}</strong> — {{ $flowSteps[$progress['current_step']]['detail'] }}</div>
+        <div class="small text-muted mt-2">Tahap saat ini: <strong>{{ $flowSteps[$simpleProgress['current_step']]['label'] }}</strong> — {{ $flowSteps[$simpleProgress['current_step']]['detail'] }}</div>
     </div>
 </div>
 
@@ -59,17 +60,17 @@
 
 <ul class="nav nav-tabs mb-4" id="serviceTabs" role="tablist">
     <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-info"><i class="fas fa-info-circle me-1"></i>Ringkasan</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-jobcard"><i class="fas fa-id-card me-1"></i>Jobcard</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-checklist"><i class="fas fa-tasks me-1"></i>Checklist</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-jobcard"><i class="fas fa-id-card me-1"></i>Check-In / Customer</button></li>
+    <li class="nav-item d-none"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-checklist"><i class="fas fa-tasks me-1"></i>Checklist</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-findings"><i class="fas fa-magnifying-glass me-1"></i>Temuan @if($service->findings->where('status', '!=', 'resolved')->count())<span class="badge bg-danger ms-1">{{ $service->findings->where('status', '!=', 'resolved')->count() }}</span>@endif</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-work"><i class="fas fa-sitemap me-1"></i>Rencana Pekerjaan</button></li>
+    <li class="nav-item d-none"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-work"><i class="fas fa-sitemap me-1"></i>Work Package</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-estimate"><i class="fas fa-file-signature me-1"></i>Estimasi</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-work-execution"><i class="fas fa-tools me-1"></i>Pekerjaan</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-photos"><i class="fas fa-images me-1"></i>Foto</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-checkout"><i class="fas fa-clipboard-check me-1"></i>Checkout</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-photos"><i class="fas fa-images me-1"></i>Foto / Dokumen</button></li>
+    <li class="nav-item d-none"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-checkout"><i class="fas fa-clipboard-check me-1"></i>Checkout</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-qc"><i class="fas fa-award me-1"></i>QC</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-invoice"><i class="fas fa-file-invoice me-1"></i>Invoice</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-reservations"><i class="fas fa-boxes me-1"></i>Reservasi Parts</button></li>
+    <li class="nav-item d-none"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-reservations"><i class="fas fa-boxes me-1"></i>Reservasi Parts</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-history"><i class="fas fa-clock-rotate-left me-1"></i>Riwayat</button></li>
 </ul>
 
@@ -223,6 +224,27 @@
 
     {{-- Tab 2: Jobcard --}}
     <div class="tab-pane fade" id="tab-jobcard">
+        <div class="card mb-3 border-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                    <div>
+                        <div class="text-uppercase small text-primary fw-semibold">Check-In / Customer</div>
+                        <h6 class="mb-1">{{ $service->customer?->name ?? 'Customer belum dipilih' }}</h6>
+                        <div class="text-muted small">{{ $service->vehicle?->vehicleBrand?->vehicle_brand ?? '' }} {{ $service->vehicle?->model_name ?? '' }} · {{ $service->vehicle?->number_plate ?? '-' }}</div>
+                    </div>
+                    <span class="badge bg-light text-dark"><i class="fas fa-{{ $service->booking ? 'calendar-check' : 'person-walking' }} me-1"></i>{{ $service->booking ? 'Booking' : 'Walk-In' }}</span>
+                </div>
+                <div class="row g-2 mt-3 small">
+                    <div class="col-md-3"><span class="text-muted d-block">Telepon</span><strong>{{ $service->customer?->phone ?? '-' }}</strong></div>
+                    <div class="col-md-3"><span class="text-muted d-block">Odometer</span><strong>{{ $service->jobcardDetail?->odometer_in ?? '-' }}</strong></div>
+                    <div class="col-md-6"><span class="text-muted d-block">Keluhan</span><strong>{{ $service->booking?->complaint ?: ($service->description ?: $service->title ?: '-') }}</strong></div>
+                </div>
+                <div class="border-top mt-3 pt-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div><i class="fas fa-clipboard-check text-warning me-1"></i><strong>Pemeriksaan</strong><span class="text-muted ms-2">{{ $progress['checklist']['checked_count'] }}/{{ $progress['checklist']['total_points'] }} poin diperiksa</span></div>
+                    <a href="{{ route('observations.checklist', $service) }}" class="btn btn-primary btn-sm"><i class="fas fa-arrow-right me-1"></i>Simpan &amp; Lanjut ke Temuan</a>
+                </div>
+            </div>
+        </div>
         <div class="card">
             <div class="card-body">
                 @if($service->jobcardDetail)
@@ -388,8 +410,8 @@
     {{-- Tab 5: Estimasi --}}
     @include('estimates.tab')
 
-    {{-- Tab 6: Pekerjaan (work packages + tasks) --}}
-    @include('services.tabs.work')
+    {{-- Work packages are embedded inside Temuan; #tab-work remains a hidden compatibility anchor. --}}
+    <div class="tab-pane fade d-none" id="tab-work"></div>
 
     {{-- Actual execution tasks --}}
     @include('services.tabs.work-execution')

@@ -84,6 +84,33 @@ class WorkshopProgressService
         return $this->calculate($service)['next_action'];
     }
 
+    /** Compact advisor-facing projection for the pre-estimate journey. */
+    public function simplePreEstimateProgress(Service $service): array
+    {
+        $progress = $this->calculate($service);
+        $full = $progress['steps'];
+        $findingStep = $full['findings'];
+        $estimateStep = $full['estimate'];
+
+        $steps = [
+            'check_in' => $this->step('Check-In / Customer', $full['check_in']['state'], $full['check_in']['detail'], 'jobcard', ['inspection' => $progress['checklist']]),
+            'findings' => $this->step('Temuan', $findingStep['state'], $findingStep['detail'], 'findings', $findingStep['data']),
+            'estimate' => $this->step('Estimasi', $estimateStep['state'], $estimateStep['detail'], 'estimate', $estimateStep['data']),
+        ];
+
+        $current = $this->currentStep($steps);
+        if ($current === 'completed') {
+            $current = 'estimate';
+        }
+        $actions = [
+            'check_in' => ['label' => 'Lanjutkan Pemeriksaan', 'target' => 'tab-jobcard'],
+            'findings' => ['label' => 'Lanjut ke Temuan', 'target' => 'tab-findings'],
+            'estimate' => ['label' => $estimateStep['state'] === self::COMPLETED ? 'Lihat Estimasi' : 'Lanjut ke Estimasi', 'target' => 'tab-estimate'],
+        ];
+
+        return ['steps' => $steps, 'current_step' => $current, 'next_action' => ['key' => $current, ...$actions[$current]], 'checklist' => $progress['checklist']];
+    }
+
     private function checklist(Collection $points): array
     {
         $total = $points->count();

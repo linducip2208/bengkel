@@ -29,8 +29,8 @@ class WorkPackageController extends Controller
         $package = $this->flow->saveWorkPackage($service, $data, $items);
 
         return redirect()
-            ->to(route('services.show', $service->id).'#tab-work')
-            ->with('success', "Work Package \"{$package->title}\" tersimpan (draft).");
+            ->to(route('services.show', $service->id).'#tab-findings')
+            ->with('success', "Rencana Pekerjaan \"{$package->title}\" tersimpan (draft).");
     }
 
     /** Update a DRAFT work package — keeps the same primary key. */
@@ -45,8 +45,8 @@ class WorkPackageController extends Controller
         $this->flow->saveWorkPackage($service, $data, $items, $package);
 
         return redirect()
-            ->to(route('services.show', $package->service_id).'#tab-work')
-            ->with('success', "Work Package \"{$package->title}\" diperbarui.");
+            ->to(route('services.show', $package->service_id).'#tab-findings')
+            ->with('success', "Rencana Pekerjaan \"{$package->title}\" diperbarui.");
     }
 
     /** Cancel a draft/proposed package and release its reservations safely. */

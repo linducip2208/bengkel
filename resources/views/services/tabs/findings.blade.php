@@ -4,19 +4,35 @@
     $canUpdate = auth()->user()?->can('findings.update');
     $canResolve = auth()->user()?->can('findings.resolve');
     $canCreatePackage = auth()->user()?->can('work-packages.create');
+    $canCreateEstimate = auth()->user()?->can('estimates.create');
     $severityBadges = \App\Models\ServiceFinding::SEVERITY_BADGES;
+    $readyPlans = $service->workPackages
+        ->whereIn('status', [\App\Models\ServiceWorkPackage::STATUS_DRAFT, \App\Models\ServiceWorkPackage::STATUS_PROPOSED])
+        ->filter(fn ($package) => $package->finding?->isActive());
+    $draftEstimate = $service->estimates->firstWhere('status', \App\Models\ServiceEstimate::STATUS_DRAFT);
 @endphp
 <div class="tab-pane fade" id="tab-findings">
     <div class="card">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <h6 class="mb-0"><i class="fas fa-magnifying-glass me-2 text-warning"></i>Temuan Pemeriksaan</h6>
-                <a href="{{ route('services.show', $service) }}#tab-checklist" class="btn btn-sm btn-outline-secondary">
-                    <i class="fas fa-clipboard-check me-1"></i> Buka Checklist
-                </a>
+                <div class="d-flex gap-2 flex-wrap">
+                    @if($canCreateEstimate && $readyPlans->isNotEmpty())
+                    <form action="{{ route('services.estimates.from-findings', $service) }}" method="POST">
+                        @csrf
+                        @foreach($readyPlans as $plan)<input type="hidden" name="packages[]" value="{{ $plan->id }}">@endforeach
+                        <button class="btn btn-sm btn-primary"><i class="fas fa-file-signature me-1"></i>Masukkan Semua Rencana ke Estimasi</button>
+                    </form>
+                    @endif
+                    <a href="{{ route('observations.checklist', $service) }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-clipboard-check me-1"></i>Pemeriksaan</a>
+                </div>
             </div>
 
             @forelse($findings as $finding)
+            @php
+                $plans = $finding->workPackages->whereNotIn('status', [\App\Models\ServiceWorkPackage::STATUS_REJECTED, \App\Models\ServiceWorkPackage::STATUS_CANCELLED]);
+                $plan = $plans->sortByDesc('id')->first();
+            @endphp
             <div class="border rounded p-3 mb-3 {{ $finding->severity === \App\Models\ServiceFinding::SEVERITY_CRITICAL ? 'border-danger' : '' }}">
                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                     <div>
@@ -28,13 +44,27 @@
                         <h6 class="mt-2 mb-1 text-uppercase">{{ $finding->title }}</h6>
                     </div>
                     <div class="d-flex gap-1 flex-wrap">
-                        @if($canCreatePackage && $finding->isActive())
+                        @if($canCreatePackage && $finding->isActive() && ! $plan)
                         <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#wpModal"
                                 data-finding-id="{{ $finding->id }}" data-finding-title="{{ $finding->title }}"
                                 data-severity="{{ $finding->severity }}"
                                 data-measurement="{{ $finding->measurement_value !== null ? $finding->measurement_value.($finding->measurement_unit ? ' '.$finding->measurement_unit : '') : '' }}">
                             <i class="fas fa-briefcase me-1"></i> Buat Rencana Pekerjaan
                         </button>
+                        @endif
+                        @if($plan)
+                            <span class="badge bg-success align-self-center"><i class="fas fa-check me-1"></i>Rencana Pekerjaan sudah dibuat</span>
+                            @if($canCreateEstimate && $draftEstimate && ! $draftEstimate->groups->contains('service_work_package_id', $plan->id))
+                            <form action="{{ route('services.estimates.from-findings', $service) }}" method="POST" class="d-inline">
+                                @csrf <input type="hidden" name="package_id" value="{{ $plan->id }}">
+                                <button class="btn btn-sm btn-primary"><i class="fas fa-file-signature me-1"></i>Masukkan ke Estimasi</button>
+                            </form>
+                            @elseif($canCreateEstimate && ! $draftEstimate && $finding->isActive())
+                            <form action="{{ route('services.estimates.from-findings', $service) }}" method="POST" class="d-inline">
+                                @csrf <input type="hidden" name="package_id" value="{{ $plan->id }}">
+                                <button class="btn btn-sm btn-primary"><i class="fas fa-file-signature me-1"></i>Masukkan ke Estimasi</button>
+                            </form>
+                            @endif
                         @endif
                         @if($canResolve && $finding->isActive())
                         <form action="{{ route('findings.defer', [$service, $finding]) }}" method="POST" class="d-inline">
@@ -99,6 +129,15 @@
                 <p class="mb-0">Belum ada temuan. Isi checklist dengan kondisi selain OK untuk memunculkan temuan otomatis.</p>
             </div>
             @endforelse
+            @if($canCreateEstimate && $readyPlans->isNotEmpty())
+            <div class="border-top pt-3 mt-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="small text-muted">Rencana pekerjaan yang dipilih akan masuk ke satu Estimasi Draft.</span>
+                <a href="{{ route('services.show', $service) }}#tab-estimate" class="btn btn-outline-primary btn-sm"><i class="fas fa-arrow-right me-1"></i>Lanjut ke Estimasi</a>
+            </div>
+            @endif
         </div>
     </div>
+
+    {{-- Rencana Pekerjaan is intentionally embedded in Temuan for advisor UX. --}}
+    @include('services.tabs.work', ['embedded' => true])
 </div>

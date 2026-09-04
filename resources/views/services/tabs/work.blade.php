@@ -1,15 +1,16 @@
 {{-- Tab: PEKERJAAN — work packages, tasks, standard vs actual time --}}
 @php
+    $embedded = $embedded ?? false;
     $packages = $service->workPackages->sortByDesc('id');
     $canStart = auth()->user()?->can('work-tasks.start');
     $canPerformQc = auth()->user()?->can('qc.perform');
     $isMechanic = auth()->user()?->hasRole('mekanik');
 @endphp
-<div class="tab-pane fade" id="tab-work">
+<div class="{{ $embedded ? '' : 'tab-pane fade' }}" id="{{ $embedded ? 'finding-work-plans' : 'tab-work' }}">
     <div class="card">
         <div class="card-body">
             <h6 class="mb-3"><i class="fas fa-sitemap me-2 text-warning"></i>Rencana Pekerjaan</h6>
-            <p class="small text-muted">Work Package adalah jembatan dari Temuan ke Estimasi. Eksekusi teknisi tersedia di tab Pekerjaan setelah approval customer.</p>
+            <p class="small text-muted">Rencana Pekerjaan menghubungkan Temuan ke Estimasi. Eksekusi teknisi tersedia di tab Pekerjaan setelah approval customer.</p>
 
             @forelse($packages as $package)
             @php
@@ -92,7 +93,7 @@
             {{-- Manual package quick-create --}}
             @if(auth()->user()?->can('work-packages.create'))
             <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#wpModal">
-                <i class="fas fa-plus me-1"></i> Tambah Work Package Manual
+                <i class="fas fa-plus me-1"></i> Tambah Rencana Pekerjaan Manual
             </button>
             @endif
         </div>

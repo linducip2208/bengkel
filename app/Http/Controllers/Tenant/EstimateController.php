@@ -385,6 +385,42 @@ class EstimateController extends Controller
             ->with('success', "Estimasi {$estimate->estimate_number} v{$estimate->version} tersimpan (draft).");
     }
 
+    /** Add one or more editable work plans to the service's existing draft. */
+    public function addWorkPackagesFromFindings(Request $request, Service $service): RedirectResponse
+    {
+        abort_unless((bool) auth()->user()?->can('estimates.create'), 403, 'Tidak punya izin membuat estimasi.');
+
+        $ids = collect((array) $request->input('packages', $request->input('package_id')))
+            ->filter(fn ($id) => is_numeric($id))
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+        $packages = ServiceWorkPackage::query()
+            ->where('service_id', $service->id)
+            ->whereIn('id', $ids)
+            ->whereIn('status', [ServiceWorkPackage::STATUS_DRAFT, ServiceWorkPackage::STATUS_PROPOSED])
+            ->with('items')
+            ->get();
+
+        if ($packages->isEmpty()) {
+            return back()->with('error', 'Belum ada Rencana Pekerjaan yang siap dimasukkan ke Estimasi.');
+        }
+
+        /** @var ServiceEstimate|null $draft */
+        $draft = $service->estimates()->where('status', ServiceEstimate::STATUS_DRAFT)->latest('id')->first();
+        $flow = app(WorkshopFlowService::class);
+        if ($draft === null) {
+            $draft = $this->estimates->createDraft($service, [], [], [$packages->first()->id]);
+            $packages = $packages->slice(1);
+        }
+        foreach ($packages as $package) {
+            $flow->addWorkPackageToEstimate($draft, $package);
+        }
+
+        return redirect()->to(route('services.show', $service).'#tab-estimate')
+            ->with('success', 'Rencana Pekerjaan dimasukkan ke Estimasi Draft.');
+    }
+
     public function update(Request $request, ServiceEstimate $estimate): RedirectResponse
     {
         abort_unless((bool) auth()->user()?->can('estimates.update'), 403, 'Tidak punya izin mengubah estimasi.');
