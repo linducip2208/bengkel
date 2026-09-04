@@ -72,9 +72,9 @@ class ServiceService extends BaseService
         return view('services.create', compact('repairCategories', 'technicians', 'serviceAdvisors'));
     }
 
-    public function store(Request $request)
+    public function store(ServiceRequest $request)
     {
-        $validated = ServiceRequest::createFrom($request)->validated();
+        $validated = $request->validated();
 
         // Conflict detection: check technician availability
         $warnings = [];
@@ -221,10 +221,10 @@ class ServiceService extends BaseService
         return view('services.edit', compact('service', 'repairCategories', 'technicians', 'serviceAdvisors', 'selectedCustomer', 'selectedVehicle'));
     }
 
-    public function update(Request $request, $id)
+    public function update(ServiceRequest $request, $id)
     {
         $service = Service::findOrFail($id);
-        $validated = ServiceRequest::createFrom($request)->validated();
+        $validated = $request->validated();
 
         DB::transaction(function () use ($service, $validated) {
             $technicianIds = $validated['assign_to'] ?? [];

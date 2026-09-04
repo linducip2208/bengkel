@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ServiceRequest;
 use App\Models\Customer;
 use App\Models\Service;
 use App\Models\ServiceEstimate;
@@ -27,7 +28,7 @@ class ServiceController extends Controller
         return $this->service->create();
     }
 
-    public function store(Request $request)
+    public function store(ServiceRequest $request)
     {
         return $this->service->store($request);
     }
@@ -42,7 +43,7 @@ class ServiceController extends Controller
         return $this->service->edit($id);
     }
 
-    public function update(Request $request, $id)
+    public function update(ServiceRequest $request, $id)
     {
         return $this->service->update($request, $id);
     }
