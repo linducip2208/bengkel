@@ -67,7 +67,13 @@ class InvoiceController extends Controller
     {
         $this->authorize('invoices.manage');
 
-        $invoice = $this->invoiceService->create($request->validated());
+        try {
+            $invoice = $this->invoiceService->create($request->validated());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->withInput()->with('error', $this->invoiceSaveError($e));
+        }
 
         ActivityLog::record('invoice.create', $invoice, "Invoice {$invoice->invoice_number} dibuat");
 
@@ -102,10 +108,30 @@ class InvoiceController extends Controller
         abort_if((int) $invoice->payment_status >= 2, 403);
         $this->authorize('invoices.manage');
 
-        $this->invoiceService->update($invoice, $request->validated());
+        try {
+            $this->invoiceService->update($invoice, $request->validated());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->withInput()->with('error', $this->invoiceSaveError($e));
+        }
 
         return redirect()->route('invoices.index')
             ->with('success', 'Invoice '.$invoice->invoice_number.' berhasil diperbarui.');
+    }
+
+    /**
+     * Convert save failures into a safe, user-facing message. The exception
+     * is still reported server-side for diagnostics, but its internals are
+     * never exposed in the browser.
+     */
+    private function invoiceSaveError(\Throwable $e): string
+    {
+        if ($e instanceof \Illuminate\Validation\ValidationException) {
+            return 'Invoice gagal disimpan. Periksa kembali data dan diskon yang dimasukkan.';
+        }
+
+        return 'Invoice gagal disimpan. Pastikan customer, item, harga, dan diskon sudah diisi dengan benar.';
     }
 
     public function destroy(Invoice $invoice): RedirectResponse

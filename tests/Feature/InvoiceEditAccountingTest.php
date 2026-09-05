@@ -121,6 +121,31 @@ class InvoiceEditAccountingTest extends TestCase
         $this->assertEquals(8, (int) StockRecord::withoutGlobalScopes()->where('product_id', $product->id)->value('quantity'));
     }
 
+    public function test_creating_invoice_with_percent_discount_uses_percent_field(): void
+    {
+        $this->actingAs(User::factory()->create(['is_active' => true]));
+        $this->seedAccounts();
+        $customer = Customer::create(['name' => 'Invoice Percent', 'phone' => '0818777777']);
+
+        $invoice = app(InvoiceService::class)->create([
+            'customer_id' => $customer->id,
+            'invoice_type' => 'service',
+            'invoice_date' => now()->toDateString(),
+            'discount' => 0,
+            'discount_type' => 'percent',
+            'discount_percent' => 10,
+            'tax_amount' => 0,
+            'items' => [
+                ['product_id' => null, 'description' => 'Jasa servis', 'quantity' => 1, 'unit_price' => 100000, 'discount' => 0, 'discount_type' => 'fixed'],
+            ],
+        ]);
+
+        $this->assertEquals('percent', $invoice->discount_type);
+        $this->assertEquals(10.0, (float) $invoice->discount_percent);
+        $this->assertEquals(10000.0, (float) $invoice->discount);
+        $this->assertEquals(90000.0, (float) $invoice->grand_total);
+    }
+
     private function countEntries(int $invoiceId, string $type): int
     {
         return JournalEntry::where('reference_type', Invoice::class)

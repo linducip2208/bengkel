@@ -19,7 +19,7 @@ class InvoiceRequest extends FormRequest
             'due_date' => ['nullable', 'date'],
             'discount' => ['nullable', 'numeric', 'min:0'],
             'discount_type' => ['nullable', 'in:fixed,percent'],
-            'discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'discount_percent' => ['nullable', 'required_if:discount_type,percent', 'numeric', 'min:0', 'max:100'],
             'tax_amount' => ['nullable', 'numeric', 'min:0'],
             'dp_amount' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string'],
@@ -47,5 +47,17 @@ class InvoiceRequest extends FormRequest
         if ($this->discount_percent === '') {
             $this->merge(['discount_percent' => null]);
         }
+    }
+
+    public function messages(): array
+    {
+        return [
+            'discount.numeric' => 'Diskon nominal harus diisi dengan angka, contoh: 50000.',
+            'discount_percent.required_if' => 'Diskon persen wajib diisi dengan angka, contoh: 10.',
+            'discount_percent.numeric' => 'Diskon persen harus berupa angka, tanpa tanda %, contoh: 10.',
+            'discount_percent.min' => 'Diskon persen tidak boleh kurang dari 0.',
+            'discount_percent.max' => 'Diskon persen maksimal 100.',
+            'discount_type.in' => 'Tipe diskon harus Rp atau persen.',
+        ];
     }
 }

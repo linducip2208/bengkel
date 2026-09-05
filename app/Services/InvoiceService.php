@@ -41,14 +41,13 @@ class InvoiceService extends BaseService
             foreach ($items as $item) {
                 $totalAmount += $this->lineTotal($item);
             }
-            // Calculate discount from percent if needed
+            // Calculate document discount from the percentage field on the
+            // server. Never depend on the browser's hidden nominal field.
             $data['discount_type'] = $data['discount_type'] ?? 'fixed';
-            if ($data['discount_type'] === 'percent' && ! empty($data['discount_percent'])) {
-                $data['discount'] = round($totalAmount * ((float) $data['discount_percent'] / 100), 2);
-            }
+            $data['discount'] = $this->documentDiscount($data, $totalAmount);
 
             $data['total_amount'] = round($totalAmount, 2);
-            $data['grand_total'] = round($totalAmount + ($data['tax_amount'] ?? 0) - ($data['discount'] ?? 0), 2);
+            $data['grand_total'] = max(round($totalAmount + ($data['tax_amount'] ?? 0) - $data['discount'], 2), 0);
 
             $data['dp_status'] = 'none';
             $data['payment_status'] = 0;
@@ -134,12 +133,10 @@ class InvoiceService extends BaseService
             }
 
             $data['discount_type'] = $data['discount_type'] ?? ($invoice->discount_type ?? 'fixed');
-            if ($data['discount_type'] === 'percent' && ! empty($data['discount_percent'])) {
-                $data['discount'] = round($totalAmount * ((float) $data['discount_percent'] / 100), 2);
-            }
+            $data['discount'] = $this->documentDiscount($data, $totalAmount);
 
             $data['total_amount'] = round($totalAmount, 2);
-            $data['grand_total'] = round($totalAmount + ($data['tax_amount'] ?? 0) - ($data['discount'] ?? 0), 2);
+            $data['grand_total'] = max(round($totalAmount + ($data['tax_amount'] ?? 0) - $data['discount'], 2), 0);
 
             $data['dp_status'] = 'none';
             unset($data['payment_status'], $data['paid_amount'], $data['amount_received']);
@@ -246,6 +243,23 @@ class InvoiceService extends BaseService
         $subtotal = (float) ($item['quantity'] ?? 1) * (float) ($item['unit_price'] ?? 0);
 
         return round($subtotal - $this->lineDiscount($item), 2);
+    }
+
+    /**
+     * Resolve the document discount from the submitted form data.
+     * Percentage discounts always use discount_percent, not a browser-side
+     * calculated nominal value.
+     */
+    protected function documentDiscount(array $data, float $totalAmount): float
+    {
+        $discount = (float) ($data['discount'] ?? 0);
+
+        if (($data['discount_type'] ?? 'fixed') === 'percent') {
+            $percent = min(max((float) ($data['discount_percent'] ?? 0), 0), 100);
+            $discount = $totalAmount * ($percent / 100);
+        }
+
+        return min(round(max($discount, 0), 2), round(max($totalAmount, 0), 2));
     }
 
     public function deleteWithStockRestore(Invoice $invoice): void

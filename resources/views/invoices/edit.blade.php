@@ -149,13 +149,15 @@
             <label class="form-label">Diskon</label>
             <div class="input-group">
                 <input type="number" name="discount" id="discountNominal" class="form-control @error('discount') is-invalid @enderror" value="{{ old('discount', $invoice->discount) }}" min="0" step="1000" oninput="calcGrand()" placeholder="Nominal">
-                <input type="number" name="discount_percent" id="discountPercent" class="form-control @error('discount_percent') is-invalid @enderror {{ ($invoice->discount_type ?? 'fixed') === 'fixed' ? 'd-none' : '' }}" value="{{ old('discount_percent', $invoice->discount_percent) }}" min="0" max="100" step="0.5" oninput="calcGrandPercent()" placeholder="Persen">
+                <input type="number" name="discount_percent" id="discountPercent" class="form-control @error('discount_percent') is-invalid @enderror {{ ($invoice->discount_type ?? 'fixed') === 'fixed' ? 'd-none' : '' }}" value="{{ old('discount_percent', $invoice->discount_percent) }}" min="0" max="100" step="0.5" oninput="calcGrandPercent()" placeholder="Contoh: 10" aria-describedby="discountHelp">
                 <select class="form-select" id="discountType" name="discount_type" style="max-width:90px;" onchange="toggleDiscountType()">
                     <option value="fixed" {{ old('discount_type', $invoice->discount_type ?? 'fixed') === 'fixed' ? 'selected' : '' }}>Rp</option>
                     <option value="percent" {{ old('discount_type', $invoice->discount_type) === 'percent' ? 'selected' : '' }}>%</option>
                 </select>
             </div>
+            <div id="discountHelp" class="form-text">Pilih <strong>%</strong>, lalu masukkan angka saja, contoh <strong>10</strong> untuk diskon 10%. Jangan masukkan tanda <strong>%</strong>.</div>
             @error('discount') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            @error('discount_percent') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
         </div>
         <div class="col-md-4">
             <label class="form-label">Pajak (Rp)</label>
