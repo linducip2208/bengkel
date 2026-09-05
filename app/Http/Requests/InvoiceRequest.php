@@ -38,6 +38,14 @@ class InvoiceRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        if ($this->discount_type === 'percent') {
+            // The percentage field is authoritative in percent mode.
+            $this->merge(['discount' => null]);
+        } else {
+            // Ignore stale percentage values when nominal mode is active.
+            $this->merge(['discount_percent' => null]);
+        }
+
         if ($this->discount === '') {
             $this->merge(['discount' => null]);
         }
