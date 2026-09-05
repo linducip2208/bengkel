@@ -301,7 +301,7 @@
                             <div class="input-group input-group-sm">
                                 <input type="number" step="0.01" min="0" name="discount" class="form-control @error('discount') is-invalid @enderror" value="{{ old('discount', $activeEstimate?->discount ?? 0) }}">
                                 <select name="discount_type" class="form-select @error('discount_type') is-invalid @enderror" style="max-width:90px">
-                                    <option value="fixed" @selected(old('discount_type', 'fixed') === 'fixed')">Rp</option>
+                                    <option value="fixed" @selected(old('discount_type', 'fixed') === 'fixed')>Rp</option>
                                     <option value="percent" @selected(old('discount_type') === 'percent')>%</option>
                                 </select>
                             </div>
@@ -581,7 +581,12 @@
         if (e.target.closest('#estimateItems') && ['est-qty', 'est-price', 'est-disc', 'est-tax'].some(c => e.target.classList.contains(c))) {
             updateLiveTotals();
         }
+        if (e.target.matches('#estimateForm [name="discount"]')) updateLiveTotals();
         if (e.target.classList.contains('est-disc-type')) updateLiveTotals();
+    });
+
+    document.addEventListener('change', function (e) {
+        if (e.target.matches('#estimateForm [name="discount_type"]')) updateLiveTotals();
     });
 
     document.addEventListener('DOMContentLoaded', updateLiveTotals);
