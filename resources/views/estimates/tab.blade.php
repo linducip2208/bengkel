@@ -299,8 +299,8 @@
                         <div class="col-6 col-md-3">
                             <label class="form-label small">Diskon Dokumen</label>
                             <div class="input-group input-group-sm">
-                                <input type="number" step="0.01" min="0" name="discount" class="form-control" value="{{ old('discount', $activeEstimate?->discount ?? 0) }}">
-                                <select name="discount_type" class="form-select" style="max-width:90px">
+                                <input type="number" step="0.01" min="0" name="discount" class="form-control @error('discount') is-invalid @enderror" value="{{ old('discount', $activeEstimate?->discount ?? 0) }}">
+                                <select name="discount_type" class="form-select @error('discount_type') is-invalid @enderror" style="max-width:90px">
                                     <option value="fixed" @selected(old('discount_type', 'fixed') === 'fixed')">Rp</option>
                                     <option value="percent" @selected(old('discount_type') === 'percent')>%</option>
                                 </select>
@@ -538,6 +538,17 @@
             subtotal += v.base; discount += v.disc; tax += v.tax;
             tr.querySelector('.est-line-total').textContent = fmt(v.total);
         });
+        // Include the document-level discount in the preview too. The server
+        // remains authoritative when the form is submitted.
+        const headerDiscountInput = document.querySelector('#estimateForm [name="discount"]');
+        const headerDiscountType = document.querySelector('#estimateForm [name="discount_type"]')?.value || 'fixed';
+        let headerDiscount = parseFloat(headerDiscountInput?.value) || 0;
+        if (headerDiscountType === 'percent') {
+            headerDiscount = subtotal * headerDiscount / 100;
+        }
+        headerDiscount = Math.min(Math.max(headerDiscount, 0), Math.max(subtotal - discount, 0));
+        discount += headerDiscount;
+
         document.getElementById('live-subtotal').textContent = 'Rp ' + fmt(subtotal);
         document.getElementById('live-discount').textContent = '- Rp ' + fmt(discount);
         document.getElementById('live-tax').textContent = 'Rp ' + fmt(tax);
