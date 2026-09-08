@@ -57,7 +57,7 @@ class ServiceService extends BaseService
 
         $progressService = app(WorkshopProgressService::class);
         $progressByService = $services->getCollection()->mapWithKeys(fn (Service $service) => [
-            $service->id => $progressService->calculate($service),
+            $service->id => $progressService->simpleOperationalFlow($service),
         ]);
 
         return view('services.index', compact('services', 'stats', 'technicians', 'progressByService'));

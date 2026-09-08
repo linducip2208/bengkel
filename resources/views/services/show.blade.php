@@ -6,7 +6,7 @@
 @php
     $ws = $service->workflow_status ?? 0;
     $progress = $progress ?? app(\App\Services\WorkshopProgressService::class)->calculate($service);
-    $simpleProgress = app(\App\Services\WorkshopProgressService::class)->simplePreEstimateProgress($service);
+    $simpleProgress = app(\App\Services\WorkshopProgressService::class)->simpleOperationalFlow($service);
     $flowSteps = $simpleProgress['steps'];
     $nextAction = $simpleProgress['next_action'];
     $stateClasses = ['completed' => 'bg-success text-white', 'current' => 'bg-primary text-white', 'warning' => 'bg-warning text-dark', 'blocked' => 'bg-danger text-white', 'pending' => 'bg-light text-muted border'];
@@ -62,7 +62,7 @@
     <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-info"><i class="fas fa-info-circle me-1"></i>Ringkasan</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-jobcard"><i class="fas fa-id-card me-1"></i>Check-In / Customer</button></li>
     <li class="nav-item d-none"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-checklist"><i class="fas fa-tasks me-1"></i>Checklist</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-findings"><i class="fas fa-magnifying-glass me-1"></i>Temuan @if($service->findings->where('status', '!=', 'resolved')->count())<span class="badge bg-danger ms-1">{{ $service->findings->where('status', '!=', 'resolved')->count() }}</span>@endif</button></li>
+    <li class="nav-item d-none"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-findings"><i class="fas fa-magnifying-glass me-1"></i>Temuan @if($service->findings->where('status', '!=', 'resolved')->count())<span class="badge bg-danger ms-1">{{ $service->findings->where('status', '!=', 'resolved')->count() }}</span>@endif</button></li>
     <li class="nav-item d-none"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-work"><i class="fas fa-sitemap me-1"></i>Work Package</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-estimate"><i class="fas fa-file-signature me-1"></i>Estimasi</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-work-execution"><i class="fas fa-tools me-1"></i>Pekerjaan</button></li>
@@ -241,7 +241,13 @@
                 </div>
                 <div class="border-top mt-3 pt-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <div><i class="fas fa-clipboard-check text-warning me-1"></i><strong>Pemeriksaan</strong><span class="text-muted ms-2">{{ $progress['checklist']['checked_count'] }}/{{ $progress['checklist']['total_points'] }} poin diperiksa</span></div>
-                    <a href="{{ route('observations.checklist', $service) }}" class="btn btn-primary btn-sm"><i class="fas fa-arrow-right me-1"></i>Simpan &amp; Lanjut ke Temuan</a>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="#tab-estimate" class="btn btn-primary btn-sm" data-bs-toggle="tab"><i class="fas fa-file-signature me-1"></i>Simpan &amp; Lanjut ke Estimasi</a>
+                        <a href="{{ route('observations.checklist', $service) }}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-clipboard-check me-1"></i>Isi Pemeriksaan Detail</a>
+                        @if($service->findings->isNotEmpty())
+                        <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="tab" data-bs-target="#tab-findings"><i class="fas fa-magnifying-glass me-1"></i>Lihat Temuan Teknis</button>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>

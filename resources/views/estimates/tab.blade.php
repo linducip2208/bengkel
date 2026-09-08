@@ -241,7 +241,8 @@
             @else
             <div class="text-center py-4">
                 <i class="fas fa-file-signature fa-3x text-muted mb-3"></i>
-                <p class="text-muted">Belum ada estimasi aktif untuk servis ini.</p>
+                <p class="text-muted mb-1">Belum ada estimasi aktif untuk servis ini.</p>
+                <small class="text-muted d-block mb-3">Belum ada rekomendasi dari pemeriksaan. Anda tetap dapat membuat estimasi langsung.</small>
             </div>
             @endif
 

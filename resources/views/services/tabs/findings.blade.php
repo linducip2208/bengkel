@@ -1,4 +1,4 @@
-{{-- Tab: TEMUAN — technical findings between checklist and estimate --}}
+{{-- Optional technical layer: inspection findings and work planning. --}}
 @php
     $findings = $service->findings->sortByDesc('id');
     $canUpdate = auth()->user()?->can('findings.update');
@@ -15,7 +15,7 @@
     <div class="card">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                <h6 class="mb-0"><i class="fas fa-magnifying-glass me-2 text-warning"></i>Temuan Pemeriksaan</h6>
+                <h6 class="mb-0"><i class="fas fa-magnifying-glass me-2 text-warning"></i>Pemeriksaan Detail &amp; Temuan</h6>
                 <div class="d-flex gap-2 flex-wrap">
                     @if($canCreateEstimate && $readyPlans->isNotEmpty())
                     <form action="{{ route('services.estimates.from-findings', $service) }}" method="POST">
@@ -24,7 +24,8 @@
                         <button class="btn btn-sm btn-primary"><i class="fas fa-file-signature me-1"></i>Masukkan Semua Rencana ke Estimasi</button>
                     </form>
                     @endif
-                    <a href="{{ route('observations.checklist', $service) }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-clipboard-check me-1"></i>Pemeriksaan</a>
+                    <a href="{{ route('observations.checklist', $service) }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-clipboard-check me-1"></i>Isi Pemeriksaan Detail</a>
+                    <a href="{{ route('services.show', $service) }}#tab-estimate" class="btn btn-sm btn-outline-primary"><i class="fas fa-file-signature me-1"></i>Kembali ke Estimasi</a>
                 </div>
             </div>
 
@@ -126,7 +127,8 @@
             @empty
             <div class="text-center py-4 text-muted">
                 <i class="fas fa-magnifying-glass fa-2x mb-2"></i>
-                <p class="mb-0">Belum ada temuan. Isi checklist dengan kondisi selain OK untuk memunculkan temuan otomatis.</p>
+                <p class="mb-1">Belum ada temuan. Pemeriksaan detail dan temuan bersifat opsional untuk alur service sederhana.</p>
+                <small>Jika dibutuhkan, isi pemeriksaan untuk membuat rekomendasi dan Rencana Pekerjaan teknis.</small>
             </div>
             @endforelse
             @if($canCreateEstimate && $readyPlans->isNotEmpty())

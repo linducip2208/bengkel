@@ -72,7 +72,8 @@ class ObservationController extends Controller
     /**
      * Save checklist state, then sync findings — one committed transaction.
      * action=draft  → back to the checklist (work in place).
-     * action=continue → continue to the Findings/Estimate flow.
+     * action=continue → continue to the technical Findings flow.
+     * action=estimate → continue directly to the optional Estimate flow.
      * The checklist is saved in BOTH cases — no state can be lost.
      */
     public function saveChecklist(Request $request, Service $service)
@@ -86,6 +87,12 @@ class ObservationController extends Controller
         $this->observationService->saveCheckResults($service, $request->input('points', []));
 
         $action = $request->input('action', 'draft');
+
+        if ($action === 'estimate') {
+            return redirect()
+                ->to(route('services.show', $service->id).'#tab-estimate')
+                ->with('success', 'Checklist tersimpan — lanjut ke Estimasi. Temuan tetap opsional.');
+        }
 
         if ($action === 'continue') {
             return redirect()

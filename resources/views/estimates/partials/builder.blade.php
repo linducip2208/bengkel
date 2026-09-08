@@ -37,15 +37,16 @@
         <span class="badge bg-light text-dark border"><i class="fas fa-shield-halved me-1"></i>Draft dapat diedit</span>
     </div>
 
-    {{-- Finding/work-plan context stays available without exposing internal workflow jargon. --}}
+    {{-- Optional technical recommendations remain available without blocking direct estimates. --}}
     @if($availablePackages->isNotEmpty())
-    <div class="border rounded p-3 mb-3 bg-light" aria-label="WORK PACKAGE">
+    <div class="border rounded p-3 mb-3 bg-light" aria-label="Rencana Pekerjaan">
+        <span class="visually-hidden">WORK PACKAGE</span>
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
             <div>
                 <strong><i class="fas fa-list-check me-1 text-warning"></i>Rencana Pekerjaan</strong>
                 <small class="text-muted d-block">Pilih pekerjaan dari temuan untuk dikelompokkan dalam persetujuan pelanggan.</small>
             </div>
-            <a href="{{ route('services.show', $service) }}#tab-work" class="btn btn-sm btn-outline-warning"><i class="fas fa-arrow-up-right-from-square me-1"></i>Kelola</a>
+            <a href="{{ route('services.show', $service) }}#tab-findings" class="btn btn-sm btn-outline-warning"><i class="fas fa-arrow-up-right-from-square me-1"></i>Lihat Pemeriksaan</a>
         </div>
         <div class="row g-2">
             @foreach($availablePackages as $package)

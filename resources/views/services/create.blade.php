@@ -134,7 +134,7 @@
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('services.index') }}" class="btn btn-outline-secondary">Batal</a>
                         <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-save me-1"></i> Simpan Servis
+                            <i class="fas fa-file-signature me-1"></i> Simpan &amp; Lanjut ke Estimasi
                         </button>
                     </div>
                 </form>

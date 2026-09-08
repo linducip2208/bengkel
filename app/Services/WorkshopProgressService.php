@@ -111,6 +111,84 @@ class WorkshopProgressService
         return ['steps' => $steps, 'current_step' => $current, 'next_action' => ['key' => $current, ...$actions[$current]], 'checklist' => $progress['checklist']];
     }
 
+    /**
+     * Compact operational projection for the normal advisor-facing flow.
+     *
+     * Inspection, findings, and work packages remain in the full projection,
+     * but are deliberately not a prerequisite in this five-stage view.
+     */
+    public function simpleOperationalFlow(Service $service): array
+    {
+        $progress = $this->calculate($service);
+        $full = $progress['steps'];
+        $estimate = data_get($full['estimate'], 'data.estimate');
+        $estimateStatus = $estimate?->status;
+        $approvedStatuses = [
+            ServiceEstimate::STATUS_APPROVED,
+            ServiceEstimate::STATUS_PARTIALLY_APPROVED,
+            ServiceEstimate::STATUS_CONVERTED,
+        ];
+        $awaitingApprovalStatuses = [
+            ServiceEstimate::STATUS_SENT,
+            ServiceEstimate::STATUS_WAITING_APPROVAL,
+        ];
+        $hasApprovedEstimate = in_array($estimateStatus, $approvedStatuses, true);
+        $taskCount = (int) data_get($full['work'], 'data.tasks', 0);
+
+        $estimateState = ! $estimate
+            ? self::PENDING
+            : ($estimateStatus === ServiceEstimate::STATUS_DRAFT
+                ? self::CURRENT
+                : (in_array($estimateStatus, $awaitingApprovalStatuses, true) ? self::CURRENT : ($estimateStatus === ServiceEstimate::STATUS_REJECTED ? self::WARNING : self::COMPLETED)));
+
+        $workStep = $full['work'];
+        $qcStep = $full['qc'];
+        if (! $hasApprovedEstimate) {
+            $workStep = $this->step(
+                'Pekerjaan',
+                self::PENDING,
+                $estimate ? 'Menunggu persetujuan customer' : 'Menunggu estimasi',
+                'work-execution',
+                ['tasks' => $taskCount]
+            );
+            $qcStep = $this->step('QC', self::PENDING, 'Menunggu pekerjaan selesai', 'qc', ['passed' => 0, 'total' => $taskCount]);
+        } elseif ($taskCount === 0) {
+            // Direct/manual estimates are informational unless an explicit
+            // technical plan creates executable tasks. Do not invent tasks.
+            $workStep = $this->step('Pekerjaan', self::COMPLETED, 'Tidak ada tugas teknis terpisah', 'work-execution', ['tasks' => 0]);
+            $qcStep = $this->step('QC', self::COMPLETED, 'Tidak ada QC teknis terpisah', 'qc', ['passed' => 0, 'total' => 0]);
+        }
+
+        $steps = [
+            'check_in' => $this->step('Check-In / Customer', $full['check_in']['state'], $full['check_in']['detail'], 'jobcard', $full['check_in']['data']),
+            'estimate' => $this->step('Estimasi', $estimateState, $full['estimate']['detail'], 'estimate', $full['estimate']['data']),
+            'work' => $workStep,
+            'qc' => $qcStep,
+            'invoice' => $full['invoice'],
+        ];
+        $current = $this->currentStep($steps);
+        $actions = [
+            'check_in' => $full['check_in']['state'] === self::COMPLETED
+                ? ['label' => 'Simpan & Lanjut ke Estimasi', 'target' => 'tab-estimate']
+                : ['label' => 'Lanjutkan Check-In', 'target' => 'tab-jobcard'],
+            'estimate' => ['label' => $estimateStatus === ServiceEstimate::STATUS_DRAFT ? 'Lanjutkan Estimasi' : 'Lihat Estimasi', 'target' => 'tab-estimate'],
+            'work' => ['label' => 'Lanjut ke Pekerjaan', 'target' => 'tab-work-execution'],
+            'qc' => ['label' => 'Lanjut ke QC', 'target' => 'tab-qc'],
+            'invoice' => ['label' => 'Buat Invoice', 'target' => 'tab-invoice'],
+        ];
+
+        return [
+            'steps' => $steps,
+            'current_step' => $current,
+            'next_action' => ['key' => $current, ...$actions[$current]],
+            'checklist' => $progress['checklist'],
+            'technical' => [
+                'findings' => $full['findings'],
+                'work_package' => $full['work_package'],
+            ],
+        ];
+    }
+
     private function checklist(Collection $points): array
     {
         $total = $points->count();
