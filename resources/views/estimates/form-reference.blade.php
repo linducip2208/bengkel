@@ -97,7 +97,7 @@
             @if((float) $estimate->tax_amount > 0)
             <tr><td colspan="4" class="text-end">Pajak</td><td class="text-end">Rp {{ number_format((float) $estimate->tax_amount, 0, ',', '.') }}</td></tr>
             @endif
-            <tr class="table-dark"><td colspan="4" class="text-end fw-bold">GRAND TOTAL</td><td class="text-end fw-bold">Rp {{ number_format((float) $estimate->grand_total, 0, ',', '.') }}</td></tr>
+            <tr class="table-dark"><td colspan="4" class="text-end fw-bold">TOTAL ESTIMASI <small class="opacity-75">(GRAND TOTAL)</small></td><td class="text-end fw-bold">Rp {{ number_format((float) $estimate->grand_total, 0, ',', '.') }}</td></tr>
         </tfoot>
     </table>
     @if($estimate->notes)

@@ -7,15 +7,19 @@ use App\Models\ActivityLog;
 use App\Models\Branch;
 use App\Models\EmailLog;
 use App\Models\Invoice;
+use App\Models\Product;
 use App\Models\Service;
 use App\Models\ServiceEstimate;
 use App\Models\ServiceEstimateItem;
 use App\Models\ServiceFinding;
+use App\Models\ServicePackage;
 use App\Models\ServiceWorkPackage;
 use App\Services\EstimateService;
 use App\Services\SettingsService;
 use App\Services\WorkshopFlowService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -142,6 +146,7 @@ class EstimateController extends Controller
 
             $continuingDraft = $service->estimates()
                 ->where('status', ServiceEstimate::STATUS_DRAFT)
+                ->with(['items.product.unit', 'groups'])
                 ->orderByDesc('version')
                 ->first();
 
@@ -223,6 +228,140 @@ class EstimateController extends Controller
             'results' => $services->map(fn (Service $s) => $this->serviceCard($s)),
             'pagination' => ['more' => $page * $perPage < $total],
             'total' => $total,
+        ]);
+    }
+
+    /**
+     * Paginated parts catalog for the quotation builder.
+     *
+     * This endpoint deliberately returns selling information only. Product
+     * cost and supplier data never cross the Estimate UI boundary.
+     */
+    public function catalogProducts(Request $request): JsonResponse
+    {
+        if (! $this->canUseCatalog()) {
+            return response()->json(['success' => false, 'message' => 'Tidak punya izin mengelola item estimasi.'], 403);
+        }
+
+        $q = trim((string) $request->input('q', ''));
+        $page = max(1, (int) $request->input('page', 1));
+        $perPage = 20;
+        $stockFilter = (string) $request->input('stock', 'all');
+        $service = null;
+        $serviceId = (int) $request->input('service_id', 0);
+
+        if ($serviceId > 0) {
+            /** @var Service|null $service */
+            $service = Service::query()->with('customer.customerGroup')->find($serviceId);
+            if ($service === null) {
+                return response()->json(['success' => false, 'message' => 'Service tidak ditemukan pada cabang Anda.'], 404);
+            }
+        }
+
+        $groupId = data_get($service, 'customer.customerGroup.selling_price_group_id');
+        $query = Product::query()
+            ->with([
+                'unit:id,name,abbreviation',
+                'stockRecord:product_id,quantity',
+                'reservations' => fn ($reservations) => $reservations->where('status', 'reserved')->select('id', 'product_id', 'quantity', 'status'),
+                ...($groupId ? ['sellingPrices' => fn ($prices) => $prices->where('selling_price_group_id', $groupId)] : []),
+            ])
+            // Product has no own active flag in the existing schema. Its
+            // active catalog state is represented by a live product and an
+            // active product type.
+            ->whereHas('productType', fn ($type) => $type->where('is_active', true))
+            ->when($q !== '', fn ($products) => $products->where(function ($search) use ($q) {
+                $term = "%{$q}%";
+                $search->where('name', 'like', $term)
+                    ->orWhere('code', 'like', $term)
+                    ->orWhere('barcode', 'like', $term)
+                    ->orWhere('product_no', 'like', $term);
+            }));
+
+        if (in_array($stockFilter, ['available', 'out'], true)) {
+            $query->where(function ($stockQuery) use ($stockFilter) {
+                if ($stockFilter === 'available') {
+                    $stockQuery->whereHas('stockRecord', fn ($stock) => $stock->where('quantity', '>', 0));
+                } else {
+                    $stockQuery->whereDoesntHave('stockRecord')
+                        ->orWhereHas('stockRecord', fn ($stock) => $stock->where('quantity', '<=', 0));
+                }
+            });
+        }
+
+        $products = $query->orderBy('name')
+            ->paginate($perPage, ['id', 'product_no', 'code', 'barcode', 'name', 'unit_id', 'price'], 'page', $page);
+        /** @var EloquentCollection<int, Product> $productResults */
+        $productResults = $products->getCollection();
+
+        return response()->json([
+            'results' => $productResults->map(function (Product $product) use ($groupId) {
+                $sellingPrice = $product->sellingPrices->first();
+                $price = $groupId && $sellingPrice !== null
+                    ? (float) data_get($sellingPrice, 'price')
+                    : $product->getPriceFor($groupId);
+                $available = (float) $product->available_stock;
+
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'sku' => $product->code ?: $product->product_no,
+                    'part_number' => $product->product_no,
+                    'barcode' => $product->barcode,
+                    'unit' => data_get($product->unit, 'abbreviation') ?: data_get($product->unit, 'name') ?: 'PCS',
+                    'selling_price' => $price,
+                    'stock_available' => $available,
+                    'is_active' => true,
+                ];
+            })->values(),
+            'pagination' => [
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'more' => $products->hasMorePages(),
+            ],
+        ]);
+    }
+
+    /** Paginated service-package catalog for the quotation builder. */
+    public function catalogServices(Request $request): JsonResponse
+    {
+        if (! $this->canUseCatalog()) {
+            return response()->json(['success' => false, 'message' => 'Tidak punya izin mengelola item estimasi.'], 403);
+        }
+
+        $q = trim((string) $request->input('q', ''));
+        $page = max(1, (int) $request->input('page', 1));
+        $perPage = 20;
+
+        $services = ServicePackage::query()
+            ->with('repairCategory:id,repair_category_name')
+            ->where('is_active', true)
+            ->when($q !== '', fn ($packages) => $packages->where(function ($search) use ($q) {
+                $term = "%{$q}%";
+                $search->where('name', 'like', $term)
+                    ->orWhere('description', 'like', $term)
+                    ->orWhereHas('repairCategory', fn ($category) => $category->where('repair_category_name', 'like', $term));
+            }))
+            ->orderBy('name')
+            ->paginate($perPage, ['id', 'name', 'repair_category_id', 'price', 'estimated_hours', 'description'], 'page', $page);
+        /** @var EloquentCollection<int, ServicePackage> $serviceResults */
+        $serviceResults = $services->getCollection();
+
+        return response()->json([
+            'results' => $serviceResults->map(fn (ServicePackage $package) => [
+                'id' => $package->id,
+                'name' => $package->name,
+                'code' => null,
+                'category' => data_get($package->repairCategory, 'repair_category_name'),
+                'description' => $package->description,
+                'price' => (float) $package->price,
+                'standard_minutes' => $package->estimated_hours !== null ? (int) round((float) $package->estimated_hours * 60) : null,
+            ])->values(),
+            'pagination' => [
+                'current_page' => $services->currentPage(),
+                'last_page' => $services->lastPage(),
+                'more' => $services->hasMorePages(),
+            ],
         ]);
     }
 
@@ -361,7 +500,7 @@ class EstimateController extends Controller
         abort_unless((bool) auth()->user()?->can('estimates.create'), 403, 'Tidak punya izin membuat estimasi.');
 
         $data = $this->validateHeader($request);
-        $items = $this->normalizeItems($request);
+        $items = $this->normalizeItems($request, $service);
         $packages = array_map('intval', (array) $request->input('packages', []));
 
         if (count($items) === 0 && count($packages) === 0) {
@@ -437,7 +576,9 @@ class EstimateController extends Controller
         }
 
         $data = $this->validateHeader($request);
-        $items = $this->normalizeItems($request);
+        /** @var Service|null $estimateService */
+        $estimateService = $estimate->service()->with('customer.customerGroup')->first();
+        $items = $this->normalizeItems($request, $estimateService);
         $packages = array_map('intval', (array) $request->input('packages', []));
 
         if (count($items) === 0 && count($packages) === 0) {
@@ -572,7 +713,9 @@ class EstimateController extends Controller
         abort_unless((bool) auth()->user()?->can('estimates.revise'), 403, 'Tidak punya izin membuat revisi estimasi.');
 
         $data = $this->validateHeader($request);
-        $items = $this->normalizeItems($request);
+        /** @var Service|null $estimateService */
+        $estimateService = $estimate->service()->with('customer.customerGroup')->first();
+        $items = $this->normalizeItems($request, $estimateService);
         $items = count($items) > 0 ? $items : $estimate->items->map(fn (ServiceEstimateItem $item) => [
             'item_type' => $item->item_type,
             'product_id' => $item->product_id,
@@ -648,7 +791,7 @@ class EstimateController extends Controller
      *
      * @return array<int, array<string, mixed>>
      */
-    protected function normalizeItems(Request $request): array
+    protected function normalizeItems(Request $request, ?Service $service = null): array
     {
         $validated = $request->validate([
             'items' => 'nullable|array',
@@ -663,6 +806,26 @@ class EstimateController extends Controller
         ]);
 
         $items = [];
+        $productIds = collect($validated['items'] ?? [])
+            ->pluck('product_id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+        $products = $productIds->isEmpty()
+            ? collect()
+            : Product::query()
+                ->with([
+                    ...(data_get($service, 'customer.customerGroup.selling_price_group_id') ? ['sellingPrices' => fn ($prices) => $prices->where('selling_price_group_id', data_get($service, 'customer.customerGroup.selling_price_group_id'))] : []),
+                ])
+                ->whereIn('id', $productIds)
+                ->whereHas('productType', fn ($type) => $type->where('is_active', true))
+                ->get()
+                ->keyBy('id');
+        abort_if($productIds->diff($products->keys())->isNotEmpty(), 422, 'Produk tidak ditemukan pada cabang Anda atau sudah tidak aktif.');
+        $sellingPriceGroupId = data_get($service, 'customer.customerGroup.selling_price_group_id');
+        $canOverridePrice = (bool) auth()->user()?->can('pos.price_override');
+
         foreach ($validated['items'] ?? [] as $row) {
             $description = trim((string) ($row['description'] ?? ''));
             $hasProduct = ! empty($row['product_id']);
@@ -670,12 +833,20 @@ class EstimateController extends Controller
                 continue;
             }
 
+            $product = $hasProduct ? $products->get((int) $row['product_id']) : null;
+            $unitPrice = (float) ($row['unit_price'] ?? 0);
+            if ($product !== null && ! $canOverridePrice) {
+                $unitPrice = $sellingPriceGroupId && $product->relationLoaded('sellingPrices')
+                    ? (float) data_get($product->sellingPrices->first(), 'price', $product->price)
+                    : $product->getPriceFor($sellingPriceGroupId);
+            }
+
             $items[] = [
                 'item_type' => $row['item_type'] ?? ($hasProduct ? ServiceEstimateItem::TYPE_PART : ServiceEstimateItem::TYPE_LABOR),
                 'product_id' => $hasProduct ? (int) $row['product_id'] : null,
                 'description' => $description !== '' ? $description : 'Item',
                 'quantity' => (float) ($row['quantity'] ?? 1),
-                'unit_price' => (float) ($row['unit_price'] ?? 0),
+                'unit_price' => $unitPrice,
                 'discount' => (float) ($row['discount'] ?? 0),
                 'discount_type' => $row['discount_type'] ?? 'fixed',
                 'tax_rate' => isset($row['tax_rate']) && $row['tax_rate'] !== '' ? (float) $row['tax_rate'] : null,
@@ -683,6 +854,11 @@ class EstimateController extends Controller
         }
 
         return $items;
+    }
+
+    protected function canUseCatalog(): bool
+    {
+        return (bool) auth()->user()?->can('estimates.create') || (bool) auth()->user()?->can('estimates.update');
     }
 
     protected function buildPdf(ServiceEstimate $estimate): \Barryvdh\DomPDF\PDF
