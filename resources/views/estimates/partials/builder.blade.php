@@ -3,6 +3,11 @@
     $builderEstimate = $builderEstimate ?? null;
     $availablePackages = $availablePackages ?? collect();
     $canOverridePrice = $canOverridePrice ?? (bool) auth()->user()?->can('pos.price_override');
+    $directEstimate = $directEstimate ?? false;
+    $builderAction = $builderAction ?? ($builderEstimate?->isEditable() ? route('estimates.update', $builderEstimate) : route('services.estimates.store', $service));
+    $builderCancelUrl = $builderCancelUrl ?? ($service ? route('services.show', $service).'#tab-estimate' : route('estimates.index'));
+    $customers = $customers ?? collect();
+    $vehicles = $vehicles ?? collect();
     $oldItems = old('items');
     if ($oldItems !== null) {
         $editItems = is_array($oldItems) ? $oldItems : [];
@@ -26,7 +31,7 @@
 @endphp
 
 <div class="estimate-builder border-top pt-3 mt-3">
-    <form method="POST" id="estimateForm" action="{{ $builderEstimate?->isEditable() ? route('estimates.update', $builderEstimate) : route('services.estimates.store', $service) }}">
+    <form method="POST" id="estimateForm" action="{{ $builderAction }}">
         @csrf
         @if($builderEstimate?->isEditable()) @method('PUT') @endif
         <input type="hidden" name="redirect_to" value="estimates">
@@ -38,6 +43,38 @@
         </div>
         <span class="badge bg-light text-dark border"><i class="fas fa-shield-halved me-1"></i>Draft dapat diedit</span>
     </div>
+
+    @if($directEstimate)
+        <div class="row g-2 mb-3 p-3 border rounded bg-light">
+            <div class="col-12"><strong><i class="fas fa-user-check me-1 text-primary"></i>Customer & Kendaraan</strong><small class="text-muted d-block">Estimasi langsung akan membuat konteks Check-In secara otomatis saat disimpan.</small></div>
+            <div class="col-md-4">
+                <label class="form-label small" for="directCustomer">Pelanggan *</label>
+                <select id="directCustomer" name="customer_id" class="form-select form-select-sm" required>
+                    <option value="">Pilih pelanggan</option>
+                    @foreach($customers as $customer)
+                        <option value="{{ $customer->id }}" @selected((string) old('customer_id') === (string) $customer->id)>{{ $customer->name }}{{ $customer->phone ? ' · '.$customer->phone : '' }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small" for="directVehicle">Kendaraan *</label>
+                <select id="directVehicle" name="vehicle_id" class="form-select form-select-sm" required>
+                    <option value="">Pilih kendaraan</option>
+                    @foreach($vehicles as $vehicle)
+                        <option value="{{ $vehicle->id }}" data-customer="{{ $vehicle->customer_id }}" @selected((string) old('vehicle_id') === (string) $vehicle->id)>{{ $vehicle->number_plate }} — {{ $vehicle->model_name }}{{ $vehicle->customer?->name ? ' · '.$vehicle->customer->name : '' }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small" for="directTitle">Keluhan / Judul Estimasi *</label>
+                <input id="directTitle" type="text" name="title" class="form-control form-control-sm" value="{{ old('title') }}" placeholder="Contoh: Mesin pincang" required>
+            </div>
+            <div class="col-12">
+                <label class="form-label small" for="directDescription">Detail keluhan</label>
+                <textarea id="directDescription" name="description" rows="2" class="form-control form-control-sm" placeholder="Catatan awal customer">{{ old('description') }}</textarea>
+            </div>
+        </div>
+    @endif
 
     {{-- Optional technical recommendations remain available without blocking direct estimates. --}}
     @if($availablePackages->isNotEmpty())
@@ -156,7 +193,7 @@
         </div>
 
         <div class="d-flex justify-content-end gap-2 flex-wrap mb-2">
-            <a href="{{ route('services.show', $service) }}#tab-estimate" class="btn btn-outline-secondary">Batal</a>
+            <a href="{{ $builderCancelUrl }}" class="btn btn-outline-secondary">Batal</a>
             <button type="submit" class="btn btn-warning"><i class="fas fa-save me-1"></i>{{ $builderEstimate?->isEditable() ? 'Simpan Perubahan' : 'Simpan Draft' }}</button>
         </div>
     </form>
@@ -240,7 +277,7 @@
     const productFilters = document.getElementById('estimateProductFilters');
     const productUrl = @json(route('estimates.catalog.products'));
     const serviceUrl = @json(route('estimates.catalog.services'));
-    const serviceId = @json($service->id);
+    const serviceId = @json($service?->id ?? 0);
     const canOverridePrice = @json($canOverridePrice);
     let activeRow = null, catalogType = 'part', stockFilter = 'all', page = 1, timer = null;
 

@@ -22,7 +22,9 @@ class EstimateCreatePageTest extends WorkshopFlowTestCase
         $this->get(route('estimates.create'))
             ->assertOk()
             ->assertSee('Buat Estimasi Servis')
-            ->assertSee('Pilih Service / Work Order');
+            ->assertSee('Buat Estimasi Langsung')
+            ->assertSee('Pelanggan')
+            ->assertDontSee('Pilih Service / Work Order');
 
         // Opening the page must NOT create an Estimate row.
         $this->assertSame($serviceCountBefore, Service::count());
@@ -87,11 +89,54 @@ class EstimateCreatePageTest extends WorkshopFlowTestCase
         // The create flow stays inside Estimasi: the searchable dropdown is
         // wired to the service-search endpoint and the primary action routes
         // to the dedicated builder — never to /services.
-        $this->assertStringContainsString('/estimates/service-search', $html);
-        $this->assertStringContainsString('Pilih Service / Work Order', $html);
-        $this->assertStringContainsString('svcSelectResults', $html);
+        $this->assertStringContainsString('/estimates/create', $html);
+        $this->assertStringNotContainsString('serviceSelectModal', $html);
+        $this->assertStringNotContainsString('Pilih Service / Work Order', $html);
         // The old "Buka Daftar Servis" fallback is gone.
         $this->assertStringNotContainsString('Buka Daftar Servis', $html);
+    }
+
+    public function test_direct_estimate_creates_service_context_and_draft(): void
+    {
+        $serviceContext = $this->makeService();
+
+        $response = $this->post(route('estimates.direct.store'), [
+            'customer_id' => $serviceContext->customer_id,
+            'vehicle_id' => $serviceContext->vehicle_id,
+            'title' => 'Mesin pincang',
+            'description' => 'Keluhan saat kendaraan digunakan.',
+            'service_date' => now()->toDateString(),
+            'estimate_date' => now()->toDateString(),
+            'valid_until' => now()->addDays(7)->toDateString(),
+            'discount' => 0,
+            'discount_type' => 'fixed',
+            'items' => [[
+                'item_type' => 'other',
+                'description' => 'Jasa Diagnosa',
+                'quantity' => 1,
+                'unit_price' => 150000,
+                'discount' => 0,
+                'discount_type' => 'fixed',
+            ]],
+        ]);
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('#tab-estimate', (string) $response->headers->get('Location'));
+
+        $estimate = ServiceEstimate::query()
+            ->whereHas('service', fn ($query) => $query->where('title', 'Mesin pincang'))
+            ->latest('id')
+            ->firstOrFail();
+
+        $this->assertNotSame($serviceContext->id, $estimate->service_id);
+        $this->assertSame(1, $estimate->items()->count());
+        $this->assertSame('Jasa Diagnosa', $estimate->items()->first()->description);
+        $this->assertSame(150000.0, (float) $estimate->grand_total);
+        $this->assertDatabaseHas('services', [
+            'id' => $estimate->service_id,
+            'is_quotation' => 1,
+            'workflow_status' => 1,
+        ]);
     }
 
     public function test_branch_isolation_is_enforced_on_selection(): void

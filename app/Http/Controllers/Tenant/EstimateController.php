@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Branch;
+use App\Models\Customer;
 use App\Models\EmailLog;
 use App\Models\Invoice;
 use App\Models\Product;
@@ -14,7 +15,9 @@ use App\Models\ServiceEstimateItem;
 use App\Models\ServiceFinding;
 use App\Models\ServicePackage;
 use App\Models\ServiceWorkPackage;
+use App\Models\Vehicle;
 use App\Services\EstimateService;
+use App\Services\ServiceService;
 use App\Services\SettingsService;
 use App\Services\WorkshopFlowService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -117,6 +120,8 @@ class EstimateController extends Controller
         $findings = collect();
         $continuingDraft = null;
         $lockedEstimate = null;
+        $customers = collect();
+        $vehicles = collect();
 
         if ((int) $request->input('service_id', 0) > 0) {
             /** @var Service|null $service */
@@ -170,12 +175,79 @@ class EstimateController extends Controller
                 ->with(['items', 'finding'])
                 ->orderByDesc('id')
                 ->get();
+        } else {
+            $customers = Customer::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'phone']);
+            $vehicles = Vehicle::query()
+                ->with('customer:id,name')
+                ->orderBy('number_plate')
+                ->get(['id', 'customer_id', 'number_plate', 'model_name']);
         }
 
         /** @var view-string $view */
         $view = 'estimates.create';
 
-        return view($view, compact('service', 'packages', 'findings', 'continuingDraft', 'lockedEstimate'));
+        return view($view, compact('service', 'packages', 'findings', 'continuingDraft', 'lockedEstimate', 'customers', 'vehicles'));
+    }
+
+    /**
+     * Create a direct customer quotation without asking the user to choose an
+     * existing Work Order first. A minimal checked-in Service is created as
+     * the required domain context for the Estimate.
+     */
+    public function storeDirect(Request $request): RedirectResponse
+    {
+        abort_unless((bool) auth()->user()?->can('estimates.create'), 403, 'Tidak punya izin membuat estimasi.');
+
+        $context = $request->validate([
+            'customer_id' => 'required|integer|exists:customers,id',
+            'vehicle_id' => 'required|integer|exists:vehicles,id',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:2000',
+            'service_date' => 'nullable|date',
+        ]);
+        $customerId = (int) $context['customer_id'];
+        $vehicle = Vehicle::query()
+            ->whereKey((int) $context['vehicle_id'])
+            ->where('customer_id', $customerId)
+            ->firstOrFail();
+        $customer = Customer::query()->findOrFail($customerId);
+
+        $data = $this->validateHeader($request);
+        $items = $this->normalizeItems($request);
+        $packages = [];
+
+        if (count($items) === 0) {
+            return back()->withInput()->with('error', 'Tambahkan minimal satu Sparepart, Jasa, atau Item Manual.');
+        }
+
+        $service = DB::transaction(function () use ($context, $customer, $vehicle, $data, $items, $packages) {
+            $service = Service::create([
+                'customer_id' => $customer->id,
+                'vehicle_id' => $vehicle->id,
+                'repair_category_id' => null,
+                'title' => $context['title'],
+                'description' => $context['description'] ?? null,
+                'service_date' => $context['service_date'] ?? now(),
+                'done_status' => 1,
+                'workflow_status' => 1,
+                'checked_in_at' => now(),
+                'is_quotation' => true,
+                'created_by' => auth()->id(),
+                'branch_id' => session('current_branch_id'),
+                'job_no' => app(ServiceService::class)->generateJobNo(),
+            ]);
+
+            ActivityLog::record('service.create', $service, "Service {$service->job_no} dibuat dari estimasi langsung");
+            $this->estimates->createDraft($service, $data, $items, $packages);
+
+            return $service;
+        });
+
+        return redirect()
+            ->to(route('services.show', $service).'#tab-estimate')
+            ->with('success', 'Estimasi langsung berhasil dibuat.');
     }
 
     /**

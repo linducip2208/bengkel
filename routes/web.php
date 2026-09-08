@@ -339,6 +339,7 @@ Route::middleware(['auth'])->group(function () {
     // --- Service Estimates (quotation documents) ---
     Route::get('/estimates', [EstimateController::class, 'index'])->name('estimates.index');
     Route::get('/estimates/create', [EstimateController::class, 'create'])->name('estimates.create');
+    Route::post('/estimates/direct', [EstimateController::class, 'storeDirect'])->name('estimates.direct.store');
     Route::get('/estimates/service-search', [EstimateController::class, 'searchServices'])->name('estimates.service-search');
     Route::get('/estimates/catalog/products', [EstimateController::class, 'catalogProducts'])->name('estimates.catalog.products');
     Route::get('/estimates/catalog/services', [EstimateController::class, 'catalogServices'])->name('estimates.catalog.services');

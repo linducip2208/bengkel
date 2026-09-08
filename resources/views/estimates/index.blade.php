@@ -47,41 +47,11 @@
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <h4 class="mb-0"><i class="fas fa-file-signature text-warning me-2"></i>Estimasi Servis</h4>
     @if($canCreate)
-    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#serviceSelectModal">
+    <a href="{{ route('estimates.create') }}" class="btn btn-warning">
         <i class="fas fa-plus me-1"></i>+ Buat Estimasi
-    </button>
+    </a>
     @endif
 </div>
-
-{{-- ============ SERVICE SELECT MODAL (searchable dropdown, stays in Estimasi) ============ --}}
-@if($canCreate)
-<div class="modal fade" id="serviceSelectModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h6 class="modal-title"><i class="fas fa-file-signature me-1"></i> Pilih Service / Work Order</h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="text" id="svcSelectSearch" class="form-control mb-2"
-                       placeholder="Cari No Service / pelanggan / no HP / plat kendaraan..." autocomplete="off">
-                <div class="d-flex gap-2 mb-2 flex-wrap" id="svcQuickFilters">
-                    <button type="button" class="btn btn-sm btn-primary" data-filter="">Belum Ada Estimasi</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="all">Semua Service</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="draft">Ada Draft</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="waiting">Menunggu Approval</button>
-                </div>
-                <div id="svcSelectResults" class="list-group list-group-flush overflow-auto" style="max-height:380px">
-                    <div class="text-muted text-center py-3">Memuat...</div>
-                </div>
-                <div class="text-center mt-2">
-                    <button type="button" class="btn btn-sm btn-outline-secondary d-none" id="svcLoadMore">Muat lebih banyak</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-@endif
 
 {{-- ============================ SUMMARY CARDS ============================ --}}
 <div class="row g-2 mb-3">
@@ -304,9 +274,11 @@
 <script>
 (function () {
     'use strict';
+    // The global create action now opens the direct Estimate builder. Keep
+    // this legacy service-search code inert for old cached pages/bookmarks;
+    // service-linked creation remains available through ?service_id=.
+    if (false) {
     var searchUrl = '{{ route('estimates.service-search') }}';
-    var modal = document.getElementById('serviceSelectModal');
-    if (! modal) { return; }
 
     var input = document.getElementById('svcSelectSearch');
     var results = document.getElementById('svcSelectResults');
@@ -412,6 +384,7 @@
         load(true);
         input.focus();
     });
+    }
 
     // ============ REVISE MODAL binding ============
     var reviseModal = document.getElementById('indexReviseModal');

@@ -16,15 +16,26 @@
 @endif
 
 @if($service === null)
-<div class="card">
+<div class="card border-warning">
     <div class="card-body p-4">
-        <h6 class="mb-1"><i class="fas fa-magnifying-glass me-2 text-warning"></i>Pilih Service / Work Order</h6>
-        <p class="small text-muted mb-3">Cari berdasarkan nomor service, pelanggan, telepon, plat kendaraan, atau judul pekerjaan.</p>
-        <label class="visually-hidden" for="woSearch">Cari work order</label>
-        <input type="search" id="woSearch" class="form-control mb-3" placeholder="Cari work order..." autocomplete="off" autofocus>
-        <div id="woResults" class="list-group">
-            <div class="text-muted text-center py-4">Memuat work order terbaru...</div>
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+            <div>
+                <div class="text-muted small text-uppercase fw-semibold">Quotation customer</div>
+                <h6 class="mb-1"><i class="fas fa-file-signature me-2 text-warning"></i>Buat Estimasi Langsung</h6>
+                <p class="small text-muted mb-0">Pilih customer, kendaraan, keluhan, lalu masukkan item seperti Invoice. Sistem membuat konteks Check-In/WO otomatis saat disimpan.</p>
+            </div>
+            <span class="badge bg-warning text-dark"><i class="fas fa-bolt me-1"></i>Fast path</span>
         </div>
+        @include('estimates.partials.builder', [
+            'builderEstimate' => null,
+            'availablePackages' => collect(),
+            'directEstimate' => true,
+            'builderAction' => route('estimates.direct.store'),
+            'builderCancelUrl' => route('estimates.index'),
+            'customers' => $customers,
+            'vehicles' => $vehicles,
+            'canOverridePrice' => auth()->user()?->can('pos.price_override'),
+        ])
     </div>
 </div>
 @elseif($lockedEstimate)

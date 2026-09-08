@@ -22,16 +22,13 @@ use Spatie\Permission\Models\Role;
  */
 class EstimateServiceDropdownTest extends WorkshopFlowTestCase
 {
-    public function test_dropdown_modal_wired_on_index_page(): void
+    public function test_index_page_opens_direct_estimate_builder(): void
     {
         $html = $this->get(route('estimates.index'))->getContent();
 
-        $this->assertStringContainsString('serviceSelectModal', $html);
-        $this->assertStringContainsString('Pilih Service / Work Order', $html);
-        $this->assertStringContainsString('svcSelectSearch', $html);
-        $this->assertStringContainsString('svcQuickFilters', $html);
-        $this->assertStringContainsString('Belum Ada Estimasi', $html);
-        $this->assertStringContainsString('Semua Service', $html);
+        $this->assertStringContainsString('/estimates/create', $html);
+        $this->assertStringNotContainsString('serviceSelectModal', $html);
+        $this->assertStringNotContainsString('Pilih Service / Work Order', $html);
         $this->assertStringNotContainsString('Buka Daftar Servis', $html);
     }
 
