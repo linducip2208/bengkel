@@ -23,7 +23,7 @@
     </td>
     <td data-label="Item / Deskripsi">
         <div class="d-flex gap-1">
-            <input type="text" name="items[{{ $key }}][description]" class="form-control form-control-sm est-desc" placeholder="Deskripsi item" value="{{ $row['description'] ?? '' }}" maxlength="500">
+            <input type="text" name="items[{{ $key }}][description]" class="form-control form-control-sm est-desc" placeholder="Deskripsi item" value="{{ $row['description'] ?? '' }}" maxlength="500" required>
             <input type="hidden" name="items[{{ $key }}][product_id]" class="est-product-id" value="{{ $row['product_id'] ?? '' }}">
             <input type="hidden" name="items[{{ $key }}][service_catalog_id]" class="est-service-catalog-id" value="{{ $serviceCatalogId ?? '' }}">
             <button type="button" class="btn btn-sm btn-outline-primary catalog-trigger" title="Cari katalog" aria-label="Cari katalog"><i class="fas fa-search"></i></button>
@@ -39,8 +39,8 @@
             @endif
         </small>
     </td>
-    <td data-label="Qty"><input type="number" step="0.001" min="0" name="items[{{ $key }}][quantity]" class="form-control form-control-sm est-qty text-center" value="{{ $row['quantity'] ?? 1 }}"></td>
-    <td data-label="Harga"><input type="number" step="0.01" min="0" name="items[{{ $key }}][unit_price]" class="form-control form-control-sm est-price text-end" value="{{ $row['unit_price'] ?? 0 }}" {{ $catalogSelected && ! $canOverridePrice ? 'readonly' : '' }}></td>
+    <td data-label="Qty"><input type="number" step="0.001" min="0.001" name="items[{{ $key }}][quantity]" class="form-control form-control-sm est-qty text-center" value="{{ $row['quantity'] ?? 1 }}" required></td>
+    <td data-label="Harga"><input type="number" step="0.01" min="0" name="items[{{ $key }}][unit_price]" class="form-control form-control-sm est-price text-end" value="{{ $row['unit_price'] ?? 0 }}" {{ $catalogSelected && ! $canOverridePrice ? 'readonly' : '' }} required></td>
     <td data-label="Diskon">
         <div class="input-group input-group-sm">
             <input type="number" step="0.01" min="0" name="items[{{ $key }}][discount]" class="form-control est-disc text-end" value="{{ $row['discount'] ?? 0 }}">
