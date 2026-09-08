@@ -130,7 +130,7 @@ class ServiceService extends BaseService
         ActivityLog::record('service.create', $service, "Service {$service->job_no} dibuat");
 
         return redirect()
-            ->route('services.show', $service)
+            ->to(route('services.show', $service).'#tab-estimate')
             ->with('success', 'Servis berhasil dibuat.')
             ->with('warnings', $warnings);
     }

@@ -132,6 +132,29 @@ class ServiceFlowTest extends TestCase
         ]);
     }
 
+    public function test_new_check_in_opens_the_estimate_workspace_directly(): void
+    {
+        $admin = $this->makeUser('super_admin');
+        $this->actingAs($admin);
+
+        $customer = $this->makeCustomer();
+        $vehicle = $this->makeVehicle($customer);
+        $category = $this->makeRepairCategory();
+
+        $response = $this->post(route('services.store'), [
+            'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
+            'repair_category_id' => $category->id,
+            'title' => 'Diagnosa Mesin',
+            'description' => 'Mesin pincang',
+            'service_date' => now()->toDateString(),
+            'done_status' => 1,
+        ]);
+
+        $response->assertRedirect();
+        $this->assertStringEndsWith('#tab-estimate', $response->headers->get('Location'));
+    }
+
     public function test_advance_workflow_sets_checked_in_at(): void
     {
         $admin = $this->makeUser('super_admin');
