@@ -371,6 +371,7 @@ class EstimateService
         foreach (array_values($items) as $index => $item) {
             $estimate->items()->create([
                 'product_id' => ! empty($item['product_id']) ? (int) $item['product_id'] : null,
+                'service_catalog_id' => ! empty($item['service_catalog_id']) ? (int) $item['service_catalog_id'] : null,
                 'item_type' => in_array($item['item_type'] ?? null, [ServiceEstimateItem::TYPE_PART, ServiceEstimateItem::TYPE_LABOR, ServiceEstimateItem::TYPE_OTHER], true)
                     ? $item['item_type']
                     : ServiceEstimateItem::TYPE_OTHER,

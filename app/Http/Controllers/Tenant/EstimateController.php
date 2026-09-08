@@ -146,7 +146,7 @@ class EstimateController extends Controller
 
             $continuingDraft = $service->estimates()
                 ->where('status', ServiceEstimate::STATUS_DRAFT)
-                ->with(['items.product.unit', 'groups'])
+                ->with(['items.product.unit', 'items.serviceCatalog', 'groups'])
                 ->orderByDesc('version')
                 ->first();
 
@@ -867,6 +867,7 @@ class EstimateController extends Controller
             $items[] = [
                 'item_type' => $row['item_type'] ?? ($hasProduct ? ServiceEstimateItem::TYPE_PART : ServiceEstimateItem::TYPE_LABOR),
                 'product_id' => $hasProduct ? (int) $row['product_id'] : null,
+                'service_catalog_id' => $servicePackage?->id,
                 'description' => $description !== '' ? $description : 'Item',
                 'quantity' => (float) ($row['quantity'] ?? 1),
                 'unit_price' => $unitPrice,

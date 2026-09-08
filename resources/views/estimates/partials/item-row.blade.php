@@ -32,6 +32,8 @@
             @if($product)
                 <span>SKU: {{ $product->code ?: $product->product_no }}</span>
                 <span class="catalog-stock {{ $product->available_stock <= 0 ? 'is-out' : '' }}"><i class="fas fa-box me-1"></i>{{ $product->available_stock <= 0 ? 'Stok habis' : 'Stok tersedia: '.rtrim(rtrim(number_format($product->available_stock, 3, ',', '.'), '0'), ',').' '.($product->unit?->abbreviation ?: $product->unit?->name ?: 'PCS') }}</span>
+            @elseif($rowType === 'labor' && ! empty($row['serviceCatalog']))
+                <span><i class="fas fa-clock me-1"></i>Durasi standar: {{ (int) round((float) $row['serviceCatalog']->estimated_hours * 60) }} menit</span>
             @elseif($rowType === 'labor')
                 <span>Jasa manual — pilih dari master untuk mengisi harga dan durasi</span>
             @else

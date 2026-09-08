@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
-    'service_estimate_id', 'product_id', 'item_type', 'description',
+    'service_estimate_id', 'product_id', 'service_catalog_id', 'item_type', 'description',
     'quantity', 'unit_price', 'discount', 'discount_type',
     'tax_rate', 'tax_amount', 'line_total', 'sort_order',
     'estimate_group_id',
@@ -44,6 +44,11 @@ class ServiceEstimateItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function serviceCatalog(): BelongsTo
+    {
+        return $this->belongsTo(ServicePackage::class, 'service_catalog_id');
     }
 
     public function group(): BelongsTo

@@ -33,7 +33,14 @@ class EstimateInvoiceLikeUxTest extends EstimateTestCase
         ]))->assertRedirect();
 
         $estimate = ServiceEstimate::query()->where('service_id', $service->id)->firstOrFail();
-        $this->assertSame(150000.0, (float) $estimate->items->firstOrFail()->unit_price);
+        $item = $estimate->items->firstOrFail();
+        $this->assertSame(150000.0, (float) $item->unit_price);
+        $this->assertSame($package->id, $item->service_catalog_id);
+
+        $draft = ServiceEstimate::query()
+            ->with('items.serviceCatalog')
+            ->findOrFail($estimate->id);
+        $this->assertSame($package->id, $draft->items->firstOrFail()->serviceCatalog?->id);
     }
 
     public function test_estimate_print_has_invoice_like_money_columns_without_payment_semantics(): void

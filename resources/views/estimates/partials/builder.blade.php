@@ -11,6 +11,8 @@
             'item_type' => $item->item_type,
             'product_id' => $item->product_id,
             'product' => $item->product,
+            'service_catalog_id' => $item->service_catalog_id,
+            'serviceCatalog' => $item->serviceCatalog,
             'description' => $item->description,
             'quantity' => (string) $item->quantity,
             'unit_price' => (string) $item->unit_price,
