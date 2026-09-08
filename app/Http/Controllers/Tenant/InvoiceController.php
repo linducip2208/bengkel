@@ -19,6 +19,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class InvoiceController extends Controller
@@ -127,7 +128,7 @@ class InvoiceController extends Controller
      */
     private function invoiceSaveError(\Throwable $e): string
     {
-        if ($e instanceof \Illuminate\Validation\ValidationException) {
+        if ($e instanceof ValidationException) {
             return 'Invoice gagal disimpan. Periksa kembali data dan diskon yang dimasukkan.';
         }
 
