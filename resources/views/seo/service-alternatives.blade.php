@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $metaTitle }}</title>
     <meta name="description" content="{{ $metaDescription }}">
-    <meta name="robots" content="index, follow">
+    <meta name="robots" content="noindex, follow">
     <link rel="canonical" href="{{ request()->url() }}">
     <meta property="og:title" content="{{ $metaTitle }}">
     <meta property="og:description" content="{{ $metaDescription }}">
@@ -55,7 +55,7 @@
     <aside class="sidebar">
         <h3>Popular Services</h3>
         <ul>
-            @foreach(\App\Models\RepairCategory::inRandomOrder()->limit(6)->get() as $pop)
+            @foreach(\App\Models\RepairCategory::orderBy('id')->limit(6)->get() as $pop)
             <li><a href="{{ url('/best/' . $pop->slug) }}">{{ $pop->repair_category_name }}</a></li>
             @endforeach
         </ul>

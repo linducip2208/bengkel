@@ -1,70 +1,52 @@
-<!DOCTYPE html>
+@php
+    $seoPage = $page ?? null;
+@endphp
+<!doctype html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $metaTitle ?? config('app.name') }}</title>
-    <meta name="description" content="{{ $metaDescription ?? 'Aplikasi manajemen bengkel modern: service, inventory, POS, invoice, customer, keuangan.' }}">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="{{ request()->url() }}">
-    <meta property="og:title" content="{{ $metaTitle ?? config('app.name') }}">
-    <meta property="og:description" content="{{ $metaDescription ?? '' }}">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ request()->url() }}">
+    <title>{{ $metaTitle ?? ($seoPage?->title ?? config('product.name', config('app.name'))) }}</title>
+    <meta name="description" content="{{ $metaDescription ?? ($seoPage?->metaDescription ?? 'Software manajemen bengkel berbasis web.') }}">
+    @php
+        $routeName = (string) (request()->route()?->getName() ?? '');
+        $legacyPhysicalSeo = str_starts_with($routeName, 'seo.') && $routeName !== 'seo.blog';
+        $robots = $metaRobots ?? ($legacyPhysicalSeo ? 'noindex, follow' : (($seoPage?->indexable ?? true) ? 'index, follow' : 'noindex, follow'));
+    @endphp
+    <meta name="robots" content="{{ $robots }}">
+    <link rel="canonical" href="{{ $canonical ?? ($seoPage?->canonical ?? request()->url()) }}">
+    <meta property="og:title" content="{{ $metaTitle ?? ($seoPage?->title ?? config('product.name', config('app.name'))) }}">
+    <meta property="og:description" content="{{ $metaDescription ?? ($seoPage?->metaDescription ?? '') }}">
+    <meta property="og:type" content="{{ $ogType ?? 'website' }}">
+    <meta property="og:url" content="{{ $canonical ?? ($seoPage?->canonical ?? request()->url()) }}">
+    <meta property="og:site_name" content="{{ config('product.name', config('app.name')) }}">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ $metaTitle ?? config('app.name') }}">
-    <meta name="twitter:description" content="{{ $metaDescription ?? '' }}">
-    @if(isset($jsonLd))
-    <script type="application/ld+json">{!! json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+    <meta name="twitter:title" content="{{ $metaTitle ?? ($seoPage?->title ?? config('product.name', config('app.name'))) }}">
+    <meta name="twitter:description" content="{{ $metaDescription ?? ($seoPage?->metaDescription ?? '') }}">
+    @if(isset($jsonLd) || $seoPage)
+        <script type="application/ld+json">{!! json_encode($jsonLd ?? $seoPage?->schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
     @endif
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing:border-box;margin:0;padding:0 }
-        body { font-family:'Inter',system-ui,-apple-system,sans-serif;color:#0f172a;line-height:1.7;background:#f8fafc }
-        .container { max-width:900px;margin:0 auto;padding:1.5rem }
-        .header { background:linear-gradient(135deg,#1e293b,#0f172a);color:#fff;padding:2.5rem 1.5rem;text-align:center }
-        .header h1 { font-size:2rem;font-weight:800;margin-bottom:0.5rem;letter-spacing:-0.02em }
-        .header p { font-size:1.05rem;color:#94a3b8;max-width:700px;margin:0 auto }
-        .content { background:#fff;border-radius:12px;border:1px solid #e2e8f0;padding:2rem;margin:1.5rem 0;box-shadow:0 1px 3px rgba(0,0,0,0.06) }
-        .content h2 { font-size:1.5rem;font-weight:700;margin:1.5rem 0 0.75rem;color:#1e293b }
-        .content h2:first-child { margin-top:0 }
-        .content h3 { font-size:1.15rem;font-weight:600;margin:1.25rem 0 0.5rem;color:#334155 }
-        .content p { margin-bottom:1rem;color:#475569;font-size:1rem }
-        .content ul { padding-left:1.5rem;margin-bottom:1rem }
-        .content li { margin-bottom:0.4rem;color:#475569 }
-        .sc-cta { background:linear-gradient(135deg,#2563eb,#6366f1);color:#fff;border-radius:12px;padding:1.75rem 2rem;margin:2rem 0;text-align:center }
-        .sc-cta h3 { color:#fff;font-size:1.25rem;margin-bottom:0.5rem }
-        .sc-cta p { color:rgba(255,255,255,0.92);font-size:0.95rem;margin-bottom:1rem }
-        .sc-cta .btn { display:inline-block;background:#fff;color:#2563eb;padding:0.7rem 1.5rem;border-radius:8px;font-weight:700;text-decoration:none }
-        .sc-cta .btn:hover { background:#f8fafc }
-        .faq-item { margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid #f1f5f9 }
-        .faq-item:last-child { border-bottom:0 }
-        footer { text-align:center;padding:1.5rem;color:#94a3b8;font-size:0.85rem }
-        footer a { color:#2563eb;text-decoration:none }
-        @media(max-width:640px) {
-            .header { padding:1.75rem 1rem }
-            .header h1 { font-size:1.4rem }
-            .content { padding:1.25rem }
-            .sc-cta { padding:1.25rem 1rem }
-        }
+        :root{--ink:#10202b;--muted:#61717c;--line:#dce7e9;--paper:#f4f8f7;--white:#fff;--navy:#102b3a;--teal:#0f8b8d;--mint:#d8f3eb;--orange:#f2a65a;--shadow:0 24px 70px rgba(16,43,58,.12)}
+        *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased}.pseo-shell{min-height:100vh}.pseo-nav{position:sticky;top:0;z-index:20;background:rgba(244,248,247,.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(220,231,233,.8)}.pseo-nav-inner{max-width:1180px;margin:auto;padding:16px 24px;display:flex;align-items:center;gap:28px}.pseo-brand{display:flex;align-items:center;gap:10px;color:var(--navy);text-decoration:none;font:700 18px 'Space Grotesk',sans-serif;white-space:nowrap}.pseo-brand-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--navy);color:#b5f1dd;font-size:16px}.pseo-nav-links{display:flex;align-items:center;gap:22px;margin-left:auto}.pseo-nav-links a{color:var(--muted);font-size:14px;text-decoration:none}.pseo-nav-links a:hover{color:var(--teal)}.pseo-nav-cta{padding:10px 15px!important;border-radius:8px;background:var(--navy);color:#fff!important;font-weight:700}.pseo-wrap{max-width:1180px;margin:0 auto;padding:0 24px}.pseo-main{overflow:hidden}.pseo-breadcrumb{display:flex;gap:8px;align-items:center;padding:24px 0 0;color:var(--muted);font-size:13px}.pseo-breadcrumb a{color:var(--teal);text-decoration:none}.pseo-hero{display:grid;grid-template-columns:1.03fr .97fr;gap:64px;align-items:center;padding:64px 0 86px}.pseo-eyebrow{color:var(--teal);font-size:12px;letter-spacing:.14em;font-weight:700}.pseo-hero h1{max-width:700px;margin:16px 0 20px;font:700 clamp(2.35rem,5vw,4.6rem)/1.04 'Space Grotesk',sans-serif;letter-spacing:-.055em;color:var(--navy)}.pseo-lead{max-width:630px;margin:0;color:var(--muted);font-size:18px}.pseo-hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}.pseo-btn,.pseo-wa{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:12px 18px;border-radius:9px;text-decoration:none;font-weight:700;font-size:14px;transition:transform .2s,box-shadow .2s,background .2s}.pseo-btn:focus-visible,.pseo-wa:focus-visible,.pseo-nav a:focus-visible,.pseo-related-card:focus-visible{outline:3px solid rgba(15,139,141,.35);outline-offset:3px}.pseo-wa{background:#128c6b;color:#fff;box-shadow:0 12px 26px rgba(18,140,107,.22)}.pseo-wa:hover{transform:translateY(-2px);box-shadow:0 16px 32px rgba(18,140,107,.3)}.pseo-wa-icon{display:grid;place-items:center;width:21px;height:21px;margin-right:8px;border:1px solid rgba(255,255,255,.6);border-radius:50%}.pseo-btn-ghost{border:1px solid var(--line);color:var(--navy);background:#fff}.pseo-btn-ghost:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(16,43,58,.08)}.pseo-trust-row{display:flex;flex-wrap:wrap;gap:12px 18px;margin-top:26px;color:var(--muted);font-size:12px}.pseo-trust-row b{color:var(--teal)}.pseo-hero-card{position:relative;padding:12px;border:1px solid rgba(255,255,255,.75);border-radius:18px;background:#dcebe8;box-shadow:var(--shadow);transform:rotate(1.2deg)}.pseo-browser-bar{height:31px;display:flex;align-items:center;gap:5px;padding:0 8px}.pseo-browser-bar>span{width:7px;height:7px;border-radius:50%;background:#92b4ad}.pseo-browser-bar>span:nth-child(2){background:#e4b779}.pseo-browser-bar>span:nth-child(3){background:#78a6a1}.pseo-browser-bar small{overflow:hidden;margin-left:10px;padding:3px 10px;border-radius:5px;background:rgba(255,255,255,.7);color:#718680;font-size:9px;white-space:nowrap;text-overflow:ellipsis}.pseo-hero-card img{display:block;width:100%;height:auto;border-radius:9px;box-shadow:0 10px 24px rgba(16,43,58,.12)}.pseo-price-float{position:absolute;right:-25px;bottom:-28px;display:flex;flex-direction:column;gap:2px;max-width:220px;padding:17px 18px;border-radius:13px;background:var(--navy);color:#fff;box-shadow:0 18px 36px rgba(16,43,58,.22)}.pseo-price-float small{color:#a9d9ca;font-size:10px;letter-spacing:.13em;font-weight:700}.pseo-price-float strong{font:700 24px 'Space Grotesk',sans-serif}.pseo-price-float span{color:#c0ced1;font-size:11px;line-height:1.4}.pseo-section{padding:86px 0}.pseo-section-heading{max-width:660px;margin-bottom:32px}.pseo-section-heading h2,.pseo-split-section h2{margin:10px 0 12px;color:var(--navy);font:700 clamp(1.8rem,3vw,2.8rem)/1.1 'Space Grotesk',sans-serif;letter-spacing:-.04em}.pseo-section-heading p,.pseo-split-section p{margin:0;color:var(--muted)}.pseo-feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.pseo-feature-card{min-height:180px;padding:24px;border:1px solid var(--line);border-radius:13px;background:var(--white);box-shadow:0 6px 20px rgba(16,43,58,.04);animation:fadeUp .6s ease both;animation-delay:var(--delay)}.pseo-feature-number{color:var(--orange);font:700 12px 'Space Grotesk',sans-serif}.pseo-feature-card h3{margin:22px 0 8px;font:600 19px 'Space Grotesk',sans-serif;color:var(--navy)}.pseo-feature-card p{margin:0;color:var(--muted);font-size:14px}.pseo-workflow-section{padding-top:15px}.pseo-workflow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:24px;border:1px solid #c8e5dd;border-radius:15px;background:var(--mint);overflow-x:auto}.pseo-workflow-step{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:84px;text-align:center}.pseo-workflow-step b{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;font-size:12px}.pseo-workflow-step span{font-size:12px;font-weight:700;color:var(--navy);white-space:nowrap}.pseo-workflow i{color:var(--teal);font-style:normal;font-size:20px}.pseo-split-section{display:grid;grid-template-columns:1fr 1fr;gap:54px;align-items:center;padding:64px 0}.pseo-benefit-list{display:grid;gap:12px}.pseo-benefit-list div{display:flex;align-items:center;gap:13px;padding:17px 18px;border:1px solid var(--line);border-radius:10px;background:#fff}.pseo-benefit-list span{color:var(--teal);font-weight:800}.pseo-benefit-list strong{font-size:14px}.pseo-split-section .pseo-wa{margin-top:24px}.pseo-faq-section{padding-top:34px}.pseo-faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pseo-faq-item{padding:18px 20px;border:1px solid var(--line);border-radius:10px;background:#fff}.pseo-faq-item summary{display:flex;justify-content:space-between;gap:16px;cursor:pointer;font-weight:700;color:var(--navy);list-style:none}.pseo-faq-item summary::-webkit-details-marker{display:none}.pseo-faq-item summary span{color:var(--teal);font-size:22px;line-height:1}.pseo-faq-item p{margin:12px 0 0;color:var(--muted);font-size:14px}.pseo-related-section{padding-top:28px}.pseo-related-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.pseo-related-card{display:flex;justify-content:space-between;gap:10px;padding:17px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--navy);text-decoration:none;font-weight:700;font-size:14px}.pseo-related-card:hover{border-color:#9ad5c5;color:var(--teal)}.pseo-final-cta{margin:22px 0 70px;padding:44px;border-radius:18px;background:var(--navy);color:#fff}.pseo-final-cta h2{max-width:650px;margin:0 0 10px;font:700 clamp(1.8rem,3vw,2.8rem)/1.1 'Space Grotesk',sans-serif}.pseo-final-cta p{max-width:650px;margin:0 0 22px;color:#c5d3d6}.pseo-footer{padding:28px 24px;background:#0b202b;color:#afc1c3;font-size:13px}.pseo-footer-inner{max-width:1180px;margin:auto;display:flex;justify-content:space-between;gap:20px}.pseo-footer a{color:#d5f5e9;text-decoration:none}.content{background:#fff;border-radius:12px;border:1px solid var(--line);padding:2rem;margin:1.5rem 0}.header{background:var(--navy);color:#fff;padding:2.5rem 1.5rem;text-align:center}.header h1{font-size:2rem}.container{max-width:900px;margin:0 auto;padding:1.5rem}.sc-cta{background:var(--navy);color:#fff;border-radius:12px;padding:1.75rem 2rem;margin:2rem 0;text-align:center}.faq-item{margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid #edf2f2}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+        @media(max-width:900px){.pseo-hero{grid-template-columns:1fr;gap:38px;padding-top:42px}.pseo-hero-card{max-width:720px;margin:auto}.pseo-feature-grid{grid-template-columns:repeat(2,1fr)}.pseo-split-section{grid-template-columns:1fr;gap:28px}.pseo-related-grid{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:640px){.pseo-nav-inner{padding:12px 16px}.pseo-nav-links a:not(.pseo-nav-cta){display:none}.pseo-wrap{padding:0 16px}.pseo-breadcrumb{font-size:12px}.pseo-hero{padding:34px 0 65px}.pseo-hero h1{font-size:2.55rem}.pseo-lead{font-size:16px}.pseo-hero-actions,.pseo-hero-actions>*{width:100%}.pseo-trust-row{display:grid;grid-template-columns:1fr 1fr}.pseo-price-float{right:8px;bottom:-46px}.pseo-section{padding:58px 0}.pseo-feature-grid,.pseo-faq-grid,.pseo-related-grid,.pseo-demo-grid{grid-template-columns:1fr!important}.pseo-feature-card{min-height:auto}.pseo-workflow{justify-content:flex-start}.pseo-workflow i{flex:0 0 auto}.pseo-final-cta{margin-bottom:44px;padding:28px 22px}.pseo-footer-inner{flex-direction:column}}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
     </style>
     @stack('head')
 </head>
 <body>
-    <div class="header">
-        <h1>{{ $metaTitle ?? config('app.name') }}</h1>
-        <p>{{ $metaDescription ?? '' }}</p>
-    </div>
-    <div class="container">
-        @yield('content')
-    </div>
-    <footer>
-        <p>&copy; {{ date('Y') }} {{ config('app.name') }} &middot; <a href="{{ url('/') }}">Home</a> &middot; <a href="{{ url('/docs') }}">Docs</a> &middot; <a href="https://wa.me/6281296052010">WhatsApp</a></p>
-    </footer>
-
-<x-whatsapp-cta
-    message="Halo, saya tertarik ERP Bengkel Indonesia — aplikasi bengkel standard, web based. Mohon info demo & harga."
-    label="Chat WhatsApp 081296052010" />
+<div class="pseo-shell">
+    <nav class="pseo-nav" aria-label="Navigasi publik"><div class="pseo-nav-inner">
+        <a class="pseo-brand" href="{{ url('/') }}"><span class="pseo-brand-mark">⌁</span>{{ config('product.name', config('app.name')) }}</a>
+        <div class="pseo-nav-links"><a href="{{ url('/aplikasi-bengkel') }}">Produk</a><a href="{{ url('/harga-aplikasi-bengkel') }}">Harga</a><a href="{{ url('/docs') }}">Dokumentasi</a><a class="pseo-nav-cta" href="{{ 'https://wa.me/'.config('product.whatsapp', '6281296052010') }}" data-cta="whatsapp" data-source="pseo" data-page-intent="{{ $seoPage?->intent ?? 'content' }}">Tanya via WhatsApp</a></div>
+    </div></nav>
+    <main class="pseo-main">@yield('content')</main>
+    <footer class="pseo-footer"><div class="pseo-footer-inner"><span>© {{ date('Y') }} {{ config('product.name', config('app.name')) }}</span><span><a href="{{ url('/docs') }}">Dokumentasi</a> · <a href="{{ url('/blog') }}">Blog</a> · <a href="{{ url('/sitemap.xml') }}">Sitemap</a></span></div></footer>
+</div>
 </body>
 </html>

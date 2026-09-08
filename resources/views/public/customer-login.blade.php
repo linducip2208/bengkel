@@ -33,7 +33,7 @@
                 <hr>
                 <p class="text-center small text-muted mb-0">
                     Belum daftar? <a href="{{ route('public.booking') }}">Booking service</a> dulu — kontak Anda otomatis terdaftar.<br>
-                    <a href="https://wa.me/6281296052010">Hubungi support 081296052010</a>
+                    <a href="https://wa.me/{{ config('product.whatsapp', '6281296052010') }}">Hubungi support {{ config('product.whatsapp_display', '0812-9605-2010') }}</a>
                 </p>
             </div>
         </div>

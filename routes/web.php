@@ -225,6 +225,7 @@ Route::get('/blog/feed.xml', [BlogController::class, 'rss'])->name('blog.rss');
 Route::get('/blog/{slug}', [ProgrammaticSeoController::class, 'blogArticle'])->name('seo.blog');
 
 // Sitemap
+Route::get('/robots.txt', fn () => response()->file(public_path('robots.txt'), ['Content-Type' => 'text/plain']))->name('robots');
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/sitemap-{group}.xml', [SitemapController::class, 'show'])->name('sitemap.group');
 Route::get('/sitemap-stats', [SitemapController::class, 'stats'])->name('sitemap.stats');
@@ -714,6 +715,6 @@ require base_path('routes/pair-routes.php');
 
 // Generic PSEO handler — menangkap semua pattern URL masif (HARUS DI PALING BAWAH)
 // Exclude: admin paths, assets, and well-known routes
-Route::get('/{slug}', [ProgrammaticSeoController::class, 'genericPseo'])
+Route::get('/{slug}', [ProgrammaticSeoController::class, 'commercialPseo'])
     ->where('slug', '^(?!admin|api|__pair|webhooks|login|logout|docs|customer|track|booking|payment/callback|sitemap|blog-admin).*')
     ->name('seo.generic');

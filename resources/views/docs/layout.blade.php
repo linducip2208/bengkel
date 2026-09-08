@@ -559,8 +559,8 @@
         <div class="icon-wa"><i class="fab fa-whatsapp"></i></div>
         <h3 id="supportPopupTitle">Butuh Bantuan?</h3>
         <p class="subtitle">Tim support kami siap bantu setup, training, dan troubleshoot aplikasi.</p>
-        <div class="phone-number">081296052010</div>
-        <a href="https://wa.me/6281296052010?text=Halo%20admin%2C%20saya%20butuh%20bantuan%20tentang%20Bengkel%20Paten."
+        <div class="phone-number">{{ config('product.whatsapp_display', '0812-9605-2010') }}</div>
+        <a href="https://wa.me/{{ config('product.whatsapp', '6281296052010') }}?text=Halo%20admin%2C%20saya%20butuh%20bantuan%20tentang%20Bengkel%20Paten."
            class="cta-btn" target="_blank" rel="noopener">
             <i class="fab fa-whatsapp"></i> Chat WhatsApp Sekarang
         </a>

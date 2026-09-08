@@ -7,6 +7,7 @@ use App\Models\BlogPost;
 use App\Models\Kelurahan;
 use App\Models\RepairCategory;
 use App\Models\Service;
+use App\Services\Seo\PseoPageResolver;
 use App\Support\SeoData;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -61,7 +62,7 @@ class ProgrammaticSeoController extends Controller
         $repairCategory = RepairCategory::where('slug', $slug)->firstOrFail();
 
         $alternatives = RepairCategory::where('id', '!=', $repairCategory->id)
-            ->inRandomOrder()
+            ->orderBy('id')
             ->limit(6)
             ->get();
 
@@ -135,7 +136,7 @@ class ProgrammaticSeoController extends Controller
                     'date' => ($dbPost->published_at ?? $dbPost->created_at)->toDateString(),
                     'content' => $dbPost->content,
                 ];
-                $relatedCategories = RepairCategory::inRandomOrder()->limit(4)->get();
+                $relatedCategories = RepairCategory::orderBy('id')->limit(4)->get();
 
                 $metaTitle = ($dbPost->meta_title ?: $dbPost->title).' | Aplikasi Bengkel Terbaik Blog';
                 $metaDescription = $dbPost->meta_description ?: $dbPost->excerpt;
@@ -156,7 +157,7 @@ class ProgrammaticSeoController extends Controller
 
         // Fallback to static articles
         $article = $this->getStaticArticle($slug);
-        $relatedCategories = RepairCategory::inRandomOrder()->limit(4)->get();
+        $relatedCategories = RepairCategory::orderBy('id')->limit(4)->get();
 
         $metaTitle = $article['title'].' | Aplikasi Bengkel Terbaik Blog';
         $metaDescription = $article['excerpt'];
@@ -269,7 +270,16 @@ class ProgrammaticSeoController extends Controller
      * yang digenerate dari SeoData (1 juta+ halaman).
      * Render template generik dengan konten dinamis dari slug.
      */
-    public function genericPseo(string $slug): View
+    public function commercialPseo(string $slug): View
+    {
+        $page = app(PseoPageResolver::class)->resolve($slug);
+        abort_unless($page !== null, 404);
+
+        return view('pseo.page', compact('page'));
+    }
+
+    /** @deprecated Legacy parser kept only for source compatibility. */
+    public function legacyGenericPseo(string $slug): View
     {
         $slug = ltrim($slug, '/');
         $parts = explode('-', $slug);
@@ -334,13 +344,13 @@ class ProgrammaticSeoController extends Controller
 
         if ($isSourceCode) {
             $metaTitle = "{$context} — ERP Bengkel Indonesia (Web Based)";
-            $metaDescription = "Beli {$context} — ERP Bengkel Indonesia, aplikasi bengkel standard Indonesia web based. Full source code Laravel, harga mulai Rp 6.000.000, siap pakai & bisa custom. WhatsApp 081296052010.";
+            $metaDescription = "Beli {$context} — ERP Bengkel Indonesia, aplikasi bengkel standard Indonesia web based. Full source code Laravel, harga mulai Rp ".number_format((int) config('product.starting_price', 7_000_000), 0, ',', '.').', siap pakai & bisa custom. WhatsApp '.config('product.whatsapp', '6281296052010').'.';
         } elseif ($serviceName || $cityName) {
             $metaTitle = "{$context} — ERP Bengkel Indonesia";
-            $metaDescription = "Butuh {$context}? ERP Bengkel Indonesia — aplikasi bengkel standard, web based, harga mulai Rp 6.000.000. Hubungi WhatsApp 081296052010.";
+            $metaDescription = "Butuh {$context}? ERP Bengkel Indonesia — aplikasi bengkel standard, web based, harga mulai Rp ".number_format((int) config('product.starting_price', 7_000_000), 0, ',', '.').'. Hubungi WhatsApp '.config('product.whatsapp', '6281296052010').'.';
         } else {
             $metaTitle = "ERP Bengkel Indonesia — {$slug}";
-            $metaDescription = 'ERP Bengkel Indonesia / ERP Repair Car Indonesia — aplikasi bengkel standard, web based, harga mulai Rp 6.000.000. WhatsApp 081296052010.';
+            $metaDescription = 'ERP Bengkel Indonesia / ERP Repair Car Indonesia — aplikasi bengkel standard, web based, harga mulai Rp '.number_format((int) config('product.starting_price', 7_000_000), 0, ',', '.').'. WhatsApp '.config('product.whatsapp', '6281296052010').'.';
         }
 
         $jsonLd = [
@@ -352,9 +362,9 @@ class ProgrammaticSeoController extends Controller
             'operatingSystem' => 'Web Browser (Web Based)',
             'offers' => [
                 '@type' => 'Offer',
-                'price' => '6000000',
+                'price' => (string) config('product.starting_price', 7_000_000),
                 'priceCurrency' => 'IDR',
-                'description' => 'Harga mulai Rp 6.000.000 (full source code, web based)',
+                'description' => 'Harga mulai Rp '.number_format((int) config('product.starting_price', 7_000_000), 0, ',', '.').' (full source code, web based)',
             ],
             'areaServed' => $cityName ?? 'Indonesia',
         ];
@@ -518,7 +528,7 @@ class ProgrammaticSeoController extends Controller
 
     private function translations(string $lang): array
     {
-        return match ($lang) {
+        $translations = match ($lang) {
             'en' => [
                 'city_title' => 'Best Car Workshop in {city} — Professional Auto Service',
                 'city_desc' => 'Looking for trusted car repair in {city}? Expert mechanics, genuine parts, transparent pricing. Servis berkala, AC, engine, brakes & more.',
@@ -555,21 +565,30 @@ class ProgrammaticSeoController extends Controller
             ],
             default => [
                 'city_title' => 'ERP Bengkel Indonesia di {city} — Aplikasi Bengkel Standard (Web Based)',
-                'city_desc' => 'ERP Bengkel Indonesia / ERP Repair Car Indonesia untuk {city}. Aplikasi bengkel standard Indonesia, web based, harga mulai Rp 6.000.000. WhatsApp 081296052010.',
+                'city_desc' => 'ERP Bengkel Indonesia / ERP Repair Car Indonesia untuk {city}. Aplikasi bengkel standard Indonesia, web based, harga mulai {price}. WhatsApp {whatsapp}.',
                 'city_biz' => 'ERP Bengkel Indonesia {city}',
                 'kel_title' => 'Aplikasi Bengkel Standard {kelurahan}, {city} — ERP Web Based',
-                'kel_desc' => 'Aplikasi bengkel standard Indonesia untuk {kelurahan}, {city}. ERP bengkel web based, full source code, harga mulai Rp 6.000.000. WhatsApp 081296052010.',
+                'kel_desc' => 'Aplikasi bengkel standard Indonesia untuk {kelurahan}, {city}. ERP bengkel web based, full source code, harga mulai {price}. WhatsApp {whatsapp}.',
                 'kel_biz' => 'ERP Bengkel {kelurahan} {city}',
                 'brand_title' => 'ERP Bengkel {brand} Indonesia — Software Bengkel Web Based',
-                'brand_desc' => 'ERP Bengkel {brand} Indonesia — aplikasi bengkel standard, web based, full source code Laravel, harga mulai Rp 6.000.000. WhatsApp 081296052010.',
+                'brand_desc' => 'ERP Bengkel {brand} Indonesia — aplikasi bengkel standard, web based, full source code Laravel, harga mulai {price}. WhatsApp {whatsapp}.',
                 'brand_biz' => 'ERP Bengkel {brand} Indonesia',
                 'svc_title' => '{service} — ERP Bengkel Indonesia (Aplikasi Standard)',
-                'svc_desc' => 'ERP Bengkel Indonesia untuk {service}. Aplikasi bengkel standard, web based, harga mulai Rp 6.000.000. WhatsApp 081296052010.',
+                'svc_desc' => 'ERP Bengkel Indonesia untuk {service}. Aplikasi bengkel standard, web based, harga mulai {price}. WhatsApp {whatsapp}.',
                 'svc_biz' => 'ERP Bengkel {service} Indonesia',
                 'best_title' => '10 Aplikasi Bengkel Standard Indonesia Terbaik — ERP Web Based',
-                'best_desc' => 'Temukan aplikasi bengkel standard Indonesia terbaik. ERP bengkel web based, full source code, harga mulai Rp 6.000.000. WhatsApp 081296052010.',
+                'best_desc' => 'Temukan aplikasi bengkel standard Indonesia terbaik. ERP bengkel web based, full source code, harga mulai {price}. WhatsApp {whatsapp}.',
                 'best_biz' => '10 ERP Bengkel Indonesia Terbaik',
             ],
         };
+
+        return array_map(
+            fn (string $value): string => str_replace(
+                ['{price}', '{whatsapp}'],
+                ['Rp '.number_format((int) config('product.starting_price', 7_000_000), 0, ',', '.'), (string) config('product.whatsapp', '6281296052010')],
+                $value
+            ),
+            $translations
+        );
     }
 }

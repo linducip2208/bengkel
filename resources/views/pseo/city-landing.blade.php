@@ -47,7 +47,7 @@
     <div style="margin-top:32px;background:linear-gradient(135deg,#1e3a8a,#3b82f6);color:#fff;padding:24px;border-radius:12px;text-align:center;">
         <h3 style="color:#fff;margin-top:0;">{{ __('Butuh Source Code Aplikasi Bengkel?') }}</h3>
         <p style="opacity:0.9;">Dapatkan source code lengkap aplikasi bengkel profesional. Full Laravel + MySQL, bisa di-custom sesuai kebutuhan bisnis Anda.</p>
-        <a href="https://wa.me/6281296052010?text=Halo%2C%20saya%20tertarik%20source%20code%20aplikasi%20bengkel%20untuk%20{{ urlencode($cityName) }}"
+        <a href="{{ 'https://wa.me/'.config('product.whatsapp', '6281296052010').'?text='.urlencode('Halo, saya tertarik source code aplikasi bengkel untuk '.$cityName) }}"
            style="display:inline-block;background:#25D366;color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:700;font-size:16px;margin-top:8px;">
             💬 Chat WhatsApp
         </a>

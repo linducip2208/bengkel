@@ -93,7 +93,7 @@
 <div class="sc-cta">
     <h3>Source Code Aplikasi Bengkel</h3>
     <p>Miliki aplikasi manajemen bengkel sendiri. Full source code Laravel — bisa custom fitur sesuai kebutuhan bisnis Anda.</p>
-    <a href="https://wa.me/6281234567890" class="btn">Chat WhatsApp</a>
+    <x-pseo.whatsapp-cta page-intent="blog" message="Halo, saya tertarik dengan Source Code Aplikasi Bengkel. Boleh minta informasi?" label="Chat WhatsApp" />
 </div>
 @endsection
 
