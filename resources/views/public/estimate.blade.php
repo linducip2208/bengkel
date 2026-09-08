@@ -89,9 +89,9 @@
                             <strong class="money">Rp {{ number_format((float) $group->grand_total, 0, ',', '.') }}</strong>
                         </div>
                         @if($group->items->isNotEmpty())
-                        <div class="table-responsive mt-3"><table class="table table-sm align-middle mb-0"><thead><tr><th>Item</th><th class="text-center">Qty</th><th class="text-end">Harga</th><th class="text-end">Total</th></tr></thead><tbody>
+                        <div class="table-responsive mt-3"><table class="table table-sm align-middle mb-0"><thead><tr><th>Item</th><th class="text-center">Qty</th><th class="text-end">Harga</th><th class="text-end">Diskon</th><th class="text-end">Pajak</th><th class="text-end">Total</th></tr></thead><tbody>
                             @foreach($group->items as $item)
-                            <tr><td><span class="badge bg-light text-dark me-1">{{ [\App\Models\ServiceEstimateItem::TYPE_LABOR => 'Jasa', \App\Models\ServiceEstimateItem::TYPE_PART => 'Parts', \App\Models\ServiceEstimateItem::TYPE_OTHER => 'Lainnya'][$item->item_type] ?? 'Lainnya' }}</span>{{ $item->description }}</td><td class="text-center">{{ $item->quantity }}</td><td class="text-end money">Rp {{ number_format((float) $item->unit_price, 0, ',', '.') }}</td><td class="text-end money">Rp {{ number_format((float) $item->line_total, 0, ',', '.') }}</td></tr>
+                            <tr><td><span class="badge bg-light text-dark me-1">{{ [\App\Models\ServiceEstimateItem::TYPE_LABOR => 'Jasa', \App\Models\ServiceEstimateItem::TYPE_PART => 'Parts', \App\Models\ServiceEstimateItem::TYPE_OTHER => 'Lainnya'][$item->item_type] ?? 'Lainnya' }}</span>{{ $item->description }}</td><td class="text-center">{{ $item->quantity }}</td><td class="text-end money">Rp {{ number_format((float) $item->unit_price, 0, ',', '.') }}</td><td class="text-end money">{{ (float) $item->discount > 0 ? '- Rp '.number_format((float) $item->discount, 0, ',', '.') : '-' }}</td><td class="text-end money">{{ (float) $item->tax_amount > 0 ? 'Rp '.number_format((float) $item->tax_amount, 0, ',', '.') : '-' }}</td><td class="text-end money">Rp {{ number_format((float) $item->line_total, 0, ',', '.') }}</td></tr>
                             @endforeach
                         </tbody></table></div>
                         @endif
@@ -232,7 +232,7 @@
                     </a>
                 </div>
 
-                <p class="text-center text-muted small mt-3 mb-0">Dokumen ini adalah estimasi, bukan tagihan.</p>
+                <p class="text-center text-muted small mt-3 mb-0">Dokumen ini adalah estimasi harga, bukan tagihan.</p>
             </div>
         </div>
     </div>

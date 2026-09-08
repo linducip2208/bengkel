@@ -138,7 +138,7 @@
         </div>
         <div id="estimateItemsEmpty" class="border border-dashed rounded p-4 text-center text-muted {{ count($editItems) > 0 ? 'd-none' : '' }}">
             <i class="fas fa-cart-plus fa-2x mb-2"></i>
-            <div>Belum ada item. Pilih <strong>Sparepart</strong> atau <strong>Jasa</strong> untuk mengisi estimasi.</div>
+            <div>Belum ada item estimasi. Tambahkan <strong>Sparepart</strong>, <strong>Jasa</strong>, atau <strong>Item Manual</strong>.</div>
         </div>
 
         <div class="row justify-content-end mb-3 mt-3">
@@ -196,10 +196,24 @@
     .estimate-builder .item-meta { line-height: 1.35; }
     .estimate-builder .catalog-stock { font-size: .75rem; }
     .estimate-builder .catalog-stock.is-out { color: #dc2626; }
+    .estimate-builder .catalog-result { min-height: 64px; }
+    .estimate-builder .catalog-trigger, .estimate-builder .remove-estimate-row { min-width: 38px; }
     @media (max-width: 640px) {
         .estimate-builder .btn { min-height: 40px; }
-        .estimate-builder .table { min-width: 980px; }
-        .estimate-builder .table td, .estimate-builder .table th { padding: .6rem .5rem; }
+        .estimate-items-scroll { overflow: visible; }
+        .estimate-builder #estimateItems,
+        .estimate-builder #estimateItems tbody,
+        .estimate-builder #estimateItems tr,
+        .estimate-builder #estimateItems td { display: block; width: 100%; }
+        .estimate-builder #estimateItems thead { display: none; }
+        .estimate-builder #estimateItems tbody tr { border: 1px solid #dee2e6; border-radius: .75rem; padding: .75rem; margin-bottom: .75rem; background: #fff; }
+        .estimate-builder #estimateItems tbody td { border: 0; padding: .4rem 0; display: grid; grid-template-columns: 88px minmax(0, 1fr); align-items: center; gap: .5rem; text-align: left !important; }
+        .estimate-builder #estimateItems tbody td::before { content: attr(data-label); color: #6c757d; font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+        .estimate-builder #estimateItems tbody td:first-child { display: flex; justify-content: space-between; padding-top: 0; }
+        .estimate-builder #estimateItems tbody td:first-child::before { content: none; }
+        .estimate-builder #estimateItems tbody td:last-child { display: flex; justify-content: flex-end; padding-bottom: 0; }
+        .estimate-builder #estimateItems tbody td:last-child::before { margin-right: auto; }
+        .estimate-builder #estimateItems .est-line-total { font-size: 1rem; }
         .estimate-builder .form-control, .estimate-builder .form-select { font-size: .875rem; }
     }
 </style>
@@ -312,23 +326,39 @@
         row.querySelector('.est-product-id').value = catalogType === 'part' ? item.id : '';
         row.querySelector('.est-service-catalog-id').value = catalogType === 'labor' ? item.id : '';
         row.querySelector('.est-qty').value = row.querySelector('.est-qty').value || 1;
-        row.querySelector('.est-price').readOnly = catalogType === 'part' && !canOverridePrice;
+        row.querySelector('.est-price').readOnly = !canOverridePrice;
         setMeta(row, item, catalogType);
+        updateTypePresentation(row);
         updateLiveTotals(); modal.hide(); activeRow = null;
     }
     function rowHtml(key, type) {
+        const typeControl = type === 'other'
+            ? '<select name="items[' + key + '][item_type]" class="form-select form-select-sm est-type est-manual-type" aria-label="Tipe item manual"><option value="part">Part</option><option value="labor">Jasa</option><option value="other" selected>Lainnya</option></select>'
+            : '<input type="hidden" name="items[' + key + '][item_type]" class="est-type" value="' + type + '">';
         return '<tr data-type="' + type + '">'
-            + '<td><span class="badge bg-' + (type === 'part' ? 'primary' : (type === 'labor' ? 'info' : 'secondary')) + ' row-type-label">' + (type === 'part' ? 'PART' : (type === 'labor' ? 'JASA' : 'MANUAL')) + '</span><input type="hidden" name="items[' + key + '][item_type]" class="est-type" value="' + type + '"></td>'
-            + '<td><div class="d-flex gap-1"><input type="text" name="items[' + key + '][description]" class="form-control form-control-sm est-desc" placeholder="Deskripsi item" maxlength="500"><input type="hidden" name="items[' + key + '][product_id]" class="est-product-id" value=""><input type="hidden" name="items[' + key + '][service_catalog_id]" class="est-service-catalog-id" value=""><button type="button" class="btn btn-sm btn-outline-primary catalog-trigger" title="Cari katalog"><i class="fas fa-search"></i></button></div><small class="item-meta text-muted"></small></td>'
-            + '<td><input type="number" step="0.001" min="0" name="items[' + key + '][quantity]" class="form-control form-control-sm est-qty text-center" value="1"></td>'
-            + '<td><input type="number" step="0.01" min="0" name="items[' + key + '][unit_price]" class="form-control form-control-sm est-price text-end" value="0"></td>'
-            + '<td><div class="input-group input-group-sm"><input type="number" step="0.01" min="0" name="items[' + key + '][discount]" class="form-control est-disc text-end" value="0"><select name="items[' + key + '][discount_type]" class="form-select est-disc-type" style="max-width:70px"><option value="fixed">Rp</option><option value="percent">%</option></select></div></td>'
-            + '<td><input type="number" step="0.01" min="0" max="100" name="items[' + key + '][tax_rate]" class="form-control form-control-sm est-tax text-center" value=""></td>'
-            + '<td class="text-end est-line-total fw-semibold">Rp 0</td><td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-estimate-row" title="Hapus baris" aria-label="Hapus baris"><i class="fas fa-trash"></i></button></td>'
+            + '<td data-label="Tipe">' + (type === 'other' ? typeControl : '<span class="badge bg-' + (type === 'part' ? 'primary' : 'info') + ' row-type-label">' + (type === 'part' ? 'PART' : 'JASA') + '</span>' + typeControl) + '</td>'
+            + '<td data-label="Item / Deskripsi"><div class="d-flex gap-1"><input type="text" name="items[' + key + '][description]" class="form-control form-control-sm est-desc" placeholder="Deskripsi item" maxlength="500"><input type="hidden" name="items[' + key + '][product_id]" class="est-product-id" value=""><input type="hidden" name="items[' + key + '][service_catalog_id]" class="est-service-catalog-id" value=""><button type="button" class="btn btn-sm btn-outline-primary catalog-trigger" title="Cari katalog" aria-label="Cari katalog"><i class="fas fa-search"></i></button></div><small class="item-meta text-muted"></small></td>'
+            + '<td data-label="Qty"><input type="number" step="0.001" min="0" name="items[' + key + '][quantity]" class="form-control form-control-sm est-qty text-center" value="1"></td>'
+            + '<td data-label="Harga"><input type="number" step="0.01" min="0" name="items[' + key + '][unit_price]" class="form-control form-control-sm est-price text-end" value="0"></td>'
+            + '<td data-label="Diskon"><div class="input-group input-group-sm"><input type="number" step="0.01" min="0" name="items[' + key + '][discount]" class="form-control est-disc text-end" value="0"><select name="items[' + key + '][discount_type]" class="form-select est-disc-type" style="max-width:70px" aria-label="Jenis diskon item"><option value="fixed">Rp</option><option value="percent">%</option></select></div></td>'
+            + '<td data-label="Pajak"><input type="number" step="0.01" min="0" max="100" name="items[' + key + '][tax_rate]" class="form-control form-control-sm est-tax text-center" value=""></td>'
+            + '<td data-label="Total" class="text-end est-line-total fw-semibold">Rp 0</td><td data-label="Aksi" class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-estimate-row" title="Hapus baris" aria-label="Hapus baris"><i class="fas fa-trash"></i></button></td>'
             + '</tr>';
     }
     function addRow(type) { const key = rowKey(), wrap = document.createElement('tbody'); wrap.innerHTML = rowHtml(key, type); const row = wrap.firstElementChild; tbody.appendChild(row); emptyState.classList.add('d-none'); updateTrigger(row); return row; }
-    function updateTrigger(row) { row.querySelector('.catalog-trigger').onclick = () => openCatalog(row.querySelector('.est-type').value === 'labor' ? 'labor' : 'part', row); }
+    function updateTypePresentation(row) {
+        const type = row.querySelector('.est-type')?.value || 'other';
+        const label = row.querySelector('.row-type-label');
+        if (label) {
+            label.textContent = type === 'part' ? 'PART' : (type === 'labor' ? 'JASA' : 'MANUAL');
+            label.className = 'badge bg-' + (type === 'part' ? 'primary' : (type === 'labor' ? 'info' : 'secondary')) + ' row-type-label';
+        }
+        const trigger = row.querySelector('.catalog-trigger');
+        if (trigger) trigger.classList.toggle('d-none', type === 'other');
+        const hasCatalog = !!(row.querySelector('.est-product-id')?.value || row.querySelector('.est-service-catalog-id')?.value);
+        if (row.querySelector('.est-price')) row.querySelector('.est-price').readOnly = hasCatalog && !canOverridePrice;
+    }
+    function updateTrigger(row) { row.querySelector('.catalog-trigger').onclick = () => openCatalog(row.querySelector('.est-type').value === 'labor' ? 'labor' : 'part', row); updateTypePresentation(row); }
     function calcRow(row) { const qty = number(row.querySelector('.est-qty').value), price = number(row.querySelector('.est-price').value), disc = number(row.querySelector('.est-disc').value), type = row.querySelector('.est-disc-type').value, taxRate = number(row.querySelector('.est-tax').value); const base = qty * price, discount = Math.min(type === 'percent' ? base * disc / 100 : disc, base), tax = (base - discount) * taxRate / 100; return { base, discount, tax, total: base - discount + tax }; }
     function updateLiveTotals() { let subtotal = 0, discount = 0, tax = 0; tbody.querySelectorAll('tr').forEach(row => { const v = calcRow(row); subtotal += v.base; discount += v.discount; tax += v.tax; row.querySelector('.est-line-total').textContent = money(v.total); }); const headDiscountInput = form.querySelector('[name="discount"]'), headType = form.querySelector('[name="discount_type"]').value; let headDiscount = number(headDiscountInput.value); if (headType === 'percent') headDiscount = subtotal * headDiscount / 100; headDiscount = Math.min(Math.max(headDiscount, 0), Math.max(subtotal - discount, 0)); discount += headDiscount; form.querySelector('#live-subtotal').textContent = money(subtotal); form.querySelector('#live-discount').textContent = '- ' + money(discount); form.querySelector('#live-tax').textContent = money(tax); form.querySelector('#live-grand').textContent = money(subtotal - discount + tax); }
 
@@ -337,7 +367,7 @@
     tbody.addEventListener('click', e => { const remove = e.target.closest('.remove-estimate-row'); if (!remove) return; remove.closest('tr').remove(); emptyState.classList.toggle('d-none', tbody.querySelectorAll('tr').length > 0); updateLiveTotals(); });
     tbody.addEventListener('click', e => { const trigger = e.target.closest('.catalog-trigger'); if (!trigger) return; openCatalog(trigger.closest('tr').querySelector('.est-type').value === 'labor' ? 'labor' : 'part', trigger.closest('tr')); });
     tbody.addEventListener('input', e => { if (e.target.matches('.est-qty,.est-price,.est-disc,.est-tax')) updateLiveTotals(); });
-    tbody.addEventListener('change', e => { if (e.target.matches('.est-disc-type,.est-type')) updateLiveTotals(); });
+    tbody.addEventListener('change', e => { if (e.target.matches('.est-disc-type,.est-type')) { updateTypePresentation(e.target.closest('tr')); updateLiveTotals(); } });
     form.querySelector('[name="discount"]').addEventListener('input', updateLiveTotals); form.querySelector('[name="discount_type"]').addEventListener('change', updateLiveTotals);
     searchInput.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => loadCatalog(true), 250); });
     loadMore.addEventListener('click', () => { page += 1; loadCatalog(false); });

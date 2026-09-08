@@ -22,6 +22,6 @@
 
     <p>Terima kasih.<br>{{ $appName }}</p>
 
-    <p style="color:#888;font-size:11px">Dokumen ini adalah estimasi — bukan invoice dan bukan bukti pembayaran.</p>
+    <p style="color:#888;font-size:11px">Dokumen ini adalah estimasi harga dan bukan tagihan.</p>
 </body>
 </html>

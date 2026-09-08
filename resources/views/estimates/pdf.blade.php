@@ -34,8 +34,8 @@
 
         table.items { width: 100%; border-collapse: collapse; }
         table.items thead { display: table-header-group; }
-        table.items th { background: #1a1a1a; color: #fff; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 6px; border: 1px solid #1a1a1a; }
-        table.items td { border: 1px solid #bbb; padding: 4.5px 6px; font-size: 10.5px; vertical-align: top; }
+        table.items th { background: #1a1a1a; color: #fff; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.4px; padding: 6px 4px; border: 1px solid #1a1a1a; }
+        table.items td { border: 1px solid #bbb; padding: 4.5px 4px; font-size: 9.5px; vertical-align: top; }
         table.items tr { page-break-inside: avoid; }
         .num { text-align: right; white-space: nowrap; }
         .ctr { text-align: center; }
@@ -123,10 +123,12 @@
         <thead>
             <tr>
                 <th style="width:4%">No</th>
-                <th>Deskripsi</th>
-                <th style="width:10%" class="ctr">Qty</th>
-                <th style="width:16%" class="num">Harga Satuan</th>
-                <th style="width:18%" class="num">Total</th>
+                <th style="width:34%">Item / Deskripsi</th>
+                <th style="width:9%" class="ctr">Qty</th>
+                <th style="width:15%" class="num">Harga</th>
+                <th style="width:12%" class="num">Diskon</th>
+                <th style="width:10%" class="num">Pajak</th>
+                <th style="width:16%" class="num">Total</th>
             </tr>
         </thead>
         <tbody>
@@ -140,7 +142,7 @@
             @endphp
             @if($renderGroupHeader)
             <tr>
-                <td colspan="5" style="background:#efefef;">
+                <td colspan="7" style="background:#efefef;">
                     <strong>{{ $group->title }}</strong>
                     @if($group->severity_snapshot === 'critical')
                         <span class="src-badge src-critical">dari checklist kritis</span>
@@ -166,19 +168,16 @@
             <tr>
                 <td class="ctr">{{ $loop->iteration }}</td>
                 <td>
-                    {{ $item->description }}
-                    @if($item->item_type === \App\Models\ServiceEstimateItem::TYPE_LABOR)
-                        <span class="item-type">[Jasa]</span>
-                    @elseif($item->item_type === \App\Models\ServiceEstimateItem::TYPE_OTHER)
-                        <span class="item-type">[Lainnya]</span>
-                    @endif
+                    {{ $item->description }} <span class="item-type">[{{ ['part' => 'Sparepart', 'labor' => 'Jasa', 'other' => 'Lainnya'][$item->item_type] ?? 'Lainnya' }}]</span>
                 </td>
                 <td class="ctr">{{ rtrim(rtrim(number_format((float) $item->quantity, 2, ',', '.'), '0'), ',') }}</td>
                 <td class="num">Rp {{ number_format((float) $item->unit_price, 0, ',', '.') }}</td>
+                <td class="num">{{ (float) $item->discount > 0 ? '- Rp '.number_format((float) $item->discount, 0, ',', '.') : '-' }}</td>
+                <td class="num">{{ (float) $item->tax_amount > 0 ? 'Rp '.number_format((float) $item->tax_amount, 0, ',', '.') : '-' }}</td>
                 <td class="num">Rp {{ number_format((float) $item->line_total, 0, ',', '.') }}</td>
             </tr>
             @empty
-            <tr><td colspan="5" class="ctr" style="padding:14px">Tidak ada item.</td></tr>
+            <tr><td colspan="7" class="ctr" style="padding:14px">Tidak ada item.</td></tr>
             @endforelse
         </tbody>
     </table>

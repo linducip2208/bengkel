@@ -797,6 +797,7 @@ class EstimateController extends Controller
             'items' => 'nullable|array',
             'items.*.item_type' => 'nullable|in:part,labor,other',
             'items.*.product_id' => 'nullable|integer|exists:products,id',
+            'items.*.service_catalog_id' => 'nullable|integer|exists:service_packages,id',
             'items.*.description' => 'nullable|string|max:500',
             'items.*.quantity' => 'nullable|numeric|min:0',
             'items.*.unit_price' => 'nullable|numeric|min:0',
@@ -823,6 +824,22 @@ class EstimateController extends Controller
                 ->get()
                 ->keyBy('id');
         abort_if($productIds->diff($products->keys())->isNotEmpty(), 422, 'Produk tidak ditemukan pada cabang Anda atau sudah tidak aktif.');
+        $servicePackageIds = collect($validated['items'] ?? [])
+            ->filter(fn (array $row) => ($row['item_type'] ?? null) === ServiceEstimateItem::TYPE_LABOR)
+            ->pluck('service_catalog_id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+        $servicePackages = $servicePackageIds->isEmpty()
+            ? collect()
+            : ServicePackage::query()
+                ->whereIn('id', $servicePackageIds)
+                ->where('is_active', true)
+                ->get(['id', 'price'])
+                ->keyBy('id');
+        abort_if($servicePackageIds->diff($servicePackages->keys())->isNotEmpty(), 422, 'Jasa tidak ditemukan atau sudah tidak aktif.');
+
         $sellingPriceGroupId = data_get($service, 'customer.customerGroup.selling_price_group_id');
         $canOverridePrice = (bool) auth()->user()?->can('pos.price_override');
 
@@ -834,11 +851,17 @@ class EstimateController extends Controller
             }
 
             $product = $hasProduct ? $products->get((int) $row['product_id']) : null;
+            $servicePackage = ($row['item_type'] ?? null) === ServiceEstimateItem::TYPE_LABOR
+                ? $servicePackages->get((int) ($row['service_catalog_id'] ?? 0))
+                : null;
             $unitPrice = (float) ($row['unit_price'] ?? 0);
             if ($product !== null && ! $canOverridePrice) {
                 $unitPrice = $sellingPriceGroupId && $product->relationLoaded('sellingPrices')
                     ? (float) data_get($product->sellingPrices->first(), 'price', $product->price)
                     : $product->getPriceFor($sellingPriceGroupId);
+            }
+            if ($servicePackage !== null && ! $canOverridePrice) {
+                $unitPrice = (float) $servicePackage->price;
             }
 
             $items[] = [

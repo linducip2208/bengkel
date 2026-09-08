@@ -45,11 +45,9 @@
                     </small>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
-                    @if($activeEstimate->status !== \App\Models\ServiceEstimate::STATUS_DRAFT)
                     <a href="{{ route('estimates.preview', $activeEstimate) }}" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="fas fa-eye me-1"></i> Preview</a>
                     <a href="{{ route('estimates.pdf', $activeEstimate) }}" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf me-1"></i> Download PDF</a>
                     <a href="{{ route('estimates.print', $activeEstimate) }}" class="btn btn-sm btn-outline-dark" target="_blank"><i class="fas fa-print me-1"></i> Print</a>
-                    @endif
                     @if($canSend && in_array($activeEstimate->status, [\App\Models\ServiceEstimate::STATUS_DRAFT, \App\Models\ServiceEstimate::STATUS_SENT, \App\Models\ServiceEstimate::STATUS_WAITING_APPROVAL, \App\Models\ServiceEstimate::STATUS_REJECTED, \App\Models\ServiceEstimate::STATUS_EXPIRED], true))
                     <form action="{{ route('estimates.send-wa', $activeEstimate) }}" method="POST" class="d-inline">
                         @csrf
@@ -143,10 +141,10 @@
                         @endif
                         <div class="table-responsive">
                             <table class="table table-sm align-middle mb-2">
-                                <thead><tr><th>Item</th><th class="text-center">Qty</th><th class="text-end">Harga</th><th class="text-end">Total</th></tr></thead>
+                                <thead><tr><th>Item</th><th class="text-center">Qty</th><th class="text-end">Harga</th><th class="text-end">Diskon</th><th class="text-end">Pajak</th><th class="text-end">Total</th></tr></thead>
                                 <tbody>
                                 @foreach($group->items as $item)
-                                <tr><td><span class="badge bg-light text-dark me-1">{{ [\App\Models\ServiceEstimateItem::TYPE_PART => 'Parts', \App\Models\ServiceEstimateItem::TYPE_LABOR => 'Jasa', \App\Models\ServiceEstimateItem::TYPE_OTHER => 'Lainnya'][$item->item_type] ?? 'Lainnya' }}</span>{{ $item->description }}</td><td class="text-center">{{ $item->quantity }}</td><td class="text-end">@include('partials.rupiah', ['amount' => $item->unit_price])</td><td class="text-end fw-semibold">@include('partials.rupiah', ['amount' => $item->line_total])</td></tr>
+                                <tr><td><span class="badge bg-light text-dark me-1">{{ [\App\Models\ServiceEstimateItem::TYPE_PART => 'Parts', \App\Models\ServiceEstimateItem::TYPE_LABOR => 'Jasa', \App\Models\ServiceEstimateItem::TYPE_OTHER => 'Lainnya'][$item->item_type] ?? 'Lainnya' }}</span>{{ $item->description }}</td><td class="text-center">{{ $item->quantity }}</td><td class="text-end">@include('partials.rupiah', ['amount' => $item->unit_price])</td><td class="text-end">{{ (float) $item->discount > 0 ? '- ' : '' }}@include('partials.rupiah', ['amount' => $item->discount])</td><td class="text-end">@include('partials.rupiah', ['amount' => $item->tax_amount])</td><td class="text-end fw-semibold">@include('partials.rupiah', ['amount' => $item->line_total])</td></tr>
                                 @endforeach
                                 </tbody>
                             </table>

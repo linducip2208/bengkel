@@ -45,7 +45,7 @@
     </table>
     <table class="table table-sm table-bordered align-middle">
         @php $renderedGroupIds = []; @endphp
-        <thead><tr><th>#</th><th>Deskripsi</th><th class="text-center">Qty</th><th class="text-end">Harga Satuan</th><th class="text-end">Total</th></tr></thead>
+        <thead><tr><th>#</th><th>Item / Deskripsi</th><th class="text-center">Qty</th><th class="text-end">Harga Satuan</th><th class="text-end">Diskon</th><th class="text-end">Pajak</th><th class="text-end">Total</th></tr></thead>
         <tbody>
             @forelse($estimate->items as $item)
             @php
@@ -57,7 +57,7 @@
             @endphp
             @if($renderGroupHeader)
                 <tr class="table-light">
-                    <td colspan="5">
+                    <td colspan="7">
                         <strong>{{ $group->title }}</strong>
                         @if($group->severity_snapshot === 'critical')
                             <span class="badge bg-danger">dari checklist kritis</span>
@@ -80,24 +80,26 @@
             @endif
             <tr>
                 <td>{{ $loop->iteration }}</td>
-                <td>{{ $item->description }}</td>
+                <td>{{ $item->description }} <span class="badge bg-light text-dark">{{ ['part' => 'Sparepart', 'labor' => 'Jasa', 'other' => 'Lainnya'][$item->item_type] ?? 'Lainnya' }}</span></td>
                 <td class="text-center">{{ rtrim(rtrim(number_format((float) $item->quantity, 2, ',', '.'), '0'), ',') }}</td>
                 <td class="text-end">Rp {{ number_format((float) $item->unit_price, 0, ',', '.') }}</td>
+                <td class="text-end">{{ (float) $item->discount > 0 ? '- Rp '.number_format((float) $item->discount, 0, ',', '.') : '-' }}</td>
+                <td class="text-end">{{ (float) $item->tax_amount > 0 ? 'Rp '.number_format((float) $item->tax_amount, 0, ',', '.') : '-' }}</td>
                 <td class="text-end">Rp {{ number_format((float) $item->line_total, 0, ',', '.') }}</td>
             </tr>
             @empty
-            <tr><td colspan="5" class="text-center text-muted py-3">Tidak ada item.</td></tr>
+            <tr><td colspan="7" class="text-center text-muted py-3">Tidak ada item.</td></tr>
             @endforelse
         </tbody>
         <tfoot>
-            <tr><td colspan="4" class="text-end">Subtotal</td><td class="text-end">Rp {{ number_format((float) $estimate->subtotal, 0, ',', '.') }}</td></tr>
+            <tr><td colspan="6" class="text-end">Subtotal</td><td class="text-end">Rp {{ number_format((float) $estimate->subtotal, 0, ',', '.') }}</td></tr>
             @if((float) $estimate->discount > 0)
-            <tr><td colspan="4" class="text-end">Diskon</td><td class="text-end">- Rp {{ number_format((float) $estimate->discount, 0, ',', '.') }}</td></tr>
+            <tr><td colspan="6" class="text-end">Diskon</td><td class="text-end">- Rp {{ number_format((float) $estimate->discount, 0, ',', '.') }}</td></tr>
             @endif
             @if((float) $estimate->tax_amount > 0)
-            <tr><td colspan="4" class="text-end">Pajak</td><td class="text-end">Rp {{ number_format((float) $estimate->tax_amount, 0, ',', '.') }}</td></tr>
+            <tr><td colspan="6" class="text-end">Pajak</td><td class="text-end">Rp {{ number_format((float) $estimate->tax_amount, 0, ',', '.') }}</td></tr>
             @endif
-            <tr class="table-dark"><td colspan="4" class="text-end fw-bold">TOTAL ESTIMASI <small class="opacity-75">(GRAND TOTAL)</small></td><td class="text-end fw-bold">Rp {{ number_format((float) $estimate->grand_total, 0, ',', '.') }}</td></tr>
+            <tr class="table-dark"><td colspan="6" class="text-end fw-bold">TOTAL ESTIMASI <small class="opacity-75">(GRAND TOTAL)</small></td><td class="text-end fw-bold">Rp {{ number_format((float) $estimate->grand_total, 0, ',', '.') }}</td></tr>
         </tfoot>
     </table>
     @if($estimate->notes)
