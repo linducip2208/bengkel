@@ -34,7 +34,7 @@
                 <tr><td><b>Manager</b></td><td><code>manager@bengkel.test</code></td><td><code>password</code></td></tr>
                 <tr><td><b>Kasir</b></td><td><code>kasir@bengkel.test</code></td><td><code>password</code></td></tr>
                 <tr><td><b>Teknisi</b></td><td><code>teknisi@bengkel.test</code></td><td><code>password</code></td></tr>
-                <tr><td><b>Sales</b></td><td><code>sales@bengkel.test</code></td><td><code>password</code></td></tr>
+                <tr><td><b>Kasir 2</b></td><td><code>kasir2@bengkel.test</code></td><td><code>password</code></td></tr>
             </tbody>
         </table>
         <p class="docs-cred-note">

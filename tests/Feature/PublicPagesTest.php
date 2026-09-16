@@ -42,6 +42,8 @@ class PublicPagesTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Aplikasi Bengkel Terbaik');
         $response->assertSee('Masuk');
+        $response->assertDontSee('Demo Login');
+        $response->assertDontSee('admin@bengkel.test');
     }
 
     public function test_guest_redirected_to_login_from_admin(): void
@@ -56,6 +58,11 @@ class PublicPagesTest extends TestCase
         $response = $this->get('/docs');
         $response->assertStatus(200);
         $response->assertSee('Tutorial');
+        $response->assertSee('admin@bengkel.test');
+        $response->assertSee('manager@bengkel.test');
+        $response->assertSee('kasir@bengkel.test');
+        $response->assertSee('teknisi@bengkel.test');
+        $response->assertSee('kasir2@bengkel.test');
     }
 
     public function test_blog_page_is_accessible(): void

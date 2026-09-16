@@ -24,8 +24,6 @@
             background: #f8fafc;
         }
         .font-display { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        .font-mono { font-family: 'JetBrains Mono', 'Cascadia Code', monospace; }
-
         .login-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -121,24 +119,6 @@
         }
         .btn-login:hover { box-shadow: 0 6px 20px rgba(37,99,235,0.45); transform: translateY(-1px); }
 
-        .divider {
-            display: flex; align-items: center; gap: 0.75rem;
-            margin: 1.5rem 0; color: #94a3b8; font-size: 0.82rem;
-        }
-        .divider::before, .divider::after {
-            content: ''; flex: 1; height: 1px; background: #e2e8f0;
-        }
-
-        .demo-box {
-            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem 1.15rem;
-        }
-        .demo-box .demo-title { font-weight: 700; color: #334155; font-size: 0.88rem; margin-bottom: 0.5rem; }
-        .demo-box .demo-row {
-            font-size: 0.76rem; color: #475569; padding: 0.2rem 0;
-            font-family: 'JetBrains Mono', 'Cascadia Code', monospace;
-        }
-        .demo-box .demo-row .role { font-weight: 700; }
-
         .alert {
             background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px;
             color: #991b1b; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.84rem;
@@ -158,7 +138,6 @@
             .form-panel h1 { font-size: 1.6rem; }
             .form-panel .form-wrapper { max-width: 100%; }
             .btn-login { min-height: 44px; }
-            .demo-box .demo-row { font-size: 0.7rem; }
         }
 
         @media (pointer: coarse) {
@@ -248,16 +227,6 @@
                 </button>
             </form>
 
-            <div class="divider">atau</div>
-
-            <div class="demo-box">
-                <div class="demo-title"><i class="fas fa-flask"></i> {{ __('Demo Login') }}</div>
-                <div class="demo-row"><span class="role">Admin:</span> admin@bengkel.test / password</div>
-                <div class="demo-row"><span class="role">Manager:</span> manager@bengkel.test / password</div>
-                <div class="demo-row"><span class="role">Kasir:</span> kasir@bengkel.test / password</div>
-                <div class="demo-row"><span class="role">Teknisi:</span> teknisi@bengkel.test / password</div>
-                <div class="demo-row"><span class="role">Kasir 2:</span> kasir2@bengkel.test / password</div>
-            </div>
         </div>
     </div>
 </div>

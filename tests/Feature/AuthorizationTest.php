@@ -11,6 +11,8 @@ use App\Models\StockAdjustment;
 use App\Models\User;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -135,5 +137,53 @@ class AuthorizationTest extends TestCase
 
         $response->assertSessionHasErrors();
         $this->assertGuest();
+    }
+
+    public function test_admin_can_open_user_edit_modal_without_transparent_table_nesting(): void
+    {
+        $admin = $this->actingAsRole('admin');
+        $targetRole = Role::findOrCreate('kasir', 'web');
+        $target = User::factory()->create(['name' => 'Kasir Uji']);
+        $target->assignRole($targetRole);
+
+        $response = $this->get('/users');
+
+        $response->assertOk();
+        $response->assertSee('id="editUserModal'.$target->id.'"', false);
+        $response->assertSee('class="btn btn-outline-secondary password-toggle"', false);
+        $response->assertSee('type="button" class="btn-close"', false);
+    }
+
+    public function test_admin_can_update_another_users_password(): void
+    {
+        $admin = $this->actingAsRole('admin');
+        $permission = Permission::findOrCreate('users.manage', 'web');
+        $admin->givePermissionTo($permission);
+
+        $targetRole = Role::findOrCreate('kasir', 'web');
+        $target = User::factory()->create([
+            'name' => 'Kasir Lama',
+            'email' => 'kasir-lama@bengkel.test',
+            'password' => 'password-lama',
+            'is_active' => true,
+        ]);
+        $target->assignRole($targetRole);
+
+        $response = $this->put("/users/{$target->id}", [
+            'name' => 'Kasir Baru',
+            'email' => 'kasir-baru@bengkel.test',
+            'password' => 'password-baru',
+            'role' => 'kasir',
+            'is_active' => '1',
+            '_form' => 'edit-user',
+            'editing_user_id' => $target->id,
+        ]);
+
+        $response->assertRedirect();
+        $target->refresh();
+
+        $this->assertSame('Kasir Baru', $target->name);
+        $this->assertSame('kasir-baru@bengkel.test', $target->email);
+        $this->assertTrue(Hash::check('password-baru', $target->password));
     }
 }
