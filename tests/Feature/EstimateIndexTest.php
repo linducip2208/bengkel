@@ -211,4 +211,30 @@ class EstimateIndexTest extends EstimateTestCase
             ->assertSee($estimate->estimate_number)
             ->assertSee(route('invoices.show', $invoice));
     }
+
+    public function test_index_with_soft_deleted_service_does_not_500(): void
+    {
+        $service = $this->makeService();
+        $estimate = $this->issueEstimate($service, [$this->itemPayload()]);
+        $service->delete(); // soft-delete
+
+        $this->get(route('estimates.index'))
+            ->assertOk()
+            ->assertSee($estimate->estimate_number)
+            ->assertSee('Service tidak tersedia');
+    }
+
+    public function test_index_with_cascade_deleted_service_shows_empty_state(): void
+    {
+        // NOTE: service_estimates.service_id FK is constrained()->cascadeOnDelete(),
+        // so hard-deleting a Service also removes its estimates. The index page
+        // must still render cleanly when no estimates exist.
+        $service = $this->makeService();
+        $this->issueEstimate($service, [$this->itemPayload()]);
+        $service->forceDelete(); // cascade removes estimate too
+
+        $this->get(route('estimates.index'))
+            ->assertOk()
+            ->assertSee('Belum ada estimasi.');
+    }
 }

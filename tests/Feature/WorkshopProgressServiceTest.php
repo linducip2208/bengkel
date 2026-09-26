@@ -35,4 +35,16 @@ class WorkshopProgressServiceTest extends WorkshopFlowTestCase
         $this->assertSame(WorkshopProgressService::BLOCKED, $progress['steps']['work_package']['state']);
         $this->assertSame('checklist', $progress['next_action']['key']);
     }
+
+    public function test_calculate_works_on_soft_deleted_service(): void
+    {
+        $service = $this->makeService(['workflow_status' => 2]);
+        $service->delete();
+
+        $progress = app(WorkshopProgressService::class)->calculate($service);
+
+        $this->assertIsArray($progress);
+        $this->assertArrayHasKey('steps', $progress);
+        $this->assertArrayHasKey('current_step', $progress);
+    }
 }

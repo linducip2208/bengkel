@@ -181,8 +181,14 @@
                             @if($estimate->isExpiredByDate())<i class="fas fa-triangle-exclamation text-danger small ms-1" title="Jatuh tempo"></i>@endif
                         </td>
                         <td><span class="badge bg-{{ $estimate->statusColor() }}">{{ $estimate->statusLabel() }}</span></td>
-                        @php $estimateProgress = app(\App\Services\WorkshopProgressService::class)->calculate($estimate->service); @endphp
-                        <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ $estimateProgress['steps'][$estimateProgress['current_step']]['label'] }}</span></td>
+                        @php $service = $estimate->service; $estimateProgress = $service && ! $service->trashed() ? app(\App\Services\WorkshopProgressService::class)->calculate($service) : null; @endphp
+                        <td>
+                            @if($estimateProgress)
+                                <span class="badge bg-primary bg-opacity-10 text-primary">{{ $estimateProgress['steps'][$estimateProgress['current_step']]['label'] }}</span>
+                            @else
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary" title="Service tidak tersedia">Service tidak tersedia</span>
+                            @endif
+                        </td>
                         <td class="text-end text-nowrap">
                             {{-- Always available: back to the work order --}}
                             <a href="{{ $serviceUrl }}" class="btn btn-xs btn-outline-secondary py-0 px-1" title="Buka Servis"><i class="fas fa-toolbox"></i></a>

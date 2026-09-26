@@ -74,8 +74,14 @@
                                 {{ $labels[$service->done_status] }}
                             </span>
                         </td>
-                        @php $jobProgress = app(\App\Services\WorkshopProgressService::class)->calculate($service); @endphp
-                        <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ $jobProgress['steps'][$jobProgress['current_step']]['label'] }}</span></td>
+                        @php $jobProgress = $service && ! $service->trashed() ? app(\App\Services\WorkshopProgressService::class)->calculate($service) : null; @endphp
+                        <td>
+                            @if($jobProgress)
+                                <span class="badge bg-primary bg-opacity-10 text-primary">{{ $jobProgress['steps'][$jobProgress['current_step']]['label'] }}</span>
+                            @else
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary" title="Service tidak tersedia">Service tidak tersedia</span>
+                            @endif
+                        </td>
                         <td class="text-end">
                             <a href="{{ route('jobcards.show', $service) }}" class="btn btn-sm btn-outline-primary" title="Detail">
                                 <i class="fas fa-eye"></i>
