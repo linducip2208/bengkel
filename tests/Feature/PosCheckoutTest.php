@@ -41,6 +41,11 @@ class PosCheckoutTest extends TestCase
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole($role);
 
+        if (! in_array($role, ['super_admin', 'admin'], true)) {
+            $branch = Branch::create(['name' => 'Cabang Kasir '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+            $user->branches()->sync([$branch->id]);
+        }
+
         return $user;
     }
 
@@ -49,7 +54,8 @@ class PosCheckoutTest extends TestCase
         $kasir = $this->makeUser('kasir');
         $this->actingAs($kasir);
 
-        $branch = Branch::create(['name' => 'Cabang Pusat', 'is_active' => true]);
+        $branch = Branch::create(['name' => 'Cabang Pusat', 'code' => 'T'.uniqid(), 'is_active' => true]);
+        $kasir->branches()->sync([$branch->id]);
         $type = ProductType::create(['type' => 'Sparepart', 'slug' => 'sparepart', 'is_active' => true]);
         $unit = ProductUnit::create(['name' => 'Pcs', 'abbreviation' => 'pcs', 'is_active' => true]);
 
@@ -167,7 +173,8 @@ class PosCheckoutTest extends TestCase
         $kasir = $this->makeUser('kasir');
         $this->actingAs($kasir);
 
-        $branch = Branch::create(['name' => 'Cabang Split', 'is_active' => true]);
+        $branch = Branch::create(['name' => 'Cabang Split', 'code' => 'T'.uniqid(), 'is_active' => true]);
+        $kasir->branches()->sync([$branch->id]);
         $type = ProductType::create(['type' => 'Oli', 'slug' => 'oli-split', 'is_active' => true]);
         $unit = ProductUnit::create(['name' => 'Liter', 'abbreviation' => 'ltr', 'is_active' => true]);
         $product = Product::create([

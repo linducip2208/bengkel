@@ -69,9 +69,11 @@ class BranchIsolationTest extends TestCase
     {
         $branchA = $this->makeBranch('A2');
         $branchB = $this->makeBranch('B2');
-        $this->scopedUser($branchA);
 
-        $customer = Customer::create(['name' => 'Cust B', 'phone' => '0822222222']);
+        // Fixtures are system-created (no auth) so fail-closed create guards
+        // don't block cross-branch setup; isolation is asserted below.
+        $systemUser = User::factory()->create(['is_active' => true]);
+        $customer = Customer::withoutGlobalScopes()->create(['name' => 'Cust B', 'phone' => '0822222222', 'branch_id' => $branchB->id]);
         $method = PaymentMethod::create(['payment' => 'Cash', 'slug' => 'cash', 'is_active' => true]);
         $branchBIncome = Income::withoutGlobalScopes()->create([
             'invoice_number' => 'INV-ISO-B',
@@ -80,9 +82,11 @@ class BranchIsolationTest extends TestCase
             'amount' => 50000,
             'income_date' => now()->toDateString(),
             'label' => 'Branch B',
-            'created_by' => 1,
+            'created_by' => $systemUser->id,
             'branch_id' => $branchB->id,
         ]);
+
+        $this->scopedUser($branchA);
 
         // The branch-A scoped user's normal query must not see branch B's row.
         $visible = Income::whereKey($branchBIncome->id)->first();

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Branch;
 use App\Models\ChartOfAccount;
 use App\Models\Customer;
 use App\Models\Income;
@@ -60,7 +61,11 @@ class ReportingReconciliationTest extends TestCase
 
     private function actingUser(): User
     {
-        return User::factory()->create(['is_active' => true]);
+        $user = User::factory()->create(['is_active' => true]);
+        $branch = Branch::create(['name' => 'Test Branch '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+        $user->branches()->sync([$branch->id]);
+
+        return $user;
     }
 
     public function test_invoice_paid_amount_equals_sum_of_payment_records_after_partial_and_full_payment(): void

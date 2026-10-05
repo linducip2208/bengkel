@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Branch;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -16,14 +17,15 @@ class RoleController extends Controller
     // ===== USER MANAGEMENT =====
     public function userIndex(Request $request)
     {
-        $query = User::with('roles');
+        $query = User::with('roles', 'branches');
         if ($request->filled('search')) {
             $query->where(fn ($q) => $q->where('name', 'like', "%{$request->search}%")->orWhere('email', 'like', "%{$request->search}%"));
         }
         $users = $query->latest()->paginate(20)->withQueryString();
         $roles = Role::orderBy('name')->get();
+        $branches = Branch::orderBy('name')->get();
 
-        return view('users.index', compact('users', 'roles'));
+        return view('users.index', compact('users', 'roles', 'branches'));
     }
 
     public function userStore(Request $request)
@@ -36,6 +38,8 @@ class RoleController extends Controller
             'password' => 'required|min:6',
             'role' => 'required|exists:roles,name',
             'is_active' => 'nullable|boolean',
+            'branch_ids' => 'nullable|array',
+            'branch_ids.*' => 'exists:branches,id',
         ]);
         $user = User::create([
             'name' => $validated['name'],
@@ -44,6 +48,9 @@ class RoleController extends Controller
             'is_active' => $request->boolean('is_active', true),
         ]);
         $user->assignRole($validated['role']);
+        // Zero branch assignment = no branch access (fail-closed), never global.
+        // Unrestricted roles (super_admin/admin) ignore assignments server-side.
+        $user->branches()->sync($validated['branch_ids'] ?? []);
         ActivityLog::record('user.create', $user, "Create user {$user->email} with role {$validated['role']}");
 
         return back()->with('success', "User {$user->name} dibuat.");
@@ -59,6 +66,8 @@ class RoleController extends Controller
             'password' => 'nullable|min:6',
             'role' => 'required|exists:roles,name',
             'is_active' => 'nullable|boolean',
+            'branch_ids' => 'nullable|array',
+            'branch_ids.*' => 'exists:branches,id',
         ]);
         $data = ['name' => $validated['name'], 'email' => $validated['email'], 'is_active' => $request->boolean('is_active', true)];
         if (! empty($validated['password'])) {
@@ -66,6 +75,9 @@ class RoleController extends Controller
         }
         $user->update($data);
         $user->syncRoles([$validated['role']]);
+        if (array_key_exists('branch_ids', $validated)) {
+            $user->branches()->sync($validated['branch_ids'] ?? []);
+        }
         ActivityLog::record('user.update', $user, "Update user {$user->email} role={$validated['role']}");
 
         return back()->with('success', 'User diperbarui.');

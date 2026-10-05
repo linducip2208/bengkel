@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\PaymentGateway;
@@ -78,7 +79,10 @@ class PaymentWebhookIdempotencyTest extends TestCase
 
     private function makePaymentLink(): PaymentLink
     {
-        $this->actingAs(User::factory()->create(['is_active' => true]));
+        $user = User::factory()->create(['is_active' => true]);
+        $branch = Branch::create(['name' => 'Test Branch '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+        $user->branches()->sync([$branch->id]);
+        $this->actingAs($user);
         $customer = Customer::create(['name' => 'Webhook Customer']);
         $method = PaymentMethod::create([
             'payment' => 'Gateway',

@@ -52,6 +52,11 @@ abstract class EstimateTestCase extends TestCase
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole($role);
 
+        if (! in_array($role, ['super_admin', 'admin'], true)) {
+            $branch = \App\Models\Branch::create(['name' => 'Cabang Uji '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+            $user->branches()->sync([$branch->id]);
+        }
+
         return $user;
     }
 

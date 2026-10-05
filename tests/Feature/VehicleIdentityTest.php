@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Middleware\RequirePair;
+use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\FuelType;
 use App\Models\User;
@@ -21,7 +22,10 @@ class VehicleIdentityTest extends TestCase
     {
         parent::setUp();
         $this->withoutMiddleware([RequirePair::class, PreventRequestForgery::class]);
-        $this->actingAs(User::factory()->create(['is_active' => true]));
+        $user = User::factory()->create(['is_active' => true]);
+        $branch = Branch::create(['name' => 'Test Branch '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+        $user->branches()->sync([$branch->id]);
+        $this->actingAs($user);
     }
 
     public function test_vehicle_identifiers_normalize_before_uniqueness_validation(): void

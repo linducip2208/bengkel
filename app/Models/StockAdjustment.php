@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasBranchScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StockAdjustment extends Model
 {
-    use HasFactory;
+    use HasBranchScope, HasFactory;
 
     protected $fillable = [
         'product_id', 'warehouse_id', 'branch_id',

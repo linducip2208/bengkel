@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\BranchAccess;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -56,38 +57,51 @@ class User extends Authenticatable
 
     public function hasUnrestrictedBranchAccess(): bool
     {
-        return $this->hasAnyRole(static::unrestrictedBranchRoles());
+        // Guard-explicit: Sanctum API tokens authenticate via the `sanctum`
+        // guard while roles live on `web`. Without this, Spatie throws
+        // RoleDoesNotExist under API auth instead of returning false.
+        return $this->hasAnyRole(static::unrestrictedBranchRoles(), 'web');
     }
 
     /**
-     * May this user read/write data of the given branch?
-     * No assignments = legacy behaviour (all branches visible).
+     * Explicit branch authorization state (FAIL-CLOSED).
+     *
+     * - super_admin/admin => BranchAccess::unrestricted()
+     * - restricted + assignments => BranchAccess::restricted(ids)
+     * - restricted + zero assignments => BranchAccess::denied()
      */
-    public function hasBranchAccess(?int $branchId): bool
+    public function branchAccess(): BranchAccess
     {
-        if ($branchId === null || $this->hasUnrestrictedBranchAccess()) {
-            return true;
+        if ($this->hasUnrestrictedBranchAccess()) {
+            return BranchAccess::unrestricted();
         }
 
         $assigned = $this->branches()->pluck('branches.id');
 
-        // Legacy accounts without explicit assignments keep global access.
         if ($assigned->isEmpty()) {
-            return true;
+            return BranchAccess::denied();
         }
 
-        return $assigned->contains($branchId);
+        return BranchAccess::restricted($assigned);
     }
 
     /**
-     * Branch IDs this user may access; empty collection = unrestricted.
+     * May this user read/write data of the given branch? FAIL-CLOSED.
+     *
+     * - NULL branch rows are global/legacy: only unrestricted users may access them.
+     * - Restricted users with zero assignments may access nothing.
+     */
+    public function hasBranchAccess(?int $branchId): bool
+    {
+        return $this->branchAccess()->canAccess($branchId);
+    }
+
+    /**
+     * Assigned branch IDs only. NEVER a sentinel: empty means NO access
+     * for restricted users (unrestricted is reported via branchAccess()).
      */
     public function accessibleBranchIds()
     {
-        if ($this->hasUnrestrictedBranchAccess()) {
-            return collect();
-        }
-
         return $this->branches()->pluck('branches.id');
     }
 

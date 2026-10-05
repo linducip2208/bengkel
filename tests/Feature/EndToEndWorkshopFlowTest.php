@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Http\Controllers\BookingController;
 use App\Http\Middleware\RequirePair;
 use App\Models\Booking;
+use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\FuelType;
 use App\Models\Income;
@@ -50,6 +51,8 @@ class EndToEndWorkshopFlowTest extends TestCase
         Role::findOrCreate('service_advisor', 'web');
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole('service_advisor');
+        $branch = Branch::create(['name' => 'Test Branch '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+        $user->branches()->sync([$branch->id]);
         $this->actingAs($user);
     }
 

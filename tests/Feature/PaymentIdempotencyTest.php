@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Middleware\RequirePair;
+use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\Income;
 use App\Models\Invoice;
@@ -35,6 +36,11 @@ class PaymentIdempotencyTest extends TestCase
         Role::findOrCreate($role, 'web');
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole($role);
+
+        if (! in_array($role, ['super_admin', 'admin'], true)) {
+            $branch = Branch::create(['name' => 'Test Branch '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+            $user->branches()->sync([$branch->id]);
+        }
 
         return $user;
     }

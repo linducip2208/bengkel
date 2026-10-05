@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Branch;
 use App\Models\ServiceEstimate;
 use App\Models\ServiceFinding;
 use App\Models\ServiceObservationPoint;
@@ -84,16 +85,18 @@ class ChecklistSaveFlowTest extends WorkshopFlowTestCase
      */
     public function test_authorized_user_with_service_edit_can_update_checklist(): void
     {
-        [$oil] = $this->makeChecklistData();
-        $service = $this->makeService();
-
         Role::findOrCreate('sa', 'web');
         $sa = User::factory()->create(['is_active' => true]);
         $sa->assignRole('sa');
         Permission::findOrCreate('service.edit', 'web');
         Permission::findOrCreate('service.view', 'web');
         $sa->givePermissionTo(['service.edit', 'service.view']);
+        $branch = Branch::create(['name' => 'Cabang Uji '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+        $sa->branches()->sync([$branch->id]);
         $this->actingAs($sa);
+
+        [$oil] = $this->makeChecklistData();
+        $service = $this->makeService();
 
         $this->post(route('observations.save-checklist', $service), [
             'points' => [$oil->id => ['condition_status' => 'ok']],
@@ -104,16 +107,18 @@ class ChecklistSaveFlowTest extends WorkshopFlowTestCase
 
     public function test_authorized_user_with_findings_create_can_update_checklist(): void
     {
-        [$oil] = $this->makeChecklistData();
-        $service = $this->makeService();
-
         Role::findOrCreate('writer', 'web');
         $writer = User::factory()->create(['is_active' => true]);
         $writer->assignRole('writer');
         Permission::findOrCreate('findings.create', 'web');
         Permission::findOrCreate('service.view', 'web');
         $writer->givePermissionTo(['findings.create', 'service.view']);
+        $branch = Branch::create(['name' => 'Cabang Uji '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+        $writer->branches()->sync([$branch->id]);
         $this->actingAs($writer);
+
+        [$oil] = $this->makeChecklistData();
+        $service = $this->makeService();
 
         $this->post(route('observations.save-checklist', $service), [
             'points' => [$oil->id => ['condition_status' => 'critical']],
@@ -124,15 +129,17 @@ class ChecklistSaveFlowTest extends WorkshopFlowTestCase
 
     public function test_unauthorized_authenticated_user_gets_403_on_save(): void
     {
-        [$oil] = $this->makeChecklistData();
-        $service = $this->makeService();
-
         Role::findOrCreate('view_only', 'web');
         $viewer = User::factory()->create(['is_active' => true]);
         $viewer->assignRole('view_only');
         Permission::findOrCreate('service.view', 'web');
         $viewer->givePermissionTo('service.view');
+        $branch = Branch::create(['name' => 'Cabang Uji '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+        $viewer->branches()->sync([$branch->id]);
         $this->actingAs($viewer);
+
+        [$oil] = $this->makeChecklistData();
+        $service = $this->makeService();
 
         $this->post(route('observations.save-checklist', $service), [
             'points' => [$oil->id => ['condition_status' => 'critical']],
@@ -145,6 +152,13 @@ class ChecklistSaveFlowTest extends WorkshopFlowTestCase
 
     public function test_unauthorized_user_cannot_create_findings_via_finding_endpoints(): void
     {
+        Role::findOrCreate('no_finding_perms', 'web');
+        $user = User::factory()->create(['is_active' => true]);
+        $user->assignRole('no_finding_perms');
+        $branch = Branch::create(['name' => 'Cabang Uji '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+        $user->branches()->sync([$branch->id]);
+        $this->actingAs($user);
+
         [$oil] = $this->makeChecklistData();
         $service = $this->makeService();
 
@@ -152,11 +166,6 @@ class ChecklistSaveFlowTest extends WorkshopFlowTestCase
             $oil->id => ['condition_status' => 'critical'],
         ]);
         $finding = ServiceFinding::where('service_id', $service->id)->firstOrFail();
-
-        Role::findOrCreate('no_finding_perms', 'web');
-        $user = User::factory()->create(['is_active' => true]);
-        $user->assignRole('no_finding_perms');
-        $this->actingAs($user);
 
         $this->put(route('findings.update', $finding), [
             'title' => 'HACK',
@@ -173,15 +182,17 @@ class ChecklistSaveFlowTest extends WorkshopFlowTestCase
 
     public function test_checklist_page_renders_read_only_for_unauthorized_user(): void
     {
-        [$oil] = $this->makeChecklistData();
-        $service = $this->makeService();
-
         Role::findOrCreate('viewer_ro', 'web');
         $viewer = User::factory()->create(['is_active' => true]);
         $viewer->assignRole('viewer_ro');
         Permission::findOrCreate('service.view', 'web');
         $viewer->givePermissionTo('service.view');
+        $branch = Branch::create(['name' => 'Cabang Uji '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+        $viewer->branches()->sync([$branch->id]);
         $this->actingAs($viewer);
+
+        [$oil] = $this->makeChecklistData();
+        $service = $this->makeService();
 
         $this->get(route('observations.checklist', $service))
             ->assertOk()

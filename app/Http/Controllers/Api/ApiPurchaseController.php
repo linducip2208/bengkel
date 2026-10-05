@@ -97,6 +97,9 @@ class ApiPurchaseController extends Controller
         if (! auth()->user()?->hasAnyRole(['super_admin', 'admin', 'manager', 'inventory'])) {
             return response()->json(['message' => 'Anda tidak berhak menerima purchase order.'], 403);
         }
+        if (! auth()->user()->hasBranchAccess($purchaseOrder->branch_id ? (int) $purchaseOrder->branch_id : null)) {
+            return response()->json(['message' => 'Purchase order tidak dapat diakses.'], 404);
+        }
         $validated = $request->validate([
             'receipt_items' => ['nullable', 'array'],
             'receipt_items.*.purchase_order_item_id' => ['required', 'integer', 'exists:purchase_order_items,id'],
@@ -118,6 +121,9 @@ class ApiPurchaseController extends Controller
             : ['super_admin', 'admin', 'manager'];
         if (! auth()->user()?->hasAnyRole($roles)) {
             return response()->json(['message' => 'Anda tidak berhak mengubah status purchase order.'], 403);
+        }
+        if (! auth()->user()->hasBranchAccess($purchaseOrder->branch_id ? (int) $purchaseOrder->branch_id : null)) {
+            return response()->json(['message' => 'Purchase order tidak dapat diakses.'], 404);
         }
         try {
             $updated = app(PurchaseOrderWorkflowService::class)->transition($purchaseOrder, $action);

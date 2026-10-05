@@ -12,37 +12,61 @@ class BranchScope implements Scope
 {
     public function apply(Builder $builder, Model $model): void
     {
-        // 1. Explicit branch context (web session) wins.
+        $table = $model->getTable();
+
+        // 1. Explicit branch context (web session) wins, but it must still be
+        //    authorized: a restricted user pinned to a branch they cannot
+        //    access gets zero rows (fail-closed), never a fallback.
         if (session()->has('current_branch_id')) {
             $branchId = session('current_branch_id');
             if ($branchId) {
-                $this->limitTo($builder, $model, collect([$branchId]));
+                $branchId = (int) $branchId;
+                $user = Auth::user();
+                if ($user instanceof User && ! $user->branchAccess()->canAccess($branchId)) {
+                    $this->applyImpossible($builder);
+
+                    return;
+                }
+                $builder->where("{$table}.branch_id", $branchId);
+
+                return;
             }
+
+            // Falsy session value: fall through to user-based scoping.
+        }
+
+        // 2. Stateless contexts (Sanctum API) + web without pinned branch:
+        //    restrict to the authenticated user's branch access.
+        $user = Auth::user();
+
+        if (! $user instanceof User) {
+            // System/console/guest context (no user): no constraint. HTTP
+            // guest access is still rejected by auth middleware; console jobs
+            // and public token flows use explicit withoutGlobalScopes().
+            return;
+        }
+
+        $access = $user->branchAccess();
+
+        if ($access->isUnrestricted()) {
+            return;
+        }
+
+        if ($access->branchIds !== []) {
+            // Restricted: ONLY assigned branches. NULL branch rows are
+            // global/legacy and visible to unrestricted users only.
+            $builder->whereIn("{$table}.branch_id", $access->branchIds);
 
             return;
         }
 
-        // 2. Fallback for stateless contexts (Sanctum API): restrict to the
-        //    authenticated user's assigned branches. Users without any
-        //    assignment keep legacy global visibility.
-        $user = Auth::user();
-
-        if ($user instanceof User) {
-            $accessible = $user->accessibleBranchIds();
-
-            if ($accessible->isNotEmpty()) {
-                $this->limitTo($builder, $model, $accessible);
-            }
-        }
+        // Restricted with zero assignments: zero rows (fail-closed).
+        $this->applyImpossible($builder);
     }
 
-    private function limitTo(Builder $builder, Model $model, $branchIds): void
+    private function applyImpossible(Builder $builder): void
     {
-        $table = $model->getTable();
-
-        $builder->where(function (Builder $q) use ($table, $branchIds) {
-            $q->whereNull("{$table}.branch_id")
-                ->orWhereIn("{$table}.branch_id", $branchIds);
-        });
+        // Database-safe always-false predicate (no invalid SQL).
+        $builder->whereRaw('1 = 0');
     }
 }

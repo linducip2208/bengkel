@@ -94,6 +94,18 @@
                         @foreach($roles as $r)<option value="{{ $r->name }}" {{ ($editingUserId === $u->id ? old('role') === $r->name : $u->hasRole($r->name)) ? 'selected' : '' }}>{{ $r->name }}</option>@endforeach
                     </select>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Cabang (kosong = tanpa akses cabang)</label>
+                    @php($assignedBranches = $editingUserId === $u->id && old('branch_ids') !== null ? old('branch_ids', []) : $u->branches->pluck('id')->all())
+                    <div class="border rounded p-2" style="max-height: 160px; overflow-y: auto;">
+                        @forelse($branches ?? [] as $b)
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="branch_ids[]" value="{{ $b->id }}" id="ub{{ $u->id }}_{{ $b->id }}" {{ in_array($b->id, (array) $assignedBranches) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="ub{{ $u->id }}_{{ $b->id }}">{{ $b->name }} ({{ $b->code }})</label>
+                        </div>
+                        @empty<span class="text-muted small">Belum ada cabang.</span>@endforelse
+                    </div>
+                </div>
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" name="is_active" value="1" id="active{{ $u->id }}" {{ ($editingUserId === $u->id ? old('is_active') : ($u->is_active ?? true)) ? 'checked' : '' }}>
                     <label class="form-check-label" for="active{{ $u->id }}">Aktif</label>
@@ -118,6 +130,16 @@
         <div class="mb-2"><label class="form-label">Role <span class="text-danger">*</span></label><select name="role" class="form-select" required>
             @foreach($roles as $r)<option value="{{ $r->name }}">{{ $r->name }}</option>@endforeach
         </select></div>
+        <div class="mb-2"><label class="form-label">Cabang (kosong = tanpa akses cabang)</label>
+            <div class="border rounded p-2" style="max-height: 160px; overflow-y: auto;">
+                @forelse($branches ?? [] as $b)
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="branch_ids[]" value="{{ $b->id }}" id="nb_{{ $b->id }}">
+                    <label class="form-check-label" for="nb_{{ $b->id }}">{{ $b->name }} ({{ $b->code }})</label>
+                </div>
+                @empty<span class="text-muted small">Belum ada cabang.</span>@endforelse
+            </div>
+        </div>
         <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="is_active" value="1" id="newActive" checked><label class="form-check-label" for="newActive">Aktif</label></div>
     </div>
     <div class="modal-footer"><button type="submit" class="btn btn-success">Buat User</button></div>

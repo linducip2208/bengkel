@@ -39,6 +39,10 @@ class AuthorizationTest extends TestCase
         Role::findOrCreate($role, 'web');
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole($role);
+        if (! in_array($role, ['super_admin', 'admin'], true)) {
+            $branch = Branch::create(['name' => 'Cabang Uji '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+            $user->branches()->sync([$branch->id]);
+        }
         $this->actingAs($user);
 
         return $user;
@@ -102,11 +106,13 @@ class AuthorizationTest extends TestCase
             'price' => 10000,
         ]);
 
-        $this->actingAsRole('mekanik');
+        $mekanik = $this->actingAsRole('mekanik');
+        $adjustBranch = Branch::create(['name' => 'Cabang Adj '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+        $mekanik->branches()->sync([$adjustBranch->id]);
 
         $adjustment = StockAdjustment::create([
             'product_id' => $product->id,
-            'branch_id' => Branch::create(['name' => 'Cabang Uji '.uniqid(), 'is_active' => true])->id,
+            'branch_id' => $adjustBranch->id,
             'previous_quantity' => 0,
             'new_quantity' => 5,
             'quantity_change' => 5,

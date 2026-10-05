@@ -22,6 +22,10 @@ class EstimateAuthorizationTest extends EstimateTestCase
             Permission::findOrCreate($permission, 'web');
             $user->givePermissionTo($permission);
         }
+        if (! in_array($role, ['super_admin', 'admin'], true)) {
+            $branch = \App\Models\Branch::create(['name' => 'Cabang Uji '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+            $user->branches()->sync([$branch->id]);
+        }
         $this->actingAs($user);
 
         return $user;
@@ -92,12 +96,12 @@ class EstimateAuthorizationTest extends EstimateTestCase
 
     public function test_only_manager_and_above_can_override(): void
     {
+        $this->actingAsRole('manager', ['estimates.view', 'estimates.override']);
         $estimateService = app(EstimateService::class);
         $service = $this->makeService();
         $estimate = $estimateService->createDraft($service, [], [$this->itemPayload()]);
         $estimateService->markSent($estimate, 'test');
 
-        $this->actingAsRole('manager', ['estimates.view', 'estimates.override']);
         $this->post('/estimates/'.$estimate->id.'/override-approve', ['reason' => 'Customer konfirmasi via telepon'])
             ->assertRedirect()
             ->assertSessionHas('success');

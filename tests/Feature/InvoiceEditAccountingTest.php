@@ -14,6 +14,7 @@ use App\Models\StockRecord;
 use App\Models\User;
 use App\Services\InvoiceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class InvoiceEditAccountingTest extends TestCase
@@ -64,7 +65,10 @@ class InvoiceEditAccountingTest extends TestCase
 
     public function test_editing_an_unpaid_invoice_realigns_ar_and_cogs_journal(): void
     {
-        $this->actingAs(User::factory()->create(['is_active' => true]));
+        Role::findOrCreate('super_admin', 'web');
+        $admin = User::factory()->create(['is_active' => true]);
+        $admin->assignRole('super_admin');
+        $this->actingAs($admin);
         $this->seedAccounts();
         $product = $this->makeProduct();
         $customer = Customer::create(['name' => 'Invoice Edit', 'phone' => '0818888888']);
@@ -123,7 +127,10 @@ class InvoiceEditAccountingTest extends TestCase
 
     public function test_creating_invoice_with_percent_discount_uses_percent_field(): void
     {
-        $this->actingAs(User::factory()->create(['is_active' => true]));
+        Role::findOrCreate('super_admin', 'web');
+        $admin = User::factory()->create(['is_active' => true]);
+        $admin->assignRole('super_admin');
+        $this->actingAs($admin);
         $this->seedAccounts();
         $customer = Customer::create(['name' => 'Invoice Percent', 'phone' => '0818777777']);
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasBranchScope;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class PurchaseRequisition extends Model
 {
-    use HasFactory;
+    use HasBranchScope, HasFactory;
 
     protected function casts(): array
     {

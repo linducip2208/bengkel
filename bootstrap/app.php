@@ -1,15 +1,20 @@
 <?php
 
 use App\Http\Middleware\RequirePair;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
+use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -49,10 +54,33 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             if ($request->expectsJson()) {
+                // Preserve authorization-safe statuses: cross-branch route
+                // model binding (ModelNotFound) must stay 404, policy denials
+                // 403 — never mask them as 500.
+                $status = 500;
+                if ($e instanceof ValidationException || $e instanceof AuthenticationException) {
+                    return null;
+                } elseif ($e instanceof ModelNotFoundException || $e instanceof NotFoundHttpException) {
+                    $status = 404;
+                } elseif ($e instanceof AuthorizationException) {
+                    $status = 403;
+                } elseif ($e instanceof HttpExceptionInterface) {
+                    $status = $e->getStatusCode();
+                } elseif ($e instanceof UnauthorizedException) {
+                    $status = 403;
+                }
+
+                if ($status === 500) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => config('app.debug') ? $e->getMessage() : 'Terjadi kesalahan pada server.',
+                    ], 500);
+                }
+
                 return response()->json([
                     'success' => false,
-                    'message' => config('app.debug') ? $e->getMessage() : 'Terjadi kesalahan pada server.',
-                ], 500);
+                    'message' => $status === 404 ? 'Data tidak ditemukan.' : $e->getMessage(),
+                ], $status);
             }
 
             if (config('app.debug')) {

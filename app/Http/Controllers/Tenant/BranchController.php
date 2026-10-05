@@ -125,9 +125,8 @@ class BranchController extends Controller
         } else {
             $branch = Branch::where('is_active', true)->findOrFail($branchId);
 
-            // Users with explicit branch assignments may only switch to
-            // branches they belong to (super_admin/admin unrestricted,
-            // legacy accounts without assignments keep global access).
+            // Fail-closed: restricted users (incl. zero assignments) may only
+            // switch to branches they belong to; super_admin/admin unrestricted.
             if (! auth()->user()->hasBranchAccess((int) $branch->id)) {
                 abort(403, 'Anda tidak terdaftar di cabang ini.');
             }

@@ -186,11 +186,13 @@ class EstimateServiceDropdownTest extends WorkshopFlowTestCase
 
     public function test_preview_requires_permission(): void
     {
-        $service = $this->makeService();
         Role::findOrCreate('no_perm', 'web');
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole('no_perm');
+        $branch = Branch::create(['name' => 'Cabang Uji '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+        $user->branches()->sync([$branch->id]);
         $this->actingAs($user);
+        $service = $this->makeService();
 
         $this->get(route('estimates.service-preview', $service))->assertForbidden();
     }
