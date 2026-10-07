@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Middleware\RequirePair;
+use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\FuelType;
 use App\Models\Invoice;
@@ -40,7 +41,7 @@ class EstimateHttpFlowSmokeTest extends TestCase
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole('service_advisor');
         $user->givePermissionTo(['estimates.view', 'estimates.create', 'estimates.update', 'estimates.send', 'estimates.revise', 'estimates.convert_invoice']);
-        $branch = \App\Models\Branch::create(['name' => 'Cabang Smoke '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+        $branch = Branch::create(['name' => 'Cabang Smoke '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
         $user->branches()->sync([$branch->id]);
         $this->actingAs($user);
     }

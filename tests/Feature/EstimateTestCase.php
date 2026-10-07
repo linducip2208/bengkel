@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Middleware\RequirePair;
+use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\FuelType;
 use App\Models\Product;
@@ -53,7 +54,7 @@ abstract class EstimateTestCase extends TestCase
         $user->assignRole($role);
 
         if (! in_array($role, ['super_admin', 'admin'], true)) {
-            $branch = \App\Models\Branch::create(['name' => 'Cabang Uji '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+            $branch = Branch::create(['name' => 'Cabang Uji '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
             $user->branches()->sync([$branch->id]);
         }
 

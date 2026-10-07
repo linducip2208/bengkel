@@ -98,6 +98,11 @@ class VehicleController extends Controller
     public function deleteImage($image)
     {
         $vehicleImage = VehicleImage::findOrFail($image);
+
+        // Branch guard: the parent vehicle query carries BranchScope,
+        // so a cross-branch image id fails closed with 404.
+        Vehicle::query()->findOrFail($vehicleImage->vehicle_id);
+
         $vehicleImage->delete();
 
         return back()->with('success', 'Foto berhasil dihapus.');

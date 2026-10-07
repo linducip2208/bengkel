@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\VehicleImageResource;
 use App\Http\Resources\VehicleResource;
 use App\Models\Vehicle;
 use App\Support\IdentityNormalizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class ApiVehicleController extends Controller
@@ -91,6 +93,37 @@ class ApiVehicleController extends Controller
         $vehicle->delete();
 
         return response()->json(['message' => 'Vehicle deleted.']);
+    }
+
+    public function uploadImage(Request $request, Vehicle $vehicle): JsonResponse
+    {
+        $validated = $request->validate([
+            'image' => ['required', 'image', 'mimes:jpeg,png,webp', 'max:5120'],
+            'caption' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        // store() generates a random hashed filename on the public disk.
+        $path = $request->file('image')->store('vehicle-images', 'public');
+
+        $image = $vehicle->images()->create([
+            'image_path' => $path,
+            'caption' => $validated['caption'] ?? null,
+        ]);
+
+        return response()->json([
+            'message' => 'Foto berhasil diunggah.',
+            'data' => array_merge((new VehicleImageResource($image))->toArray($request), [
+                'url' => url(Storage::url($path)),
+            ]),
+        ], 201);
+    }
+
+    public function deleteImage(Vehicle $vehicle, int $image): JsonResponse
+    {
+        // Scoped through the branch-checked vehicle: cross-branch ids 404.
+        $vehicle->images()->findOrFail($image)->delete();
+
+        return response()->json(['message' => 'Foto dihapus.']);
     }
 
     private function normalizeIdentity(Request $request): void

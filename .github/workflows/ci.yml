@@ -58,6 +58,9 @@ jobs:
           APP_ENV=production APP_DEBUG=false php artisan config:cache
           php artisan config:clear
 
+      - name: Dependency audit (Composer, non-blocking)
+        run: composer audit || true
+
       - name: Run test suite
         run: php artisan test --compact
         env:
@@ -84,3 +87,6 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: Dependency audit (npm, non-blocking)
+        run: npm audit || true

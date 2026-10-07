@@ -1,0 +1,12 @@
+Bengkel Paten — Proprietary Software License
+
+Copyright (c) Bengkel Paten. All rights reserved.
+
+This software and its source code are proprietary and confidential.
+No part of this software may be copied, modified, distributed, or used
+without a prior written license agreement with the copyright holder,
+except as expressly permitted through the whitelabel.co.id license
+pairing mechanism (License v3).
+
+Third-party open-source packages used by this project remain under
+their respective licenses (see composer.json / package.json).

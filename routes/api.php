@@ -19,11 +19,13 @@ use App\Http\Controllers\Api\ApiServiceController;
 use App\Http\Controllers\Api\ApiSupplierController;
 use App\Http\Controllers\Api\ApiVehicleController;
 use App\Http\Controllers\Api\ApiWarrantyController;
+use App\Http\Controllers\Api\ApiWorkshopController;
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login')->middleware('throttle:10,1');
+    Route::get('/health', [ApiWorkshopController::class, 'health'])->name('health');
 
     Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -124,5 +126,37 @@ Route::prefix('v1')->name('api.')->group(function () {
         Route::get('/reports/sales', [ApiReportController::class, 'salesReport'])->name('reports.sales');
         Route::get('/reports/stock', [ApiReportController::class, 'stockReport'])->name('reports.stock');
         Route::get('/reports/financial', [ApiReportController::class, 'financialReport'])->name('reports.financial');
+
+        // Workshop workflow (Flutter-ready, branch-scoped via HasBranchScope).
+        Route::get('/estimates', [ApiWorkshopController::class, 'estimates'])->name('estimates.index');
+        Route::get('/estimates/{estimate}', [ApiWorkshopController::class, 'showEstimate'])->name('estimates.show');
+        Route::post('/estimates/{estimate}/approve', [ApiWorkshopController::class, 'approveEstimate'])->name('estimates.approve')->middleware('role:super_admin|admin|manager|service_advisor');
+        Route::post('/estimates/{estimate}/reject', [ApiWorkshopController::class, 'rejectEstimate'])->name('estimates.reject')->middleware('role:super_admin|admin|manager|service_advisor');
+        Route::post('/estimates/{estimate}/decide', [ApiWorkshopController::class, 'decideEstimateGroups'])->name('estimates.decide')->middleware('role:super_admin|admin|manager|service_advisor');
+        Route::post('/estimates/{estimate}/convert', [ApiWorkshopController::class, 'convertEstimate'])->name('estimates.convert')->middleware('role:super_admin|admin|manager');
+
+        Route::get('/work-packages', [ApiWorkshopController::class, 'workPackages'])->name('work-packages.index');
+        Route::get('/work-packages/{workPackage}', [ApiWorkshopController::class, 'showWorkPackage'])->name('work-packages.show');
+        Route::post('/work-packages/{workPackage}/qc', [ApiWorkshopController::class, 'submitQc'])->name('work-packages.qc')->middleware('role:super_admin|admin|manager|service_advisor');
+
+        Route::get('/work-tasks', [ApiWorkshopController::class, 'workTasks'])->name('work-tasks.index');
+        Route::get('/work-tasks/{workTask}', [ApiWorkshopController::class, 'showWorkTask'])->name('work-tasks.show');
+        Route::post('/work-tasks/{task}/{action}', [ApiWorkshopController::class, 'transitionTask'])->whereIn('action', ['start', 'pause', 'finish'])->name('work-tasks.transition')->middleware('role:super_admin|admin|manager|service_advisor|mekanik');
+
+        Route::get('/findings', [ApiWorkshopController::class, 'findings'])->name('findings.index');
+        Route::get('/findings/{finding}', [ApiWorkshopController::class, 'showFinding'])->name('findings.show');
+        Route::get('/services/{service}/inspections', [ApiWorkshopController::class, 'inspections'])->name('services.inspections');
+
+        Route::get('/technicians', [ApiWorkshopController::class, 'technicians'])->name('technicians.index');
+        Route::get('/branches', [ApiWorkshopController::class, 'branches'])->name('branches.index');
+        Route::get('/notifications', [ApiWorkshopController::class, 'notifications'])->name('notifications.index');
+        Route::post('/device-tokens', [ApiWorkshopController::class, 'registerDeviceToken'])->name('device-tokens.store');
+        Route::delete('/device-tokens', [ApiWorkshopController::class, 'unregisterDeviceToken'])->name('device-tokens.destroy');
+
+        // Vehicle & service photos (multipart). Scoped through parent (branch-safe 404).
+        Route::post('/vehicles/{vehicle}/images', [ApiVehicleController::class, 'uploadImage'])->name('vehicles.images.store')->middleware('role:super_admin|admin|manager|service_advisor|mekanik');
+        Route::delete('/vehicles/{vehicle}/images/{image}', [ApiVehicleController::class, 'deleteImage'])->name('vehicles.images.destroy')->middleware('role:super_admin|admin|manager|service_advisor');
+        Route::post('/services/{service}/images', [ApiServiceController::class, 'uploadImage'])->name('services.images.store')->middleware('role:super_admin|admin|manager|service_advisor|mekanik');
+        Route::delete('/services/{service}/images/{image}', [ApiServiceController::class, 'deleteImage'])->name('services.images.destroy')->middleware('role:super_admin|admin|manager|service_advisor');
     });
 });

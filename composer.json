@@ -2,9 +2,9 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "laravel/laravel",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
-    "license": "MIT",
+    "description": "Bengkel Paten — multi-branch workshop ERP (commercial).",
+    "keywords": ["laravel", "framework", "workshop", "erp"],
+    "license": "proprietary",
     "require": {
         "php": "^8.3",
         "barryvdh/laravel-dompdf": "^3.1",
@@ -12,7 +12,7 @@
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^3.0",
         "maatwebsite/excel": "^3.1",
-        "mike42/escpos-php": "*",
+        "mike42/escpos-php": "^5.0",
         "spatie/laravel-permission": "^7.4"
     },
     "require-dev": {

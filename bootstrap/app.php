@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\RequirePair;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -32,10 +33,13 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             RequirePair::class,
+            SecurityHeaders::class,
         ]);
 
         $middleware->api(prepend: [
             EnsureFrontendRequestsAreStateful::class,
+        ], append: [
+            SecurityHeaders::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

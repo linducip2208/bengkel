@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ServiceImageResource;
 use App\Http\Resources\ServiceResource;
 use App\Models\Service;
 use App\Services\ServiceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ApiServiceController extends Controller
 {
@@ -130,5 +132,38 @@ class ApiServiceController extends Controller
             'service' => new ServiceResource($service->fresh(['invoice', 'technicians'])),
             'invoice_id' => $result['invoice']?->id,
         ]);
+    }
+
+    public function uploadImage(Request $request, Service $service): JsonResponse
+    {
+        $validated = $request->validate([
+            'image' => ['required', 'image', 'mimes:jpeg,png,webp', 'max:5120'],
+            'type' => ['nullable', 'string', 'max:50'],
+            'caption' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        // store() generates a random hashed filename on the public disk.
+        $path = $request->file('image')->store('service-images', 'public');
+
+        $image = $service->images()->create([
+            'image_path' => $path,
+            'type' => $validated['type'] ?? null,
+            'caption' => $validated['caption'] ?? null,
+        ]);
+
+        return response()->json([
+            'message' => 'Foto berhasil diunggah.',
+            'data' => array_merge((new ServiceImageResource($image))->toArray($request), [
+                'url' => url(Storage::url($path)),
+            ]),
+        ], 201);
+    }
+
+    public function deleteImage(Service $service, int $image): JsonResponse
+    {
+        // Scoped through the branch-checked service: cross-branch ids 404.
+        $service->images()->findOrFail($image)->delete();
+
+        return response()->json(['message' => 'Foto dihapus.']);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Branch;
 use App\Models\ServiceEstimate;
 use App\Models\User;
 use App\Services\EstimateService;
@@ -23,7 +24,7 @@ class EstimateAuthorizationTest extends EstimateTestCase
             $user->givePermissionTo($permission);
         }
         if (! in_array($role, ['super_admin', 'admin'], true)) {
-            $branch = \App\Models\Branch::create(['name' => 'Cabang Uji '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
+            $branch = Branch::create(['name' => 'Cabang Uji '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
             $user->branches()->sync([$branch->id]);
         }
         $this->actingAs($user);
