@@ -39,6 +39,8 @@
                     <tr><td colspan="3" class="text-end text-success">Voucher {{ $vu->voucher?->code }}</td><td class="text-end text-success">- @money($vu->discount_applied)</td></tr>
                     @endforeach
                     <tr><th colspan="3" class="text-end">TOTAL</th><th class="text-end">@money($invoice->grand_total)</th></tr>
+                    @php $dpRow = $dpAmount ?? (float) ($invoice->dp_amount ?? 0); @endphp
+                    @if($dpRow > 0)<tr><td colspan="3" class="text-end">Down Payment (DP)</td><td class="text-end">- @money($dpRow)</td></tr>@endif
                     <tr><td colspan="3" class="text-end">Dibayar</td><td class="text-end">@money($totalPaid)</td></tr>
                     <tr><td colspan="3" class="text-end">Sisa</td><td class="text-end fw-bold text-danger">@money($remaining)</td></tr>
                 </tfoot>

@@ -339,7 +339,7 @@ class ReportService
             ->map(function ($inv) use ($today) {
                 $dueDate = Carbon::parse($inv->due_date ?? $inv->invoice_date)->startOfDay();
                 $inv->days_overdue = $dueDate->lt($today) ? (int) $dueDate->diffInDays($today) : 0;
-                $inv->remaining = max($inv->grand_total - ($inv->paid_amount ?? 0), 0);
+                $inv->remaining = max($inv->grand_total - ($inv->paid_amount ?? 0) - max(0, (float) ($inv->dp_amount ?? 0)), 0);
                 $inv->age_group = match (true) {
                     $inv->days_overdue <= 0 => 'current',
                     $inv->days_overdue <= 30 => '1-30',

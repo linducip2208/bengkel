@@ -100,7 +100,7 @@
     <div class="card-body py-2">
         @foreach($findings as $finding)
         <div class="d-flex justify-content-between align-items-center border-bottom py-2 gap-2 small">
-            <span><span class="badge bg-warning text-dark me-1">{{ $finding->finding_number }}</span><strong>{{ $finding->title }}</strong>@if($finding->measurement_value !== null) <span class="text-muted">{{ $finding->measurement_value }} {{ $finding->measurement_unit }}</span>@endif</span>
+            <span><span class="badge bg-warning text-dark me-1">{{ $finding->finding_number }}</span><strong>{{ $finding->title }}</strong>@if($finding->measurementLabel() !== null) <span class="text-muted">{{ $finding->measurementLabel() }}</span>@endif</span>
             <span class="badge bg-light text-dark">{{ \App\Models\ServiceFinding::STATUS_LABELS[$finding->status] ?? $finding->status }}</span>
         </div>
         @endforeach

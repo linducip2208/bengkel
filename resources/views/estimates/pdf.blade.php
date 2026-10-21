@@ -155,7 +155,7 @@
                     @endif
                     @if($group->finding)
                         <div style="color:#555; margin-top:3px;">Temuan: {{ $group->finding->finding_number }} · {{ $group->finding->title }}</div>
-                        @if($group->finding->measurement_value !== null)<div style="color:#555; font-size:9px;">Hasil: {{ $group->finding->measurement_value }} {{ $group->finding->measurement_unit }}</div>@endif
+                        @if($group->finding->measurementLabel() !== null)<div style="color:#555; font-size:9px;">Hasil: {{ $group->finding->measurementLabel() }}</div>@endif
                         @if($group->finding->recommendation)<div style="color:#555; font-size:9px;">Rekomendasi: {{ $group->finding->recommendation }}</div>@endif
                     @endif
                     @if($group->standard_minutes > 0)

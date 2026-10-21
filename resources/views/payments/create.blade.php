@@ -17,15 +17,19 @@
             </div>
         </div>
         <div class="row mt-2">
-            <div class="col-4">
+            <div class="col-3">
                 <small class="text-muted">Total Invoice</small>
                 <div><strong>@money($invoice->grand_total)</strong></div>
             </div>
-            <div class="col-4">
+            <div class="col-3">
+                <small class="text-muted">Down Payment (DP)</small>
+                <div>@money($dpAmount ?? $invoice->dp_amount ?? 0)</div>
+            </div>
+            <div class="col-3">
                 <small class="text-muted">Sudah Dibayar</small>
                 <div>@money($invoice->paid_amount)</div>
             </div>
-            <div class="col-4">
+            <div class="col-3">
                 <small class="text-muted">Sisa</small>
                 <div><strong class="text-danger">@money($remaining)</strong></div>
             </div>

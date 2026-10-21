@@ -71,6 +71,9 @@ class InvoiceController extends Controller
         try {
             $invoice = $this->invoiceService->create($request->validated());
         } catch (\Throwable $e) {
+            if ($e instanceof ValidationException) {
+                throw $e;
+            }
             report($e);
 
             return back()->withInput()->with('error', $this->invoiceSaveError($e));
@@ -86,10 +89,11 @@ class InvoiceController extends Controller
     {
         $invoice->load(['items', 'customer', 'vehicle', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod', 'paymentMethod']);
         $totalPaid = (float) $invoice->paid_amount;
-        $remaining = max($invoice->grand_total - $totalPaid, 0);
+        $dpAmount = max(0, (float) ($invoice->dp_amount ?? 0));
+        $remaining = max($invoice->grand_total - $totalPaid - $dpAmount, 0);
         $settings = app(SettingsService::class)->getCompanyInfo();
 
-        return view('invoices.show', compact('invoice', 'totalPaid', 'remaining', 'settings'));
+        return view('invoices.show', compact('invoice', 'totalPaid', 'dpAmount', 'remaining', 'settings'));
     }
 
     public function edit(Invoice $invoice): View
@@ -112,6 +116,9 @@ class InvoiceController extends Controller
         try {
             $this->invoiceService->update($invoice, $request->validated());
         } catch (\Throwable $e) {
+            if ($e instanceof ValidationException) {
+                throw $e;
+            }
             report($e);
 
             return back()->withInput()->with('error', $this->invoiceSaveError($e));
@@ -137,7 +144,7 @@ class InvoiceController extends Controller
 
     public function destroy(Invoice $invoice): RedirectResponse
     {
-        abort_if($invoice->paymentRecords()->exists(), 403, 'Invoice yang sudah memiliki pembayaran tidak dapat dihapus.');
+        abort_if($invoice->paymentRecords()->exists() || $invoice->collectedValue() > 0.009, 403, 'Invoice yang sudah memiliki pembayaran/DP tidak dapat dihapus.');
         $this->authorize('invoices.delete');
 
         $invoice->load('items');
@@ -185,10 +192,11 @@ class InvoiceController extends Controller
 
         $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
         $totalPaid = (float) $invoice->paid_amount;
-        $remaining = max($invoice->grand_total - $totalPaid, 0);
+        $dpAmount = max(0, (float) ($invoice->dp_amount ?? 0));
+        $remaining = max($invoice->grand_total - $totalPaid - $dpAmount, 0);
         $settings = app(SettingsService::class)->getCompanyInfo();
 
-        $pdf = Pdf::loadView($view, compact('invoice', 'totalPaid', 'remaining', 'settings'));
+        $pdf = Pdf::loadView($view, compact('invoice', 'totalPaid', 'dpAmount', 'remaining', 'settings'));
         if (is_array($paperSize)) {
             $pdf->setPaper($paperSize);
         } else {
@@ -211,10 +219,11 @@ class InvoiceController extends Controller
 
         $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
         $totalPaid = (float) $invoice->paid_amount;
-        $remaining = max($invoice->grand_total - $totalPaid, 0);
+        $dpAmount = max(0, (float) ($invoice->dp_amount ?? 0));
+        $remaining = max($invoice->grand_total - $totalPaid - $dpAmount, 0);
         $settings = app(SettingsService::class)->getCompanyInfo();
 
-        return view($view, compact('invoice', 'totalPaid', 'remaining', 'settings', 'template'));
+        return view($view, compact('invoice', 'totalPaid', 'dpAmount', 'remaining', 'settings', 'template'));
     }
 
     public function sendEmail(Invoice $invoice): RedirectResponse
@@ -228,12 +237,13 @@ class InvoiceController extends Controller
         }
 
         $totalPaid = (float) $invoice->paid_amount;
-        $remaining = max($invoice->grand_total - $totalPaid, 0);
+        $dpAmount = max(0, (float) ($invoice->dp_amount ?? 0));
+        $remaining = max($invoice->grand_total - $totalPaid - $dpAmount, 0);
 
         try {
             $settings = app(SettingsService::class)->getCompanyInfo();
             [$view, $paperSize, $template] = $this->resolveTemplateView();
-            $pdf = Pdf::loadView($view, compact('invoice', 'totalPaid', 'remaining', 'settings'));
+            $pdf = Pdf::loadView($view, compact('invoice', 'totalPaid', 'dpAmount', 'remaining', 'settings'));
             if (! is_array($paperSize)) {
                 $pdf->setPaper($paperSize);
             }
@@ -244,6 +254,7 @@ class InvoiceController extends Controller
             $body = view('invoices.email-body', [
                 'invoice' => $invoice,
                 'totalPaid' => $totalPaid,
+                'dpAmount' => $dpAmount,
                 'remaining' => $remaining,
                 'appName' => $appName,
             ])->render();
@@ -297,7 +308,20 @@ class InvoiceController extends Controller
             $phone = '62'.substr($phone, 1);
         }
 
-        $text = urlencode("Halo {$invoice->customer->name}, berikut invoice Anda:\n*{$invoice->invoice_number}*\nTotal: Rp ".number_format($invoice->grand_total, 0, ',', '.')."\n\nTerima kasih.");
+        $dpAmount = max(0, (float) ($invoice->dp_amount ?? 0));
+        $remaining = max((float) $invoice->grand_total - (float) $invoice->paid_amount - $dpAmount, 0);
+        $lines = [
+            "Halo {$invoice->customer->name}, berikut invoice Anda:",
+            "*{$invoice->invoice_number}*",
+            'Total: Rp '.number_format($invoice->grand_total, 0, ',', '.'),
+        ];
+        if ($dpAmount > 0) {
+            $lines[] = 'DP: Rp '.number_format($dpAmount, 0, ',', '.');
+        }
+        $lines[] = 'Sisa: Rp '.number_format($remaining, 0, ',', '.');
+        $lines[] = '';
+        $lines[] = 'Terima kasih.';
+        $text = urlencode(implode("\n", $lines));
         $url = "https://wa.me/{$phone}?text={$text}";
 
         return redirect()->away($url);

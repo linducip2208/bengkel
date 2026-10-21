@@ -47,7 +47,7 @@ class WorkshopProgressService
         $finished = $tasks->whereIn('status', [ServiceWorkTask::STATUS_COMPLETED, ServiceWorkTask::STATUS_QC_PENDING, ServiceWorkTask::STATUS_QC_PASSED, ServiceWorkTask::STATUS_QC_FAILED]);
         $qcPassed = $executable->where('status', ServiceWorkPackage::STATUS_QC_PASSED);
         $invoice = $service->invoice;
-        $paid = $invoice ? max((float) $invoice->paid_amount, (float) $invoice->paymentRecords->sum('amount')) : 0.0;
+        $paid = $invoice ? max((float) $invoice->paid_amount, (float) $invoice->paymentRecords->sum('amount')) + max(0, (float) ($invoice->dp_amount ?? 0)) : 0.0;
         $paidInFull = $invoice && $paid >= (float) $invoice->grand_total - 0.009;
         $released = $service->released_at !== null || GatePass::query()->where('service_id', $service->id)->where('status', 'out')->exists();
         $checklist = $this->checklist($points);

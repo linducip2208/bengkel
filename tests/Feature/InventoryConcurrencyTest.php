@@ -195,13 +195,21 @@ class InventoryConcurrencyTest extends TestCase
 
         $product = $this->makeProduct(1);
 
-        $base = realpath(__DIR__.'/../..');
-        $script = $base.'/storage/app/testing/consume_once.php';
-        @mkdir(dirname($script), 0777, true);
+        // RefreshDatabase wraps the test in an open transaction, which child
+        // PHP processes cannot see. Commit once so the race runs against
+        // committed data, then clean up and re-open the transaction so the
+        // suite teardown stays balanced and later tests see a clean DB.
+        DB::commit();
 
-        file_put_contents($script, <<<'PHP'
+        try {
+            $base = realpath(__DIR__.'/../..');
+            $script = $base.'/storage/app/testing/consume_once.php';
+            @mkdir(dirname($script), 0777, true);
+
+            file_put_contents($script, <<<'PHP'
 <?php
-$base = dirname(__DIR__, 2);
+// argv[2] carries the project root (this script lives under storage/).
+$base = $argv[2];
 require $base.'/vendor/autoload.php';
 $app = require $base.'/bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
@@ -214,30 +222,54 @@ try {
 }
 PHP);
 
-        $run = fn () => new Process(['php', $script, (string) $product->id], $base, null, null, 30);
+            $run = function () use ($base, $script, $product) {
+                // Child CLI processes boot with .env (production DB!) — force them
+                // onto THIS test database so the race runs isolated and can never
+                // touch production stock.
+                $mysql = config('database.connections.mysql');
+                $env = [
+                    'APP_ENV' => 'testing',
+                    'DB_CONNECTION' => 'mysql',
+                    'DB_HOST' => $mysql['host'],
+                    'DB_PORT' => $mysql['port'],
+                    'DB_DATABASE' => $mysql['database'],
+                    'DB_USERNAME' => $mysql['username'],
+                    'DB_PASSWORD' => $mysql['password'],
+                ];
 
-        /** @var Process $p1 */
-        [$p1, $p2] = [$run(), $run()];
-        $p1->start();
-        $p2->start();
-        $out1 = trim($p1->wait()->getOutput());
-        $out2 = trim($p2->wait()->getOutput());
+                return new Process(['php', $script, (string) $product->id, $base], $base, $env, null, 30);
+            };
 
-        @unlink($script);
+            /** @var Process $p1 */
+            [$p1, $p2] = [$run(), $run()];
+            $p1->start();
+            $p2->start();
+            $p1->wait();
+            $p2->wait();
+            $out1 = trim($p1->getOutput());
+            $out2 = trim($p2->getOutput());
 
-        $results = [$out1, $out2];
-        sort($results);
+            @unlink($script);
 
-        $this->assertEquals(
-            ['CONSUMED', 'REJECTED'],
-            $results,
-            'Exactly one process may consume the last unit. Got: '.implode(' / ', [$out1, $out2])
-        );
+            $results = [$out1, $out2];
+            sort($results);
 
-        $this->assertEquals(
-            0,
-            (int) StockRecord::withoutGlobalScopes()->where('product_id', $product->id)->value('quantity'),
-            'Stock must land on exactly zero — never negative.'
-        );
+            $this->assertEquals(
+                ['CONSUMED', 'REJECTED'],
+                $results,
+                'Exactly one process may consume the last unit. Got: '.implode(' / ', [$out1, $out2])
+            );
+
+            $this->assertEquals(
+                0,
+                (int) StockRecord::withoutGlobalScopes()->where('product_id', $product->id)->value('quantity'),
+                'Stock must land on exactly zero — never negative.'
+            );
+        } finally {
+            StockHistory::withoutGlobalScopes()->where('product_id', $product->id)->forceDelete();
+            StockRecord::withoutGlobalScopes()->where('product_id', $product->id)->forceDelete();
+            $product->forceDelete();
+            DB::beginTransaction();
+        }
     }
 }

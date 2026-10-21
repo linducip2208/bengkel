@@ -135,7 +135,7 @@
                         @if($finding)
                         <div class="row g-2 small bg-light rounded p-2 my-3">
                             <div class="col-md-3"><span class="text-muted d-block">Status Pemeriksaan</span>{{ \App\Models\ServiceFinding::SEVERITY_LABELS[$finding->severity] ?? $finding->severity }}</div>
-                            @if($finding->measurement_value !== null)<div class="col-md-3"><span class="text-muted d-block">Hasil Pemeriksaan</span>{{ $finding->measurement_value }} {{ $finding->measurement_unit }}</div>@endif
+                            @if($finding->measurementLabel() !== null)<div class="col-md-3"><span class="text-muted d-block">Hasil Pemeriksaan</span>{{ $finding->measurementLabel() }}</div>@endif
                             @if($finding->recommendation)<div class="col-md-6"><span class="text-muted d-block">Rekomendasi</span>{{ $finding->recommendation }}</div>@endif
                         </div>
                         @endif

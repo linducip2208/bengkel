@@ -28,6 +28,7 @@ class Invoice extends Model
             'grand_total' => 'decimal:2',
             'paid_amount' => 'decimal:2',
             'amount_received' => 'decimal:2',
+            'dp_amount' => 'decimal:2',
         ];
     }
 
@@ -88,6 +89,51 @@ class Invoice extends Model
     public function getSubtotalAttribute(): float
     {
         return (float) ($this->total_amount ?? 0);
+    }
+
+    /**
+     * Uang muka yang sudah diterima di awal (kolom invoices.dp_amount).
+     * Mengurangi sisa tagihan bersama paid_amount dari payment_records.
+     */
+    public function dpValue(): float
+    {
+        return max(0, (float) ($this->dp_amount ?? 0));
+    }
+
+    /** Total yang sudah tertutup = pembayaran tercatat + DP. */
+    public function collectedValue(): float
+    {
+        return round((float) ($this->paid_amount ?? 0) + $this->dpValue(), 2);
+    }
+
+    /** Sisa tagihan setelah dikurangi pembayaran tercatat dan DP. */
+    public function remainingValue(): float
+    {
+        return max(round((float) ($this->grand_total ?? 0) - $this->collectedValue(), 2), 0);
+    }
+
+    public static function resolvePaymentStatus(float $collected, float $grandTotal): int
+    {
+        if ($collected >= $grandTotal - 0.009 && $grandTotal > 0) {
+            return 2;
+        }
+        if ($collected > 0.009) {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    public static function resolveDpStatus(float $dpAmount, float $grandTotal): string
+    {
+        if ($dpAmount <= 0.009) {
+            return 'none';
+        }
+        if ($dpAmount >= $grandTotal - 0.009 && $grandTotal > 0) {
+            return 'full_paid';
+        }
+
+        return 'dp_paid';
     }
 
     public function getOrCreatePublicToken(): string

@@ -64,7 +64,9 @@
             @forelse ($invoices as $invoice)
                 @php
                     $totalPaid = $invoice->paymentRecords->sum('amount');
-                    $remaining = max($invoice->grand_total - $totalPaid, 0);
+                    $dpRow = max(0, (float) ($invoice->dp_amount ?? 0));
+                    $remaining = max($invoice->grand_total - $totalPaid - $dpRow, 0);
+                    $collected = $totalPaid + $dpRow;
                 @endphp
                 <tr>
                     <td><strong>{{ $invoice->invoice_number }}</strong></td>
@@ -74,7 +76,7 @@
                     <td><span class="badge bg-secondary">{{ $invoice->invoice_type }}</span></td>
                     <td>{{ $invoice->invoice_date->format('d/m/Y') }}</td>
                     <td>@money($invoice->grand_total)</td>
-                    <td>@money($totalPaid)</td>
+                    <td>@money($collected)@if($dpRow > 0)<br><small class="text-muted">termasuk DP @money($dpRow)</small>@endif</td>
                     <td>@money($remaining)</td>
                     <td>
                         @if ($invoice->status === 'full_paid')

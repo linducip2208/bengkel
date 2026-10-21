@@ -34,7 +34,7 @@ class PaymentGatewayService
             throw new \RuntimeException('Belum ada Payment Gateway aktif. Setup dulu di /payment-gateways.');
         }
 
-        $remaining = (float) $invoice->grand_total - (float) $invoice->paymentRecords()->sum('amount');
+        $remaining = (float) $invoice->grand_total - (float) $invoice->paymentRecords()->sum('amount') - max(0, (float) ($invoice->dp_amount ?? 0));
         if ($remaining <= 0) {
             throw new \RuntimeException('Invoice sudah lunas.');
         }

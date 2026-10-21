@@ -16,7 +16,8 @@ class PublicInvoiceController extends Controller
             ->firstOrFail();
 
         $totalPaid = (float) $invoice->paid_amount;
-        $remaining = max((float) $invoice->grand_total - $totalPaid, 0);
+        $dpAmount = max(0, (float) ($invoice->dp_amount ?? 0));
+        $remaining = max((float) $invoice->grand_total - $totalPaid - $dpAmount, 0);
 
         $settingsService = app(SettingsService::class);
         $settings = $settingsService->getCompanyInfo();
@@ -26,6 +27,7 @@ class PublicInvoiceController extends Controller
         return view('public.invoice', compact(
             'invoice',
             'totalPaid',
+            'dpAmount',
             'remaining',
             'settings',
             'accentColor',

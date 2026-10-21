@@ -49,8 +49,16 @@ class InvoiceService extends BaseService
             $data['total_amount'] = round($totalAmount, 2);
             $data['grand_total'] = max(round($totalAmount + ($data['tax_amount'] ?? 0) - $data['discount'], 2), 0);
 
-            $data['dp_status'] = 'none';
-            $data['payment_status'] = 0;
+            // DP mengurangi sisa tagihan, jadi tidak boleh melebihi grand total.
+            $data['dp_amount'] = max(0, round((float) ($data['dp_amount'] ?? 0), 2));
+            if ($data['dp_amount'] > $data['grand_total'] + 0.009) {
+                throw ValidationException::withMessages([
+                    'dp_amount' => 'Down payment tidak boleh melebihi grand total ('.number_format($data['grand_total'], 0, ',', '.').').',
+                ]);
+            }
+
+            $data['dp_status'] = Invoice::resolveDpStatus($data['dp_amount'], $data['grand_total']);
+            $data['payment_status'] = Invoice::resolvePaymentStatus($data['dp_amount'], $data['grand_total']);
             $data['paid_amount'] = 0;
             $data['amount_received'] = 0;
 
@@ -138,8 +146,17 @@ class InvoiceService extends BaseService
             $data['total_amount'] = round($totalAmount, 2);
             $data['grand_total'] = max(round($totalAmount + ($data['tax_amount'] ?? 0) - $data['discount'], 2), 0);
 
-            $data['dp_status'] = 'none';
+            $dpAmount = max(0, round((float) ($data['dp_amount'] ?? $invoice->dp_amount ?? 0), 2));
+            if ($dpAmount > $data['grand_total'] + 0.009) {
+                throw ValidationException::withMessages([
+                    'dp_amount' => 'Down payment tidak boleh melebihi grand total ('.number_format($data['grand_total'], 0, ',', '.').').',
+                ]);
+            }
+
+            $data['dp_amount'] = $dpAmount;
+            $data['dp_status'] = Invoice::resolveDpStatus($dpAmount, $data['grand_total']);
             unset($data['payment_status'], $data['paid_amount'], $data['amount_received']);
+            $data['payment_status'] = Invoice::resolvePaymentStatus($dpAmount, $data['grand_total']);
 
             ksort($deltas); // deterministic lock order
 

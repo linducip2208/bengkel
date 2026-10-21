@@ -26,7 +26,7 @@ upload foto kendaraan & servis via API (MIME+size, nama acak, 404 lintas cabang,
 file ikut terhapus) + perbaikan IDOR `deleteImage` web,
 `ApiWorkshopContractTest` (9 tests), `composer update` (framework dkk),
 `npm audit fix`, health check database+cache+queue, CI audit non-blocking,
-`docs/flutter-api-contract.md`, `docs/ARCHITECTURE_DECISIONS.md`, `LICENSE`, dokumen ini.
+`docs/FLUTTER-API-CONTRACT.md`, `docs/ARCHITECTURE_DECISIONS.md`, `LICENSE`, dokumen ini.
 
 ## 2. Skor per domain
 

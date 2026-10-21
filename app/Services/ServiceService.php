@@ -189,7 +189,8 @@ class ServiceService extends BaseService
             ->pluck('total', 'product_id');
 
         $invoice = Invoice::query()->where('service_id', $service->id)->first();
-        $paidAmount = $invoice ? (float) $invoice->paymentRecords()->sum('amount') : 0.0;
+        $dpAmount = $invoice ? max(0, (float) ($invoice->dp_amount ?? 0)) : 0.0;
+        $paidAmount = $invoice ? (float) $invoice->paymentRecords()->sum('amount') + $dpAmount : 0.0;
 
         $estimateSummary = app(EstimateService::class)->reconciliation($service);
         // Source of truth before invoicing = active approved estimate.
@@ -589,7 +590,7 @@ class ServiceService extends BaseService
         $service = Service::findOrFail($id);
 
         $request->validate([
-            'image' => 'required|image|max:5120',
+            'image' => 'required|image|mimes:jpeg,png,webp|max:5120',
             'type' => 'required|in:before,after,progress',
             'caption' => 'nullable|string|max:255',
         ]);

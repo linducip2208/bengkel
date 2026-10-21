@@ -1,7 +1,7 @@
 # Architecture Decisions (ADRs — ringkas)
 
 Keputusan arsitektur yang mengikat untuk Bengkel Paten. Detail alur:
-`README.md` (canonical workshop flow), kontrak API: `docs/flutter-api-contract.md`.
+`README.md` (canonical workshop flow), kontrak API: `docs/FLUTTER-API-CONTRACT.md`.
 
 ## ADR-1: Laravel single source of truth
 Seluruh business logic di service/domain layer (`app/Services`).

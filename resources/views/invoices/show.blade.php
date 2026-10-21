@@ -208,6 +208,14 @@
                             <td class="text-end"><strong>@money($invoice->grand_total)</strong></td>
                             <td></td>
                         </tr>
+                        @php $dpAmount = $dpAmount ?? (float) ($invoice->dp_amount ?? 0); @endphp
+                        @if($dpAmount > 0)
+                        <tr>
+                            <td colspan="5" class="text-end">Down Payment (DP)</td>
+                            <td class="text-end">- @money($dpAmount)</td>
+                            <td></td>
+                        </tr>
+                        @endif
                         <tr>
                             <td colspan="5" class="text-end text-success">Total Dibayar</td>
                             <td class="text-end text-success">@money($totalPaid)</td>

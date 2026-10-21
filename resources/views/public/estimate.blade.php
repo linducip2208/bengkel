@@ -79,7 +79,7 @@
                                     <div class="small text-muted">Temuan: {{ $finding->finding_number }} · {{ $finding->title }}</div>
                                     <span class="badge bg-{{ (\App\Models\ServiceFinding::SEVERITY_COLORS[$finding->severity] ?? 'secondary') === 'orange' ? 'warning text-dark' : (\App\Models\ServiceFinding::SEVERITY_COLORS[$finding->severity] ?? 'secondary') }} mt-2">{{ \App\Models\ServiceFinding::SEVERITY_LABELS[$finding->severity] ?? $finding->severity }}</span>
                                     <small class="text-muted ms-1">dari checklist {{ strtolower(\App\Models\ServiceFinding::SEVERITY_LABELS[$finding->severity] ?? $finding->severity) }}</small>
-                                    @if($finding->measurement_value !== null)<div class="small mt-2"><strong>Hasil Pemeriksaan:</strong> {{ $finding->measurement_value }} {{ $finding->measurement_unit }}</div>@endif
+                                    @if($finding->measurementLabel() !== null)<div class="small mt-2"><strong>Hasil Pemeriksaan:</strong> {{ $finding->measurementLabel() }}</div>@endif
                                     @if($finding->recommendation)<div class="small mt-1"><strong>Rekomendasi:</strong> {{ $finding->recommendation }}</div>@endif
                                 @else
                                     <span class="badge bg-secondary mt-2">Pekerjaan Tambahan / Manual</span>

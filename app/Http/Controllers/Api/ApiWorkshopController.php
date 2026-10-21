@@ -146,12 +146,15 @@ class ApiWorkshopController extends Controller
 
     public function transitionTask(ServiceWorkTask $task, string $action, WorkshopFlowService $flow): JsonResponse
     {
-        if (! in_array($action, ['start', 'pause', 'finish'], true)) {
+        // resume = start dari paused (startTask menangani keduanya, idempoten).
+        $method = $action === 'resume' ? 'startTask' : $action.'Task';
+
+        if (! in_array($action, ['start', 'pause', 'resume', 'finish'], true)) {
             return response()->json(['message' => 'Aksi tidak valid.'], 422);
         }
 
         try {
-            $task = $flow->{$action.'Task'}($task, auth()->id());
+            $task = $flow->{$method}($task, auth()->id());
         } catch (\Throwable $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }

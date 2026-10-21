@@ -36,9 +36,12 @@ class PaymentController extends Controller
         $invoice->load(['customer', 'paymentRecords']);
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
         $totalPaid = (float) $invoice->paid_amount;
-        $remaining = max($invoice->grand_total - $totalPaid, 0);
+        $dpAmount = max(0, (float) ($invoice->dp_amount ?? 0));
+        $remaining = max($invoice->grand_total - $totalPaid - $dpAmount, 0);
 
-        return view('payments.create', compact('invoice', 'paymentMethods', 'remaining'));
+        abort_if($remaining <= 0, 403, 'Invoice sudah lunas (termasuk DP), tidak ada sisa tagihan.');
+
+        return view('payments.create', compact('invoice', 'paymentMethods', 'dpAmount', 'remaining'));
     }
 
     public function history(Invoice $invoice): View

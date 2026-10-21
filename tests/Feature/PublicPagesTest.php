@@ -3,6 +3,12 @@
 namespace Tests\Feature;
 
 use App\Http\Middleware\RequirePair;
+use App\Models\Customer;
+use App\Models\Service;
+use App\Models\User;
+use App\Models\Vehicle;
+use App\Models\VehicleBrand;
+use App\Models\VehicleType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -138,6 +144,48 @@ class PublicPagesTest extends TestCase
         // Unknown token must be handled gracefully (404 page, no crash).
         $response = $this->get('/track/test-token');
         $this->assertTrue(in_array($response->status(), [200, 404]));
+    }
+
+    public function test_tracking_page_with_real_token_renders(): void
+    {
+        $admin = User::factory()->create(['is_active' => true]);
+        $admin->assignRole(Role::findOrCreate('admin', 'web'));
+        $this->actingAs($admin);
+
+        $customer = Customer::create(['name' => 'Lacak', 'phone' => '081777']);
+        $type = VehicleType::create(['vehicle_type' => 'MPV', 'slug' => 'mpv-'.uniqid()]);
+        $brand = VehicleBrand::create(['vehicle_type_id' => $type->id, 'vehicle_brand' => 'Toyota']);
+        $vehicle = Vehicle::create([
+            'customer_id' => $customer->id,
+            'vehicle_type_id' => $type->id,
+            'vehicle_brand_id' => $brand->id,
+            'number_plate' => 'B 7777 TRK',
+        ]);
+        $service = Service::create([
+            'customer_id' => $customer->id,
+            'vehicle_id' => $vehicle->id,
+            'title' => 'Servis lacak',
+            'service_date' => now()->toDateString(),
+            'created_by' => $admin->id,
+        ]);
+
+        $token = $service->getOrCreateTrackingToken();
+        $this->assertNotEmpty($token);
+        $this->assertSame($token, $service->fresh()->getOrCreateTrackingToken());
+
+        $this->get('/track/'.$token)
+            ->assertOk()
+            ->assertSee('Lacak');
+
+        // Review submit through the token link works and stays unpublished.
+        $this->post('/track/'.$token.'/review', [
+            'reviewer_name' => 'Pelanggan',
+            'rating' => 5,
+            'comment' => 'Bagus',
+        ])->assertRedirect('/track/'.$token);
+        $this->assertDatabaseHas('reviews', [
+            'service_id' => $service->id, 'rating' => 5, 'is_published' => false,
+        ]);
     }
 
     public function test_best_service_seo_page(): void

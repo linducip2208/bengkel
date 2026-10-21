@@ -61,7 +61,7 @@ jobs:
       - name: Dependency audit (Composer, non-blocking)
         run: composer audit || true
 
-      - name: Run test suite
+      - name: Run test suite (sqlite)
         run: php artisan test --compact
         env:
           DB_CONNECTION: sqlite
@@ -90,3 +90,72 @@ jobs:
 
       - name: Dependency audit (npm, non-blocking)
         run: npm audit || true
+
+  tests-mysql:
+    name: PHP 8.3 — MySQL integration (incl. parallel race test)
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: bengkel_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, gd, zip, intl, dom, xml, xmlwriter, xmlreader, simplexml, libxml, iconv, openssl, zlib, fileinfo, bcmath, curl
+          coverage: none
+
+      - name: Prepare Laravel directories
+        run: |
+          mkdir -p storage/framework/cache/data
+          mkdir -p storage/framework/sessions
+          mkdir -p storage/framework/views
+          mkdir -p storage/framework/testing
+          mkdir -p bootstrap/cache
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env.ci
+          php -r "file_exists('.env') || copy('.env.ci', '.env');"
+          php artisan key:generate --force
+
+      - name: Fresh migration and seed (MySQL)
+        run: php artisan migrate:fresh --seed --force
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: bengkel_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+
+      - name: Run full suite on MySQL
+        run: php artisan test --compact
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: bengkel_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+          QUEUE_CONNECTION: sync
+          SESSION_DRIVER: array
+          CACHE_STORE: array
+          MAIL_MAILER: array

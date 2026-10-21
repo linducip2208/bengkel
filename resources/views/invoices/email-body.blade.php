@@ -24,6 +24,13 @@
             <td style="padding: 6px 10px; background: #f3f4f6; border: 1px solid #e5e7eb;"><b>Total</b></td>
             <td style="padding: 6px 10px; border: 1px solid #e5e7eb;">@money($invoice->grand_total)</td>
         </tr>
+        @php $dpRow = $dpAmount ?? (float) ($invoice->dp_amount ?? 0); @endphp
+        @if($dpRow > 0)
+        <tr>
+            <td style="padding: 6px 10px; background: #f3f4f6; border: 1px solid #e5e7eb;"><b>Down Payment (DP)</b></td>
+            <td style="padding: 6px 10px; border: 1px solid #e5e7eb;">- @money($dpRow)</td>
+        </tr>
+        @endif
         <tr>
             <td style="padding: 6px 10px; background: #f3f4f6; border: 1px solid #e5e7eb;"><b>Sudah Dibayar</b></td>
             <td style="padding: 6px 10px; border: 1px solid #e5e7eb;">@money($totalPaid)</td>

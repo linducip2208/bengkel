@@ -200,7 +200,7 @@ class ServiceEstimate extends Model
         return $this->hasOne(Invoice::class);
     }
 
-    /** Work-package groups within this estimate (per-package approval). */
+    /** Work-package groups within this estimate (per-package approval). @return HasMany<ServiceEstimateGroup, $this> */
     public function groups(): HasMany
     {
         return $this->hasMany(ServiceEstimateGroup::class)

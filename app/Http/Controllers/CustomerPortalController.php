@@ -86,9 +86,10 @@ class CustomerPortalController extends Controller
             ->findOrFail($id);
 
         $totalPaid = (float) $invoice->paid_amount;
-        $remaining = max($invoice->grand_total - $totalPaid, 0);
+        $dpAmount = max(0, (float) ($invoice->dp_amount ?? 0));
+        $remaining = max($invoice->grand_total - $totalPaid - $dpAmount, 0);
 
-        return view('public.customer-invoice', compact('customer', 'invoice', 'totalPaid', 'remaining'));
+        return view('public.customer-invoice', compact('customer', 'invoice', 'totalPaid', 'dpAmount', 'remaining'));
     }
 
     public function serviceDetail($id)

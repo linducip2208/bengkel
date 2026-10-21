@@ -41,10 +41,12 @@ class PaymentService extends BaseService
             // Re-read under lock to get authoritative paid_amount.
             $locked = Invoice::query()->whereKey($invoice->id)->lockForUpdate()->first();
 
-            // Guard overpayment — jangan izinkan bayar melebihi sisa tagihan
+            // Guard overpayment — jangan izinkan bayar melebihi sisa tagihan.
+            // Sisa = grand total - pembayaran tercatat - DP.
             $alreadyPaid = round((float) $locked->paid_amount, 2);
+            $dpAmount = round(max(0, (float) ($locked->dp_amount ?? 0)), 2);
             $grandTotal = round((float) $locked->grand_total, 2);
-            $remaining = round($grandTotal - $alreadyPaid, 2);
+            $remaining = round($grandTotal - $alreadyPaid - $dpAmount, 2);
 
             if ($remaining <= 0) {
                 throw new \RuntimeException('Invoice sudah lunas, tidak ada sisa tagihan.');
@@ -77,10 +79,14 @@ class PaymentService extends BaseService
 
             $wasAlreadyPaid = $locked->payment_status >= 2;
             $newPaid = round($alreadyPaid + $amount, 2);
+            $collected = round($newPaid + $dpAmount, 2);
             $locked->update([
                 'paid_amount' => $newPaid,
                 'amount_received' => $newPaid,
-                'payment_status' => $newPaid >= $grandTotal - 0.009 ? 2 : 1,
+                'payment_status' => Invoice::resolvePaymentStatus($collected, $grandTotal),
+                'dp_status' => $dpAmount > 0.009 && $collected >= $grandTotal - 0.009
+                    ? 'full_paid'
+                    : $locked->dp_status,
             ]);
 
             if ($locked->service_id && (int) $locked->payment_status === 2) {

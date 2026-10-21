@@ -38,7 +38,7 @@ class EscalateOverdueInvoices extends Command
 
         foreach ($overdue as $invoice) {
             $totalPaid = $invoice->paymentRecords->sum('amount');
-            $remaining = max($invoice->grand_total - $totalPaid, 0);
+            $remaining = max($invoice->grand_total - $totalPaid - max(0, (float) ($invoice->dp_amount ?? 0)), 0);
 
             $this->line("Overdue: {$invoice->invoice_number} — {$invoice->customer->name} — Sisa: {$remaining}");
 

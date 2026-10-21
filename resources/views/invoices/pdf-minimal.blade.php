@@ -105,6 +105,8 @@
     @if($invoice->discount > 0)<div class="row"><span style="color:#888;">Diskon{{ $invoice->discount_type === 'percent' ? ' ' . $invoice->discount_percent . '%' : '' }}</span><span>- @money($invoice->discount)</span></div>@endif
     @if($invoice->tax_amount > 0)<div class="row"><span style="color:#888;">Pajak</span><span>@money($invoice->tax_amount)</span></div>@endif
     <div class="row total"><span>Total</span><span>@money($invoice->grand_total)</span></div>
+    @php $dpRow = $dpAmount ?? (float) ($invoice->dp_amount ?? 0); @endphp
+    @if($dpRow > 0)<div class="row paid"><span>Down Payment (DP)</span><span>- @money($dpRow)</span></div>@endif
     @if($totalPaid > 0)<div class="row paid"><span>Dibayar</span><span>- @money($totalPaid)</span></div>@endif
     @if($remaining > 0)<div class="row" style="font-weight:600;"><span>Sisa</span><span>@money($remaining)</span></div>@endif
 </div>

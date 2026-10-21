@@ -49,7 +49,7 @@
                         <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#wpModal"
                                 data-finding-id="{{ $finding->id }}" data-finding-title="{{ $finding->title }}"
                                 data-severity="{{ $finding->severity }}"
-                                data-measurement="{{ $finding->measurement_value !== null ? $finding->measurement_value.($finding->measurement_unit ? ' '.$finding->measurement_unit : '') : '' }}">
+                                data-measurement="{{ $finding->measurementLabel() ?? '' }}">
                             <i class="fas fa-briefcase me-1"></i> Buat Rencana Pekerjaan
                         </button>
                         @endif
@@ -83,9 +83,9 @@
                 <div class="row g-2 mt-1 small">
                     <div class="col-md-6">
                         @if($finding->description)<div><span class="text-muted">Temuan:</span> {{ $finding->description }}</div>@endif
-                        @if($finding->measurement_value !== null)
+                        @if($finding->measurementLabel() !== null)
                         <div><span class="text-muted">Measurement:</span>
-                            <strong>{{ rtrim(rtrim(number_format((float) $finding->measurement_value, 3, '.', ''), '0'), '.') }}{{ $finding->measurement_unit ? ' '.$finding->measurement_unit : '' }}</strong>
+                            <strong>{{ $finding->measurementLabel() }}</strong>
                         </div>
                         @endif
                         @if($finding->technician_note)<div><span class="text-muted">Catatan Teknisi:</span> {{ $finding->technician_note }}</div>@endif

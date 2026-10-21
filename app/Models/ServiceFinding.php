@@ -125,4 +125,15 @@ class ServiceFinding extends Model
     {
         return ! in_array($this->status, [self::STATUS_RESOLVED, self::STATUS_DEFERRED, self::STATUS_CANCELLED], true);
     }
+
+    /** Rendered measurement, e.g. "1.2 mm" — DB-agnostic (DECIMAL may pad zeros on MySQL). */
+    public function measurementLabel(): ?string
+    {
+        if ($this->measurement_value === null) {
+            return null;
+        }
+
+        return rtrim(rtrim(number_format((float) $this->measurement_value, 3, '.', ''), '0'), '.')
+            .($this->measurement_unit !== null ? ' '.$this->measurement_unit : '');
+    }
 }

@@ -25,8 +25,8 @@
                         @if($package->finding)
                         <div><strong>Original Finding:</strong>
                             <span class="badge {{ $package->finding->severity === 'critical' ? 'bg-danger' : 'bg-warning text-dark' }}">{{ $package->finding->title }}</span>
-                            @if($package->finding->measurement_value !== null)
-                                <span class="ms-1">{{ $package->finding->measurement_value }}{{ $package->finding->measurement_unit ? ' '.$package->finding->measurement_unit : '' }}</span>
+                            @if($package->finding->measurementLabel() !== null)
+                                <span class="ms-1">{{ $package->finding->measurementLabel() }}</span>
                             @endif
                         </div>
                         @endif

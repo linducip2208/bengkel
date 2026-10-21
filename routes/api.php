@@ -141,7 +141,7 @@ Route::prefix('v1')->name('api.')->group(function () {
 
         Route::get('/work-tasks', [ApiWorkshopController::class, 'workTasks'])->name('work-tasks.index');
         Route::get('/work-tasks/{workTask}', [ApiWorkshopController::class, 'showWorkTask'])->name('work-tasks.show');
-        Route::post('/work-tasks/{task}/{action}', [ApiWorkshopController::class, 'transitionTask'])->whereIn('action', ['start', 'pause', 'finish'])->name('work-tasks.transition')->middleware('role:super_admin|admin|manager|service_advisor|mekanik');
+        Route::post('/work-tasks/{task}/{action}', [ApiWorkshopController::class, 'transitionTask'])->whereIn('action', ['start', 'pause', 'resume', 'finish'])->name('work-tasks.transition')->middleware('role:super_admin|admin|manager|service_advisor|mekanik');
 
         Route::get('/findings', [ApiWorkshopController::class, 'findings'])->name('findings.index');
         Route::get('/findings/{finding}', [ApiWorkshopController::class, 'showFinding'])->name('findings.show');

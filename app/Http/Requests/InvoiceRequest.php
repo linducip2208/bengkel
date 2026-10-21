@@ -52,6 +52,9 @@ class InvoiceRequest extends FormRequest
         if ($this->tax_amount === '') {
             $this->merge(['tax_amount' => null]);
         }
+        if ($this->dp_amount === '') {
+            $this->merge(['dp_amount' => null]);
+        }
         if ($this->discount_percent === '') {
             $this->merge(['discount_percent' => null]);
         }

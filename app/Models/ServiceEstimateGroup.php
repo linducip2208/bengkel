@@ -63,6 +63,7 @@ class ServiceEstimateGroup extends Model
         return $this->belongsTo(ServiceWorkPackage::class, 'service_work_package_id');
     }
 
+    /** @return BelongsTo<ServiceFinding, $this> */
     public function finding(): BelongsTo
     {
         return $this->belongsTo(ServiceFinding::class, 'service_finding_id');

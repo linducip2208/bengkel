@@ -109,7 +109,7 @@ class ApiInvoiceController extends Controller
         }
 
         // Locked once paid (partial or full): financial fields cannot change.
-        if ((float) $invoice->paid_amount > 0 || $invoice->paymentRecords()->exists()) {
+        if ((float) $invoice->paid_amount > 0 || (float) ($invoice->dp_amount ?? 0) > 0 || $invoice->paymentRecords()->exists()) {
             if ($request->hasAny(['customer_id', 'items', 'quantity', 'price', 'discount', 'tax', 'total_amount', 'grand_total', 'service_id'])) {
                 return response()->json(['message' => 'Invoice yang sudah dibayar (parsial/lunas) tidak dapat mengubah data finansial. Gunakan credit note/koreksi.'], 422);
             }
@@ -135,12 +135,13 @@ class ApiInvoiceController extends Controller
     {
         $invoice->load(['items', 'customer', 'paymentRecords.paymentMethod']);
         $totalPaid = round((float) $invoice->paid_amount, 2);
-        $remaining = max(round((float) $invoice->grand_total - $totalPaid, 2), 0);
+        $dpAmount = round(max(0, (float) ($invoice->dp_amount ?? 0)), 2);
+        $remaining = max(round((float) $invoice->grand_total - $totalPaid - $dpAmount, 2), 0);
         $settings = app(SettingsService::class)->getCompanyInfo();
 
         $view = view()->exists('invoices.pdf') ? 'invoices.pdf' : 'invoices.pdf-modern';
 
-        $pdf = Pdf::loadView($view, compact('invoice', 'totalPaid', 'remaining', 'settings'));
+        $pdf = Pdf::loadView($view, compact('invoice', 'totalPaid', 'dpAmount', 'remaining', 'settings'));
         $pdf->setPaper('a4');
 
         return $pdf->stream("invoice-{$invoice->invoice_number}.pdf");

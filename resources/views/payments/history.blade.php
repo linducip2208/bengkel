@@ -11,6 +11,7 @@
     <div class="card-body">
         <div><strong>Pelanggan:</strong> {{ $invoice->customer->name ?? '-' }}</div>
         <div><strong>Total Invoice:</strong> @money($invoice->grand_total)</div>
+        @if(((float) ($invoice->dp_amount ?? 0)) > 0)<div><strong>Down Payment (DP):</strong> @money($invoice->dp_amount)</div>@endif
     </div>
 </div>
 

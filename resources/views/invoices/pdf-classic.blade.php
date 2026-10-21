@@ -157,6 +157,8 @@
         @if($invoice->discount > 0)<tr><td class="text-end">Diskon{{ $invoice->discount_type === 'percent' ? ' ' . $invoice->discount_percent . '%' : '' }}</td><td></td><td class="text-end">- @money($invoice->discount)</td></tr>@endif
         @if($invoice->tax_amount > 0)<tr><td class="text-end">Pajak</td><td></td><td class="text-end">@money($invoice->tax_amount)</td></tr>@endif
         <tr class="grand-total"><td class="text-end">GRAND TOTAL</td><td></td><td class="text-end">@money($invoice->grand_total)</td></tr>
+        @php $dpRow = $dpAmount ?? (float) ($invoice->dp_amount ?? 0); @endphp
+        @if($dpRow > 0)<tr><td class="text-end">Down Payment (DP)</td><td></td><td class="text-end">- @money($dpRow)</td></tr>@endif
         @if($totalPaid > 0)<tr><td class="text-end">Total Dibayar</td><td></td><td class="text-end">@money($totalPaid)</td></tr>@endif
         @if($remaining > 0)<tr style="font-weight:bold;"><td class="text-end">Sisa Pembayaran</td><td></td><td class="text-end">@money($remaining)</td></tr>@endif
     </table>

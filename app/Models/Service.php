@@ -289,6 +289,21 @@ class Service extends Model
         return $token;
     }
 
+    public function getOrCreateTrackingToken(): string
+    {
+        if (! empty($this->tracking_token)) {
+            return $this->tracking_token;
+        }
+
+        do {
+            $token = Str::random(40);
+        } while (static::withoutGlobalScopes()->where('tracking_token', $token)->exists());
+
+        $this->forceFill(['tracking_token' => $token])->save();
+
+        return $token;
+    }
+
     public function detectRepeatJob(): ?Service
     {
         if (! $this->vehicle_id) {

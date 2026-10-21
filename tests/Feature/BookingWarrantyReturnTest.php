@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Http\Middleware\RequirePair;
 use App\Models\Booking;
+use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\FuelType;
 use App\Models\Invoice;
@@ -39,6 +40,9 @@ class BookingWarrantyReturnTest extends TestCase
         Role::findOrCreate($role, 'web');
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole($role);
+        // Service conversion stamps created_by from the actor: tests must
+        // authenticate like real usage (MySQL enforces the FK).
+        $this->actingAs($user);
 
         return $user;
     }
@@ -65,10 +69,15 @@ class BookingWarrantyReturnTest extends TestCase
     {
         $this->authed();
         $technician = $this->authed('mekanik');
+        // Fail-closed branch rules apply to the actor: a technician converts
+        // bookings only inside their assigned branch.
+        $branch = Branch::create(['name' => 'Bengkel Uji', 'code' => 'BU-'.uniqid(), 'is_active' => true]);
+        $technician->branches()->sync([$branch->id]);
         $customer = Customer::create(['name' => 'B Cust', 'phone' => '0813333333']);
         $vehicle = $this->makeVehicle($customer);
 
         $booking = Booking::create([
+            'branch_id' => $branch->id,
             'customer_id' => $customer->id,
             'name' => 'B Cust',
             'phone' => '0813333333',

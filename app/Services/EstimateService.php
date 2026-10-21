@@ -8,6 +8,7 @@ use App\Models\Service;
 use App\Models\ServiceEstimate;
 use App\Models\ServiceEstimateGroup;
 use App\Models\ServiceEstimateItem;
+use App\Models\ServiceFinding;
 use App\Models\ServiceWorkPackage;
 use App\Models\Setting;
 use Illuminate\Database\Eloquent\Collection;
@@ -126,6 +127,9 @@ class EstimateService
         $vehicle = $estimate->vehicle;
         $service = $estimate->service;
 
+        /** @var Collection<int, ServiceEstimateGroup> $groups */
+        $groups = $estimate->groups()->get();
+
         return [
             'company' => [
                 'name' => $company['name'] ?? config('app.name'),
@@ -169,20 +173,21 @@ class EstimateService
             ])->all(),
             // WHY this work was recommended — finding/work-package evidence
             // survives master-data changes.
-            'groups' => $estimate->groups()->get()->map(function (ServiceEstimateGroup $group) {
+            'groups' => $groups->map(function ($group) {
+                $finding = $group->finding instanceof ServiceFinding ? $group->finding : null;
+                $workPackage = $group->workPackage instanceof ServiceWorkPackage ? $group->workPackage : null;
+
                 return [
                     'title' => $group->title,
                     'severity_snapshot' => $group->severity_snapshot,
                     'standard_minutes' => $group->standard_minutes,
                     'grand_total' => (string) $group->grand_total,
                     'customer_decision' => $group->customer_decision,
-                    'finding_number' => $group->finding?->finding_number,
-                    'finding_title' => $group->finding?->title,
-                    'finding_severity' => $group->finding?->severity,
-                    'finding_measurement' => $group->finding?->measurement_value !== null
-                        ? $group->finding->measurement_value.($group->finding->measurement_unit ? ' '.$group->finding->measurement_unit : '')
-                        : null,
-                    'work_package_title' => $group->workPackage?->title,
+                    'finding_number' => $finding?->finding_number,
+                    'finding_title' => $finding?->title,
+                    'finding_severity' => $finding?->severity,
+                    'finding_measurement' => $finding?->measurementLabel(),
+                    'work_package_title' => $workPackage?->title,
                 ];
             })->all(),
         ];

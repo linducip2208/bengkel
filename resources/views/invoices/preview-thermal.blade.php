@@ -95,6 +95,8 @@
 
     <table>
         <tr><td class="bold" style="font-size:13px;">TOTAL</td><td class="right bold" style="font-size:13px;">@money($invoice->grand_total)</td></tr>
+        @php $dpRow = $dpAmount ?? (float) ($invoice->dp_amount ?? 0); @endphp
+        @if($dpRow > 0)<tr><td>Down Payment (DP)</td><td class="right">- @money($dpRow)</td></tr>@endif
         @if($totalPaid > 0)<tr><td>Dibayar</td><td class="right">@money($totalPaid)</td></tr>@endif
         @if($remaining > 0)<tr><td class="bold">Sisa</td><td class="right bold">@money($remaining)</td></tr>@endif
     </table>
