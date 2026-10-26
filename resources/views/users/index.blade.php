@@ -24,10 +24,10 @@
 @endif
 
 <div class="card"><div class="card-body">
-    <form method="GET" class="mb-3"><div class="input-group" style="max-width: 360px;">
+    <form method="GET" action="{{ route('users.index') }}" class="mb-3 d-flex gap-2"><div class="input-group" style="max-width: 360px;">
         <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari nama / email...">
         <button type="submit" class="btn btn-outline-secondary" aria-label="Cari user"><i class="bi bi-search"></i></button>
-    </div></form>
+    </div><a href="{{ route('users.index') }}" class="btn btn-outline-danger"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</a></form>
     <div class="table-responsive">
     <table class="table table-hover align-middle">
         <thead class="table-light"><tr><th>Nama</th><th>Email</th><th>Role</th><th>Status</th><th>Diperbarui</th><th>2FA</th><th>Aksi</th></tr></thead>

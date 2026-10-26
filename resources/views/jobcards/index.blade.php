@@ -29,6 +29,11 @@
                     <i class="fas fa-filter me-1"></i> Filter
                 </button>
             </div>
+            <div class="col-md-2">
+                <a href="{{ route('jobcards.index') }}" class="btn btn-sm btn-outline-danger w-100">
+                    <i class="fas fa-rotate-left me-1"></i> Reset
+                </a>
+            </div>
         </form>
 
         <div class="table-responsive">

@@ -11,12 +11,15 @@
 
 <div class="card">
     <div class="card-body">
-        <form method="GET" class="row g-2 mb-3">
+        <form method="GET" action="{{ route('blog.admin.index') }}" class="row g-2 mb-3">
             <div class="col-md-4">
                 <input type="text" name="search" class="form-control" placeholder="Cari judul..." value="{{ request('search') }}">
             </div>
             <div class="col-md-2">
                 <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-search me-1"></i>Cari</button>
+            </div>
+            <div class="col-md-2">
+                <a href="{{ route('blog.admin.index') }}" class="btn btn-outline-danger w-100"><i class="fas fa-undo me-1"></i>Reset</a>
             </div>
         </form>
         <div class="table-responsive">

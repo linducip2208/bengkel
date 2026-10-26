@@ -32,6 +32,11 @@
                     <i class="bi bi-search"></i> Filter
                 </button>
             </div>
+            <div class="col-md-2">
+                <a href="{{ route('purchase-requisitions.index') }}" class="btn btn-sm btn-outline-danger w-100">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </a>
+            </div>
         </form>
     </div>
 </div>

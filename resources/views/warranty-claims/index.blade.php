@@ -17,6 +17,7 @@
             <option value="resolved" {{ request('status') === 'resolved' ? 'selected' : '' }}>Resolved</option>
         </select></div>
         <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel"></i></button></div>
+        <div class="col-md-2"><a href="{{ route('warranty-claims.index') }}" class="btn btn-outline-danger w-100" title="Reset"><i class="bi bi-arrow-counterclockwise"></i></a></div>
     </form>
     <div class="table-responsive">
     <table class="table table-hover align-middle">

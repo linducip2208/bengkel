@@ -6,7 +6,7 @@
     <a href="{{ route('insurance-claims.create') }}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Buat Klaim</a>
 </div>
 <div class="card"><div class="card-body">
-    <form method="GET" class="row g-2 mb-3">
+    <form method="GET" action="{{ route('insurance-claims.index') }}" class="row g-2 mb-3">
         <div class="col-md-3">
             <select name="status" class="form-select" onchange="this.form.submit()">
                 <option value="">Semua Status</option>
@@ -14,6 +14,9 @@
                 <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
                 @endforeach
             </select>
+        </div>
+        <div class="col-md-2">
+            <a href="{{ route('insurance-claims.index') }}" class="btn btn-outline-danger w-100"><i class="fas fa-undo me-1"></i>Reset</a>
         </div>
     </form>
     <div class="table-responsive">

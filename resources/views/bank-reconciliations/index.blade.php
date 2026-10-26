@@ -6,7 +6,7 @@
     <a href="{{ route('bank-reconciliations.create') }}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Rekonsiliasi Baru</a>
 </div>
 <div class="card"><div class="card-body">
-    <form method="GET" class="row g-2 mb-3">
+    <form method="GET" action="{{ route('bank-reconciliations.index') }}" class="row g-2 mb-3">
         <div class="col-md-4">
             <select name="bank_account_id" class="form-select" onchange="this.form.submit()">
                 <option value="">Semua Rekening</option>
@@ -14,6 +14,9 @@
                     <option value="{{ $account->id }}" {{ request('bank_account_id') == $account->id ? 'selected' : '' }}>{{ $account->name }} ({{ $account->bank_name }})</option>
                 @endforeach
             </select>
+        </div>
+        <div class="col-md-2">
+            <a href="{{ route('bank-reconciliations.index') }}" class="btn btn-outline-danger w-100"><i class="fas fa-undo me-1"></i>Reset</a>
         </div>
     </form>
     <div class="table-responsive">
