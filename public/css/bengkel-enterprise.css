@@ -1,0 +1,22 @@
+/* Bengkel Pro 2.0 — Modern Enterprise UI layer. Presentation only. */
+:root{--sidebar-width:264px;--sidebar-bg:#142c46;--sidebar-hover:#203e5e;--sidebar-active:#2878f0;--primary:#2878f0;--gold:#f2b544;--topbar-height:64px;--bg:#f3f6fb;--card-bg:#fff;--text:#172d45;--text-muted:#718198;--border:#e2eaf3;--bs-primary:#2878f0;--bs-primary-rgb:40,120,240}
+html{scroll-behavior:smooth}body{background:var(--bg);color:var(--text)}
+.sidebar{background:linear-gradient(180deg,#142c46,#10253d);box-shadow:8px 0 30px rgba(20,44,70,.07)}
+.sidebar .brand{min-height:64px;border-bottom-color:rgba(255,255,255,.1);letter-spacing:-.02em}
+.sidebar-nav{padding:.8rem .65rem}.sidebar-nav .nav-link{margin:2px 0;padding:.72rem .85rem;border-radius:9px;color:#d2deec;transition:background .18s,color .18s,transform .18s}
+.sidebar-nav .nav-link:hover{background:rgba(255,255,255,.09);transform:translateX(2px)}.sidebar-nav .nav-link.active{background:linear-gradient(100deg,#2878f0,#1766dc);box-shadow:0 7px 18px rgba(40,120,240,.25);color:#fff}
+.sidebar-nav .submenu{padding-left:1.2rem}.topbar{min-height:var(--topbar-height);background:rgba(255,255,255,.96);border-bottom:1px solid var(--border);box-shadow:0 2px 12px rgba(21,45,69,.025);backdrop-filter:blur(12px)}
+#page-content-wrapper{background:var(--bg);min-height:100vh}.container-fluid{padding:1.5rem!important}
+.card{border:1px solid var(--border)!important;border-radius:13px!important;box-shadow:0 3px 12px rgba(20,44,70,.035)!important;overflow:hidden}
+.card-header{padding:1rem 1.15rem;font-weight:650}.card-body{padding:1.15rem}
+h1,h2,h3,h4,h5,.h1,.h2,.h3,.h4,.h5{color:var(--text);letter-spacing:-.025em}
+.btn{border-radius:8px;font-weight:600;transition:transform .15s,box-shadow .15s,background .15s}
+.btn-primary{background:#2878f0;border-color:#2878f0;box-shadow:0 3px 8px rgba(40,120,240,.12)}.btn-primary:hover{background:#1766dc;border-color:#1766dc;transform:translateY(-1px);box-shadow:0 5px 14px rgba(40,120,240,.2)}
+.btn-outline-primary{color:#2878f0;border-color:#b8d2fa}.btn-outline-primary:hover{background:#2878f0;border-color:#2878f0}
+.form-control,.form-select,.input-group-text{min-height:40px;border-radius:8px;border-color:#d9e3ef}.form-control:focus,.form-select:focus{border-color:#7eaff8;box-shadow:0 0 0 .2rem rgba(40,120,240,.12)}textarea.form-control{min-height:100px}
+.table-responsive{border-radius:10px}.table{--bs-table-border-color:#e8eef5}.table thead th{background:#f5f8fc;color:#657890;font-size:.73rem;letter-spacing:.045em;font-weight:700;white-space:nowrap;border-bottom:1px solid #e2eaf3;padding:.85rem .8rem}.table tbody td{padding:.78rem .8rem;vertical-align:middle}.table tbody tr:hover{--bs-table-hover-bg:#f5f9ff}
+.badge{font-weight:650;letter-spacing:.01em;padding:.42em .65em;border-radius:6px}.alert{border:0;border-radius:10px}
+.modal-content{border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 60px rgba(20,44,70,.18)}.dropdown-menu{border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 35px rgba(20,44,70,.12);padding:.4rem}.dropdown-item{border-radius:6px;padding:.55rem .75rem}
+.pagination .page-link{color:#2878f0;border-color:#e2eaf3;border-radius:7px;margin:0 2px}.pagination .active .page-link{background:#2878f0;border-color:#2878f0}
+@media(min-width:1200px){.container-fluid{padding:1.75rem 2rem!important}}@media(max-width:767.98px){.container-fluid{padding:1rem!important}.card-body{padding:1rem}.table-responsive{overflow-x:auto;-webkit-overflow-scrolling:touch}.topbar{left:0}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
