@@ -26,7 +26,7 @@
         @endcan
         @can('customer.create')
         <a href="{{ route('customers.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i>+ New Customer
+            <i class="fas fa-plus me-1"></i>Tambah Pelanggan
         </a>
         @endcan
     </div>

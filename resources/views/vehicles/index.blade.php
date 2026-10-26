@@ -7,7 +7,7 @@
     <h4 class="mb-0"><i class="fas fa-car me-2"></i>Kendaraan</h4>
     @can('vehicle.create')
     <a href="{{ route('vehicles.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-1"></i>+ New Vehicle
+        <i class="fas fa-plus me-1"></i>Tambah Kendaraan
     </a>
     @endcan
 </div>

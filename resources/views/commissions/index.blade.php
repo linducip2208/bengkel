@@ -107,7 +107,7 @@
                 </table>
             </div>
         </form>
-        <div class="d-flex justify-content-end">{{ $rows->links() }}</div>
+        <div class="d-flex justify-content-end">{{ $rows->withQueryString()->links() }}</div>
     </div>
 </div>
 

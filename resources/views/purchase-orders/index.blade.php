@@ -67,7 +67,7 @@
                             <strong>{{ $purchaseOrder->po_number }}</strong>
                         </a>
                     </td>
-                    <td>{{ $purchaseOrder->order_date->format('d/m/Y') }}</td>
+                    <td>{{ $purchaseOrder->order_date?->format('d/m/Y') ?? '-' }}</td>
                     <td>{{ $purchaseOrder->supplier?->name ?? '-' }}</td>
                     <td class="text-center">{{ $purchaseOrder->items_count }}</td>
                     <td class="text-end">@money($purchaseOrder->grand_total)</td>
@@ -98,7 +98,13 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="text-center text-muted py-4">Tidak ada purchase order ditemukan.</td>
+                    <td colspan="7" class="text-center text-muted py-5">
+                        <i class="bi bi-inbox fa-2x mb-2 d-block opacity-50"></i>
+                        Tidak ada purchase order ditemukan.
+                        @can('purchase-order.create')
+                        <a href="{{ route('purchase-orders.create') }}" class="btn btn-sm btn-primary mt-2"><i class="bi bi-plus-lg me-1"></i>Buat PO Baru</a>
+                        @endcan
+                    </td>
                 </tr>
                 @endforelse
             </tbody>

@@ -365,13 +365,13 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
     <div class="col-12">
         <div class="d-flex gap-2 flex-wrap">
             @can('service.create')
-            <a href="{{ route('services.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> New Service</a>
+            <a href="{{ route('services.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Servis Baru</a>
             @endcan
             @can('customer.create')
-            <a href="{{ route('customers.create') }}" class="btn btn-success btn-sm"><i class="bi bi-person-plus"></i> New Customer</a>
+            <a href="{{ route('customers.create') }}" class="btn btn-success btn-sm"><i class="bi bi-person-plus"></i> Pelanggan Baru</a>
             @endcan
             @can('invoice.create')
-            <a href="{{ route('invoices.create') }}" class="btn btn-info btn-sm"><i class="bi bi-receipt"></i> New Invoice</a>
+            <a href="{{ route('invoices.create') }}" class="btn btn-info btn-sm"><i class="bi bi-receipt"></i> Invoice Baru</a>
             @endcan
         </div>
     </div>

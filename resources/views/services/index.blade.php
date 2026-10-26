@@ -7,7 +7,7 @@
     <h4 class="mb-0"><i class="fas fa-wrench text-warning me-2"></i>Daftar Servis</h4>
     @can('service.create')
     <a href="{{ route('services.create') }}" class="btn btn-danger">
-        <i class="fas fa-plus me-1"></i>+ New Job Card
+        <i class="fas fa-plus me-1"></i>Job Card Baru
     </a>
     @endcan
 </div>

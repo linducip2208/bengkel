@@ -118,7 +118,7 @@
     </table>
 </div>
 
-{{ $leaves->links() }}
+{{ $leaves->withQueryString()->links() }}
 
 {{-- Add Modal --}}
 <div class="modal fade" id="addLeaveModal" tabindex="-1">

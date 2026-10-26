@@ -19,7 +19,7 @@
         </a>
         @can('service.view')
         <a href="{{ route('services.create') }}?vehicle_id={{ $vehicle->id }}" class="btn btn-danger">
-            <i class="fas fa-plus me-1"></i>+ New Job Card
+            <i class="fas fa-plus me-1"></i>Servis Baru
         </a>
         @endcan
     </div>

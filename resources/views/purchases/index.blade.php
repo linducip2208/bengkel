@@ -4,9 +4,11 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">Daftar Pembelian</h4>
+    @can('purchase.create')
     <a href="{{ route('purchases.create') }}" class="btn btn-primary btn-sm">
         <i class="bi bi-plus-lg"></i> Buat PO Baru
     </a>
+    @endcan
 </div>
 
 <div class="card mb-3">
@@ -71,7 +73,7 @@
                             <strong>{{ $purchase->purchase_no }}</strong>
                         </a>
                     </td>
-                    <td>{{ $purchase->purchase_date->format('d/m/Y') }}</td>
+                    <td>{{ $purchase->purchase_date?->format('d/m/Y') ?? '-' }}</td>
                     <td>{{ $purchase->supplier?->name ?? '-' }}</td>
                     <td class="text-center">{{ $purchase->items_count }}</td>
                     <td class="text-end">@money($purchase->total_amount)</td>
