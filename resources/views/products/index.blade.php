@@ -78,9 +78,12 @@
                 </div>
             </div>
             <div class="col-md-2">
-                <button type="submit" class="btn btn-sm btn-outline-primary w-100">
-                    <i class="bi bi-search"></i> Filter
-                </button>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="bi bi-search"></i> Filter
+                    </button>
+                    <a href="{{ route('products.index') }}" class="btn btn-sm btn-outline-danger" title="Reset filter" aria-label="Reset filter"><i class="bi bi-rotate-left"></i></a>
+                </div>
             </div>
         </form>
     </div>

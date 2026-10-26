@@ -11,6 +11,7 @@
             <div class="col-md-3"><input type="date" name="date_from" value="{{ $from }}" class="form-control"></div>
             <div class="col-md-3"><input type="date" name="date_to" value="{{ $to }}" class="form-control"></div>
             <div class="col-md-2"><button class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i>Filter</button></div>
+            <div class="col-md-2"><a href="{{ route('commissions.report') }}" class="btn btn-outline-danger w-100"><i class="bi bi-rotate-left me-1"></i>Reset</a></div>
         </form>
         <div class="table-responsive">
         <table class="table table-hover">

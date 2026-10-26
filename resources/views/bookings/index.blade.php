@@ -28,6 +28,7 @@
         <div class="col-md-2"><input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control"></div>
         <div class="col-md-2"><input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control"></div>
         <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel"></i> Filter</button></div>
+        <div class="col-md-2"><a href="{{ route('bookings.index') }}" class="btn btn-outline-danger w-100"><i class="bi bi-rotate-left"></i> Reset</a></div>
     </form>
     <div class="table-responsive">
     <table class="table table-hover align-middle">

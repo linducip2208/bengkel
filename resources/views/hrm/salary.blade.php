@@ -25,7 +25,7 @@
             @foreach(range(1,12) as $m)<option value="{{ $m }}" {{ request('month', $month) == $m ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->format('F') }}</option>@endforeach
         </select></div>
         <div class="col-md-2"><input type="number" name="year" class="form-control" value="{{ request('year', $year) }}"></div>
-        <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel"></i></button></div>
+        <div class="col-md-2"><div class="d-flex gap-2"><button class="btn btn-outline-secondary w-100" title="Filter" aria-label="Filter"><i class="bi bi-funnel"></i></button><a href="{{ route('hrm.salary') }}" class="btn btn-outline-danger" title="Reset filter" aria-label="Reset filter"><i class="bi bi-rotate-left"></i></a></div></div>
     </form>
     <div class="table-responsive">
     <table class="table table-hover align-middle">

@@ -47,7 +47,7 @@
             </div>
             <div class="col-md-2"><input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control"></div>
             <div class="col-md-2"><input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control"></div>
-            <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel me-1"></i>Filter</button></div>
+            <div class="col-md-2"><div class="d-flex gap-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel me-1"></i>Filter</button><a href="{{ route('commissions.index') }}" class="btn btn-outline-danger" title="Reset filter" aria-label="Reset filter"><i class="bi bi-rotate-left"></i></a></div></div>
         </form>
 
         <form id="commissionBatchForm" action="{{ route('commissions.markPaidBatch') }}" method="POST">
