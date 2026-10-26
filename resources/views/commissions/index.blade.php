@@ -73,7 +73,7 @@
                             <td>
                                 @if(!$r->paid_at)<input type="checkbox" name="ids[]" value="{{ $r->id }}" class="row-check" form="commissionBatchForm">@endif
                             </td>
-                            <td>{{ $r->service->service_date->format('d M Y') }}</td>
+                            <td>{{ $r->service->service_date->format('d/m/Y') }}</td>
                             <td>
                                 <strong>{{ $r->service->job_no }}</strong><br>
                                 <small class="text-muted">{{ $r->service->customer->name ?? '-' }} • {{ $r->service->vehicle->number_plate ?? '-' }}</small>

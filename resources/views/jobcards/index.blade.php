@@ -11,8 +11,9 @@
     <div class="card-body">
         <form method="GET" class="row g-2 mb-3">
             <div class="col-md-2">
-                <select name="status" class="form-select form-select-sm">
+                <select name="status" class="form-select form-select-sm" aria-label="Filter status">
                     <option value="">Semua Status</option>
+                    <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Pending</option>
                     <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>In Progress</option>
                     <option value="2" {{ request('status') === '2' ? 'selected' : '' }}>Done</option>
                 </select>

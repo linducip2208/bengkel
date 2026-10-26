@@ -42,7 +42,7 @@
                 <td>
                     <a href="{{ route('hrm.salary.slip', $s) }}" class="btn btn-sm btn-info" title="Print Slip PDF"><i class="bi bi-file-pdf"></i></a>
                     @if($s->status !== 'paid')
-                    <form action="{{ route('hrm.salary.mark-paid', $s) }}" method="POST" class="d-inline">@csrf @method('PUT')<button class="btn btn-sm btn-success" title="Tandai Dibayar"><i class="bi bi-check2"></i></button></form>
+                    <form action="{{ route('hrm.salary.mark-paid', $s) }}" method="POST" class="d-inline" onsubmit="return confirm('Tandai gaji ini sebagai sudah dibayar?')">@csrf @method('PUT')<button class="btn btn-sm btn-success" title="Tandai Dibayar" aria-label="Tandai gaji dibayar"><i class="bi bi-check2"></i></button></form>
                     @endif
                 </td>
             </tr>
