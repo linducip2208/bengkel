@@ -25,6 +25,9 @@
     @media (max-width: 768px) {
         .pos-grid { grid-template-columns: 1fr; height: auto; }
         .pos-products { max-height: 50vh; }
+        /* Bayar & Tahan tetap terlihat saat kasir scroll ringkasan di HP */
+        #payBtn, #holdBtn { position: sticky; bottom: .5rem; z-index: 5; }
+        #payBtn { box-shadow: 0 6px 18px rgba(5,150,105,.35); }
     }
 </style>
 @endpush

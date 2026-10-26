@@ -6,11 +6,17 @@ Dashboard - {{ config('app.name') }}
 
 @push('scripts')
 <script>
-// Auto-refresh dashboard every 60 seconds
-setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
-    const parser = new DOMParser(); const doc = parser.parseFromString(html,'text/html');
-    document.querySelector('.row.mb-3').innerHTML = doc.querySelector('.row.mb-3').innerHTML;
-})}, 60000);
+// Auto-refresh dashboard every 60 seconds (same-tab visible only, fail-silent)
+setInterval(() => {
+    if (document.visibilityState !== 'visible') return;
+    fetch(window.location.href).then(r => { if (!r.ok) return null; return r.text(); }).then(html => {
+        if (!html) return;
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const src = doc.querySelector('.row.mb-3');
+        const dst = document.querySelector('.row.mb-3');
+        if (src && dst) dst.innerHTML = src.innerHTML;
+    }).catch(() => {});
+}, 60000);
 </script>
 @endpush
 
