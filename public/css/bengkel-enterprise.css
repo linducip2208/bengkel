@@ -60,9 +60,12 @@ body:not(.dark) .form-text,body:not(.dark) .text-muted{color:#718198}
   .card .table-responsive{max-width:100%}
 }
 @media(max-width:991.98px){
-  .d-flex.justify-content-between.align-items-center.mb-4{gap:.75rem;align-items:flex-start!important;flex-wrap:wrap}
+  .d-flex.justify-content-between.align-items-center.mb-4,
+  .d-flex.justify-content-between.align-items-center.mb-3{gap:.75rem;align-items:flex-start!important;flex-wrap:wrap}
   .d-flex.justify-content-between.align-items-center.mb-4>.btn,
-  .d-flex.justify-content-between.align-items-center.mb-4>div{max-width:100%}
+  .d-flex.justify-content-between.align-items-center.mb-3>.btn,
+  .d-flex.justify-content-between.align-items-center.mb-4>div,
+  .d-flex.justify-content-between.align-items-center.mb-3>div{max-width:100%}
 }
 @media(max-width:575.98px){
   h4,.h4{font-size:1.15rem}
