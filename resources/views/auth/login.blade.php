@@ -148,6 +148,16 @@
         @media (prefers-reduced-motion: reduce) {
             * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
+    
+        /* Bengkel Pro 2.0 login visual alignment */
+        :root{--brand:#2878f0;--brand-dark:#1766dc;--brand-light:#eaf2ff}
+        body{background:radial-gradient(ellipse at 12% 8%,#e2edff 0,transparent 42%),linear-gradient(135deg,#f5f8fd,#edf3fa);color:#172d45}
+        .login-card,.auth-card,.card{border-color:#e0e8f2}
+        a{color:#2878f0}a:hover{color:#1766dc}
+        input:focus,select:focus,textarea:focus{border-color:#7eaff8!important;box-shadow:0 0 0 .2rem rgba(40,120,240,.12)!important;outline:0}
+        button[type=submit],.btn-primary{background:#2878f0;border-color:#2878f0}
+        button[type=submit]:hover,.btn-primary:hover{background:#1766dc;border-color:#1766dc}
+
     </style>
 </head>
 <body>
