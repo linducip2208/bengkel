@@ -30,10 +30,12 @@
                     <td>{{ Str::limit($n->content, 80) }}</td>
                     <td>{{ $n->author->name ?? 'Unknown' }}</td>
                     <td class="text-end">
+                        @can('note.delete')
                         <form action="{{ route('notes.destroy', $n) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus?')">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                         </form>
+                        @endcan
                     </td>
                 </tr>
                 @empty

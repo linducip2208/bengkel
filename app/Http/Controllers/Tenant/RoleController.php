@@ -78,6 +78,12 @@ class RoleController extends Controller
         if (array_key_exists('branch_ids', $validated)) {
             $user->branches()->sync($validated['branch_ids'] ?? []);
         }
+        // Token lama user nonaktif harus langsung mati — Sanctum tidak
+        // mengecek is_active per-request, jadi tanpa ini token curian
+        // tetap bisa dipakai setelah akun dinonaktifkan.
+        if ($request->boolean('is_active', true) === false) {
+            $user->tokens()->delete();
+        }
         ActivityLog::record('user.update', $user, "Update user {$user->email} role={$validated['role']}");
 
         return back()->with('success', 'User diperbarui.');
@@ -90,7 +96,7 @@ class RoleController extends Controller
         if ($user->id === auth()->id()) {
             return back()->with('error', 'Tidak bisa hapus diri sendiri.');
         }
-        if ($user->hasRole('super_admin') && User::role('super_admin')->count() <= 1) {
+        if ($user->hasRole('super_admin', 'web') && User::role('super_admin')->count() <= 1) {
             return back()->with('error', 'Minimal harus ada 1 super_admin.');
         }
         ActivityLog::record('user.delete', $user, "Delete user {$user->email}");

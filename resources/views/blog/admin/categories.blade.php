@@ -38,10 +38,12 @@
                             <td><strong>{{ $cat->name }}</strong></td>
                             <td><small>{{ Str::limit($cat->description, 50) }}</small></td>
                             <td>
+                                @can('blog.delete')
                                 <form action="{{ route('blog.admin.categories.destroy', $cat) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus?')">
                                     @csrf @method('DELETE')
                                     <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                                 </form>
+                                @endcan
                             </td>
                         </tr>
                         @empty

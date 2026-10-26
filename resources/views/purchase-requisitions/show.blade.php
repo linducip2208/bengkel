@@ -2,14 +2,15 @@
 @section('title', 'Detail Permintaan Pembelian')
 
 @php
-    $canApprove = auth()->user()->hasAnyRole(['super_admin', 'admin', 'manager']);
+    $canApprove = auth()->user()?->can('purchase-requisition.approve');
+    $canSubmit = auth()->user()?->can('purchase-requisition.submit');
 @endphp
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">Detail Permintaan Pembelian</h4>
     <div>
-        @if($purchaseRequisition->status === 'draft')
+        @if($purchaseRequisition->status === 'draft' && $canSubmit)
             <form action="{{ route('purchase-requisitions.submit', $purchaseRequisition) }}" method="POST" class="d-inline">
                 @csrf
                 <button type="submit" class="btn btn-primary btn-sm">

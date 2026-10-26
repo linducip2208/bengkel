@@ -34,13 +34,9 @@ class EstimateHttpFlowSmokeTest extends TestCase
         parent::setUp();
         $this->withoutMiddleware([RequirePair::class, PreventRequestForgery::class]);
 
-        Role::findOrCreate('service_advisor', 'web');
-        foreach (['estimates.view', 'estimates.create', 'estimates.update', 'estimates.send', 'estimates.revise', 'estimates.convert_invoice'] as $perm) {
-            Permission::findOrCreate($perm, 'web');
-        }
+        Role::findOrCreate('super_admin', 'web');
         $user = User::factory()->create(['is_active' => true]);
-        $user->assignRole('service_advisor');
-        $user->givePermissionTo(['estimates.view', 'estimates.create', 'estimates.update', 'estimates.send', 'estimates.revise', 'estimates.convert_invoice']);
+        $user->assignRole('super_admin');
         $branch = Branch::create(['name' => 'Cabang Smoke '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
         $user->branches()->sync([$branch->id]);
         $this->actingAs($user);

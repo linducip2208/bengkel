@@ -89,6 +89,7 @@
                         <td>{{ $adj->created_at->format('d/m/Y H:i') }}</td>
                         <td class="text-end">
                             @if($adj->status === 'pending')
+                                @can('stock-adjustment.approve')
                                 <div class="d-flex gap-1 justify-content-end">
                                     <form method="POST" action="{{ route('stock-adjustments.approve', $adj) }}" class="d-inline">
                                         @csrf
@@ -124,6 +125,7 @@
                                         </div>
                                     </div>
                                 </div>
+                                @endcan
                             @else
                                 @if($adj->rejection_reason)
                                     <small class="text-muted d-block">{{ Str::limit($adj->rejection_reason, 30) }}</small>

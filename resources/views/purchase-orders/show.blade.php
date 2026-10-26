@@ -6,17 +6,21 @@
     <h4 class="mb-0">Detail Purchase Order</h4>
     <div>
         @if(in_array($purchaseOrder->status, ['draft', 'sent']))
+            @can('purchase-order.receive')
             <form action="{{ route('purchase-orders.mark-received', $purchaseOrder) }}" method="POST" class="d-inline" onsubmit="return confirm('Konfirmasi penerimaan barang? Purchase order akan diubah menjadi purchase & stok bertambah.')">
                 @csrf
                 <button type="submit" class="btn btn-success btn-sm">
                     <i class="bi bi-check-circle"></i> Tandai Diterima
                 </button>
             </form>
+            @endcan
         @endif
         @if($purchaseOrder->status === 'draft')
+            @can('purchase-order.edit')
             <a href="{{ route('purchase-orders.edit', $purchaseOrder) }}" class="btn btn-warning btn-sm">
                 <i class="bi bi-pencil"></i> Edit
             </a>
+            @endcan
         @endif
         <a href="{{ route('purchase-orders.index') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left"></i> Kembali

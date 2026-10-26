@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\AuthorizeModuleAccess;
+use App\Http\Middleware\AuthorizePermissions;
 use App\Http\Middleware\RequirePair;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -11,9 +13,6 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Spatie\Permission\Exceptions\UnauthorizedException;
-use Spatie\Permission\Middleware\PermissionMiddleware;
-use Spatie\Permission\Middleware\RoleMiddleware;
-use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -26,9 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'permission' => PermissionMiddleware::class,
-            'role' => RoleMiddleware::class,
-            'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'can.module' => AuthorizeModuleAccess::class,
+            'can.perm' => AuthorizePermissions::class,
         ]);
 
         $middleware->web(append: [

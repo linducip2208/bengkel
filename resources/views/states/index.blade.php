@@ -28,10 +28,12 @@
                     <td>{{ $s->country->name ?? '-' }}</td>
                     <td class="text-end">
                         <a href="{{ route('states.edit', $s) }}" class="btn btn-sm btn-outline-warning me-1"><i class="fas fa-edit"></i></a>
+                        @can('state.delete')
                         <form action="{{ route('states.destroy', $s) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus?')">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                         </form>
+                        @endcan
                     </td>
                 </tr>
                 @empty

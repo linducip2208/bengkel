@@ -6,6 +6,7 @@ use App\Http\Middleware\RequirePair;
 use App\Models\Booking;
 use App\Models\Branch;
 use App\Models\Customer;
+use Database\Seeders\PermissionSeeder;
 use App\Models\FuelType;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
@@ -40,6 +41,7 @@ class BookingWarrantyReturnTest extends TestCase
         Role::findOrCreate($role, 'web');
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole($role);
+        PermissionSeeder::grantProductionPermissions($user);
         // Service conversion stamps created_by from the actor: tests must
         // authenticate like real usage (MySQL enforces the FK).
         $this->actingAs($user);

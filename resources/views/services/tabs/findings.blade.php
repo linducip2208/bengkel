@@ -68,10 +68,12 @@
                             @endif
                         @endif
                         @if($canResolve && $finding->isActive())
+                        @if($canUpdate)
                         <form action="{{ route('findings.defer', [$service, $finding]) }}" method="POST" class="d-inline">
                             @csrf
                             <button class="btn btn-sm btn-outline-secondary" title="Tandai Deferred" onclick="return confirm('Tunda temuan ini?')">Tunda</button>
                         </form>
+                        @endif
                         <form action="{{ route('findings.resolve', $finding) }}" method="POST" class="d-inline">
                             @csrf
                             <button class="btn btn-sm btn-outline-success" title="Resolve" onclick="return confirm('Tandai temuan ini selesai?')">Resolve</button>

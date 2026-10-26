@@ -514,11 +514,11 @@
                 <ul class="collapse submenu {{ request()->routeIs('products.*','suppliers.*','purchases.*','purchase-orders.*','purchase-requisitions.*','equipment.*','warehouses.*','stock-adjustments.*') ? 'show' : '' }}" id="menuInventory">
                     @can('product.view')<li><a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.index') ? 'active' : '' }}"><i class="fas fa-box me-1"></i> Products / Parts</a></li>@endcan
                     @can('product.stock-opname')<li><a href="{{ route('products.stock-opname') }}" class="nav-link {{ request()->routeIs('products.stock-opname') ? 'active' : '' }}"><i class="fas fa-clipboard me-1"></i> Stock Opname</a></li>@endcan
-                    <li><a href="{{ route('stock-adjustments.index') }}" class="nav-link {{ request()->routeIs('stock-adjustments.*') ? 'active' : '' }}"><i class="fas fa-balance-scale me-1"></i> Stock Adjustment</a></li>
+                    @canany(['inventory.adjust','stock-adjustment.approve'])<li><a href="{{ route('stock-adjustments.index') }}" class="nav-link {{ request()->routeIs('stock-adjustments.*') ? 'active' : '' }}"><i class="fas fa-balance-scale me-1"></i> Stock Adjustment</a></li>@endcanany
                     @can('supplier.view')<li><a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"><i class="fas fa-truck me-1"></i> Suppliers</a></li>@endcan
                     @can('purchase.view')<li><a href="{{ route('purchases.index') }}" class="nav-link {{ request()->routeIs('purchases.*') ? 'active' : '' }}"><i class="fas fa-shopping-basket me-1"></i> Purchases</a></li>@endcan
                     @can('purchase.view')<li><a href="{{ route('purchase-orders.index') }}" class="nav-link {{ request()->routeIs('purchase-orders.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar me-1"></i> Purchase Orders</a></li>@endcan
-                    <li><a href="{{ route('purchase-requisitions.index') }}" class="nav-link {{ request()->routeIs('purchase-requisitions.*') ? 'active' : '' }}"><i class="fas fa-clipboard-list me-1"></i> Purchase Requisitions</a></li>
+                    @canany(['purchase-requisition.view','purchase-requisition.create','purchase-requisition.submit','purchase-requisition.approve'])<li><a href="{{ route('purchase-requisitions.index') }}" class="nav-link {{ request()->routeIs('purchase-requisitions.*') ? 'active' : '' }}"><i class="fas fa-clipboard-list me-1"></i> Purchase Requisitions</a></li>@endcanany
                     @can('equipment.view')<li><a href="{{ route('equipment.index') }}" class="nav-link {{ request()->routeIs('equipment.*') ? 'active' : '' }}"><i class="fas fa-toolbox me-1"></i> Equipment</a></li>@endcan
                     @can('warehouse.view')<li><a href="{{ route('warehouses.index') }}" class="nav-link {{ request()->routeIs('warehouses.*') ? 'active' : '' }}"><i class="fas fa-warehouse me-1"></i> Warehouses</a></li>@endcan
                 </ul>
@@ -587,9 +587,9 @@
                 </button>
                 <ul class="collapse submenu {{ request()->routeIs('warranty-claims.*','recalls.*','insurance-claims.*','supplier-claims.*') ? 'show' : '' }}" id="menuWarranty">
                     @can('warranty.view')<li><a href="{{ route('warranty-claims.index') }}" class="nav-link {{ request()->routeIs('warranty-claims.*') ? 'active' : '' }}"><i class="fas fa-shield-alt me-1"></i> Warranty Claims</a></li>@endcan
-                    <li><a href="{{ route('recalls.index') }}" class="nav-link {{ request()->routeIs('recalls.*') ? 'active' : '' }}"><i class="fas fa-exclamation-triangle me-1"></i> Recalls</a></li>
+                    @can('warranty.view')<li><a href="{{ route('recalls.index') }}" class="nav-link {{ request()->routeIs('recalls.*') ? 'active' : '' }}"><i class="fas fa-exclamation-triangle me-1"></i> Recalls</a></li>@endcan
                     @can('insurance-claim.view')<li><a href="{{ route('insurance-claims.index') }}" class="nav-link {{ request()->routeIs('insurance-claims.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar me-1"></i> Klaim Asuransi</a></li>@endcan
-                    <li><a href="{{ route('supplier-claims.index') }}" class="nav-link {{ request()->routeIs('supplier-claims.*') ? 'active' : '' }}"><i class="fas fa-hand-holding-usd me-1"></i> Klaim Supplier</a></li>
+                    @can('warranty.view')<li><a href="{{ route('supplier-claims.index') }}" class="nav-link {{ request()->routeIs('supplier-claims.*') ? 'active' : '' }}"><i class="fas fa-hand-holding-usd me-1"></i> Klaim Supplier</a></li>@endcan
                 </ul>
             </li>
             @endcanany

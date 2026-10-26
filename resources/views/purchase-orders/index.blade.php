@@ -4,9 +4,11 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">Purchase Orders</h4>
+    @can('purchase-order.create')
     <a href="{{ route('purchase-orders.create') }}" class="btn btn-primary btn-sm">
         <i class="bi bi-plus-lg"></i> Buat Purchase Order
     </a>
+    @endcan
 </div>
 
 <div class="card mb-3">
@@ -76,9 +78,12 @@
                                 <i class="bi bi-eye"></i>
                             </a>
                             @if($purchaseOrder->status === 'draft')
+                            @can('purchase-order.edit')
                             <a href="{{ route('purchase-orders.edit', $purchaseOrder) }}" class="btn btn-outline-warning" title="Edit">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            @endcan
+                            @can('purchase-order.delete')
                             <form action="{{ route('purchase-orders.destroy', $purchaseOrder) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus purchase order ini?')">
                                 @csrf
                                 @method('DELETE')
@@ -86,6 +91,7 @@
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
+                            @endcan
                             @endif
                         </div>
                     </td>

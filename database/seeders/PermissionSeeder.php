@@ -38,6 +38,10 @@ class PermissionSeeder extends Seeder
         'warehouse' => ['view', 'create', 'edit', 'delete'],
         'stock-transfer' => ['view', 'create'],
         'pos' => ['view', 'open', 'close', 'checkout', 'discount', 'price_override'],
+        'payment' => ['process'],
+        'stock-adjustment' => ['approve'],
+        'purchase-requisition' => ['view', 'create', 'submit', 'approve', 'delete'],
+        'media' => ['upload', 'delete'],
         'booking' => ['view', 'create', 'edit', 'delete'],
         'sale' => ['view', 'create', 'edit', 'delete'],
         'income' => ['view', 'create', 'edit', 'delete'],
@@ -77,7 +81,13 @@ class PermissionSeeder extends Seeder
         'master-data' => ['view', 'create', 'edit', 'delete'],
     ];
 
-    private const SUPER_ONLY = ['user.delete', 'role.delete', 'role.create', 'role.edit', 'settings.edit', 'backup.download'];
+    /**
+     * SUPER_ONLY = permission yang TIDAK ikut ke role admin.
+     * user.delete / settings.edit / backup.download sengaja TIDAK super-only:
+     * route web sudah lama mengizinkan admin (middleware role), jadi permission
+     * harus mencerminkan akses efektif — kalau tidak, edit di /roles berbohong.
+     */
+    private const SUPER_ONLY = ['role.delete', 'role.create', 'role.edit'];
 
     public function run(): void
     {
@@ -98,7 +108,7 @@ class PermissionSeeder extends Seeder
 
         // admin: ALL kecuali super-only
         $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        $admin->syncPermissions(Permission::whereNotIn('name', self::SUPER_ONLY)->pluck('name')->toArray());
+        self::assignRolePermissions($admin, Permission::whereNotIn('name', self::SUPER_ONLY)->pluck('name')->toArray());
 
         // manager: view semua + edit/create transaksi + reports + marketing
         $manager = Role::firstOrCreate(['name' => 'manager', 'guard_name' => 'web']);
@@ -106,81 +116,16 @@ class PermissionSeeder extends Seeder
             ->whereNotIn('name', self::SUPER_ONLY)
             ->whereNotIn('name', ['user.create', 'user.edit', 'user.delete', 'role.view'])
             ->pluck('name')->toArray();
-        $manager->syncPermissions($managerPerms);
+        self::assignRolePermissions($manager, $managerPerms);
 
-        // kasir: POS + sales + invoice + customer view + product view
-        $kasir = Role::firstOrCreate(['name' => 'kasir', 'guard_name' => 'web']);
-        $kasir->syncPermissions([
-            'dashboard.view',
-            'pos.view', 'pos.open', 'pos.close', 'pos.checkout',
-            'sale.view', 'sale.create', 'sale.edit',
-            'invoice.view', 'invoice.create', 'invoice.edit', 'invoice.pdf', 'invoice.send-wa',
-            'estimates.view', 'estimates.convert_invoice',
-            'customer.view', 'customer.create',
-            'vehicle.view', 'vehicle.create',
-            'product.view',
-            'equipment.view',
-            'report.view',
-        ]);
-
-        // mekanik: service + jobcard + inventory + equipment + washbay
-        $mekanik = Role::firstOrCreate(['name' => 'mekanik', 'guard_name' => 'web']);
-        $mekanik->syncPermissions([
-            'dashboard.view',
-            'service.view', 'service.edit', 'service.complete', 'service.checkout',
-            'service-package.view',
-            'estimates.view',
-            'findings.view', 'findings.create',
-            'work-packages.view',
-            'work-tasks.view', 'work-tasks.start', 'work-tasks.finish',
-            'qc.view',
-            'jobcard.view', 'jobcard.edit', 'jobcard.print',
-            'vehicle.view',
-            'product.view', 'product.stock-opname',
-            'equipment.view',
-            'gate-pass.view', 'gate-pass.create',
-            'washbay.view',
-            'subcontractor.view',
-        ]);
-
-        // service_advisor: front-office + booking + service monitoring (no create/delete)
-        $serviceAdvisor = Role::firstOrCreate(['name' => 'service_advisor', 'guard_name' => 'web']);
-        $serviceAdvisor->syncPermissions([
-            'dashboard.view',
-            'service.view', 'service.edit', 'service.complete', 'service.checkout',
-            'service-package.view',
-            'estimates.view', 'estimates.create', 'estimates.update', 'estimates.send', 'estimates.revise',
-            'findings.view', 'findings.create', 'findings.update', 'findings.resolve',
-            'work-packages.view', 'work-packages.create', 'work-packages.update',
-            'work-tasks.view',
-            'qc.view',
-            'jobcard.view', 'jobcard.print',
-            'customer.view', 'customer.create',
-            'vehicle.view', 'vehicle.create',
-            'booking.view', 'booking.create',
-            'gate-pass.view', 'gate-pass.create',
-            'reminder.view', 'reminder.create',
-            'report.view',
-        ]);
-
-        // inventory: gudang — produk, stok, opname, adjustment, penerimaan
-        $inventory = Role::firstOrCreate(['name' => 'inventory', 'guard_name' => 'web']);
-        $inventory->syncPermissions([
-            'dashboard.view',
-            'product.view', 'product.create', 'product.edit', 'product.stock-adjust', 'product.stock-opname',
-            'purchase.view', 'purchase.create', 'purchase.edit',
-            'sale.view',
-            'estimates.view',
-            'findings.view',
-            'work-packages.view',
-            'supplier.view', 'supplier.create', 'supplier.edit',
-            'equipment.view',
-            'report.view',
-        ]);
+        foreach (['kasir', 'mekanik', 'service_advisor', 'inventory'] as $roleName) {
+            $role = Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+            self::assignRolePermissions($role, self::fixedRolePermissions()[$roleName]);
+        }
 
         $this->command->info('  Created 7 roles: super_admin, admin, manager, kasir, mekanik, service_advisor, inventory.');
 
-        // Assign roles — syncRoles ensures only the intended role is active
+        // Assign users — syncRoles ensures only the intended role is active
         $adminUser = User::firstOrCreate(['email' => 'admin@bengkel.test'], ['name' => 'Administrator', 'password' => bcrypt('password'), 'is_active' => true]);
         $adminUser->syncRoles('super_admin');
         $this->command->info('  admin@bengkel.test → super_admin');
@@ -196,4 +141,164 @@ class PermissionSeeder extends Seeder
 
         $this->command->info('  Demo users ready: admin / manager / kasir / teknisi / sales @bengkel.test');
     }
+
+    /**
+     * Beri permission ke role TANPA menghapus customisasi dari /roles.
+     * - Role baru: sync persis defaults.
+     * - Role lama (mis. setelah update deploy + reseed): hanya TAMBAH yang kurang,
+     *   permission yang dicabut/ditambah manual via UI tetap dipertahankan.
+     */
+    private static function assignRolePermissions(Role $role, array $permissions): void
+    {
+        if ($role->wasRecentlyCreated) {
+            $role->syncPermissions($permissions);
+
+            return;
+        }
+
+        $missing = array_diff($permissions, $role->permissions()->pluck('name')->toArray());
+        if (! empty($missing)) {
+            $role->givePermissionTo(array_values($missing));
+        }
+    }
+
+    /**
+     * Semua nama permission yang dikenal aplikasi (single source of truth
+     * untuk seeder DAN test).
+     */
+    public static function allPermissionNames(): array
+    {
+        $names = [];
+        foreach (self::MODULES as $module => $actions) {
+            foreach ($actions as $action) {
+                $names[] = "{$module}.{$action}";
+            }
+        }
+
+        return $names;
+    }
+
+    /**
+     * Daftar permission default per role (single source of truth untuk
+     * seeder DAN test). Admin/manager dihitung dinamis di run().
+     */
+    public static function fixedRolePermissions(): array
+    {
+        return [
+            'kasir' => [
+                'dashboard.view',
+                'pos.view', 'pos.open', 'pos.close', 'pos.checkout',
+                'payment.process',
+                'sale.view', 'sale.create', 'sale.edit',
+                'invoice.view', 'invoice.create', 'invoice.edit', 'invoice.pdf', 'invoice.send-wa',
+                'estimates.view', 'estimates.convert_invoice',
+                'customer.view', 'customer.create',
+                'vehicle.view', 'vehicle.create',
+                'product.view',
+                'equipment.view',
+                'report.view',
+                'purchase-requisition.view',
+            ],
+            'mekanik' => [
+                'dashboard.view',
+                'service.view', 'service.edit', 'service.complete', 'service.checkout',
+                'service-package.view',
+                'estimates.view',
+                'findings.view', 'findings.create',
+                'work-packages.view',
+                'work-tasks.view', 'work-tasks.start', 'work-tasks.finish',
+                'qc.view', 'qc.perform',
+                'jobcard.view', 'jobcard.edit', 'jobcard.print',
+                'vehicle.view',
+                'product.view', 'product.stock-opname',
+                'equipment.view',
+                'gate-pass.view', 'gate-pass.create', 'gate-pass.print', 'gate-pass.edit',
+                'washbay.view',
+                'subcontractor.view',
+                'media.upload',
+                'purchase-requisition.view',
+            ],
+            'service_advisor' => [
+                'dashboard.view',
+                'service.view', 'service.edit', 'service.complete', 'service.checkout',
+                'service-package.view',
+                'estimates.view', 'estimates.create', 'estimates.update', 'estimates.send', 'estimates.revise',
+                'findings.view', 'findings.create', 'findings.update', 'findings.resolve',
+                'work-packages.view', 'work-packages.create', 'work-packages.update',
+                'work-tasks.view',
+                'qc.view', 'qc.perform',
+                'jobcard.view', 'jobcard.print',
+                'customer.view', 'customer.create',
+                'vehicle.view', 'vehicle.create',
+                'booking.view', 'booking.create', 'booking.edit',
+                'gate-pass.view', 'gate-pass.create', 'gate-pass.print', 'gate-pass.edit',
+                'warranty.create',
+                'media.upload', 'media.delete',
+                'reminder.view', 'reminder.create',
+                'report.view',
+            ],
+            'inventory' => [
+                'dashboard.view',
+                'inventory.adjust',
+                'product.view', 'product.create', 'product.edit', 'product.stock-adjust', 'product.stock-opname',
+                'purchase.view', 'purchase.create', 'purchase.edit', 'purchase.receive',
+                'purchase-order.view', 'purchase-order.receive',
+                'purchase-requisition.view', 'purchase-requisition.create', 'purchase-requisition.submit',
+                'sale.view',
+                'estimates.view',
+                'findings.view',
+                'work-packages.view',
+                'supplier.view', 'supplier.create', 'supplier.edit',
+                'equipment.view',
+                'report.view',
+            ],
+        ];
+    }
+
+    /**
+     * Beri user permission produksi sesuai role-nya (untuk test).
+     * Additive + idempotent: custom role tanpa entri = tidak diubah.
+     */
+    public static function grantProductionPermissions(User $user): void
+    {
+        // Pastikan katalog permission lengkap dulu (DB test bisa sparse).
+        $allKnown = array_unique(self::allPermissionNames());
+        $existing = Permission::pluck('name')->all();
+        foreach (array_diff($allKnown, $existing) as $name) {
+            Permission::findOrCreate($name, 'web');
+        }
+
+        $fresh = $user->fresh();
+        foreach ($fresh->roles as $role) {
+            $permissions = match ($role->name) {
+                // super_admin lolos via Gate::before + hasWebPermission,
+                // tanpa perlu baris permission satu per satu.
+                'super_admin' => [],
+                // admin/manager: seluruh katalog permission (findOrCreate
+                // agar lengkap walau DB test masih sparse), minus pengecualian.
+                'admin' => array_diff(
+                    self::allPermissionNames(),
+                    self::SUPER_ONLY,
+                ),
+                'manager' => array_values(array_diff(
+                    array_filter(
+                        self::allPermissionNames(),
+                        fn ($name) => ! str_ends_with($name, '.delete'),
+                    ),
+                    array_merge(self::SUPER_ONLY, ['user.create', 'user.edit', 'user.delete', 'role.view']),
+                )),
+                default => self::fixedRolePermissions()[$role->name] ?? [],
+            };
+            $models = [];
+            foreach ($permissions as $name) {
+                $models[] = Permission::findOrCreate($name, 'web');
+            }
+            if ($models) {
+                $fresh->givePermissionTo(collect($models));
+            }
+        }
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
 }
+
+

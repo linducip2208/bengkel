@@ -48,7 +48,9 @@
                 @else
                 <form action="{{ route('reviews.unpublish', $r) }}" method="POST" class="d-inline">@csrf @method('PUT')<button class="btn btn-sm btn-warning" title="Unpublish"><i class="bi bi-eye-slash"></i></button></form>
                 @endif
+                @can('review.delete')
                 <form action="{{ route('reviews.destroy', $r) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus?')">@csrf @method('DELETE')<button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button></form>
+                @endcan
             </div>
         </div>
         <p class="mt-2 mb-2">{{ $r->comment }}</p>

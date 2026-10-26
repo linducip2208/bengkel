@@ -140,7 +140,7 @@ class PurchaseOrderController extends Controller
 
     public function markReceived(Request $request, PurchaseOrder $purchaseOrder)
     {
-        abort_unless(auth()->user()?->hasAnyRole(['super_admin', 'admin', 'manager', 'inventory']), 403);
+        abort_unless(auth()->user()?->hasWebPermission('purchase-order.receive') ?? false, 403);
         if ($purchaseOrder->items()->whereNull('product_id')->exists()) {
             return redirect()->route('purchase-orders.show', $purchaseOrder)
                 ->with('error', 'Ada item tanpa produk terkait. Penerimaan hanya bisa dilakukan jika semua item terhubung ke produk.');
@@ -166,10 +166,10 @@ class PurchaseOrderController extends Controller
 
     public function transition(PurchaseOrder $purchaseOrder, string $action)
     {
-        $roles = $action === 'submit'
-            ? ['super_admin', 'admin', 'manager', 'inventory']
-            : ['super_admin', 'admin', 'manager'];
-        abort_unless(auth()->user()?->hasAnyRole($roles), 403);
+        $perms = $action === 'submit'
+            ? ['purchase-order.receive']
+            : ['purchase-order.approve'];
+        abort_unless((bool) auth()->user()?->hasWebPermission(...$perms), 403);
         try {
             $updated = app(PurchaseOrderWorkflowService::class)->transition($purchaseOrder, $action);
         } catch (\RuntimeException $e) {

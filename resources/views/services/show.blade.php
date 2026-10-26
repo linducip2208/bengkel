@@ -155,15 +155,19 @@
                                 </td>
                                 <td class="text-end">
                                     @if(!$st->started_at)
+                                        @can('work-tasks.start')
                                         <form action="{{ route('service-technicians.start', $st) }}" method="POST" class="d-inline">
                                             @csrf
                                             <button class="btn btn-sm btn-outline-success"><i class="fas fa-play me-1"></i> Mulai</button>
                                         </form>
+                                        @endcan
                                     @elseif(!$st->finished_at)
+                                        @can('work-tasks.finish')
                                         <form action="{{ route('service-technicians.finish', $st) }}" method="POST" class="d-inline">
                                             @csrf
                                             <button class="btn btn-sm btn-outline-danger"><i class="fas fa-stop me-1"></i> Selesai</button>
                                         </form>
+                                        @endcan
                                     @else
                                         <span class="text-muted small">Selesai</span>
                                     @endif

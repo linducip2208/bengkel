@@ -3,7 +3,9 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0"><i class="fas fa-toolbox me-2"></i>Peralatan Bengkel</h4>
+    @can('equipment.create')
     <a href="{{ route('equipment.create') }}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Tambah Alat</a>
+    @endcan
 </div>
 <div class="row mb-3">
     <div class="col-md-8">
@@ -46,11 +48,15 @@
                         @endif
                     </td>
                     <td class="text-end">
+                        @can('equipment.edit')
                         <a href="{{ route('equipment.edit', $eq) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>
+                        @endcan
+                        @can('equipment.delete')
                         <form action="{{ route('equipment.destroy', $eq) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus?')">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                         </form>
+                        @endcan
                     </td>
                 </tr>
                 @empty

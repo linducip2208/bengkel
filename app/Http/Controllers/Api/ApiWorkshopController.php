@@ -153,6 +153,16 @@ class ApiWorkshopController extends Controller
             return response()->json(['message' => 'Aksi tidak valid.'], 422);
         }
 
+        // Otorisasi per aksi berbasis permission (bukan nama role) agar
+        // edit di /roles berdampak. pause/resume satu keluarga dengan start.
+        $required = match ($action) {
+            'start', 'pause', 'resume' => 'work-tasks.start',
+            'finish' => 'work-tasks.finish',
+        };
+        if (! (auth()->user()?->hasWebPermission($required) ?? false)) {
+            return response()->json(['message' => 'Anda tidak berhak melakukan aksi ini.'], 403);
+        }
+
         try {
             $task = $flow->{$method}($task, auth()->id());
         } catch (\Throwable $e) {

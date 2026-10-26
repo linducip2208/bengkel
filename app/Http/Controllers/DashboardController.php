@@ -166,8 +166,8 @@ class DashboardController extends Controller
     {
         $widgets = [];
 
-        // Owner & Admin: financial overview
-        if ($user->hasRole('super_admin') || $user->hasRole('admin') || $user->hasRole('owner')) {
+        // Owner & Admin: financial overview (perm-based agar selaras /roles).
+        if ($user->hasWebPermission('income.view', 'expense.view')) {
             $widgets['revenue'] = Income::whereMonth('income_date', now()->month)->sum('amount');
             $widgets['expense'] = Expense::whereMonth('expense_date', now()->month)->sum('amount');
             $widgets['profit'] = $widgets['revenue'] - $widgets['expense'];
@@ -175,15 +175,15 @@ class DashboardController extends Controller
             $widgets['unpaid_invoices'] = Invoice::whereIn('payment_status', [0, 1])->count();
         }
 
-        // Manager: operational metrics
-        if ($user->hasRole('manager') || $user->hasRole('admin')) {
+        // Operational metrics: everyone who can see services.
+        if ($user->hasWebPermission('service.view')) {
             $widgets['services_today'] = Service::whereDate('service_date', today())->count();
             $widgets['services_pending'] = Service::where('workflow_status', '<', 12)->count();
             $widgets['services_completed'] = Service::where('workflow_status', 12)->whereDate('updated_at', today())->count();
         }
 
-        // Teknisi (mekanik): assigned tasks
-        if ($user->hasRole('mekanik') || $user->hasRole('teknisi')) {
+        // Teknisi: assigned tasks (punya hak memulai task).
+        if ($user->hasWebPermission('work-tasks.start')) {
             $widgets['my_pending'] = Service::where('workflow_status', '<', 12)
                 ->where(function ($q) use ($user) {
                     $q->where('assign_to', $user->id)
@@ -200,8 +200,8 @@ class DashboardController extends Controller
                 ->sum('commission_amt');
         }
 
-        // Kasir: POS stats
-        if ($user->hasRole('kasir')) {
+        // Kasir: POS stats.
+        if ($user->hasWebPermission('pos.view')) {
             $widgets['pos_today'] = Invoice::where('invoice_type', 'pos')
                 ->whereDate('invoice_date', today())->count();
             $widgets['pos_revenue_today'] = Invoice::where('invoice_type', 'pos')

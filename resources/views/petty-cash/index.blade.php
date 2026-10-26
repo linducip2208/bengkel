@@ -58,10 +58,12 @@
                 </td>
                 <td class="small">{{ $r->creator?->name }}</td>
                 <td>
+                    @can('petty-cash.delete')
                     <form action="{{ route('petty-cash.destroy', $r) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus?')">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-danger" title="Hapus"><i class="bi bi-trash"></i></button>
                     </form>
+                    @endcan
                 </td>
             </tr>
             @empty<tr><td colspan="7" class="text-center text-muted py-3">Belum ada transaksi kas kecil.</td></tr>@endforelse

@@ -36,6 +36,9 @@ class PaymentIdempotencyTest extends TestCase
         Role::findOrCreate($role, 'web');
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole($role);
+        // Hak proses pembayaran sesuai default produksi untuk kasir (model
+        // langsung agar tanpa resolusi guard).
+        $user->givePermissionTo([\Spatie\Permission\Models\Permission::findOrCreate('payment.process', 'web')]);
 
         if (! in_array($role, ['super_admin', 'admin'], true)) {
             $branch = Branch::create(['name' => 'Test Branch '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);

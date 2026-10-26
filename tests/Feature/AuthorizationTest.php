@@ -9,6 +9,7 @@ use App\Models\ProductType;
 use App\Models\ProductUnit;
 use App\Models\StockAdjustment;
 use App\Models\User;
+use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -39,6 +40,7 @@ class AuthorizationTest extends TestCase
         Role::findOrCreate($role, 'web');
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole($role);
+        PermissionSeeder::grantProductionPermissions($user);
         if (! in_array($role, ['super_admin', 'admin'], true)) {
             $branch = Branch::create(['name' => 'Cabang Uji '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
             $user->branches()->sync([$branch->id]);
@@ -163,8 +165,6 @@ class AuthorizationTest extends TestCase
     public function test_admin_can_update_another_users_password(): void
     {
         $admin = $this->actingAsRole('admin');
-        $permission = Permission::findOrCreate('users.manage', 'web');
-        $admin->givePermissionTo($permission);
 
         $targetRole = Role::findOrCreate('kasir', 'web');
         $target = User::factory()->create([

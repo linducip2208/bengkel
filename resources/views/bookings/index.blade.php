@@ -58,6 +58,7 @@
                     </form>
                 </td>
                 <td>
+                    @can('booking.edit')
                     @if(!$b->service_id)
                     <form action="{{ route('bookings.convert', $b) }}" method="POST" class="d-inline" onsubmit="return confirm('Konversi booking ini ke Service?')">
                         @csrf
@@ -66,10 +67,13 @@
                     @else
                     <a href="{{ route('services.show', $b->service_id) }}" class="btn btn-sm btn-info me-1" title="Lihat Service"><i class="bi bi-wrench"></i></a>
                     @endif
+                    @endcan
+                    @can('booking.delete')
                     <form action="{{ route('bookings.destroy', $b) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus booking?')">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-danger" title="Hapus"><i class="bi bi-trash"></i></button>
                     </form>
+                    @endcan
                 </td>
             </tr>
             @empty<tr><td colspan="8" class="text-center text-muted py-3">Belum ada booking.</td></tr>@endforelse

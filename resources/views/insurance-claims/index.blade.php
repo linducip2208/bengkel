@@ -51,10 +51,12 @@
                     </td>
                     <td class="text-end">
                         <a href="{{ route('insurance-claims.show', $c) }}" class="btn btn-sm btn-outline-primary me-1" title="Detail"><i class="fas fa-eye"></i></a>
+                        @can('insurance-claim.delete')
                         <form action="{{ route('insurance-claims.destroy', $c) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus klaim ini?')">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
                         </form>
+                        @endcan
                     </td>
                 </tr>
                 @empty

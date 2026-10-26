@@ -31,11 +31,15 @@
                 <td>@if($g->is_default)<span class="badge bg-primary">Default</span>@endif</td>
                 <td>@if($g->is_active)<span class="badge bg-success">Aktif</span>@else<span class="badge bg-secondary">Off</span>@endif</td>
                 <td>
+                    @can('payment-gateway.edit')
                     <a href="{{ route('payment-gateways.edit', $g) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                    @endcan
+                    @can('payment-gateway.delete')
                     <form action="{{ route('payment-gateways.destroy', $g) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus?')">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
                     </form>
+                    @endcan
                 </td>
             </tr>
             @empty<tr><td colspan="7" class="text-center text-muted py-4">Belum ada Payment Gateway. <a href="{{ route('payment-gateways.create') }}">Setup yang pertama</a>.</td></tr>@endforelse

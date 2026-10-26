@@ -35,10 +35,12 @@
                     <td>{{ $p->observation_point }}</td>
                     <td class="text-end">
                         <a href="{{ route('observation-points.edit', $p) }}" class="btn btn-sm btn-outline-warning me-1"><i class="fas fa-edit"></i></a>
+                        @can('master-data.delete')
                         <form action="{{ route('observation-points.destroy', $p) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus point ini?')">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                         </form>
+                        @endcan
                     </td>
                 </tr>
                 @empty

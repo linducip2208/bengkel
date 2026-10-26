@@ -3,7 +3,9 @@
 @section('content')
 <div class="d-flex justify-content-between mb-4">
     <h4><i class="bi bi-shield-check me-2"></i>Klaim Garansi</h4>
+    @can('warranty.create')
     <a href="{{ route('warranty-claims.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Buat Klaim</a>
+    @endcan
 </div>
 <div class="card"><div class="card-body">
     <form method="GET" class="row g-2 mb-3">
@@ -39,8 +41,12 @@
                     </form>
                 </td>
                 <td>
+                    @can('warranty.edit')
                     <a href="{{ route('warranty-claims.edit', $c) }}" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i></a>
+                    @endcan
+                    @can('warranty.delete')
                     <form action="{{ route('warranty-claims.destroy', $c) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus?')">@csrf @method('DELETE')<button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button></form>
+                    @endcan
                 </td>
             </tr>
             @empty<tr><td colspan="7" class="text-center text-muted py-3">Belum ada klaim.</td></tr>@endforelse

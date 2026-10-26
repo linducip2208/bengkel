@@ -64,11 +64,14 @@ class MediaAttachmentController extends Controller
 
     public function destroy(MediaAttachment $media)
     {
-        // Only the uploader or a supervisor may delete documents (IDOR guard).
+        // Hapus dokumen butuh permission media.delete agar edit di /roles
+        // berdampak. IDOR guard: uploader boleh hapus file sendiri walau
+        // tanpa media.delete (mekanik upload-only), pemegang media.delete
+        // boleh hapus file siapa pun.
         $isUploader = (int) $media->uploaded_by === (int) auth()->id();
-        $isSupervisor = auth()->user()?->hasAnyRole(['super_admin', 'admin', 'manager']);
+        $canDeleteAny = (bool) auth()->user()?->hasWebPermission('media.delete');
 
-        abort_unless($isUploader || $isSupervisor, 403, 'Anda tidak berhak menghapus dokumen ini.');
+        abort_unless($isUploader || $canDeleteAny, 403, 'Anda tidak berhak menghapus dokumen ini.');
 
         foreach (['local', 'public'] as $disk) {
             if (Storage::disk($disk)->exists($media->file_path)) {

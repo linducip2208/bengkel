@@ -30,9 +30,12 @@ class AppServiceProvider extends ServiceProvider
             return "<?php echo \\App\\Models\\Currency::format($expression); ?>";
         });
 
-        // super_admin auto-grant all permissions
+        // super_admin auto-grant all permissions (guard eksplisit: lihat User::hasWebPermission).
         Gate::before(function ($user, $ability) {
-            if ($user->hasRole('super_admin')) {
+            if ($user->is_active === false) {
+                return false;
+            }
+            if ($user->hasRole('super_admin', 'web')) {
                 return true;
             }
 
@@ -41,29 +44,21 @@ class AppServiceProvider extends ServiceProvider
 
         /*
          * Server-side action gates — defense in depth on top of route
-         * middleware. Route middleware hides/blocks endpoints; these gates
-         * are enforced inside controllers via $this->authorize() so a missed
-         * route definition can never expose a sensitive action.
+         * middleware. PENTING: gate HARUS cek Spatie permission LANGSUNG via
+         * hasAnyPermission (BUKAN $user->can, karena gate yang bernama sama
+         * dengan permission — mis. estimates.override — akan rekursi tak
+         * berujung), supaya edit di /roles benar-benar berdampak. Nama role
+         * hanya dipakai sebagai default awal di PermissionSeeder.
          */
-        $roleGates = [
-            // Kasir has invoice.create/edit permissions in PermissionSeeder and
-            // must be able to use the web invoice form as well.
-            'invoices.manage' => ['admin', 'manager', 'kasir'],
-            'invoices.delete' => ['admin'],
-            'estimates.override' => ['admin', 'manager'],
-            'estimates.convert_invoice' => ['admin', 'manager', 'kasir'],
-            'payments.process' => ['admin', 'manager', 'kasir'],
-            'stock-adjustments.approve' => ['admin', 'manager'],
-            'users.manage' => ['admin'],
-            'roles.manage' => [],
-            'journals.manage' => ['admin', 'manager'],
-        ];
-
-        foreach ($roleGates as $ability => $roles) {
-            Gate::define($ability, function ($user) use ($roles) {
-                return $user->hasAnyRole($roles);
-            });
-        }
+        Gate::define('invoices.manage', fn ($user) => $user->hasWebPermission('invoice.create', 'invoice.edit'));
+        Gate::define('invoices.delete', fn ($user) => $user->hasWebPermission('invoice.delete'));
+        Gate::define('estimates.override', fn ($user) => $user->hasWebPermission('estimates.override'));
+        Gate::define('estimates.convert_invoice', fn ($user) => $user->hasWebPermission('estimates.convert_invoice'));
+        Gate::define('payments.process', fn ($user) => $user->hasWebPermission('payment.process'));
+        Gate::define('stock-adjustments.approve', fn ($user) => $user->hasWebPermission('stock-adjustment.approve'));
+        Gate::define('users.manage', fn ($user) => $user->hasWebPermission('user.edit'));
+        Gate::define('roles.manage', fn ($user) => $user->hasWebPermission('role.edit'));
+        Gate::define('journals.manage', fn ($user) => $user->hasWebPermission('finance-journal.create'));
 
         // Share settings ke semua views
         View::composer('*', function ($view) {

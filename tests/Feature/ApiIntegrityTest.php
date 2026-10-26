@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Http\Middleware\RequirePair;
 use App\Models\Branch;
 use App\Models\Customer;
+use Database\Seeders\PermissionSeeder;
 use App\Models\FuelType;
 use App\Models\Income;
 use App\Models\Invoice;
@@ -46,6 +47,7 @@ class ApiIntegrityTest extends TestCase
         Role::findOrCreate($role, 'web');
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole($role);
+        PermissionSeeder::grantProductionPermissions($user);
         if (! in_array($role, ['super_admin', 'admin'], true)) {
             $branch = Branch::create(['name' => 'Test Branch '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
             $user->branches()->sync([$branch->id]);

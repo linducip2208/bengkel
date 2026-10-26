@@ -7,6 +7,7 @@ use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\FuelType;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 use App\Models\Vehicle;
 use App\Models\VehicleBrand;
 use App\Models\VehicleType;
@@ -23,6 +24,7 @@ class VehicleIdentityTest extends TestCase
         parent::setUp();
         $this->withoutMiddleware([RequirePair::class, PreventRequestForgery::class]);
         $user = User::factory()->create(['is_active' => true]);
+        $user->assignRole(Role::findOrCreate('super_admin', 'web'));
         $branch = Branch::create(['name' => 'Test Branch '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
         $user->branches()->sync([$branch->id]);
         $this->actingAs($user);

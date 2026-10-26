@@ -31,10 +31,12 @@
                 <td>@if($v->is_active)<span class="badge bg-success">Aktif</span>@else<span class="badge bg-secondary">Off</span>@endif</td>
                 <td>
                     <a href="{{ route('vouchers.edit', $v) }}" class="btn btn-sm btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>
+                    @can('voucher.delete')
                     <form action="{{ route('vouchers.destroy', $v) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus?')">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-danger" title="Hapus"><i class="bi bi-trash"></i></button>
                     </form>
+                    @endcan
                 </td>
             </tr>
             @empty<tr><td colspan="9" class="text-center text-muted py-3">Belum ada voucher.</td></tr>@endforelse

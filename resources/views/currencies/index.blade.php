@@ -25,10 +25,12 @@
                     <td>@if($c->is_default)<span class="badge bg-success">Default</span>@endif</td>
                     <td class="text-end">
                         <a href="{{ route('currencies.edit', $c) }}" class="btn btn-sm btn-outline-warning me-1"><i class="fas fa-edit"></i></a>
+                        @can('currency.delete')
                         <form action="{{ route('currencies.destroy', $c) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus?')">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                         </form>
+                        @endcan
                     </td>
                 </tr>
                 @empty

@@ -6,6 +6,7 @@ use App\Http\Middleware\RequirePair;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -18,7 +19,9 @@ class SlugGenerationTest extends TestCase
     {
         parent::setUp();
         $this->withoutMiddleware([RequirePair::class, PreventRequestForgery::class]);
-        $this->actingAs(User::factory()->create(['is_active' => true]));
+        $user = User::factory()->create(['is_active' => true]);
+        $user->assignRole(Role::findOrCreate('super_admin', 'web'));
+        $this->actingAs($user);
     }
 
     public function test_post_slug_collisions_are_normalized_and_suffixed_without_sql_errors(): void

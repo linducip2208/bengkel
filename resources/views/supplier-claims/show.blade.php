@@ -55,6 +55,7 @@
             <div class="card-header"><strong>Aksi</strong></div>
             <div class="card-body">
                 @if($supplierClaim->status === 'pending' || $supplierClaim->status === 'submitted')
+                @can('warranty.edit')
                 <form action="{{ route('supplier-claims.approve', $supplierClaim) }}" method="POST" class="d-inline me-1">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-check me-1"></i>Setujui</button>
@@ -66,17 +67,22 @@
                         <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-times me-1"></i>Tolak</button>
                     </div>
                 </form>
+                @endcan
                 @endif
                 @if($supplierClaim->status === 'approved')
+                @can('warranty.edit')
                 <form action="{{ route('supplier-claims.mark-paid', $supplierClaim) }}" method="POST" class="d-inline me-1">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-money-bill-wave me-1"></i>Tandai Dibayar</button>
                 </form>
+                @endcan
                 @endif
+                @can('warranty.delete')
                 <form action="{{ route('supplier-claims.destroy', $supplierClaim) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus klaim ini?')">
                     @csrf @method('DELETE')
                     <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash me-1"></i>Hapus</button>
                 </form>
+                @endcan
             </div>
         </div>
     </div>

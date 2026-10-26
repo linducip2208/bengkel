@@ -18,15 +18,21 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">Daftar Produk</h4>
     <div class="d-flex gap-2">
+        @can('product.stock-opname')
         <a href="{{ route('products.stock-opname') }}" class="btn btn-outline-warning btn-sm">
             <i class="bi bi-clipboard-check"></i> Stock Opname
         </a>
+        @endcan
+        @can('product.import')
         <a href="{{ route('products.import-form') }}" class="btn btn-outline-info btn-sm">
             <i class="bi bi-upload"></i> Import
         </a>
+        @endcan
+        @can('product.create')
         <a href="{{ route('products.create') }}" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-lg"></i> Tambah Produk
         </a>
+        @endcan
     </div>
 </div>
 
@@ -127,12 +133,17 @@
                             <a href="{{ route('products.barcode', $product) }}" class="btn btn-outline-secondary" title="Barcode" target="_blank">
                                 <i class="bi bi-upc-scan"></i>
                             </a>
+                            @can('product.stock-adjust')
                             <a href="{{ route('products.stock-adjust', $product) }}" class="btn btn-outline-info" title="Stok Adjust">
                                 <i class="bi bi-box-arrow-in-down"></i>
                             </a>
+                            @endcan
+                            @can('product.edit')
                             <a href="{{ route('products.edit', $product) }}" class="btn btn-outline-warning" title="Edit">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            @endcan
+                            @can('product.delete')
                             <form action="{{ route('products.destroy', $product) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus produk ini?')">
                                 @csrf
                                 @method('DELETE')
@@ -140,6 +151,7 @@
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
+                            @endcan
                         </div>
                     </td>
                 </tr>

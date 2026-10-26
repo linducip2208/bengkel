@@ -87,7 +87,11 @@
                 <div class="row-line"><span>Subtotal</span><span id="sumSubtotal">Rp 0</span></div>
                 <div class="row-line">
                     <span>Diskon</span>
+                    @can('pos.discount')
                     <span><input type="number" name="discount" id="discountInput" class="form-control form-control-sm text-end" style="width: 110px;" value="0" min="0"></span>
+                    @else
+                    <span class="text-muted small">hubungi supervisor</span><input type="hidden" name="discount" id="discountInput" value="0">
+                    @endcan
                 </div>
                 <div class="row-line">
                     <span>Voucher</span>
@@ -145,6 +149,7 @@
 <script>
 (function() {
     const cart = {}; // id → {id, name, price, quantity}
+    const CAN_DISCOUNT = @json(auth()->user()->can('pos.discount'));
     const items = document.querySelectorAll('.product-card');
     const cartEl = document.getElementById('cartItems');
     const empty = document.getElementById('cartEmpty');
@@ -173,7 +178,7 @@
                     <input type="hidden" name="items[${id}][product_id]" value="${id}">
                     <input type="hidden" name="items[${id}][unit_price]" value="${it.price}">
                     <input type="hidden" name="items[${id}][discount_type]" value="fixed">
-                    <input type="number" name="items[${id}][discount]" class="form-control form-control-sm discount-input" style="width:90px;" value="${lineDisc}" min="0" data-id="${id}" placeholder="Diskon">
+                    ${CAN_DISCOUNT ? `<input type="number" name="items[${id}][discount]" class="form-control form-control-sm discount-input" style="width:90px;" value="${lineDisc}" min="0" data-id="${id}" placeholder="Diskon">` : `<input type="hidden" name="items[${id}][discount]" value="0">`}
                 </div>
                 <input type="number" name="items[${id}][quantity]" class="form-control form-control-sm qty-input" value="${it.quantity}" min="1" data-id="${id}">
                 <div class="total">${fmt(it.price * it.quantity - lineDisc)}</div>

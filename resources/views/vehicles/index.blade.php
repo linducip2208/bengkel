@@ -5,9 +5,11 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0"><i class="fas fa-car me-2"></i>Kendaraan</h4>
+    @can('vehicle.create')
     <a href="{{ route('vehicles.create') }}" class="btn btn-primary">
         <i class="fas fa-plus me-1"></i>+ New Vehicle
     </a>
+    @endcan
 </div>
 
 <div class="card">
@@ -84,9 +86,12 @@
                             <a href="{{ route('vehicles.show', $vehicle) }}" class="btn btn-sm btn-outline-info me-1" title="Detail">
                                 <i class="fas fa-eye"></i>
                             </a>
+                            @can('vehicle.edit')
                             <a href="{{ route('vehicles.edit', $vehicle) }}" class="btn btn-sm btn-outline-warning me-1" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
+                            @endcan
+                            @can('vehicle.delete')
                             <form action="{{ route('vehicles.destroy', $vehicle) }}" method="POST" class="d-inline"
                                 onsubmit="return confirm('Hapus kendaraan ini?')">
                                 @csrf @method('DELETE')

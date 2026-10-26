@@ -279,6 +279,12 @@ class PosController extends Controller
 
         $totalPaid = round(array_sum(array_column($payments, 'amount')), 2);
 
+        // Diskon POS hanya boleh diberikan oleh role yang memegang pos.discount
+        // (selaras dengan ApiPosController). Kasir tanpa izin ini 403.
+        $hasDiscount = ((float) ($validated['discount'] ?? 0)) > 0
+            || collect($validated['items'])->contains(fn ($i) => ((float) ($i['discount'] ?? 0)) > 0);
+        abort_unless(! $hasDiscount || (auth()->user()?->hasWebPermission('pos.discount') ?? false), 403, 'Anda tidak berhak memberikan diskon POS.');
+
         $voucher = null;
         if (! empty($validated['voucher_id'])) {
             $voucher = Voucher::find($validated['voucher_id']);
@@ -407,7 +413,7 @@ class PosController extends Controller
     protected function authorizeSessionOwner(PosSession $session): void
     {
         $isOwner = $session->user_id === auth()->id();
-        $isSupervisor = auth()->user()?->hasRole(['super_admin', 'admin', 'manager']);
+        $isSupervisor = (bool) auth()->user()?->hasWebPermission('user.view');
 
         abort_unless($isOwner || $isSupervisor, 403, 'Anda tidak berhak menutup sesi kasir ini.');
     }

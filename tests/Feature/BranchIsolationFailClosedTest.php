@@ -6,6 +6,7 @@ use App\Http\Middleware\RequirePair;
 use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\Expense;
+use Database\Seeders\PermissionSeeder;
 use App\Models\FuelType;
 use App\Models\Income;
 use App\Models\Invoice;
@@ -57,6 +58,7 @@ class BranchIsolationFailClosedTest extends TestCase
         Role::findOrCreate($role, 'web');
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole(Role::findByName($role, 'web'));
+        PermissionSeeder::grantProductionPermissions($user);
         if ($branchIds !== []) {
             $user->branches()->sync($branchIds);
         }
@@ -169,7 +171,9 @@ class BranchIsolationFailClosedTest extends TestCase
         $sys = $this->makeUser('super_admin');
         $f = $this->seedFixtures($a, $b, $c, $sys);
 
-        $user = $this->makeUser('mekanik', [$a->id]);
+        // Isolation mechanics don't depend on role: use kasir (holds
+        // customer/invoice read perms in production) as the restricted actor.
+        $user = $this->makeUser('kasir', [$a->id]);
         $this->actAs($user);
 
         $access = $user->branchAccess();
@@ -356,22 +360,29 @@ class BranchIsolationFailClosedTest extends TestCase
         $this->assertNull(Customer::whereKey($nullCust->id)->first());
     }
 
-    // ---------- G. role vs branch independence ----------
+    // ---------- G. permission gate vs branch independence ----------
 
-    public function test_g_role_middleware_intact_and_branch_independent(): void
+    public function test_g_permission_gate_intact_and_branch_independent(): void
     {
         $a = $this->makeBranch('RL1');
         $b = $this->makeBranch('RL2');
         $sys = $this->makeUser('super_admin');
         $f = $this->seedFixtures($a, $b, $a, $sys);
 
-        // kasir lacks manager role: write to /invoices must 403 even for own branch.
-        $kasir = $this->makeUser('kasir', [$a->id]);
-        $this->actAs($kasir);
+        // Mekanik lacks invoice.create: write to /invoices must 403 even for own branch.
+        $mekanik = $this->makeUser('mekanik', [$a->id]);
+        $this->actAs($mekanik);
         $this->postJson('/api/v1/invoices', ['service_id' => 9999, 'invoice_date' => now()->toDateString()])
             ->assertStatus(403);
 
-        // Branch isolation works regardless of role passing: admin of branch A
+        // Kasir holds invoice.create: invalid payload reaches validation (422),
+        // proving auth passed and only the data is rejected.
+        $kasir = $this->makeUser('kasir', [$a->id]);
+        $this->actAs($kasir);
+        $this->postJson('/api/v1/invoices', ['service_id' => 9999, 'invoice_date' => now()->toDateString()])
+            ->assertStatus(422);
+
+        // Branch isolation works regardless of permission passing: admin of branch A
         // still cannot read branch B (use manager role w/ branch A).
         $mgr = $this->makeUser('manager', [$a->id]);
         $this->actAs($mgr);

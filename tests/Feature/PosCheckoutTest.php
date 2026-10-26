@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Http\Middleware\RequirePair;
 use App\Models\Branch;
 use App\Models\Income;
+use Database\Seeders\PermissionSeeder;
 use App\Models\Invoice;
 use App\Models\PaymentMethod;
 use App\Models\PaymentRecord;
@@ -40,6 +41,7 @@ class PosCheckoutTest extends TestCase
 
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole($role);
+        PermissionSeeder::grantProductionPermissions($user);
 
         if (! in_array($role, ['super_admin', 'admin'], true)) {
             $branch = Branch::create(['name' => 'Cabang Kasir '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);

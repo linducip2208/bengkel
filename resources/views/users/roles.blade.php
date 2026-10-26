@@ -1,11 +1,14 @@
 @extends('layouts.app')
 @section('title', 'Role & Permission')
 @section('content')
+@php $canEditRoles = auth()->user()?->can('role.edit'); @endphp
 <div class="d-flex justify-content-between mb-4">
     <h4><i class="bi bi-shield-lock me-2"></i>Role & Permission</h4>
     <div>
         <a href="{{ route('users.index') }}" class="btn btn-outline-secondary"><i class="bi bi-people me-1"></i>Daftar User</a>
+        @can('role.create')
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRoleModal"><i class="bi bi-plus-lg me-1"></i>Tambah Role</button>
+        @endcan
     </div>
 </div>
 
@@ -27,7 +30,7 @@
                 {{ $role->name }}
                 <small class="text-muted ms-2">{{ $role->users_count }} user • <span class="perm-count">{{ $role->permissions->count() }}</span> permission</small>
             </h5>
-            @if(!$isSystem)
+            @if(!$isSystem && $canEditRoles)
             <div class="dropdown">
                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
                     <i class="bi bi-lightning-fill me-1"></i>Quick Set
@@ -47,7 +50,7 @@
         <form action="{{ route('roles.update', $role) }}" method="POST" data-role-form="{{ $role->id }}">
             @csrf @method('PUT')
 
-            @if(!$isSystem)
+            @if(!$isSystem && $canEditRoles)
             <div class="d-flex gap-2 mb-3 flex-wrap">
                 <button type="button" class="btn btn-sm btn-success" data-role-check-all="{{ $role->id }}">
                     <i class="bi bi-check-all me-1"></i>Centang Semua
@@ -70,7 +73,7 @@
                         <h6 class="text-muted text-uppercase small mb-0">
                             <i class="bi bi-folder me-1"></i>{{ $module }}
                         </h6>
-                        @if(!$isSystem)
+                        @if(!$isSystem && $canEditRoles)
                         <div class="form-check form-check-inline m-0">
                             <input class="form-check-input module-check-all" type="checkbox"
                                 data-role-id="{{ $role->id }}" data-module="{{ $module }}"
@@ -89,7 +92,7 @@
                             data-role-id="{{ $role->id }}" data-module="{{ $module }}" data-action="{{ $action }}"
                             id="p{{ $role->id }}_{{ $perm->id }}"
                             {{ $role->permissions->contains('id', $perm->id) ? 'checked' : '' }}
-                            {{ $isSystem ? 'disabled' : '' }}>
+                            {{ ($isSystem || ! $canEditRoles) ? 'disabled' : '' }}>
                         <label class="form-check-label small" for="p{{ $role->id }}_{{ $perm->id }}">{{ $action }}</label>
                     </div>
                     @endforeach
@@ -98,10 +101,12 @@
                 @endforeach
             </div>
 
-            @if(!$isSystem)
+            @if(! $isSystem && $canEditRoles)
             <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Simpan Permission untuk {{ $role->name }}</button>
-            @else
+            @elseif($isSystem)
             <small class="text-muted"><em><i class="bi bi-info-circle me-1"></i>Role sistem ({{ $role->name }}) otomatis dapat semua permission, tidak bisa diubah & tidak bisa dihapus.</em></small>
+            @else
+            <small class="text-muted"><em><i class="bi bi-info-circle me-1"></i>Anda hanya bisa melihat permission (butuh akses role.edit untuk mengubah).</em></small>
             @endif
         </form>
     </div>
@@ -187,15 +192,28 @@
         item.addEventListener('click', function(e) {
             e.preventDefault();
             const roleId = this.dataset.roleId;
+            const preset = this.dataset.preset;
+            const boxes = document.querySelectorAll(`.perm-checkbox[data-role-id="${roleId}"]`);
+            // Full Access / Clear = semua checkbox (termasuk aksi custom
+            // seperti approve/receive/perform/process) agar sesuai label.
+            if (preset === 'all' || preset === 'none') {
+                boxes.forEach(cb => { if (!cb.disabled) cb.checked = (preset === 'all'); });
+                syncMasters(roleId);
+                recountRole(roleId);
+                return;
+            }
+            // Preset parsial hanya menyentuh aksi CRUD (view/create/edit/
+            // delete), aksi custom dibiarkan apa adanya supaya tidak
+            // menghapus permission khusus secara diam-diam.
             const allowed = {
-                'all': ['view', 'create', 'edit', 'delete'],
                 'view': ['view'],
                 'read_edit': ['view', 'edit'],
                 'create_read': ['view', 'create'],
-                'none': [],
-            }[this.dataset.preset] || [];
-            document.querySelectorAll(`.perm-checkbox[data-role-id="${roleId}"]`).forEach(cb => {
-                if (!cb.disabled) cb.checked = allowed.includes(cb.dataset.action);
+            }[preset] || [];
+            const crud = ['view', 'create', 'edit', 'delete'];
+            boxes.forEach(cb => {
+                if (cb.disabled) return;
+                if (crud.includes(cb.dataset.action)) cb.checked = allowed.includes(cb.dataset.action);
             });
             syncMasters(roleId);
             recountRole(roleId);

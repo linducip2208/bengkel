@@ -94,8 +94,8 @@ class ApiPurchaseController extends Controller
 
     public function receivePurchaseOrder(Request $request, PurchaseOrder $purchaseOrder): JsonResponse
     {
-        if (! auth()->user()?->hasAnyRole(['super_admin', 'admin', 'manager', 'inventory'])) {
-            return response()->json(['message' => 'Anda tidak berhak menerima purchase order.'], 403);
+        if (! (auth()->user()?->hasWebPermission('purchase.receive') ?? false)) {
+            return response()->json(['message' => 'Anda tidak berhak menerima purchase.'], 403);
         }
         if (! auth()->user()->hasBranchAccess($purchaseOrder->branch_id ? (int) $purchaseOrder->branch_id : null)) {
             return response()->json(['message' => 'Purchase order tidak dapat diakses.'], 404);
@@ -116,10 +116,10 @@ class ApiPurchaseController extends Controller
 
     public function transitionPurchaseOrder(PurchaseOrder $purchaseOrder, string $action): JsonResponse
     {
-        $roles = $action === 'submit'
-            ? ['super_admin', 'admin', 'manager', 'inventory']
-            : ['super_admin', 'admin', 'manager'];
-        if (! auth()->user()?->hasAnyRole($roles)) {
+        $perms = $action === 'submit'
+            ? ['purchase-order.receive']
+            : ['purchase-order.approve'];
+        if (! (auth()->user()?->hasWebPermission(...$perms) ?? false)) {
             return response()->json(['message' => 'Anda tidak berhak mengubah status purchase order.'], 403);
         }
         if (! auth()->user()->hasBranchAccess($purchaseOrder->branch_id ? (int) $purchaseOrder->branch_id : null)) {

@@ -19,12 +19,16 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0"><i class="fas fa-users me-2"></i>Pelanggan</h4>
     <div>
+        @can('customer.import')
         <a href="{{ route('customers.import-form') }}" class="btn btn-outline-secondary me-2">
             <i class="fas fa-upload me-1"></i>Import
         </a>
+        @endcan
+        @can('customer.create')
         <a href="{{ route('customers.create') }}" class="btn btn-primary">
             <i class="fas fa-plus me-1"></i>+ New Customer
         </a>
+        @endcan
     </div>
 </div>
 
@@ -82,9 +86,12 @@
                             <a href="{{ route('customers.show', $customer) }}" class="btn btn-sm btn-outline-info me-1" title="Detail">
                                 <i class="fas fa-eye"></i>
                             </a>
+                            @can('customer.edit')
                             <a href="{{ route('customers.edit', $customer) }}" class="btn btn-sm btn-outline-warning me-1" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
+                            @endcan
+                            @can('customer.delete')
                             <form action="{{ route('customers.destroy', $customer) }}" method="POST" class="d-inline"
                                 onsubmit="return confirm('Hapus pelanggan ini?')">
                                 @csrf @method('DELETE')
@@ -92,6 +99,7 @@
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>
+                            @endcan
                         </td>
                     </tr>
                     @empty

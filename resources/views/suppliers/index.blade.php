@@ -59,6 +59,7 @@
                             <a href="{{ route('suppliers.edit', $supplier) }}" class="btn btn-outline-warning" title="Edit">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            @can('supplier.delete')
                             <form action="{{ route('suppliers.destroy', $supplier) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus supplier ini?')">
                                 @csrf
                                 @method('DELETE')
@@ -66,6 +67,7 @@
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
+                            @endcan
                         </div>
                     </td>
                 </tr>

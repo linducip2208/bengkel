@@ -121,6 +121,21 @@ php artisan queue:restart
 sudo supervisorctl restart bengkel-worker:*
 ```
 
+### Otorisasi berbasis permission (wajib baca sebelum update ke versi ini)
+
+Sejak rilis ini seluruh enforcement memakai permission Spatie (bukan nama
+role): edit di halaman /roles langsung berdampak. Yang perlu diperhatikan
+saat update produksi:
+
+- Migrasi `*_backfill_role_permissions` otomatis memberi permission yang
+  sesuai akses efektif tiap role bawaan (idempotent, additive-only).
+- `db:seed --class=PermissionSeeder` sekarang AMAN dijalankan ulang: untuk
+  role yang sudah ada, seeder hanya MENAMBAH permission yang kurang —
+  customisasi via /roles tidak akan terhapus seperti sebelumnya.
+- Setelah deploy, login sebagai super_admin dan buka /roles untuk verifikasi
+  cepat: cabut satu permission test (mis. `invoice.create` dari kasir),
+  pastikan aksi terkait 403, lalu kembalikan.
+
 ### Migration terbaru (pastikan jalan semua)
 
 Setelah update besar, jalankan `php artisan migrate:status` dan pastikan 0 pending. Migration baru meliputi:

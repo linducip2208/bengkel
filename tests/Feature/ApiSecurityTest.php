@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Http\Middleware\RequirePair;
 use App\Models\Branch;
 use App\Models\Customer;
+use Database\Seeders\PermissionSeeder;
 use App\Models\Service;
 use App\Models\ServiceEstimate;
 use App\Models\User;
@@ -31,6 +32,7 @@ class ApiSecurityTest extends TestCase
     {
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole(Role::findOrCreate($role, 'web'));
+        PermissionSeeder::grantProductionPermissions($user);
         if ($branch && ! in_array($role, ['super_admin', 'admin'], true)) {
             $user->branches()->sync([$branch->id]);
         }

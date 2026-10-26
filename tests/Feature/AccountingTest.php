@@ -10,6 +10,7 @@ use App\Models\Invoice;
 use App\Models\JournalEntry;
 use App\Models\JournalEntryLine;
 use App\Models\PaymentMethod;
+use Database\Seeders\PermissionSeeder;
 use App\Models\PaymentRecord;
 use App\Models\User;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -37,6 +38,7 @@ class AccountingTest extends TestCase
 
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole($role);
+        PermissionSeeder::grantProductionPermissions($user);
 
         if (! in_array($role, ['super_admin', 'admin'], true)) {
             $branch = Branch::create(['name' => 'Test Branch '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);

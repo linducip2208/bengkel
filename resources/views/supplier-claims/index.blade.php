@@ -3,7 +3,9 @@
 @section('content')
 <div class="d-flex justify-content-between mb-4">
     <h4><i class="fas fa-hand-holding-usd me-2"></i>Klaim Supplier</h4>
+    @can('warranty.create')
     <a href="{{ route('supplier-claims.create') }}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Buat Klaim</a>
+    @endcan
 </div>
 <div class="card"><div class="card-body">
     <form method="GET" class="row g-2 mb-3">
@@ -45,10 +47,12 @@
                     </td>
                     <td class="text-end">
                         <a href="{{ route('supplier-claims.show', $c) }}" class="btn btn-sm btn-outline-primary me-1" title="Detail"><i class="fas fa-eye"></i></a>
+                        @can('warranty.delete')
                         <form action="{{ route('supplier-claims.destroy', $c) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus klaim ini?')">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
                         </form>
+                        @endcan
                     </td>
                 </tr>
                 @empty

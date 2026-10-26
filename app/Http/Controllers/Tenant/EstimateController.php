@@ -913,7 +913,7 @@ class EstimateController extends Controller
         abort_if($servicePackageIds->diff($servicePackages->keys())->isNotEmpty(), 422, 'Jasa tidak ditemukan atau sudah tidak aktif.');
 
         $sellingPriceGroupId = data_get($service, 'customer.customerGroup.selling_price_group_id');
-        $canOverridePrice = (bool) auth()->user()?->can('pos.price_override');
+        $canOverridePrice = (bool) auth()->user()?->hasWebPermission('pos.price_override');
 
         foreach ($validated['items'] ?? [] as $row) {
             $description = trim((string) ($row['description'] ?? ''));

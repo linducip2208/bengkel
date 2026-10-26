@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Http\Middleware\RequirePair;
 use App\Models\BlogPost;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,7 +17,9 @@ class UpdateDoesNotDuplicateTest extends TestCase
     public function test_blog_update_keeps_primary_key_and_row_count(): void
     {
         $this->withoutMiddleware([RequirePair::class, PreventRequestForgery::class]);
-        $this->actingAs(User::factory()->create(['is_active' => true]));
+        $user = User::factory()->create(['is_active' => true]);
+        $user->assignRole(Role::findOrCreate('super_admin', 'web'));
+        $this->actingAs($user);
         $post = BlogPost::create(['title' => 'Judul Awal', 'slug' => 'judul-awal', 'content' => 'Awal']);
         $id = $post->id;
         $before = BlogPost::count();

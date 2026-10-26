@@ -33,20 +33,26 @@
                 <div class="d-flex justify-content-between mb-3 small"><span>Actual:</span><strong id="actualMinutes">{{ $task->actualMinutes() }} menit</strong></div>
 
                 <div class="d-grid gap-2">
+                    @can('work-tasks.start')
                     @if(in_array($task->status, ['ready', 'pending', 'paused', 'qc_failed']))
                     <form method="POST" action="{{ route('work-tasks.start', $task) }}">
                         @csrf
                         <button class="btn btn-success w-100 btn-lg">{{ $task->status === 'paused' ? 'RESUME' : 'START' }}</button>
                     </form>
                     @endif
+                    @endcan
                     @if($task->status === 'in_progress')
                     <div class="d-flex gap-2">
+                        @can('work-tasks.start')
                         <form method="POST" action="{{ route('work-tasks.pause', $task) }}" class="w-50">@csrf
                             <button class="btn btn-outline-warning w-100">PAUSE</button>
                         </form>
+                        @endcan
+                        @can('work-tasks.finish')
                         <form method="POST" action="{{ route('work-tasks.finish', $task) }}" class="w-50" onsubmit="return confirm('Selesaikan pekerjaan ini dan kirim ke QC?')">@csrf
                             <button class="btn btn-dark w-100">FINISH</button>
                         </form>
+                        @endcan
                     </div>
                     @endif
                 </div>

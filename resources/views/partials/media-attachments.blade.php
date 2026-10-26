@@ -48,10 +48,12 @@
                             <a href="{{ route('attachments.download', $media) }}" class="btn btn-sm btn-outline-info" title="Download">
                                 <i class="fas fa-download"></i>
                             </a>
+                            @if(auth()->user()?->hasWebPermission('media.delete') || (int) $media->uploaded_by === (int) auth()->id())
                             <form action="{{ route('media.destroy', $media) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus dokumen ini?')">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
                             </form>
+                            @endif
                         </td>
                     </tr>
                     @empty

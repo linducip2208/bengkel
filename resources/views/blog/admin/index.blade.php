@@ -48,10 +48,12 @@
                         <td><small>{{ $post->created_at->format('d/m/Y') }}</small></td>
                         <td class="text-end">
                             <a href="{{ route('blog.admin.edit', $post) }}" class="btn btn-sm btn-outline-warning me-1" title="Edit"><i class="fas fa-edit"></i></a>
+                            @can('blog.delete')
                             <form action="{{ route('blog.admin.destroy', $post) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus artikel ini?')">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
                             </form>
+                            @endcan
                         </td>
                     </tr>
                     @empty

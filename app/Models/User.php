@@ -57,10 +57,48 @@ class User extends Authenticatable
 
     public function hasUnrestrictedBranchAccess(): bool
     {
+        if ($this->is_active === false) {
+            return false;
+        }
+
         // Guard-explicit: Sanctum API tokens authenticate via the `sanctum`
         // guard while roles live on `web`. Without this, Spatie throws
         // RoleDoesNotExist under API auth instead of returning false.
         return $this->hasAnyRole(static::unrestrictedBranchRoles(), 'web');
+    }
+
+    /**
+     * Permission check yang guard-explicit ke `web`.
+     *
+     * Semua role/permission aplikasi hidup di guard `web`, sementara
+     * request API diautentikasi via guard `sanctum` (Authenticate middleware
+     * memanggil Auth::shouldUse('sanctum')). Tanpa guard eksplisit, Spatie
+     * me-resolve permission ke guard `sanctum` dan SELALU false — edit di
+     * /roles jadi tidak berdampak untuk API. Selalu pakai helper ini
+     * (jangan $user->can() / hasAnyPermission() tanpa guard) untuk
+     * enforcement di middleware, gate, dan controller.
+     */
+    public function hasWebPermission(string ...$permissions): bool
+    {
+        if ($this->is_active === false) {
+            return false;
+        }
+
+        // super_admin selalu lolos (sama seperti Gate::before), tanpa
+        // memedulikan isi tabel permissions — penting untuk test & seeding.
+        if ($this->hasRole('super_admin', 'web')) {
+            return true;
+        }
+
+        $owned = $this->getAllPermissions()->pluck('name')->all();
+
+        foreach ($permissions as $permission) {
+            if (in_array($permission, $owned, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

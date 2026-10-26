@@ -4,7 +4,9 @@
 <div class="d-flex justify-content-between mb-4">
     <h4><i class="bi bi-shield-check me-2"></i>Detail Klaim #{{ $warrantyClaim->id }}</h4>
     <div>
+        @can('warranty.edit')
         <a href="{{ route('warranty-claims.edit', $warrantyClaim) }}" class="btn btn-primary"><i class="bi bi-pencil me-1"></i>Edit</a>
+        @endcan
         <a href="{{ route('warranty-claims.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Kembali</a>
     </div>
 </div>

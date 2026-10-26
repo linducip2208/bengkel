@@ -17,7 +17,9 @@ use App\Models\VehicleType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -65,6 +67,26 @@ class ApiWorkshopContractTest extends TestCase
         return $user;
     }
 
+    /** Sanctum login; enforcement guard-eksplisit `web` sehingga berlaku sama seperti produksi. */
+    private function sanctumAs(User $user, array $abilities = ['*']): User
+    {
+        Sanctum::actingAs($user, $abilities);
+
+        return $user;
+    }
+
+    /** Beri permission langsung (mirip default seeder produksi). Model dilewatkan langsung agar tanpa resolusi guard. */
+    private function grant(User $user, array $permissions): User
+    {
+        $models = [];
+        foreach ($permissions as $permission) {
+            $models[] = Permission::findOrCreate($permission, 'web');
+        }
+        $user->givePermissionTo($models);
+
+        return $user;
+    }
+
     public function test_health_is_public(): void
     {
         $this->getJson('/api/v1/health')->assertOk()->assertJsonPath('status', 'ok');
@@ -86,7 +108,7 @@ class ApiWorkshopContractTest extends TestCase
         $branchB = Branch::create(['name' => 'B', 'code' => 'B-'.uniqid(), 'is_active' => true]);
 
         $seeder = $this->makeUser('admin');
-        Sanctum::actingAs($seeder, ['*']);
+        $this->sanctumAs($seeder, ['*']);
 
         $customer = Customer::create(['name' => 'C', 'phone' => '0811', 'branch_id' => $branchA->id]);
         $serviceA = $this->makeService($customer, $branchA->id);
@@ -102,7 +124,8 @@ class ApiWorkshopContractTest extends TestCase
         ]);
 
         $userB = $this->makeUser('manager', $branchB);
-        Sanctum::actingAs($userB, ['*']);
+        \Database\Seeders\PermissionSeeder::grantProductionPermissions($userB);
+        $this->sanctumAs($userB, ['*']);
 
         $res = $this->getJson('/api/v1/estimates');
         $res->assertOk();
@@ -115,7 +138,7 @@ class ApiWorkshopContractTest extends TestCase
         Branch::create(['name' => 'B', 'code' => 'B-'.uniqid(), 'is_active' => true]);
 
         $user = $this->makeUser('manager', $branchA);
-        Sanctum::actingAs($user, ['*']);
+        $this->sanctumAs($user, ['*']);
 
         $res = $this->getJson('/api/v1/branches')->assertOk();
         $ids = collect($res->json('data'))->pluck('id')->all();
@@ -124,8 +147,8 @@ class ApiWorkshopContractTest extends TestCase
 
     public function test_task_transition_guards_illegal_state(): void
     {
-        $admin = $this->makeUser('admin');
-        Sanctum::actingAs($admin, ['*']);
+        $admin = $this->grant($this->makeUser('admin'), ['work-tasks.view', 'work-tasks.start']);
+        $this->sanctumAs($admin, ['*']);
 
         $customer = Customer::create(['name' => 'C', 'phone' => '0812']);
         $service = $this->makeService($customer);
@@ -157,8 +180,8 @@ class ApiWorkshopContractTest extends TestCase
     public function test_vehicle_image_upload_and_delete(): void
     {
         Storage::fake('public');
-        $admin = $this->makeUser('admin');
-        Sanctum::actingAs($admin, ['*']);
+        $admin = $this->grant($this->makeUser('admin'), ['media.upload', 'media.delete']);
+        $this->sanctumAs($admin, ['*']);
 
         $customer = Customer::create(['name' => 'C', 'phone' => '0813']);
         $service = $this->makeService($customer);
@@ -178,8 +201,8 @@ class ApiWorkshopContractTest extends TestCase
 
     public function test_vehicle_image_upload_rejects_non_image(): void
     {
-        $admin = $this->makeUser('admin');
-        Sanctum::actingAs($admin, ['*']);
+        $admin = $this->grant($this->makeUser('admin'), ['media.upload']);
+        $this->sanctumAs($admin, ['*']);
 
         $customer = Customer::create(['name' => 'C', 'phone' => '0814']);
         $service = $this->makeService($customer);
@@ -195,8 +218,8 @@ class ApiWorkshopContractTest extends TestCase
         $branchA = Branch::create(['name' => 'A', 'code' => 'A-'.uniqid(), 'is_active' => true]);
         $branchB = Branch::create(['name' => 'B', 'code' => 'B-'.uniqid(), 'is_active' => true]);
 
-        $seeder = $this->makeUser('admin');
-        Sanctum::actingAs($seeder, ['*']);
+        $seeder = $this->grant($this->makeUser('admin'), ['media.upload', 'media.delete']);
+        $this->sanctumAs($seeder, ['*']);
         $customer = Customer::create(['name' => 'C', 'phone' => '0815', 'branch_id' => $branchA->id]);
         $service = $this->makeService($customer, $branchA->id);
 
@@ -205,8 +228,8 @@ class ApiWorkshopContractTest extends TestCase
         ], ['HTTP_ACCEPT' => 'application/json'])->assertCreated();
         $imageId = $upload->json('data.id');
 
-        $userB = $this->makeUser('manager', $branchB);
-        Sanctum::actingAs($userB, ['*']);
+        $userB = $this->grant($this->makeUser('manager', $branchB), ['media.upload', 'media.delete']);
+        $this->sanctumAs($userB, ['*']);
 
         // Parent vehicle is invisible cross-branch, so nested image routes 404.
         $this->call('POST', "/api/v1/vehicles/{$service->vehicle_id}/images", [], [], [
@@ -218,7 +241,7 @@ class ApiWorkshopContractTest extends TestCase
     public function test_device_token_register_and_unregister(): void
     {
         $user = $this->makeUser('mekanik');
-        Sanctum::actingAs($user, ['*']);
+        $this->sanctumAs($user, ['*']);
 
         $this->postJson('/api/v1/device-tokens', ['token' => 'fcm-123', 'platform' => 'android'])
             ->assertCreated();

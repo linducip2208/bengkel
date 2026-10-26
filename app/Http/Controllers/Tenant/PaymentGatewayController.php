@@ -23,6 +23,8 @@ class PaymentGatewayController extends Controller
 
     public function create()
     {
+        abort_unless(auth()->user()?->hasWebPermission('payment-gateway.create') ?? false, 403);
+
         return view('payment-gateways.create', ['presets' => $this->loadPresets()]);
     }
 
@@ -62,6 +64,8 @@ class PaymentGatewayController extends Controller
 
     public function edit(PaymentGateway $paymentGateway)
     {
+        abort_unless(auth()->user()?->hasWebPermission('payment-gateway.edit') ?? false, 403);
+
         return view('payment-gateways.edit', ['gateway' => $paymentGateway, 'presets' => $this->loadPresets()]);
     }
 
@@ -72,6 +76,7 @@ class PaymentGatewayController extends Controller
 
     public function destroy(PaymentGateway $paymentGateway)
     {
+        abort_unless(auth()->user()?->hasWebPermission('payment-gateway.delete') ?? false, 403);
         if ($paymentGateway->is_default) {
             return back()->with('error', 'PG default tidak bisa dihapus, set yang lain dulu sebagai default.');
         }
@@ -107,6 +112,7 @@ class PaymentGatewayController extends Controller
 
     private function save(Request $request, ?PaymentGateway $gateway = null)
     {
+        abort_unless(auth()->user()?->hasWebPermission($gateway ? 'payment-gateway.edit' : 'payment-gateway.create') ?? false, 403);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'api_format' => ['required', Rule::in(['redirect', 'embed', 'qr', 'manual_transfer'])],

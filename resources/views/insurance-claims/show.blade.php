@@ -84,10 +84,12 @@
                     <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-money-bill-wave me-1"></i>Tandai Dibayar</button>
                 </form>
                 @endif
+                @can('insurance-claim.delete')
                 <form action="{{ route('insurance-claims.destroy', $insuranceClaim) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus klaim ini?')">
                     @csrf @method('DELETE')
                     <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash me-1"></i>Hapus</button>
                 </form>
+                @endcan
             </div>
         </div>
     </div>

@@ -16,13 +16,15 @@ class SearchController extends Controller
     {
         $q = trim((string) $request->input('q', ''));
         $limit = 5;
+        $user = $request->user();
 
         $customers = $vehicles = $services = $invoices = $products = [];
 
         if ($q !== '') {
             $like = '%'.$q.'%';
 
-            $customers = Customer::query()
+            if ($user?->hasWebPermission('customer.view')) {
+                $customers = Customer::query()
                 ->where(fn ($query) => $query->where('name', 'like', $like)
                     ->orWhere('phone', 'like', $like))
                 ->limit($limit)
@@ -32,10 +34,12 @@ class SearchController extends Controller
                     'title' => $c->name,
                     'subtitle' => $c->phone ?: '—',
                     'url' => route('customers.show', $c),
-                ])
-                ->values();
+                    ])
+                    ->values();
+            }
 
-            $vehicles = Vehicle::query()
+            if ($user?->hasWebPermission('vehicle.view')) {
+                $vehicles = Vehicle::query()
                 ->with('vehicleBrand:id,name')
                 ->where(fn ($query) => $query->where('number_plate', 'like', $like)
                     ->orWhere('model_name', 'like', $like))
@@ -46,10 +50,12 @@ class SearchController extends Controller
                     'title' => $v->number_plate,
                     'subtitle' => trim(($v->vehicleBrand?->name ? $v->vehicleBrand->name.' ' : '').($v->model_name ?: '')),
                     'url' => route('vehicles.show', $v),
-                ])
-                ->values();
+                    ])
+                    ->values();
+            }
 
-            $services = Service::query()
+            if ($user?->hasWebPermission('service.view')) {
+                $services = Service::query()
                 ->with('customer:id,name')
                 ->where(fn ($query) => $query->where('job_no', 'like', $like)
                     ->orWhere('title', 'like', $like))
@@ -60,10 +66,12 @@ class SearchController extends Controller
                     'title' => trim(($s->job_no ? $s->job_no.' — ' : '').($s->title ?: '')),
                     'subtitle' => $s->customer?->name ?: '—',
                     'url' => route('services.show', $s),
-                ])
-                ->values();
+                    ])
+                    ->values();
+            }
 
-            $invoices = Invoice::query()
+            if ($user?->hasWebPermission('invoice.view')) {
+                $invoices = Invoice::query()
                 ->with('customer:id,name')
                 ->where('invoice_number', 'like', $like)
                 ->limit($limit)
@@ -73,10 +81,12 @@ class SearchController extends Controller
                     'title' => $i->invoice_number,
                     'subtitle' => $i->customer?->name ?: '—',
                     'url' => route('invoices.show', $i),
-                ])
-                ->values();
+                    ])
+                    ->values();
+            }
 
-            $products = Product::query()
+            if ($user?->hasWebPermission('product.view')) {
+                $products = Product::query()
                 ->where(fn ($query) => $query->where('name', 'like', $like)
                     ->orWhere('code', 'like', $like))
                 ->limit($limit)
@@ -86,8 +96,9 @@ class SearchController extends Controller
                     'title' => $p->name,
                     'subtitle' => $p->code ?: '—',
                     'url' => route('products.show', $p),
-                ])
-                ->values();
+                    ])
+                    ->values();
+            }
         }
 
         return response()->json([

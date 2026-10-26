@@ -3,9 +3,11 @@
 @section('content')
 <div class="d-flex justify-content-between mb-4">
     <h4><i class="fas fa-exclamation-triangle me-2"></i>Recalls</h4>
+    @can('warranty.create')
     <a href="{{ route('recalls.create') }}" class="btn btn-danger">
         <i class="fas fa-plus me-1"></i>+ New Recall
     </a>
+    @endcan
 </div>
 <div class="card"><div class="card-body">
     <form method="GET" class="row g-3 mb-3">
@@ -78,9 +80,12 @@
                         </span>
                     </td>
                     <td class="text-end">
+                        @can('warranty.edit')
                         <a href="{{ route('recalls.edit', $recall) }}" class="btn btn-sm btn-outline-warning me-1" title="Edit">
                             <i class="fas fa-edit"></i>
                         </a>
+                        @endcan
+                        @can('warranty.delete')
                         <form action="{{ route('recalls.destroy', $recall) }}" method="POST" class="d-inline"
                             onsubmit="return confirm('Hapus recall ini?')">
                             @csrf @method('DELETE')
@@ -88,6 +93,7 @@
                                 <i class="fas fa-trash"></i>
                             </button>
                         </form>
+                        @endcan
                     </td>
                 </tr>
                 @empty

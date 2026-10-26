@@ -82,9 +82,12 @@
                                 <i class="bi bi-eye"></i>
                             </a>
                             @if($purchase->status === 'draft')
+                            @can('purchase.edit')
                             <a href="{{ route('purchases.edit', $purchase) }}" class="btn btn-outline-warning" title="Edit">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            @endcan
+                            @can('purchase.delete')
                             <form action="{{ route('purchases.destroy', $purchase) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus purchase order ini?')">
                                 @csrf
                                 @method('DELETE')
@@ -92,6 +95,7 @@
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
+                            @endcan
                             @endif
                         </div>
                     </td>

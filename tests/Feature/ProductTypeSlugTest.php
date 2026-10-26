@@ -12,6 +12,7 @@ use App\Models\ProductType;
 use App\Models\RepairCategory;
 use App\Models\User;
 use App\Models\VehicleType;
+use Spatie\Permission\Models\Role;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,7 +31,9 @@ class ProductTypeSlugTest extends TestCase
             PreventRequestForgery::class,
         ]);
 
-        $this->actingAs(User::factory()->create(['is_active' => true]));
+        $user = User::factory()->create(['is_active' => true]);
+        $user->assignRole(Role::findOrCreate('super_admin', 'web'));
+        $this->actingAs($user);
     }
 
     public function test_store_suffixes_slug_when_different_names_normalize_to_the_same_slug(): void

@@ -22,10 +22,12 @@
                     <td class="text-center">@if($account->is_active)<span class="badge bg-success">Aktif</span>@else<span class="badge bg-secondary">Off</span>@endif</td>
                     <td class="text-end">
                         <a href="{{ route('bank-accounts.edit', $account) }}" class="btn btn-sm btn-outline-warning me-1"><i class="fas fa-edit"></i></a>
+                        @can('master-data.delete')
                         <form action="{{ route('bank-accounts.destroy', $account) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus?')">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                         </form>
+                        @endcan
                     </td>
                 </tr>
                 @empty

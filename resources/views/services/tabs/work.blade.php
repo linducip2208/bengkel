@@ -72,6 +72,8 @@
                         @endif
                         @if($canStart && $task->status === 'in_progress')
                         <form action="{{ route('work-tasks.pause', $task) }}" method="POST">@csrf <button class="btn btn-sm btn-outline-warning">Pause</button></form>
+                        @endif
+                        @if(auth()->user()?->can('work-tasks.finish') && $task->status === 'in_progress')
                         <form action="{{ route('work-tasks.finish', $task) }}" method="POST">@csrf <button class="btn btn-sm btn-outline-dark">Finish</button></form>
                         @endif
                         @if($canPerformQc && in_array($task->status, ['qc_pending', 'qc_failed'], true))

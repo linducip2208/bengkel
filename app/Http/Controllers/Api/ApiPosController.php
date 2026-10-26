@@ -105,7 +105,7 @@ class ApiPosController extends Controller
         }
 
         // Human-initiated discount & price overrides require dedicated roles.
-        $hasDiscountRole = $user->hasAnyRole(['super_admin', 'admin', 'manager']);
+        $hasDiscountRole = (bool) $user->hasWebPermission('pos.discount');
         if (! $hasDiscountRole && ((float) ($validated['discount'] ?? 0) > 0 || collect($validated['items'])->contains(fn ($i) => (float) ($i['discount'] ?? 0) > 0))) {
             return response()->json(['message' => 'Anda tidak berhak memberikan diskon POS.'], 403);
         }

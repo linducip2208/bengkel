@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Http\Middleware\RequirePair;
 use App\Models\Branch;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,7 +18,9 @@ class BranchCodeUniquenessTest extends TestCase
     {
         parent::setUp();
         $this->withoutMiddleware([RequirePair::class, PreventRequestForgery::class]);
-        $this->actingAs(User::factory()->create(['is_active' => true]));
+        $user = User::factory()->create(['is_active' => true]);
+        $user->assignRole(Role::findOrCreate('super_admin', 'web'));
+        $this->actingAs($user);
     }
 
     public function test_code_is_normalized_before_validation_and_current_code_can_be_retained(): void

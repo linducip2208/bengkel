@@ -8,6 +8,7 @@ Reminders - {{ config('app.name') }}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4>Reminders</h4>
     <div>
+        @can('reminder.send')
         <a href="{{ route('reminders.send-scheduled') }}" class="btn btn-warning"
            onclick="event.preventDefault(); document.getElementById('send-scheduled-form').submit();">
             <i class="bi bi-send"></i> Send Due Reminders
@@ -15,7 +16,10 @@ Reminders - {{ config('app.name') }}
         <form id="send-scheduled-form" action="{{ route('reminders.send-scheduled') }}" method="POST" class="d-none">
             @csrf
         </form>
+        @endcan
+        @can('reminder.create')
         <a href="{{ route('reminders.create') }}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Create Reminder</a>
+        @endcan
     </div>
 </div>
 
@@ -77,16 +81,22 @@ Reminders - {{ config('app.name') }}
                     </td>
                     <td>
                         @unless($reminder->is_sent)
+                        @can('reminder.send')
                         <form action="{{ route('reminders.send', $reminder) }}" method="POST" class="d-inline" onsubmit="return confirm('Send this reminder now?')">
                             @csrf
                             <button class="btn btn-sm btn-success"><i class="bi bi-send"></i> Send</button>
                         </form>
+                        @endcan
                         @endunless
+                        @can('reminder.edit')
                         <a href="{{ route('reminders.edit', $reminder) }}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                        @endcan
+                        @can('reminder.delete')
                         <form action="{{ route('reminders.destroy', $reminder) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this reminder?')">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
                         </form>
+                        @endcan
                     </td>
                 </tr>
                 @empty

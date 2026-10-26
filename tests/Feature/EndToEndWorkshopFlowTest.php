@@ -7,6 +7,7 @@ use App\Http\Middleware\RequirePair;
 use App\Models\Booking;
 use App\Models\Branch;
 use App\Models\Customer;
+use Database\Seeders\PermissionSeeder;
 use App\Models\FuelType;
 use App\Models\Income;
 use App\Models\Invoice;
@@ -51,6 +52,7 @@ class EndToEndWorkshopFlowTest extends TestCase
         Role::findOrCreate('service_advisor', 'web');
         $user = User::factory()->create(['is_active' => true]);
         $user->assignRole('service_advisor');
+        PermissionSeeder::grantProductionPermissions($user);
         $branch = Branch::create(['name' => 'Test Branch '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);
         $user->branches()->sync([$branch->id]);
         $this->actingAs($user);

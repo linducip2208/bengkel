@@ -5,9 +5,11 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0"><i class="fas fa-wrench text-warning me-2"></i>Daftar Servis</h4>
+    @can('service.create')
     <a href="{{ route('services.create') }}" class="btn btn-danger">
         <i class="fas fa-plus me-1"></i>+ New Job Card
     </a>
+    @endcan
 </div>
 
 <div class="row mb-3">
@@ -139,15 +141,19 @@
                             <a href="{{ route('services.show', $service) }}" class="btn btn-sm btn-outline-primary" title="Detail">
                                 <i class="fas fa-eye"></i>
                             </a>
+                            @can('service.edit')
                             <a href="{{ route('services.edit', $service) }}" class="btn btn-sm btn-outline-warning" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
+                            @endcan
+                            @can('service.delete')
                             <form action="{{ route('services.destroy', $service) }}" method="POST" class="d-inline">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger" title="Hapus" onclick="return confirm('Hapus servis ini?')">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>
+                            @endcan
                         </td>
                     </tr>
                     @empty

@@ -35,10 +35,12 @@
                     <td class="text-danger small">{{ Str::limit($log->error_message, 60) }}</td>
                     <td class="text-end">
                         <a href="{{ route('email-logs.show', $log) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
+                        @can('email-log.delete')
                         <form action="{{ route('email-logs.destroy', $log) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus log ini?')">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                         </form>
+                        @endcan
                     </td>
                 </tr>
                 @empty

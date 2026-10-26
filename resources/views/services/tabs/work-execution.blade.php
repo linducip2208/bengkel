@@ -25,6 +25,8 @@
                         @endif
                         @if($canStart && $task->status === \App\Models\ServiceWorkTask::STATUS_IN_PROGRESS)
                             <form action="{{ route('work-tasks.pause', $task) }}" method="POST" class="d-inline">@csrf <button class="btn btn-sm btn-outline-warning"><i class="fas fa-pause me-1"></i>PAUSE</button></form>
+                        @endif
+                        @if(auth()->user()?->can('work-tasks.finish') && $task->status === \App\Models\ServiceWorkTask::STATUS_IN_PROGRESS)
                             <form action="{{ route('work-tasks.finish', $task) }}" method="POST" class="d-inline">@csrf <button class="btn btn-sm btn-outline-dark"><i class="fas fa-stop me-1"></i>FINISH</button></form>
                         @endif
                         @if($canPerformQc && in_array($task->status, [\App\Models\ServiceWorkTask::STATUS_QC_PENDING, \App\Models\ServiceWorkTask::STATUS_QC_FAILED], true))

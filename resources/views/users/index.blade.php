@@ -6,7 +6,9 @@
     <h4><i class="bi bi-people me-2"></i>Manajemen User</h4>
     <div>
         <a href="{{ route('roles.index') }}" class="btn btn-outline-info"><i class="bi bi-shield-lock me-1"></i>Kelola Role & Permission</a>
+        @can('user.create')
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal"><i class="bi bi-plus-lg me-1"></i>Tambah User</button>
+        @endcan
     </div>
 </div>
 
@@ -39,12 +41,16 @@
                 <td class="small">{{ $u->updated_at?->diffForHumans() }}</td>
                 <td>@if($u->two_factor_enabled)<span class="badge bg-success">ON</span>@else<span class="badge bg-light text-dark">OFF</span>@endif</td>
                 <td>
+                    @can('user.edit')
                     <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editUserModal{{ $u->id }}" title="Edit" aria-label="Edit {{ $u->name }}"><i class="bi bi-pencil"></i></button>
+                    @endcan
                     @if($u->id !== auth()->id())
+                    @can('user.delete')
                     <form action="{{ route('users.destroy', $u) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus user {{ $u->name }}?')">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-danger" title="Hapus" aria-label="Hapus {{ $u->name }}"><i class="bi bi-trash"></i></button>
                     </form>
+                    @endcan
                     @endif
                 </td>
             </tr>
