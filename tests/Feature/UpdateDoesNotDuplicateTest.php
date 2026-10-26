@@ -5,9 +5,9 @@ namespace Tests\Feature;
 use App\Http\Middleware\RequirePair;
 use App\Models\BlogPost;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class UpdateDoesNotDuplicateTest extends TestCase

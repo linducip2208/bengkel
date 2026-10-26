@@ -270,7 +270,8 @@ class PermissionSeeder extends Seeder
 
         $fresh = $user->fresh();
         foreach ($fresh->roles as $role) {
-            $permissions = match ($role->name) {
+            $roleName = (string) $role->getAttribute('name');
+            $permissions = match ($roleName) {
                 // super_admin lolos via Gate::before + hasWebPermission,
                 // tanpa perlu baris permission satu per satu.
                 'super_admin' => [],
@@ -287,7 +288,7 @@ class PermissionSeeder extends Seeder
                     ),
                     array_merge(self::SUPER_ONLY, ['user.create', 'user.edit', 'user.delete', 'role.view']),
                 )),
-                default => self::fixedRolePermissions()[$role->name] ?? [],
+                default => self::fixedRolePermissions()[$roleName] ?? [],
             };
             $models = [];
             foreach ($permissions as $name) {
@@ -300,5 +301,3 @@ class PermissionSeeder extends Seeder
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }
-
-

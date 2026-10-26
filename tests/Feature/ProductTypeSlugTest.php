@@ -12,10 +12,10 @@ use App\Models\ProductType;
 use App\Models\RepairCategory;
 use App\Models\User;
 use App\Models\VehicleType;
-use Spatie\Permission\Models\Role;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class ProductTypeSlugTest extends TestCase

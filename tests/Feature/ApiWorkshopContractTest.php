@@ -14,10 +14,10 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleBrand;
 use App\Models\VehicleType;
+use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -124,7 +124,7 @@ class ApiWorkshopContractTest extends TestCase
         ]);
 
         $userB = $this->makeUser('manager', $branchB);
-        \Database\Seeders\PermissionSeeder::grantProductionPermissions($userB);
+        PermissionSeeder::grantProductionPermissions($userB);
         $this->sanctumAs($userB, ['*']);
 
         $res = $this->getJson('/api/v1/estimates');

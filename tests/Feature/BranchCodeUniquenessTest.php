@@ -5,9 +5,9 @@ namespace Tests\Feature;
 use App\Http\Middleware\RequirePair;
 use App\Models\Branch;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class BranchCodeUniquenessTest extends TestCase

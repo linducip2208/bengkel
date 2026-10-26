@@ -14,6 +14,7 @@ use App\Services\PaymentService;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -38,7 +39,7 @@ class PaymentIdempotencyTest extends TestCase
         $user->assignRole($role);
         // Hak proses pembayaran sesuai default produksi untuk kasir (model
         // langsung agar tanpa resolusi guard).
-        $user->givePermissionTo([\Spatie\Permission\Models\Permission::findOrCreate('payment.process', 'web')]);
+        $user->givePermissionTo([Permission::findOrCreate('payment.process', 'web')]);
 
         if (! in_array($role, ['super_admin', 'admin'], true)) {
             $branch = Branch::create(['name' => 'Test Branch '.uniqid(), 'code' => 'T'.uniqid(), 'is_active' => true]);

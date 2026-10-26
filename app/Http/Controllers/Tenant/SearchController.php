@@ -25,77 +25,77 @@ class SearchController extends Controller
 
             if ($user?->hasWebPermission('customer.view')) {
                 $customers = Customer::query()
-                ->where(fn ($query) => $query->where('name', 'like', $like)
-                    ->orWhere('phone', 'like', $like))
-                ->limit($limit)
-                ->get()
-                ->map(fn ($c) => [
-                    'id' => $c->id,
-                    'title' => $c->name,
-                    'subtitle' => $c->phone ?: '—',
-                    'url' => route('customers.show', $c),
+                    ->where(fn ($query) => $query->where('name', 'like', $like)
+                        ->orWhere('phone', 'like', $like))
+                    ->limit($limit)
+                    ->get()
+                    ->map(fn ($c) => [
+                        'id' => $c->id,
+                        'title' => $c->name,
+                        'subtitle' => $c->phone ?: '—',
+                        'url' => route('customers.show', $c),
                     ])
                     ->values();
             }
 
             if ($user?->hasWebPermission('vehicle.view')) {
                 $vehicles = Vehicle::query()
-                ->with('vehicleBrand:id,name')
-                ->where(fn ($query) => $query->where('number_plate', 'like', $like)
-                    ->orWhere('model_name', 'like', $like))
-                ->limit($limit)
-                ->get()
-                ->map(fn ($v) => [
-                    'id' => $v->id,
-                    'title' => $v->number_plate,
-                    'subtitle' => trim(($v->vehicleBrand?->name ? $v->vehicleBrand->name.' ' : '').($v->model_name ?: '')),
-                    'url' => route('vehicles.show', $v),
+                    ->with('vehicleBrand:id,name')
+                    ->where(fn ($query) => $query->where('number_plate', 'like', $like)
+                        ->orWhere('model_name', 'like', $like))
+                    ->limit($limit)
+                    ->get()
+                    ->map(fn ($v) => [
+                        'id' => $v->id,
+                        'title' => $v->number_plate,
+                        'subtitle' => trim(($v->vehicleBrand?->name ? $v->vehicleBrand->name.' ' : '').($v->model_name ?: '')),
+                        'url' => route('vehicles.show', $v),
                     ])
                     ->values();
             }
 
             if ($user?->hasWebPermission('service.view')) {
                 $services = Service::query()
-                ->with('customer:id,name')
-                ->where(fn ($query) => $query->where('job_no', 'like', $like)
-                    ->orWhere('title', 'like', $like))
-                ->limit($limit)
-                ->get()
-                ->map(fn ($s) => [
-                    'id' => $s->id,
-                    'title' => trim(($s->job_no ? $s->job_no.' — ' : '').($s->title ?: '')),
-                    'subtitle' => $s->customer?->name ?: '—',
-                    'url' => route('services.show', $s),
+                    ->with('customer:id,name')
+                    ->where(fn ($query) => $query->where('job_no', 'like', $like)
+                        ->orWhere('title', 'like', $like))
+                    ->limit($limit)
+                    ->get()
+                    ->map(fn ($s) => [
+                        'id' => $s->id,
+                        'title' => trim(($s->job_no ? $s->job_no.' — ' : '').($s->title ?: '')),
+                        'subtitle' => $s->customer?->name ?: '—',
+                        'url' => route('services.show', $s),
                     ])
                     ->values();
             }
 
             if ($user?->hasWebPermission('invoice.view')) {
                 $invoices = Invoice::query()
-                ->with('customer:id,name')
-                ->where('invoice_number', 'like', $like)
-                ->limit($limit)
-                ->get()
-                ->map(fn ($i) => [
-                    'id' => $i->id,
-                    'title' => $i->invoice_number,
-                    'subtitle' => $i->customer?->name ?: '—',
-                    'url' => route('invoices.show', $i),
+                    ->with('customer:id,name')
+                    ->where('invoice_number', 'like', $like)
+                    ->limit($limit)
+                    ->get()
+                    ->map(fn ($i) => [
+                        'id' => $i->id,
+                        'title' => $i->invoice_number,
+                        'subtitle' => $i->customer?->name ?: '—',
+                        'url' => route('invoices.show', $i),
                     ])
                     ->values();
             }
 
             if ($user?->hasWebPermission('product.view')) {
                 $products = Product::query()
-                ->where(fn ($query) => $query->where('name', 'like', $like)
-                    ->orWhere('code', 'like', $like))
-                ->limit($limit)
-                ->get()
-                ->map(fn ($p) => [
-                    'id' => $p->id,
-                    'title' => $p->name,
-                    'subtitle' => $p->code ?: '—',
-                    'url' => route('products.show', $p),
+                    ->where(fn ($query) => $query->where('name', 'like', $like)
+                        ->orWhere('code', 'like', $like))
+                    ->limit($limit)
+                    ->get()
+                    ->map(fn ($p) => [
+                        'id' => $p->id,
+                        'title' => $p->name,
+                        'subtitle' => $p->code ?: '—',
+                        'url' => route('products.show', $p),
                     ])
                     ->values();
             }

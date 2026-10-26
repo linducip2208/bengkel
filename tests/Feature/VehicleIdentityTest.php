@@ -7,12 +7,12 @@ use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\FuelType;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 use App\Models\Vehicle;
 use App\Models\VehicleBrand;
 use App\Models\VehicleType;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class VehicleIdentityTest extends TestCase
