@@ -8,7 +8,7 @@ Reports - {{ config('app.name') }}
 <h4 class="mb-3">Reports Dashboard</h4>
 
 <div class="row mb-4">
-    <div class="col-md-2 mb-3">
+    <div class="col-6 col-sm-4 col-md-2 mb-3">
         <div class="card border-primary">
             <div class="card-body text-center">
                 <h5 class="card-title text-primary">{{ $stats['open_services'] }}</h5>
@@ -16,7 +16,7 @@ Reports - {{ config('app.name') }}
             </div>
         </div>
     </div>
-    <div class="col-md-2 mb-3">
+    <div class="col-6 col-sm-4 col-md-2 mb-3">
         <div class="card border-success">
             <div class="card-body text-center">
                 <h5 class="card-title text-success">{{ $stats['completed_today'] }}</h5>
@@ -24,7 +24,7 @@ Reports - {{ config('app.name') }}
             </div>
         </div>
     </div>
-    <div class="col-md-2 mb-3">
+    <div class="col-6 col-sm-4 col-md-2 mb-3">
         <div class="card border-info">
             <div class="card-body text-center">
                 <h5 class="card-title text-info">@money($stats['revenue_today'])</h5>
@@ -32,7 +32,7 @@ Reports - {{ config('app.name') }}
             </div>
         </div>
     </div>
-    <div class="col-md-2 mb-3">
+    <div class="col-6 col-sm-4 col-md-2 mb-3">
         <div class="card border-secondary">
             <div class="card-body text-center">
                 <h5 class="card-title">@money($stats['revenue_this_month'])</h5>
@@ -40,7 +40,7 @@ Reports - {{ config('app.name') }}
             </div>
         </div>
     </div>
-    <div class="col-md-2 mb-3">
+    <div class="col-6 col-sm-4 col-md-2 mb-3">
         <div class="card border-warning">
             <div class="card-body text-center">
                 <h5 class="card-title text-warning">{{ $stats['outstanding_invoices'] }}</h5>
@@ -48,7 +48,7 @@ Reports - {{ config('app.name') }}
             </div>
         </div>
     </div>
-    <div class="col-md-2 mb-3">
+    <div class="col-6 col-sm-4 col-md-2 mb-3">
         <div class="card border-danger">
             <div class="card-body text-center">
                 <h5 class="card-title text-danger">{{ $stats['low_stock_count'] }}</h5>

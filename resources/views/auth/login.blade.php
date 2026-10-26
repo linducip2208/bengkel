@@ -10,9 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
-            --brand: #2563eb;
-            --brand-dark: #1d4ed8;
-            --brand-light: #eff6ff;
+            --brand: #2878f0;
+            --brand-dark: #1766dc;
+            --brand-light: #eaf2ff;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -34,7 +34,7 @@
         .hero-panel {
             display: none;
             position: relative;
-            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 50%, #0f172a 100%);
+            background: linear-gradient(135deg, #142c46 0%, #10253d 60%, #0b1c30 100%);
             padding: 3rem;
             flex-direction: column;
             justify-content: space-between;
@@ -44,8 +44,8 @@
             content: ''; position: absolute; inset: 0;
             opacity: 0.25;
             background:
-                radial-gradient(600px 300px at 20% 30%, #3b82f6 0%, transparent 50%),
-                radial-gradient(500px 350px at 80% 70%, #6366f1 0%, transparent 50%);
+                radial-gradient(600px 300px at 20% 30%, #2878f0 0%, transparent 50%),
+                radial-gradient(500px 350px at 80% 70%, #65a0ff 0%, transparent 50%);
         }
         .hero-panel .deco-circle {
             position: absolute;
@@ -110,14 +110,14 @@
         .btn-login {
             display: flex; align-items: center; justify-content: center; gap: 0.5rem;
             width: 100%; padding: 0.75rem;
-            background: linear-gradient(135deg, var(--brand) 0%, #6366f1 100%);
+            background: linear-gradient(135deg, var(--brand) 0%, #1766dc 100%);
             color: #fff; border: none; border-radius: 12px;
             font-size: 0.98rem; font-weight: 700; font-family: inherit;
             cursor: pointer;
             box-shadow: 0 4px 14px rgba(37,99,235,0.35);
             transition: all 0.15s;
         }
-        .btn-login:hover { box-shadow: 0 6px 20px rgba(37,99,235,0.45); transform: translateY(-1px); }
+        .btn-login:hover { box-shadow: 0 6px 20px rgba(40,120,240,0.45); transform: translateY(-1px); }
 
         .alert {
             background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px;
@@ -148,6 +148,16 @@
         @media (prefers-reduced-motion: reduce) {
             * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
         }
+    
+        /* Bengkel Pro 2.0 login visual alignment */
+        :root{--brand:#2878f0;--brand-dark:#1766dc;--brand-light:#eaf2ff}
+        body{background:radial-gradient(ellipse at 12% 8%,#e2edff 0,transparent 42%),linear-gradient(135deg,#f5f8fd,#edf3fa);color:#172d45}
+        .login-card,.auth-card,.card{border-color:#e0e8f2}
+        a{color:#2878f0}a:hover{color:#1766dc}
+        input:focus,select:focus,textarea:focus{border-color:#7eaff8!important;box-shadow:0 0 0 .2rem rgba(40,120,240,.12)!important;outline:0}
+        button[type=submit],.btn-primary{background:#2878f0;border-color:#2878f0}
+        button[type=submit]:hover,.btn-primary:hover{background:#1766dc;border-color:#1766dc}
+
     </style>
 </head>
 <body>
@@ -195,7 +205,7 @@
         <div class="form-wrapper">
             <h1>{{ __('Masuk') }}</h1>
             <p class="subtitle">
-                {{ __('Belum punya akun') }}? <a href="#">{{ __('Hubungi admin') }}</a>
+                {{ __('Belum punya akun? Hubungi admin bengkel Anda.') }}
             </p>
 
             @if ($errors->any())
@@ -220,7 +230,6 @@
                     <label>
                         <input type="checkbox" name="remember"> {{ __('Ingat saya') }}
                     </label>
-                    <a href="#">{{ __('Lupa password?') }}</a>
                 </div>
                 <button type="submit" class="btn-login">
                     <i class="fas fa-sign-in-alt"></i> {{ __('Masuk') }}

@@ -149,7 +149,7 @@
     </div>
     @if($adjustments->hasPages())
     <div class="card-footer">
-        {{ $adjustments->links() }}
+        {{ $adjustments->withQueryString()->links() }}
     </div>
     @endif
 </div>

@@ -30,6 +30,7 @@
             @for($i=5;$i>=1;$i--)<option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>{{ $i }} Star</option>@endfor
         </select></div>
         <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel"></i></button></div>
+        <div class="col-md-2"><a href="{{ route('reviews.index') }}" class="btn btn-outline-danger w-100" title="Reset"><i class="bi bi-arrow-counterclockwise"></i></a></div>
     </form>
 
     @forelse($reviews as $r)

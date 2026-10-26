@@ -9,9 +9,9 @@
 </div>
 <div class="row mb-3">
     <div class="col-md-8">
-        <form method="GET" class="row g-2">
-            <div class="col-md-5"><input type="text" name="search" class="form-control" placeholder="Cari nama/kode..." value="{{ request('search') }}"></div>
-            <div class="col-md-4">
+        <form method="GET" action="{{ route('equipment.index') }}" class="row g-2">
+            <div class="col-md-4"><input type="text" name="search" class="form-control" placeholder="Cari nama/kode..." value="{{ request('search') }}"></div>
+            <div class="col-md-3">
                 <select name="category" class="form-select">
                     <option value="">Semua Kategori</option>
                     @foreach($categories as $cat)
@@ -19,7 +19,8 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3"><button type="submit" class="btn btn-secondary w-100">Filter</button></div>
+            <div class="col-md-2"><button type="submit" class="btn btn-secondary w-100">Filter</button></div>
+            <div class="col-md-2"><a href="{{ route('equipment.index') }}" class="btn btn-outline-danger w-100"><i class="fas fa-undo me-1"></i>Reset</a></div>
         </form>
     </div>
 </div>

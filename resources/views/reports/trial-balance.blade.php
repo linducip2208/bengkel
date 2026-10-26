@@ -12,6 +12,7 @@
         <input type="date" name="start_date" class="form-control form-control-sm" value="{{ $start }}">
         <input type="date" name="end_date" class="form-control form-control-sm" value="{{ $end }}">
         <button class="btn btn-sm btn-primary">Terapkan</button>
+        <a href="{{ route('reports.trial-balance') }}" class="btn btn-sm btn-outline-danger"><i class="fas fa-undo me-1"></i>Reset</a>
         <a href="{{ route('reports.export-pdf', ['type' => 'trial-balance', 'start_date' => $start, 'end_date' => $end]) }}"
            target="_blank"
            @cannot('any-role', ['super_admin','admin','manager']) hidden @endcannot

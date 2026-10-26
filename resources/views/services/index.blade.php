@@ -7,7 +7,7 @@
     <h4 class="mb-0"><i class="fas fa-wrench text-warning me-2"></i>Daftar Servis</h4>
     @can('service.create')
     <a href="{{ route('services.create') }}" class="btn btn-danger">
-        <i class="fas fa-plus me-1"></i>+ New Job Card
+        <i class="fas fa-plus me-1"></i>Job Card Baru
     </a>
     @endcan
 </div>
@@ -43,22 +43,30 @@
     <div class="card-body">
         <form method="GET" class="row g-2 mb-3">
             <div class="col-md-2">
-                <select name="status" class="form-select form-select-sm">
+                <select name="status" class="form-select form-select-sm" aria-label="Filter status servis">
                     <option value="all">Semua Status</option>
-                    <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active (Belum Selesai)</option>
-                    <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>0 — Booked</option>
-                    <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>1 — Checked In</option>
-                    <option value="2" {{ request('status') === '2' ? 'selected' : '' }}>2 — Inspection</option>
-                    <option value="3" {{ request('status') === '3' ? 'selected' : '' }}>3 — Waiting Approval</option>
-                    <option value="4" {{ request('status') === '4' ? 'selected' : '' }}>4 — Approved</option>
-                    <option value="5" {{ request('status') === '5' ? 'selected' : '' }}>5 — In Progress</option>
-                    <option value="6" {{ request('status') === '6' ? 'selected' : '' }}>6 — Waiting Parts</option>
-                    <option value="7" {{ request('status') === '7' ? 'selected' : '' }}>7 — QC</option>
-                    <option value="8" {{ request('status') === '8' ? 'selected' : '' }}>8 — Ready</option>
-                    <option value="9" {{ request('status') === '9' ? 'selected' : '' }}>9 — Invoiced</option>
-                    <option value="10" {{ request('status') === '10' ? 'selected' : '' }}>10 — Paid</option>
-                    <option value="11" {{ request('status') === '11' ? 'selected' : '' }}>11 — Released</option>
-                    <option value="12" {{ request('status') === '12' ? 'selected' : '' }}>12 — Completed</option>
+                    <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Aktif (Belum Selesai)</option>
+                    <optgroup label="Awal">
+                        <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Booked</option>
+                        <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Checked In</option>
+                        <option value="2" {{ request('status') === '2' ? 'selected' : '' }}>Inspeksi</option>
+                    </optgroup>
+                    <optgroup label="Persetujuan">
+                        <option value="3" {{ request('status') === '3' ? 'selected' : '' }}>Menunggu Approval</option>
+                        <option value="4" {{ request('status') === '4' ? 'selected' : '' }}>Disetujui</option>
+                    </optgroup>
+                    <optgroup label="Pengerjaan">
+                        <option value="5" {{ request('status') === '5' ? 'selected' : '' }}>Dikerjakan</option>
+                        <option value="6" {{ request('status') === '6' ? 'selected' : '' }}>Menunggu Parts</option>
+                        <option value="7" {{ request('status') === '7' ? 'selected' : '' }}>QC</option>
+                        <option value="8" {{ request('status') === '8' ? 'selected' : '' }}>Siap Diambil</option>
+                    </optgroup>
+                    <optgroup label="Selesai">
+                        <option value="9" {{ request('status') === '9' ? 'selected' : '' }}>Sudah Invoice</option>
+                        <option value="10" {{ request('status') === '10' ? 'selected' : '' }}>Lunas</option>
+                        <option value="11" {{ request('status') === '11' ? 'selected' : '' }}>Keluar (Gate Pass)</option>
+                        <option value="12" {{ request('status') === '12' ? 'selected' : '' }}>Completed</option>
+                    </optgroup>
                 </select>
             </div>
             <div class="col-md-2">

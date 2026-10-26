@@ -26,7 +26,7 @@
         </div>
         <div class="col-md-2"><input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control"></div>
         <div class="col-md-2"><input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control"></div>
-        <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="fas fa-filter me-1"></i>Filter</button></div>
+        <div class="col-md-2 d-flex gap-2"><button class="btn btn-outline-secondary flex-fill"><i class="fas fa-filter me-1"></i>Filter</button><a href="{{ route('stock-histories.index') }}" class="btn btn-outline-danger flex-fill"><i class="fas fa-undo me-1"></i>Reset</a></div>
     </form>
     <div class="table-responsive">
         <table class="table table-hover align-middle small">

@@ -4,17 +4,21 @@
 <div class="row">
     <div class="col-md-6">
         <div class="card mb-3"><div class="card-header"><strong><i class="fas fa-download me-2"></i>Backup Database</strong></div><div class="card-body">
+            @can('settings.edit')
             <form method="POST" action="{{ route('settings.backup') }}">
                 @csrf
                 <button class="btn btn-primary"><i class="fas fa-database me-1"></i>Download Backup SQL</button>
             </form>
+            @endcan
             <small class="text-muted mt-2 d-block">Backup otomatis terjadwal tiap jam 02:00 WIB (keep 14 hari).</small>
         </div></div>
     </div>
     <div class="col-md-6">
         <div class="card mb-3"><div class="card-header"><strong><i class="fas fa-cloud-upload-alt me-2"></i>Sistem</strong></div><div class="card-body">
-            <form method="POST" action="{{ route('settings.cache-clear') }}" class="d-inline">@csrf<button class="btn btn-warning"><i class="fas fa-broom me-1"></i>Clear Cache</button></form>
-            <form method="POST" action="{{ route('settings.optimize') }}" class="d-inline">@csrf<button class="btn btn-info"><i class="fas fa-rocket me-1"></i>Optimize</button></form>
+            @can('settings.edit')
+            <form method="POST" action="{{ route('settings.cache-clear') }}" class="d-inline" onsubmit="return confirm('Bersihkan cache aplikasi?')">@csrf<button class="btn btn-warning"><i class="fas fa-broom me-1"></i>Clear Cache</button></form>
+            <form method="POST" action="{{ route('settings.optimize') }}" class="d-inline" onsubmit="return confirm('Jalankan optimasi aplikasi?')">@csrf<button class="btn btn-info"><i class="fas fa-rocket me-1"></i>Optimize</button></form>
+            @endcan
         </div></div>
     </div>
 </div>
@@ -28,7 +32,7 @@
         <td><i class="fas fa-file-archive me-2"></i>{{ basename($f) }}</td>
         <td>{{ round(filesize($f)/1024/1024, 2) }} MB</td>
         <td>{{ date('d M Y H:i', filemtime($f)) }}</td>
-        <td><a href="{{ route('settings.backup-download', ['file' => basename($f)]) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a></td>
+        <td>@can('backup.download')<a href="{{ route('settings.backup-download', ['file' => basename($f)]) }}" class="btn btn-sm btn-outline-primary" aria-label="Download backup"><i class="fas fa-download"></i></a>@endcan</td>
     </tr>
     @empty
     <tr><td colspan="4" class="text-center py-3 text-muted">Belum ada file backup.</td></tr>

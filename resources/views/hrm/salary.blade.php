@@ -25,7 +25,7 @@
             @foreach(range(1,12) as $m)<option value="{{ $m }}" {{ request('month', $month) == $m ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->format('F') }}</option>@endforeach
         </select></div>
         <div class="col-md-2"><input type="number" name="year" class="form-control" value="{{ request('year', $year) }}"></div>
-        <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel"></i></button></div>
+        <div class="col-md-2"><div class="d-flex gap-2"><button class="btn btn-outline-secondary w-100" title="Filter" aria-label="Filter"><i class="bi bi-funnel"></i></button><a href="{{ route('hrm.salary') }}" class="btn btn-outline-danger" title="Reset filter" aria-label="Reset filter"><i class="bi bi-rotate-left"></i></a></div></div>
     </form>
     <div class="table-responsive">
     <table class="table table-hover align-middle">
@@ -33,7 +33,7 @@
         <tbody>
             @forelse($salaries as $s)
             <tr>
-                <td><strong>{{ $s->user->name }}</strong><br><small class="text-muted">{{ $s->user->position }}</small></td>
+                <td><strong>{{ $s->user->name }}</strong><br><small class="text-muted">{{ $s->user->position ?? '-' }}</small></td>
                 <td>{{ $s->days_present }}/{{ $s->days_absent }}</td>
                 <td class="text-end">@money($s->base_salary)</td>
                 <td class="text-end text-warning">@money($s->commission_total)</td>
@@ -42,7 +42,7 @@
                 <td>
                     <a href="{{ route('hrm.salary.slip', $s) }}" class="btn btn-sm btn-info" title="Print Slip PDF"><i class="bi bi-file-pdf"></i></a>
                     @if($s->status !== 'paid')
-                    <form action="{{ route('hrm.salary.mark-paid', $s) }}" method="POST" class="d-inline">@csrf @method('PUT')<button class="btn btn-sm btn-success" title="Tandai Dibayar"><i class="bi bi-check2"></i></button></form>
+                    <form action="{{ route('hrm.salary.mark-paid', $s) }}" method="POST" class="d-inline" onsubmit="return confirm('Tandai gaji ini sebagai sudah dibayar?')">@csrf @method('PUT')<button class="btn btn-sm btn-success" title="Tandai Dibayar" aria-label="Tandai gaji dibayar"><i class="bi bi-check2"></i></button></form>
                     @endif
                 </td>
             </tr>

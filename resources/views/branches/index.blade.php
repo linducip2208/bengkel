@@ -7,11 +7,12 @@
 </div>
 <div class="card">
     <div class="card-body">
-        <form method="GET" class="mb-3">
+        <form method="GET" action="{{ route('branches.index') }}" class="mb-3 d-flex gap-2">
             <div class="input-group" style="max-width: 360px;">
                 <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari nama / kode...">
                 <button class="btn btn-outline-secondary"><i class="fas fa-search"></i></button>
             </div>
+            <a href="{{ route('branches.index') }}" class="btn btn-outline-danger"><i class="fas fa-undo me-1"></i>Reset</a>
         </form>
         <div class="table-responsive">
             <table class="table table-hover align-middle">

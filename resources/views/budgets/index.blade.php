@@ -44,7 +44,7 @@
 </div>
 
 <div class="card"><div class="card-body">
-    <form method="GET" class="row g-2 mb-3">
+    <form method="GET" action="{{ route('budgets.index') }}" class="row g-2 mb-3">
         <div class="col-md-3">
             <select name="period" class="form-select" onchange="this.form.submit()">
                 @foreach($periods as $p)
@@ -59,6 +59,9 @@
                     <option value="{{ $b->id }}" {{ request('branch_id') == $b->id ? 'selected' : '' }}>{{ $b->name }}</option>
                 @endforeach
             </select>
+        </div>
+        <div class="col-md-2">
+            <a href="{{ route('budgets.index') }}" class="btn btn-outline-danger w-100"><i class="fas fa-undo me-1"></i>Reset</a>
         </div>
     </form>
     <div class="table-responsive">

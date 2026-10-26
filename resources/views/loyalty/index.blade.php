@@ -37,6 +37,7 @@
             <option value="platinum" {{ request('tier') === 'platinum' ? 'selected' : '' }}>Platinum</option>
         </select></div>
         <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel"></i></button></div>
+        <div class="col-md-2"><a href="{{ route('loyalty.index') }}" class="btn btn-outline-danger w-100"><i class="bi bi-rotate-left"></i> Reset</a></div>
     </form>
     <div class="table-responsive">
     <table class="table table-hover align-middle">

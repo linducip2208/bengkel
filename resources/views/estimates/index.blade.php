@@ -58,7 +58,7 @@
     @foreach($statusChips as $statusKey => $chip)
     <div class="col-6 col-md-4 col-lg">
         <a href="{{ route('estimates.index', array_filter(array_merge(request()->query(), ['status' => $statusKey, 'page' => 1]), fn ($v) => $v !== null && $v !== '')) }}"
-           class="card h-100 text-decoration-none {{ $activeStatus === $statusKey ? 'border-warning' : '' }}">
+           class="card h-100 text-decoration-none {{ $activeStatus === $statusKey ? 'border-primary shadow-sm' : '' }}" aria-current="{{ $activeStatus === $statusKey ? 'true' : 'false' }}">
             <div class="card-body text-center py-2">
                 <small class="text-muted d-block text-truncate">{{ $chip['label'] }}</small>
                 <h4 class="mb-0 text-{{ $chip['color'] }}">{{ $chip['count'] }}</h4>
@@ -98,12 +98,17 @@
             <div class="col-6 col-lg-1 col-md-2">
                 <input type="date" name="date_to" class="form-control form-control-sm" value="{{ $filters['date_to'] }}" title="Tanggal sampai">
             </div>
-            <div class="col-6 col-lg-1 col-md-2">
-                <input type="date" name="valid_until" class="form-control form-control-sm" value="{{ $filters['valid_until'] }}" title="Berlaku sampai">
-            </div>
-            <div class="col-6 col-lg-1 col-md-2">
-                <input type="number" name="version" min="1" class="form-control form-control-sm" value="{{ $filters['version'] }}" placeholder="Versi" title="Versi">
-            </div>
+            <details class="col-lg-2 col-md-4">
+                <summary class="btn btn-sm btn-outline-secondary w-100" style="cursor: pointer; list-style: none;">Filter lanjutan</summary>
+                <div class="row g-2 mt-1">
+                    <div class="col-6">
+                        <input type="date" name="valid_until" class="form-control form-control-sm" value="{{ $filters['valid_until'] }}" title="Berlaku sampai" aria-label="Berlaku sampai">
+                    </div>
+                    <div class="col-6">
+                        <input type="number" name="version" min="1" class="form-control form-control-sm" value="{{ $filters['version'] }}" placeholder="Versi" title="Versi" aria-label="Versi">
+                    </div>
+                </div>
+            </details>
             <div class="col-lg-1 col-md-2 d-grid gap-1">
                 <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="fas fa-filter me-1"></i>Filter</button>
                 <a href="{{ route('estimates.index') }}" class="btn btn-sm btn-outline-danger"><i class="fas fa-rotate-left me-1"></i>Reset</a>
@@ -191,32 +196,32 @@
                         </td>
                         <td class="text-end text-nowrap">
                             {{-- Always available: back to the work order --}}
-                            <a href="{{ $serviceUrl }}" class="btn btn-xs btn-outline-secondary py-0 px-1" title="Buka Servis"><i class="fas fa-toolbox"></i></a>
+                            <a href="{{ $serviceUrl }}" class="btn btn-sm btn-outline-secondary" title="Buka Servis"><i class="fas fa-toolbox"></i></a>
 
-                            <a href="{{ route('estimates.pdf', $estimate) }}" class="btn btn-xs btn-outline-danger py-0 px-1" title="PDF"><i class="fas fa-file-pdf"></i></a>
+                            <a href="{{ route('estimates.pdf', $estimate) }}" class="btn btn-sm btn-outline-danger" title="PDF"><i class="fas fa-file-pdf"></i></a>
 
                             @if($canSend && $sendable)
                             <form action="{{ route('estimates.send-wa', $estimate) }}" method="POST" class="d-inline">
                                 @csrf
-                                <button class="btn btn-xs btn-outline-success py-0 px-1" title="Kirim WhatsApp"><i class="fab fa-whatsapp"></i></button>
+                                <button class="btn btn-sm btn-outline-success" title="Kirim WhatsApp"><i class="fab fa-whatsapp"></i></button>
                             </form>
                             <form action="{{ route('estimates.send-email', $estimate) }}" method="POST" class="d-inline">
                                 @csrf
-                                <button class="btn btn-xs btn-outline-primary py-0 px-1" title="Kirim Email"><i class="fas fa-envelope"></i></button>
+                                <button class="btn btn-sm btn-outline-primary" title="Kirim Email"><i class="fas fa-envelope"></i></button>
                             </form>
                             @endif
 
                             @if($estimate->status === \App\Models\ServiceEstimate::STATUS_DRAFT && auth()->user()?->can('estimates.update'))
-                            <a href="{{ $serviceUrl }}" class="btn btn-xs btn-outline-warning py-0 px-1" title="Edit Draft"><i class="fas fa-edit"></i></a>
+                            <a href="{{ $serviceUrl }}" class="btn btn-sm btn-outline-warning" title="Edit Draft"><i class="fas fa-edit"></i></a>
                             @endif
 
                             @if($issuable)
-                            <a href="{{ route('estimates.preview', $estimate) }}" target="_blank" class="btn btn-xs btn-outline-secondary py-0 px-1" title="Preview"><i class="fas fa-eye"></i></a>
-                            <a href="{{ route('estimates.print', $estimate) }}" target="_blank" class="btn btn-xs btn-outline-dark py-0 px-1" title="Print"><i class="fas fa-print"></i></a>
+                            <a href="{{ route('estimates.preview', $estimate) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Preview"><i class="fas fa-eye"></i></a>
+                            <a href="{{ route('estimates.print', $estimate) }}" target="_blank" class="btn btn-sm btn-outline-dark" title="Print"><i class="fas fa-print"></i></a>
                             @endif
 
                             @if($revisable && $canRevise)
-                            <button type="button" class="btn btn-xs btn-outline-warning py-0 px-1" title="Buat Revisi"
+                            <button type="button" class="btn btn-sm btn-outline-warning" title="Buat Revisi"
                                     data-bs-toggle="modal" data-bs-target="#indexReviseModal"
                                     data-action="{{ route('estimates.revise', $estimate) }}"
                                     data-number="{{ $estimate->estimate_number }}"><i class="fas fa-code-branch"></i></button>
@@ -226,12 +231,12 @@
                             <form action="{{ route('estimates.convert-invoice', $estimate) }}" method="POST" class="d-inline"
                                   onsubmit="return confirm('Buat Invoice dari estimasi ini? Estimasi akan menjadi dokumen historis.')">
                                 @csrf
-                                <button class="btn btn-xs btn-primary py-0 px-1" title="Convert ke Invoice"><i class="fas fa-file-invoice-dollar"></i></button>
+                                <button class="btn btn-sm btn-primary" title="Convert ke Invoice"><i class="fas fa-file-invoice-dollar"></i></button>
                             </form>
                             @endif
 
                             @if($estimate->status === \App\Models\ServiceEstimate::STATUS_CONVERTED && $invoiceModel)
-                            <a href="{{ route('invoices.show', $invoiceModel) }}" class="btn btn-xs btn-outline-primary py-0 px-1" title="Lihat Invoice"><i class="fas fa-file-invoice"></i></a>
+                            <a href="{{ route('invoices.show', $invoiceModel) }}" class="btn btn-sm btn-outline-primary" title="Lihat Invoice"><i class="fas fa-file-invoice"></i></a>
                             @endif
                         </td>
                     </tr>
@@ -280,117 +285,8 @@
 <script>
 (function () {
     'use strict';
-    // The global create action now opens the direct Estimate builder. Keep
-    // this legacy service-search code inert for old cached pages/bookmarks;
-    // service-linked creation remains available through ?service_id=.
-    if (false) {
-    var searchUrl = '{{ route('estimates.service-search') }}';
-
-    var input = document.getElementById('svcSelectSearch');
-    var results = document.getElementById('svcSelectResults');
-    var loadMoreBtn = document.getElementById('svcLoadMore');
-    var filterBtns = document.querySelectorAll('#svcQuickFilters button');
-    var currentFilter = '';
-    var currentPage = 1;
-    var hasMore = false;
-    var timer = null;
-    var lastLoaded = [];
-
-    function esc(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-        });
-    }
-
-    function actionButton(s) {
-        if (s.action === 'continue_draft') {
-            return '<span class="btn btn-sm btn-warning">Lanjutkan Draft</span>';
-        }
-        if (s.action === 'view') {
-            return '<span class="btn btn-sm btn-outline-secondary">Lihat Estimasi</span>';
-        }
-        if (s.action === 'revise') {
-            return '<span class="btn btn-sm btn-outline-warning">Buat Revisi</span>';
-        }
-        return '<span class="btn btn-sm btn-warning">Buat Estimasi</span>';
-    }
-
-    function card(s) {
-        var badge = s.has_active_estimate
-            ? '<span class="badge bg-info ms-1">' + esc(s.estimate.status_label) + ' ' + esc(s.estimate.number) + '</span>'
-            : '';
-        var note = s.needs_inspection
-            ? '<small class="text-warning d-block"><i class="fas fa-triangle-exclamation me-1"></i>Checklist/inspection belum selesai</small>'
-            : '';
-        return '<a href="' + esc(s.url) + '" class="list-group-item list-group-item-action">'
-            + '<div class="d-flex justify-content-between align-items-center">'
-            + '<div>'
-            + '<strong>' + esc(s.job_no) + '</strong>' + badge
-            + '<div class="small">' + esc(s.customer || '-') + (s.phone ? ' · ' + esc(s.phone) : '') + '</div>'
-            + '<small class="text-muted">' + esc(s.model || '-') + ' · <strong>' + esc(s.plate || '-') + '</strong></small>'
-            + note
-            + '</div>'
-            + '<div class="text-end">'
-            + '<div class="small text-muted mb-1">Status: ' + esc(s.workflow_label) + '</div>'
-            + actionButton(s)
-            + '</div>'
-            + '</div>'
-            + '</a>';
-    }
-
-    function load(reset) {
-        if (reset) { currentPage = 1; }
-        var params = new URLSearchParams({ q: input.value.trim(), filter: currentFilter, page: currentPage });
-        results.querySelector('.svc-loading')?.remove();
-        if (reset) {
-            results.innerHTML = '<div class="text-muted text-center py-3 svc-loading">Memuat...</div>';
-        }
-        fetch(searchUrl + '?' + params.toString(), { headers: { 'Accept': 'application/json' } })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                var html = (data.results || []).map(card).join('');
-                if (reset) {
-                    results.innerHTML = html !== ''
-                        ? html
-                        : (input.value.trim() !== ''
-                            ? '<div class="text-muted text-center py-4">Tidak ditemukan Service yang cocok dengan pencarian.</div>'
-                            : '<div class="text-muted text-center py-4">Belum ada Service / Work Order aktif.</div>');
-                } else {
-                    results.querySelector('.svc-loading')?.remove();
-                    if (html !== '') { results.insertAdjacentHTML('beforeend', html); }
-                }
-                hasMore = !!(data.pagination && data.pagination.more);
-                loadMoreBtn.classList.toggle('d-none', ! hasMore);
-                results.querySelectorAll('.svc-loading').forEach(function (el) { el.remove(); });
-            })
-            .catch(function () {
-                results.innerHTML = '<div class="text-danger text-center py-3">Gagal memuat. Coba lagi.</div>';
-            });
-    }
-
-    input.addEventListener('input', function () {
-        clearTimeout(timer);
-        timer = setTimeout(function () { load(true); }, 250);
-    });
-    filterBtns.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            filterBtns.forEach(function (b) { b.className = 'btn btn-sm btn-outline-secondary'; });
-            btn.className = 'btn btn-sm btn-primary';
-            currentFilter = btn.getAttribute('data-filter');
-            load(true);
-        });
-    });
-    loadMoreBtn.addEventListener('click', function () {
-        currentPage++;
-        load(false);
-    });
-    modal.addEventListener('shown.bs.modal', function () {
-        input.value = '';
-        currentFilter = '';
-        load(true);
-        input.focus();
-    });
-    }
+    // Legacy service-search creation flow removed (was inert behind if(false)).
+    // Service-linked creation remains available through ?service_id=.
 
     // ============ REVISE MODAL binding ============
     var reviseModal = document.getElementById('indexReviseModal');

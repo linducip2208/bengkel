@@ -39,6 +39,11 @@
                 <i class="fas fa-filter me-1"></i> Filter
             </button>
         </div>
+        <div class="col-md-2">
+            <a href="{{ route('recalls.index') }}" class="btn btn-outline-danger w-100">
+                <i class="fas fa-undo me-1"></i> Reset
+            </a>
+        </div>
     </form>
 
     <div class="table-responsive">

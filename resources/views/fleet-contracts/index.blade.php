@@ -9,7 +9,7 @@
     </div>
 </div>
 <div class="card"><div class="card-body">
-    <form method="GET" class="row g-3 mb-3">
+    <form method="GET" action="{{ route('fleet-contracts.index') }}" class="row g-3 mb-3">
         <div class="col-md-4">
             <div class="input-group">
                 <span class="input-group-text"><i class="fas fa-search"></i></span>
@@ -25,6 +25,9 @@
         </div>
         <div class="col-md-2">
             <button type="submit" class="btn btn-outline-secondary w-100"><i class="fas fa-filter me-1"></i>Filter</button>
+        </div>
+        <div class="col-md-2">
+            <a href="{{ route('fleet-contracts.index') }}" class="btn btn-outline-danger w-100"><i class="fas fa-undo me-1"></i>Reset</a>
         </div>
     </form>
 

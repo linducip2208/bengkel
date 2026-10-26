@@ -6,7 +6,7 @@
     <a href="{{ route('notes.create') }}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Tambah Catatan</a>
 </div>
 <div class="card"><div class="card-body">
-    <form method="GET" class="row g-2 mb-3">
+    <form method="GET" action="{{ route('notes.index') }}" class="row g-2 mb-3">
         <div class="col-md-3">
             <select name="notable_type" class="form-select">
                 <option value="">Semua Target</option>
@@ -16,6 +16,7 @@
             </select>
         </div>
         <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="fas fa-filter me-1"></i>Filter</button></div>
+        <div class="col-md-2"><a href="{{ route('notes.index') }}" class="btn btn-outline-danger w-100"><i class="fas fa-undo me-1"></i>Reset</a></div>
     </form>
     <div class="table-responsive">
         <table class="table table-hover align-middle">

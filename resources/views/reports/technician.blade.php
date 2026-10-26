@@ -4,10 +4,11 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4><i class="fas fa-user-gear me-2"></i>Produktivitas Teknisi</h4>
 </div>
-<form method="GET" class="row g-2 mb-3 no-print">
+<form method="GET" action="{{ route('reports.technician') }}" class="row g-2 mb-3 no-print">
     <div class="col-md-3"><input type="date" name="start_date" class="form-control" value="{{ $start }}"></div>
     <div class="col-md-3"><input type="date" name="end_date" class="form-control" value="{{ $end }}"></div>
     <div class="col-md-2"><button type="submit" class="btn btn-secondary w-100">Filter</button></div>
+    <div class="col-md-2"><a href="{{ route('reports.technician') }}" class="btn btn-outline-danger w-100"><i class="fas fa-undo me-1"></i>Reset</a></div>
 </form>
 
 <div class="row mb-3">

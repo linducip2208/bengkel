@@ -33,6 +33,9 @@
             <div class="col-md-2">
                 <button type="submit" class="btn btn-secondary w-100">Filter</button>
             </div>
+            <div class="col-md-2">
+                <a href="{{ route('incomes.index') }}" class="btn btn-outline-danger w-100"><i class="bi bi-rotate-left"></i> Reset</a>
+            </div>
         </form>
     </div>
 </div>

@@ -6,7 +6,7 @@
     <title>{{ $status }} — {{ config('app.name') }}</title>
     <style>
         :root {
-            --brand: #2563eb;
+            --brand: #2878f0;
             --brand-dark: #1d4ed8;
             --ink: #0f172a;
             --muted: #64748b;

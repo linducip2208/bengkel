@@ -19,7 +19,10 @@
     </div></form>
 
     <div class="table-responsive">
-        <table class="table table-bordered table-hover align-middle small">
+        <style>
+            .att-matrix thead th:first-child, .att-matrix tbody th[scope="row"] { position: sticky; left: 0; background: #f8fafc; z-index: 2; }
+        </style>
+        <table class="table table-bordered table-hover align-middle small att-matrix">
             <thead class="table-light">
                 <tr><th>Karyawan</th>
                     @for($d = 1; $d <= \Carbon\Carbon::create($year, $monthNum)->daysInMonth; $d++)
@@ -31,7 +34,7 @@
             <tbody>
                 @foreach($users as $u)
                 <tr>
-                    <td class="fw-bold">{{ $u->name }}</td>
+                    <th scope="row" class="fw-bold">{{ $u->name }}</th>
                     @php $userAtts = $attendances->get($u->id, collect())->keyBy(fn($a) => $a->date->day); $present = 0; @endphp
                     @for($d = 1; $d <= \Carbon\Carbon::create($year, $monthNum)->daysInMonth; $d++)
                     @php $att = $userAtts->get($d); if ($att && in_array($att->status, ['present','late'])) $present++; @endphp

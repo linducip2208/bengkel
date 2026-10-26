@@ -78,9 +78,12 @@
                 </div>
             </div>
             <div class="col-md-2">
-                <button type="submit" class="btn btn-sm btn-outline-primary w-100">
-                    <i class="bi bi-search"></i> Filter
-                </button>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="bi bi-search"></i> Filter
+                    </button>
+                    <a href="{{ route('products.index') }}" class="btn btn-sm btn-outline-danger" title="Reset filter" aria-label="Reset filter"><i class="bi bi-rotate-left"></i></a>
+                </div>
             </div>
         </form>
     </div>
@@ -157,7 +160,13 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="9" class="text-center text-muted py-4">Tidak ada produk ditemukan.</td>
+                    <td colspan="9" class="text-center text-muted py-5">
+                        <i class="fas fa-box-open fa-2x mb-2 d-block opacity-50"></i>
+                        Tidak ada produk ditemukan.
+                        @can('product.create')
+                        <a href="{{ route('products.create') }}" class="btn btn-sm btn-primary mt-2"><i class="fas fa-plus me-1"></i>Tambah Produk</a>
+                        @endcan
+                    </td>
                 </tr>
                 @endforelse
             </tbody>

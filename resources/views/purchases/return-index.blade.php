@@ -30,6 +30,11 @@
                     <i class="bi bi-search"></i> Filter
                 </button>
             </div>
+            <div class="col-md-2">
+                <a href="{{ route('purchases.return.index') }}" class="btn btn-sm btn-outline-danger w-100">
+                    <i class="bi bi-rotate-left"></i> Reset
+                </a>
+            </div>
         </form>
     </div>
 </div>

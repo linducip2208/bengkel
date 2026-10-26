@@ -6,11 +6,17 @@ Dashboard - {{ config('app.name') }}
 
 @push('scripts')
 <script>
-// Auto-refresh dashboard every 60 seconds
-setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
-    const parser = new DOMParser(); const doc = parser.parseFromString(html,'text/html');
-    document.querySelector('.row.mb-3').innerHTML = doc.querySelector('.row.mb-3').innerHTML;
-})}, 60000);
+// Auto-refresh dashboard every 60 seconds (same-tab visible only, fail-silent)
+setInterval(() => {
+    if (document.visibilityState !== 'visible') return;
+    fetch(window.location.href).then(r => { if (!r.ok) return null; return r.text(); }).then(html => {
+        if (!html) return;
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const src = doc.querySelector('.row.mb-3');
+        const dst = document.querySelector('.row.mb-3');
+        if (src && dst) dst.innerHTML = src.innerHTML;
+    }).catch(() => {});
+}, 60000);
 </script>
 @endpush
 
@@ -268,6 +274,7 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
                 <p class="card-text small">Outstanding Invoices</p>
             </div>
         </div>
+        </a>
     </div>
     <div class="col-md-2 mb-3">
         <a href="{{ route('reports.stock') }}" class="text-decoration-none">
@@ -277,6 +284,7 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
                 <p class="card-text small">Low Stock Items</p>
             </div>
         </div>
+        </a>
     </div>
 </div>
 @endif
@@ -361,10 +369,16 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
 {{-- Quick Actions --}}
 <div class="row mb-4 no-print">
     <div class="col-12">
-        <div class="d-flex gap-2">
-            <a href="{{ route('services.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> New Service</a>
-            <a href="{{ route('customers.create') }}" class="btn btn-success btn-sm"><i class="bi bi-person-plus"></i> New Customer</a>
-            <a href="{{ route('invoices.create') }}" class="btn btn-info btn-sm"><i class="bi bi-receipt"></i> New Invoice</a>
+        <div class="d-flex gap-2 flex-wrap">
+            @can('service.create')
+            <a href="{{ route('services.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Servis Baru</a>
+            @endcan
+            @can('customer.create')
+            <a href="{{ route('customers.create') }}" class="btn btn-success btn-sm"><i class="bi bi-person-plus"></i> Pelanggan Baru</a>
+            @endcan
+            @can('invoice.create')
+            <a href="{{ route('invoices.create') }}" class="btn btn-info btn-sm"><i class="bi bi-receipt"></i> Invoice Baru</a>
+            @endcan
         </div>
     </div>
 </div>

@@ -28,6 +28,7 @@
         <div class="col-md-2"><input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control"></div>
         <div class="col-md-2"><input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control"></div>
         <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel"></i> Filter</button></div>
+        <div class="col-md-2"><a href="{{ route('bookings.index') }}" class="btn btn-outline-danger w-100"><i class="bi bi-rotate-left"></i> Reset</a></div>
     </form>
     <div class="table-responsive">
     <table class="table table-hover align-middle">
@@ -40,7 +41,7 @@
                 <td><a href="https://wa.me/{{ preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $b->phone)) }}" target="_blank">{{ $b->phone }}</a><br><small class="text-muted">{{ $b->email }}</small></td>
                 <td>{{ $b->vehicle_plate }}<br><small class="text-muted">{{ $b->vehicle_brand }} {{ $b->vehicle_model }}</small></td>
                 <td><small>{{ Str::limit($b->complaint, 80) }}</small></td>
-                <td>{{ $b->technician?->name ?? '<span class="text-muted">—</span>' }}</td>
+                <td>@if($b->technician)<span>{{ $b->technician->name }}</span>@else<span class="text-muted">—</span>@endif</td>
                 <td>
                     <form action="{{ route('bookings.update', $b) }}" method="POST" class="d-inline">
                         @csrf @method('PUT')

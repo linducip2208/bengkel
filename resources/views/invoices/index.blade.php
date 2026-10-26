@@ -38,6 +38,9 @@
             <div class="col-md-2">
                 <button type="submit" class="btn btn-secondary w-100">Filter</button>
             </div>
+            <div class="col-md-2">
+                <a href="{{ route('invoices.index') }}" class="btn btn-outline-danger w-100"><i class="bi bi-rotate-left"></i> Reset</a>
+            </div>
         </form>
     </div>
 </div>
@@ -107,7 +110,7 @@
                                 @endcan
                             @endif
                             @can('invoice.send-wa')
-                            <a href="{{ route('invoices.sendWA', $invoice) }}" class="btn btn-sm btn-success" title="Kirim WA" target="_blank"><i class="bi bi-whatsapp"></i></a>
+                            <a href="{{ route('invoices.sendWA', $invoice) }}" class="btn btn-sm btn-outline-success" title="Kirim WA" target="_blank"><i class="bi bi-whatsapp"></i></a>
                             @endcan
                             @if ($invoice->status !== 'full_paid')
                                 @can('invoice.delete')

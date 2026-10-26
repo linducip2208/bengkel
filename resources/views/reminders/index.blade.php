@@ -43,6 +43,11 @@ Reminders - {{ config('app.name') }}
                     <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
                 </select>
             </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <a href="{{ route('reminders.index') }}" class="btn btn-outline-danger">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </a>
+            </div>
         </form>
     </div>
 </div>

@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard — {{ $customer->name }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
@@ -9,7 +10,7 @@
 </head>
 <body>
     <div class="container" style="max-width: 960px;">
-        <div class="card mb-3"><div class="card-body d-flex justify-content-between align-items-center">
+        <div class="card mb-3"><div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
                 <h4 class="mb-0">Halo, {{ $customer->name }} 👋</h4>
                 <small class="text-muted">{{ $customer->phone }} • Tier: <span class="badge bg-info">{{ ucfirst($customer->membership_tier) }}</span> • Poin: <strong class="text-warning">{{ number_format($customer->loyalty_points) }}</strong></small>
@@ -28,6 +29,7 @@
             <div class="col-md-6">
                 <div class="card"><div class="card-body">
                     <h6><i class="bi bi-file-earmark-text me-2"></i>10 Invoice Terbaru</h6>
+                    <div class="table-responsive">
                     <table class="table table-sm">
                         <thead><tr><th>No</th><th>Tanggal</th><th class="text-end">Total</th><th>Status</th></tr></thead>
                         <tbody>
@@ -45,11 +47,13 @@
                             @empty<tr><td colspan="4" class="text-center text-muted py-2">Belum ada invoice.</td></tr>@endforelse
                         </tbody>
                     </table>
+                    </div>
                 </div></div>
             </div>
             <div class="col-md-6">
                 <div class="card"><div class="card-body">
                     <h6><i class="bi bi-tools me-2"></i>10 Service Terbaru</h6>
+                    <div class="table-responsive">
                     <table class="table table-sm">
                         <thead><tr><th>No Job</th><th>Tanggal</th><th>Kendaraan</th><th>Status</th></tr></thead>
                         <tbody>
@@ -63,6 +67,7 @@
                             @empty<tr><td colspan="4" class="text-center text-muted py-2">Belum ada service.</td></tr>@endforelse
                         </tbody>
                     </table>
+                    </div>
                 </div></div>
             </div>
         </div>

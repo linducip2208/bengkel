@@ -3,7 +3,7 @@
 @section('content')
 <div class="d-flex justify-content-between mb-4"><h4><i class="bi bi-clock-history me-2"></i>Activity Log (Audit User)</h4></div>
 <div class="card"><div class="card-body">
-    <form method="GET" class="row g-2 mb-3">
+    <form method="GET" action="{{ route('activity-logs.index') }}" class="row g-2 mb-3">
         <div class="col-md-3"><select name="user_id" class="form-select">
             <option value="">Semua User</option>
             @foreach($users as $u)<option value="{{ $u->id }}" {{ request('user_id') == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>@endforeach
@@ -12,6 +12,7 @@
         <div class="col-md-2"><input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control"></div>
         <div class="col-md-2"><input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control"></div>
         <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel"></i></button></div>
+        <div class="col-md-1"><a href="{{ route('activity-logs.index') }}" class="btn btn-outline-danger w-100" title="Reset"><i class="bi bi-arrow-counterclockwise"></i></a></div>
     </form>
     <div class="table-responsive">
     <table class="table table-hover align-middle small">
