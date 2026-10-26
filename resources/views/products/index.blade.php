@@ -157,7 +157,13 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="9" class="text-center text-muted py-4">Tidak ada produk ditemukan.</td>
+                    <td colspan="9" class="text-center text-muted py-5">
+                        <i class="fas fa-box-open fa-2x mb-2 d-block opacity-50"></i>
+                        Tidak ada produk ditemukan.
+                        @can('product.create')
+                        <a href="{{ route('products.create') }}" class="btn btn-sm btn-primary mt-2"><i class="fas fa-plus me-1"></i>Tambah Produk</a>
+                        @endcan
+                    </td>
                 </tr>
                 @endforelse
             </tbody>

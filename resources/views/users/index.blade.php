@@ -30,7 +30,7 @@
     </div></form>
     <div class="table-responsive">
     <table class="table table-hover align-middle">
-        <thead class="table-light"><tr><th>Nama</th><th>Email</th><th>Role</th><th>Status</th><th>Last Login</th><th>2FA</th><th>Aksi</th></tr></thead>
+        <thead class="table-light"><tr><th>Nama</th><th>Email</th><th>Role</th><th>Status</th><th>Diperbarui</th><th>2FA</th><th>Aksi</th></tr></thead>
         <tbody>
             @forelse($users as $u)
             <tr>

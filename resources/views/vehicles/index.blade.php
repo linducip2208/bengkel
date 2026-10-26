@@ -103,7 +103,13 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center py-4 text-muted">Belum ada data kendaraan.</td>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="fas fa-car fa-2x mb-2 d-block opacity-50"></i>
+                            Belum ada data kendaraan.
+                            @can('vehicle.create')
+                            <a href="{{ route('vehicles.create') }}" class="btn btn-sm btn-primary mt-2"><i class="fas fa-plus me-1"></i>Tambah Kendaraan</a>
+                            @endcan
+                        </td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -111,7 +117,7 @@
         </div>
 
         <div class="d-flex justify-content-end">
-            {{ $vehicles->links() }}
+            {{ $vehicles->withQueryString()->links() }}
         </div>
     </div>
 </div>

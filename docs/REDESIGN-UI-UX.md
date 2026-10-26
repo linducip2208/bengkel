@@ -86,3 +86,15 @@
   - `layouts/tenant.blade.php` is not extended by any view (0 usages; all 279 extend `layouts.app`) — kept as legacy, loads same CSS, no functional impact.
   - No `profile` route and no password-reset flow exist in `routes/web.php` — login honestly omits them instead of fake links.
   - Manual browser + print/PDF + 1366/1920 landscape checks still required before merge (no browser automation in this environment); screenshots not captured here.
+
+## Verification log — ronde 2 (CRUD/modules, executed)
+- `php artisan test` (full suite) — 435 tests, 434 passed, 1 skipped, 0 failed.
+- `php artisan view:cache` — OK setelah semua edit blade ronde 2.
+- Perbaikan yang diterapkan (presentation/UX only, tanpa ubah proses bisnis, permission, route, atau logika nominal):
+  1. `dashboard.blade.php` — perbaiki 2 tag `<a>` tak tertutup (Outstanding Invoices, Low Stock); Quick Actions kini digate `@can(service|customer|invoice.create)`; bungkus `flex-wrap`.
+  2. `users/index.blade.php` — kolom menyesatkan `Last Login` (isi `updated_at`) diganti `Diperbarui`.
+  3. `reports/service.blade.php` — hapus kartu duplikat `Total Estimasi (Charge)` yang memakai variabel sama dengan `Total Revenue`; kedua tabel breakdown kini dalam `.table-responsive`.
+  4. `errors/404,500,generic.blade.php` — token brand disatukan `#2878f0`.
+  5. `customers|vehicles/index.blade.php` — pagination `withQueryString()` (filter tidak hilang pindah halaman); empty-state ikon + CTA tambah (gated).
+  6. `products|suppliers/index.blade.php` — empty-state ikon + CTA tambah (gated); `suppliers/index` Tambah/Detail/Edit kini digate `supplier.create/view/edit` + `aria-label` (sebelumnya hanya delete yang digate).
+- Temuan audit yang disengaja dibiarkan (butuh keputusan produk/test khusus, bukan redesign): auto-refresh dashboard via `fetch+innerHTML` tanpa error handling, kalkulasi nominal di view invoices, N+1 `WorkshopProgressService` per baris, OTP tanpa resend timer, `register/forgot-password` memang tidak ada (login jujur tanpa link palsu).

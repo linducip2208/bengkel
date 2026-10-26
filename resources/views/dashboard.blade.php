@@ -268,6 +268,7 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
                 <p class="card-text small">Outstanding Invoices</p>
             </div>
         </div>
+        </a>
     </div>
     <div class="col-md-2 mb-3">
         <a href="{{ route('reports.stock') }}" class="text-decoration-none">
@@ -277,6 +278,7 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
                 <p class="card-text small">Low Stock Items</p>
             </div>
         </div>
+        </a>
     </div>
 </div>
 @endif
@@ -361,10 +363,16 @@ setInterval(() => { fetch(window.location.href).then(r=>r.text()).then(html=>{
 {{-- Quick Actions --}}
 <div class="row mb-4 no-print">
     <div class="col-12">
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
+            @can('service.create')
             <a href="{{ route('services.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> New Service</a>
+            @endcan
+            @can('customer.create')
             <a href="{{ route('customers.create') }}" class="btn btn-success btn-sm"><i class="bi bi-person-plus"></i> New Customer</a>
+            @endcan
+            @can('invoice.create')
             <a href="{{ route('invoices.create') }}" class="btn btn-info btn-sm"><i class="bi bi-receipt"></i> New Invoice</a>
+            @endcan
         </div>
     </div>
 </div>

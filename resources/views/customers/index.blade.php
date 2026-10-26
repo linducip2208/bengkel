@@ -104,7 +104,13 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center py-4 text-muted">Belum ada data pelanggan.</td>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="fas fa-users fa-2x mb-2 d-block opacity-50"></i>
+                            Belum ada data pelanggan.
+                            @can('customer.create')
+                            <a href="{{ route('customers.create') }}" class="btn btn-sm btn-primary mt-2"><i class="fas fa-plus me-1"></i>Tambah Pelanggan</a>
+                            @endcan
+                        </td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -112,7 +118,7 @@
         </div>
 
         <div class="d-flex justify-content-end">
-            {{ $customers->links() }}
+            {{ $customers->withQueryString()->links() }}
         </div>
     </div>
 </div>

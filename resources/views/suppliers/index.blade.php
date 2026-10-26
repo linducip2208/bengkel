@@ -4,9 +4,11 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">Daftar Supplier</h4>
+    @can('supplier.create')
     <a href="{{ route('suppliers.create') }}" class="btn btn-primary btn-sm">
         <i class="bi bi-plus-lg"></i> Tambah Supplier
     </a>
+    @endcan
 </div>
 
 <div class="card mb-3">
@@ -43,9 +45,13 @@
                 <tr>
                     <td>{{ $loop->iteration + ($suppliers->currentPage() - 1) * $suppliers->perPage() }}</td>
                     <td>
+                        @can('supplier.view')
                         <a href="{{ route('suppliers.show', $supplier) }}" class="text-decoration-none">
                             {{ $supplier->name }}
                         </a>
+                        @else
+                            {{ $supplier->name }}
+                        @endcan
                     </td>
                     <td>{{ $supplier->contact_person ?: '-' }}</td>
                     <td>{{ $supplier->email ?: '-' }}</td>
@@ -53,12 +59,16 @@
                     <td>{{ $supplier->tax_id ?: '-' }}</td>
                     <td class="text-center">
                         <div class="btn-group btn-group-sm">
-                            <a href="{{ route('suppliers.show', $supplier) }}" class="btn btn-outline-info" title="Detail">
+                            @can('supplier.view')
+                            <a href="{{ route('suppliers.show', $supplier) }}" class="btn btn-outline-info" title="Detail" aria-label="Detail supplier">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <a href="{{ route('suppliers.edit', $supplier) }}" class="btn btn-outline-warning" title="Edit">
+                            @endcan
+                            @can('supplier.edit')
+                            <a href="{{ route('suppliers.edit', $supplier) }}" class="btn btn-outline-warning" title="Edit" aria-label="Edit supplier">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            @endcan
                             @can('supplier.delete')
                             <form action="{{ route('suppliers.destroy', $supplier) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus supplier ini?')">
                                 @csrf
@@ -73,7 +83,13 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="text-center text-muted py-4">Tidak ada supplier ditemukan.</td>
+                    <td colspan="7" class="text-center text-muted py-5">
+                        <i class="fas fa-truck fa-2x mb-2 d-block opacity-50"></i>
+                        Tidak ada supplier ditemukan.
+                        @can('supplier.create')
+                        <a href="{{ route('suppliers.create') }}" class="btn btn-sm btn-primary mt-2"><i class="fas fa-plus me-1"></i>Tambah Supplier</a>
+                        @endcan
+                    </td>
                 </tr>
                 @endforelse
             </tbody>

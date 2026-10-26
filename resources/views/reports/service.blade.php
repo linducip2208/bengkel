@@ -76,15 +76,7 @@ Service Report - {{ config('app.name') }}
 </div>
 
 <div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card border-warning">
-            <div class="card-body text-center">
-                <h4>@money($report['total_revenue'] ?? 0)</h4>
-                <p class="text-muted">Total Estimasi (Charge)</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="card border-danger">
             <div class="card-body text-center">
                 <h4>@money($report['total_actual_cost'] ?? 0)</h4>
@@ -92,7 +84,7 @@ Service Report - {{ config('app.name') }}
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="card {{ ($report['total_variance'] ?? 0) >= 0 ? 'border-success' : 'border-danger' }}">
             <div class="card-body text-center">
                 <h4 class="{{ ($report['total_variance'] ?? 0) >= 0 ? 'text-success' : 'text-danger' }}">@money($report['total_variance'] ?? 0)</h4>
@@ -121,6 +113,7 @@ Service Report - {{ config('app.name') }}
         <div class="card">
             <div class="card-header"><strong>Service Breakdown by Date</strong></div>
             <div class="card-body p-0">
+                <div class="table-responsive">
                 <table class="table table-sm table-striped mb-0">
                     <thead><tr><th>Date</th><th>Count</th><th>Revenue</th></tr></thead>
                     <tbody>
@@ -135,6 +128,7 @@ Service Report - {{ config('app.name') }}
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>
@@ -142,6 +136,7 @@ Service Report - {{ config('app.name') }}
         <div class="card">
             <div class="card-header"><strong>By Technician</strong></div>
             <div class="card-body p-0">
+                <div class="table-responsive">
                 <table class="table table-sm table-striped mb-0">
                     <thead><tr><th>Technician</th><th>Count</th><th>Revenue</th></tr></thead>
                     <tbody>
@@ -156,6 +151,7 @@ Service Report - {{ config('app.name') }}
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </div>

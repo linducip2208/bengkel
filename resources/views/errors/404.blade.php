@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 — {{ config('app.name') }}</title>
     <style>
-        :root { --brand: #2563eb; --ink: #0f172a; --muted: #64748b; --bg: #f8fafc; --line: #e2e8f0; }
+        :root { --brand: #2878f0; --ink: #0f172a; --muted: #64748b; --bg: #f8fafc; --line: #e2e8f0; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
