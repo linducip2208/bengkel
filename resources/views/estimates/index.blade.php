@@ -58,7 +58,7 @@
     @foreach($statusChips as $statusKey => $chip)
     <div class="col-6 col-md-4 col-lg">
         <a href="{{ route('estimates.index', array_filter(array_merge(request()->query(), ['status' => $statusKey, 'page' => 1]), fn ($v) => $v !== null && $v !== '')) }}"
-           class="card h-100 text-decoration-none {{ $activeStatus === $statusKey ? 'border-warning' : '' }}">
+           class="card h-100 text-decoration-none {{ $activeStatus === $statusKey ? 'border-primary shadow-sm' : '' }}" aria-current="{{ $activeStatus === $statusKey ? 'true' : 'false' }}">
             <div class="card-body text-center py-2">
                 <small class="text-muted d-block text-truncate">{{ $chip['label'] }}</small>
                 <h4 class="mb-0 text-{{ $chip['color'] }}">{{ $chip['count'] }}</h4>

@@ -43,8 +43,8 @@
         <tbody>
             <tr><td>Gaji Pokok</td><td class="text-right">Rp {{ number_format($salary->base_salary, 0, ',', '.') }}</td></tr>
             <tr><td>Komisi Service</td><td class="text-right">Rp {{ number_format($salary->commission_total, 0, ',', '.') }}</td></tr>
-            <tr><td>Tunjangan</td><td class="text-right">Rp {{ number_format($salary->allowance, 0, ',', '.') }}</td></tr>
-            <tr><td>Potongan</td><td class="text-right">- Rp {{ number_format($salary->deduction, 0, ',', '.') }}</td></tr>
+            @if((float) ($salary->allowance ?? 0) != 0)<tr><td>Tunjangan</td><td class="text-right">Rp {{ number_format($salary->allowance, 0, ',', '.') }}</td></tr>@endif
+            @if((float) ($salary->deduction ?? 0) != 0)<tr><td>Potongan</td><td class="text-right">- Rp {{ number_format($salary->deduction, 0, ',', '.') }}</td></tr>@endif
             <tr class="total"><td>TOTAL DITERIMA</td><td class="text-right">Rp {{ number_format($salary->net_salary, 0, ',', '.') }}</td></tr>
         </tbody>
     </table>

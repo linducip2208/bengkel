@@ -297,7 +297,7 @@
         </div>
 
         @if ($invoice->payment_proof)
-            <div class="card mb-4">
+            <div class="card mb-4 d-print-none">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <strong>Bukti Pembayaran (upload customer)</strong>
                     <a href="{{ route('invoices.payment-proof', $invoice) }}" target="_blank" class="btn btn-sm btn-outline-primary">
@@ -307,6 +307,17 @@
             </div>
         @endif
     </div>
+</div>
+
+{{-- Ringkasan khusus cetak: kolom kanan disembunyikan saat print, jadi riwayat bayar dicetak ringkas di sini --}}
+<div class="d-none d-print-block mt-2" style="font-size: 12px;">
+    <strong>Riwayat Pembayaran:</strong>
+    @if ($invoice->paymentRecords->count() > 0)
+        {{ $invoice->paymentRecords->map(fn ($p) => $p->payment_date->format('d/m/Y') . ' — ' . ($p->paymentMethod?->name ?? '-') . ' — Rp ' . number_format($p->amount, 0, ',', '.'))->join('; ') }}
+    @else
+        Belum ada pembayaran.
+    @endif
+    <br><strong>Total Dibayar:</strong> Rp {{ number_format($totalPaid, 0, ',', '.') }} &nbsp;|&nbsp; <strong>Sisa:</strong> Rp {{ number_format($remaining, 0, ',', '.') }}
 </div>
 @push('styles')
 <style>
