@@ -16,6 +16,7 @@
     <form method="GET" class="mb-3"><div class="input-group" style="max-width: 240px;">
         <input type="month" name="month" value="{{ $month }}" class="form-control">
         <button class="btn btn-outline-secondary"><i class="bi bi-funnel"></i></button>
+        <a href="{{ route('hrm.attendance') }}" class="btn btn-outline-danger" title="Reset"><i class="bi bi-arrow-counterclockwise"></i></a>
     </div></form>
 
     <div class="table-responsive">

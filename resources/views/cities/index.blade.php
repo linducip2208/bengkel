@@ -17,6 +17,7 @@
         </div>
         <div class="col-md-4"><input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari..."></div>
         <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="fas fa-filter me-1"></i>Filter</button></div>
+        <div class="col-md-2"><a href="{{ route('cities.index') }}" class="btn btn-outline-danger w-100"><i class="fas fa-undo me-1"></i>Reset</a></div>
     </form>
     <div class="table-responsive">
         <table class="table table-hover align-middle">

@@ -10,6 +10,7 @@
         <div class="input-group" style="max-width: 360px;">
             <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari kategori...">
             <button class="btn btn-outline-secondary"><i class="fas fa-search"></i></button>
+            <a href="{{ route('checkout-categories.index') }}" class="btn btn-outline-danger" title="Reset"><i class="fas fa-undo"></i></a>
         </div>
     </form>
     <div class="table-responsive">

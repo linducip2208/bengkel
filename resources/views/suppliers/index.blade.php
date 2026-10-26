@@ -22,6 +22,11 @@
                     <i class="bi bi-search"></i> Cari
                 </button>
             </div>
+            <div class="col-md-2">
+                <a href="{{ route('suppliers.index') }}" class="btn btn-sm btn-outline-danger w-100">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </a>
+            </div>
         </form>
     </div>
 </div>

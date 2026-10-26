@@ -120,6 +120,7 @@
                     <input type="number" name="amount_paid" id="amountPaid" class="form-control form-control-sm text-end" style="width: 140px;" value="0" min="0" required>
                 </div>
                 <div class="row-line"><span>Kembalian</span><strong id="changeAmount" class="text-success">Rp 0</strong></div>
+                <div class="row-line d-none" id="shortfallRow"><span class="text-danger small">Kurang bayar</span><strong id="shortfallAmount" class="text-danger small">Rp 0</strong></div>
             </div>
 
             <button type="submit" class="btn btn-success btn-lg w-100 mt-2" id="payBtn" disabled>
@@ -212,6 +213,12 @@
         const paid = parseFloat(amountPaidInput.value || 0);
         const change = Math.max(paid - grand, 0);
         document.getElementById('changeAmount').textContent = isCash ? fmt(change) : fmt(0);
+        const short = Math.max(grand - paid, 0);
+        const shortRow = document.getElementById('shortfallRow');
+        if (shortRow) {
+            shortRow.classList.toggle('d-none', !(keys.length > 0 && grand > 0 && short > 0));
+            document.getElementById('shortfallAmount').textContent = fmt(short);
+        }
         payBtn.disabled = !(keys.length > 0 && paid >= grand && grand > 0);
     }
 
