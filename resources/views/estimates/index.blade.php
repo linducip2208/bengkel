@@ -191,32 +191,32 @@
                         </td>
                         <td class="text-end text-nowrap">
                             {{-- Always available: back to the work order --}}
-                            <a href="{{ $serviceUrl }}" class="btn btn-xs btn-outline-secondary py-0 px-1" title="Buka Servis"><i class="fas fa-toolbox"></i></a>
+                            <a href="{{ $serviceUrl }}" class="btn btn-sm btn-outline-secondary" title="Buka Servis"><i class="fas fa-toolbox"></i></a>
 
-                            <a href="{{ route('estimates.pdf', $estimate) }}" class="btn btn-xs btn-outline-danger py-0 px-1" title="PDF"><i class="fas fa-file-pdf"></i></a>
+                            <a href="{{ route('estimates.pdf', $estimate) }}" class="btn btn-sm btn-outline-danger" title="PDF"><i class="fas fa-file-pdf"></i></a>
 
                             @if($canSend && $sendable)
                             <form action="{{ route('estimates.send-wa', $estimate) }}" method="POST" class="d-inline">
                                 @csrf
-                                <button class="btn btn-xs btn-outline-success py-0 px-1" title="Kirim WhatsApp"><i class="fab fa-whatsapp"></i></button>
+                                <button class="btn btn-sm btn-outline-success" title="Kirim WhatsApp"><i class="fab fa-whatsapp"></i></button>
                             </form>
                             <form action="{{ route('estimates.send-email', $estimate) }}" method="POST" class="d-inline">
                                 @csrf
-                                <button class="btn btn-xs btn-outline-primary py-0 px-1" title="Kirim Email"><i class="fas fa-envelope"></i></button>
+                                <button class="btn btn-sm btn-outline-primary" title="Kirim Email"><i class="fas fa-envelope"></i></button>
                             </form>
                             @endif
 
                             @if($estimate->status === \App\Models\ServiceEstimate::STATUS_DRAFT && auth()->user()?->can('estimates.update'))
-                            <a href="{{ $serviceUrl }}" class="btn btn-xs btn-outline-warning py-0 px-1" title="Edit Draft"><i class="fas fa-edit"></i></a>
+                            <a href="{{ $serviceUrl }}" class="btn btn-sm btn-outline-warning" title="Edit Draft"><i class="fas fa-edit"></i></a>
                             @endif
 
                             @if($issuable)
-                            <a href="{{ route('estimates.preview', $estimate) }}" target="_blank" class="btn btn-xs btn-outline-secondary py-0 px-1" title="Preview"><i class="fas fa-eye"></i></a>
-                            <a href="{{ route('estimates.print', $estimate) }}" target="_blank" class="btn btn-xs btn-outline-dark py-0 px-1" title="Print"><i class="fas fa-print"></i></a>
+                            <a href="{{ route('estimates.preview', $estimate) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Preview"><i class="fas fa-eye"></i></a>
+                            <a href="{{ route('estimates.print', $estimate) }}" target="_blank" class="btn btn-sm btn-outline-dark" title="Print"><i class="fas fa-print"></i></a>
                             @endif
 
                             @if($revisable && $canRevise)
-                            <button type="button" class="btn btn-xs btn-outline-warning py-0 px-1" title="Buat Revisi"
+                            <button type="button" class="btn btn-sm btn-outline-warning" title="Buat Revisi"
                                     data-bs-toggle="modal" data-bs-target="#indexReviseModal"
                                     data-action="{{ route('estimates.revise', $estimate) }}"
                                     data-number="{{ $estimate->estimate_number }}"><i class="fas fa-code-branch"></i></button>
@@ -226,12 +226,12 @@
                             <form action="{{ route('estimates.convert-invoice', $estimate) }}" method="POST" class="d-inline"
                                   onsubmit="return confirm('Buat Invoice dari estimasi ini? Estimasi akan menjadi dokumen historis.')">
                                 @csrf
-                                <button class="btn btn-xs btn-primary py-0 px-1" title="Convert ke Invoice"><i class="fas fa-file-invoice-dollar"></i></button>
+                                <button class="btn btn-sm btn-primary" title="Convert ke Invoice"><i class="fas fa-file-invoice-dollar"></i></button>
                             </form>
                             @endif
 
                             @if($estimate->status === \App\Models\ServiceEstimate::STATUS_CONVERTED && $invoiceModel)
-                            <a href="{{ route('invoices.show', $invoiceModel) }}" class="btn btn-xs btn-outline-primary py-0 px-1" title="Lihat Invoice"><i class="fas fa-file-invoice"></i></a>
+                            <a href="{{ route('invoices.show', $invoiceModel) }}" class="btn btn-sm btn-outline-primary" title="Lihat Invoice"><i class="fas fa-file-invoice"></i></a>
                             @endif
                         </td>
                     </tr>

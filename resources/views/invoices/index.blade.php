@@ -107,7 +107,7 @@
                                 @endcan
                             @endif
                             @can('invoice.send-wa')
-                            <a href="{{ route('invoices.sendWA', $invoice) }}" class="btn btn-sm btn-success" title="Kirim WA" target="_blank"><i class="bi bi-whatsapp"></i></a>
+                            <a href="{{ route('invoices.sendWA', $invoice) }}" class="btn btn-sm btn-outline-success" title="Kirim WA" target="_blank"><i class="bi bi-whatsapp"></i></a>
                             @endcan
                             @if ($invoice->status !== 'full_paid')
                                 @can('invoice.delete')
