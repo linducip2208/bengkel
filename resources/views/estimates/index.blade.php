@@ -98,12 +98,17 @@
             <div class="col-6 col-lg-1 col-md-2">
                 <input type="date" name="date_to" class="form-control form-control-sm" value="{{ $filters['date_to'] }}" title="Tanggal sampai">
             </div>
-            <div class="col-6 col-lg-1 col-md-2">
-                <input type="date" name="valid_until" class="form-control form-control-sm" value="{{ $filters['valid_until'] }}" title="Berlaku sampai">
-            </div>
-            <div class="col-6 col-lg-1 col-md-2">
-                <input type="number" name="version" min="1" class="form-control form-control-sm" value="{{ $filters['version'] }}" placeholder="Versi" title="Versi">
-            </div>
+            <details class="col-lg-2 col-md-4">
+                <summary class="btn btn-sm btn-outline-secondary w-100" style="cursor: pointer; list-style: none;">Filter lanjutan</summary>
+                <div class="row g-2 mt-1">
+                    <div class="col-6">
+                        <input type="date" name="valid_until" class="form-control form-control-sm" value="{{ $filters['valid_until'] }}" title="Berlaku sampai" aria-label="Berlaku sampai">
+                    </div>
+                    <div class="col-6">
+                        <input type="number" name="version" min="1" class="form-control form-control-sm" value="{{ $filters['version'] }}" placeholder="Versi" title="Versi" aria-label="Versi">
+                    </div>
+                </div>
+            </details>
             <div class="col-lg-1 col-md-2 d-grid gap-1">
                 <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="fas fa-filter me-1"></i>Filter</button>
                 <a href="{{ route('estimates.index') }}" class="btn btn-sm btn-outline-danger"><i class="fas fa-rotate-left me-1"></i>Reset</a>

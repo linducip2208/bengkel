@@ -1,3 +1,4 @@
+{{-- LEGACY: tidak dipakai view mana pun (semua extend layouts.app). Dipertahankan, memuat CSS enterprise yang sama. --}}
 <!DOCTYPE html>
 <html lang="id">
 <head>
