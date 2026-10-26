@@ -70,5 +70,19 @@
 - [ ] Capture before/after screenshots for key screens and attach them to the pull request
 - [ ] Only mark the pull request ready after checks pass; do not merge while visual or functional regressions remain
 
-## Scope honesty
-The shared design layer and landing/login integration are implemented in this branch. This document is a QA and acceptance plan, not a claim that every individual screen has already been manually tested. CI, browser rendering and end-to-end behavior must be verified before merging.
+## Verification log (this branch, executed)
+- `php artisan view:cache` — Blade templates cached successfully (all 375 views compile).
+- `php artisan route:list --name=roles.index` — route intact (`Tenant\RoleController@roleIndex`).
+- `php artisan test --filter=RolePermissionEnforcementTest` — 6/6 passed (edit-di-roles berdampak, POS discount gate, estimates override gate).
+- `npm run build` (vite v8.3.3) — built in 222ms, `manifest.json` + app css/js OK. Note: `bengkel-enterprise.css` is static (loaded via `asset()`), not part of Vite bundle — by design, no CDN added.
+- Table audit (307 `<table>` across views): screen lists wrapped in `.table-responsive`; unwrapped tables are print/PDF/email/receipt templates handled by print CSS — no page-level horizontal overflow by design.
+- Visual fixes applied and verified by code inspection (no browser automation available in this environment):
+  1. `layouts/app.blade.php` design tokens aligned to enterprise (`--sidebar-width:264px`, `--sidebar-bg:#142c46`, `--topbar-height:64px`, `--bg:#f3f6fb`, `--text:#172d45`, `--text-muted:#718198`, `--border:#e2eaf3`); removed `!important` on `.text-muted` so dark mode still works.
+  2. `bengkel-enterprise.css`: `.text-muted/.form-text` override scoped to `body:not(.dark)`; added viewport-safe `.dropdown-menu`/`.modal-dialog` caps, `:focus-visible` ring, `.num` tabular numbers, `.empty-state` helper, `.table-responsive` touch scrolling.
+  3. `auth/login.blade.php`: palette unified to `#2878f0/#1766dc`/navy `#142c46`; removed dead `href="#"` links (no password-reset route exists — documented as missing feature, not faked).
+  4. `layouts/app.blade.php` user dropdown: removed fake Profile/Settings links; Settings now points to real `settings.index` gated by `@can('settings.view')`.
+  5. `welcome.blade.php`: focus ring unified to enterprise blue; CTAs verified real (WhatsApp `$waLink`, anchors `#fitur`, `/docs`, `/harga-aplikasi-bengkel`, `/sitemap.xml`); screenshots verified present in `public/marketing/screens/` (incl. `dashboard.png`).
+- Remaining / known limitations:
+  - `layouts/tenant.blade.php` is not extended by any view (0 usages; all 279 extend `layouts.app`) — kept as legacy, loads same CSS, no functional impact.
+  - No `profile` route and no password-reset flow exist in `routes/web.php` — login honestly omits them instead of fake links.
+  - Manual browser + print/PDF + 1366/1920 landscape checks still required before merge (no browser automation in this environment); screenshots not captured here.

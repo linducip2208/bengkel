@@ -15,16 +15,16 @@
 
     <style>
         :root {
-            --sidebar-width: 260px;
-            --sidebar-bg: #1e293b;
-            --sidebar-hover: #334155;
-            --sidebar-active: #3b82f6;
-            --topbar-height: 56px;
-            --bg: #f1f5f9;
+            --sidebar-width: 264px;
+            --sidebar-bg: #142c46;
+            --sidebar-hover: #203e5e;
+            --sidebar-active: #2878f0;
+            --topbar-height: 64px;
+            --bg: #f3f6fb;
             --card-bg: #fff;
-            --text: #1e293b;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
+            --text: #172d45;
+            --text-muted: #718198;
+            --border: #e2eaf3;
         }
         body.dark {
             --sidebar-bg: #0f172a;
@@ -47,7 +47,7 @@
         .table { color: var(--text); --bs-table-color: var(--text); --bs-table-bg: var(--card-bg); --bs-table-striped-bg: rgba(0,0,0,0.02); --bs-table-hover-bg: rgba(0,0,0,0.04); }
         .table-light { background: var(--card-bg); color: var(--text); --bs-table-color: var(--text); --bs-table-bg: rgba(0,0,0,0.03); --bs-table-border-color: var(--border); }
         .table thead th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.04em; }
-        .text-muted { color: var(--text-muted) !important; }
+        .text-muted { color: var(--text-muted); }
         .form-control, .form-select { background: var(--card-bg); color: var(--text); border-color: var(--border); }
 
         .sidebar {
@@ -888,9 +888,10 @@
                 <i class="fas fa-user-circle"></i><span class="user-name">&nbsp;{{ auth()->user()?->name ?? 'Admin' }}</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
-                <li><a href="#" class="dropdown-item"><i class="fas fa-user me-2"></i>{{ __('Profile') }}</a></li>
-                <li><a href="#" class="dropdown-item"><i class="fas fa-cog me-2"></i>{{ __('Settings') }}</a></li>
+                @can('settings.view')
+                <li><a href="{{ route('settings.index') }}" class="dropdown-item"><i class="fas fa-cog me-2"></i>{{ __('Settings') }}</a></li>
                 <li><hr class="dropdown-divider"></li>
+                @endcan
                 <li>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

@@ -38,7 +38,7 @@ h1,h2,h3,h4,h5,.h1,.h2,.h3,.h4,.h5{color:var(--text);letter-spacing:-.025em}
 .border-primary{border-color:#2878f0!important}
 a:not(.btn):not(.nav-link){text-underline-offset:3px}
 .form-label{font-size:.86rem;font-weight:650;color:#40536a;margin-bottom:.4rem}
-.form-text,.text-muted{color:#718198!important}
+body:not(.dark) .form-text,body:not(.dark) .text-muted{color:#718198}
 .input-group>.form-control,.input-group>.form-select{min-width:0}
 .btn-xs{border-radius:6px;font-weight:650}
 .table td .btn+.btn{margin-left:2px}
@@ -71,3 +71,11 @@ a:not(.btn):not(.nav-link){text-underline-offset:3px}
   .table tbody td{padding:.65rem .6rem;font-size:.86rem}
   .modal-dialog{margin:.65rem}
 }
+/* Viewport-safe dropdowns/modals, readable numbers */
+.table-responsive{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.table td.num,.table th.num,.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.dropdown-menu{max-width:min(92vw,22rem)}
+.modal-dialog{max-width:min(94vw,720px)}
+:focus-visible{outline:2px solid #2878f0;outline-offset:2px}
+.empty-state{padding:2.5rem 1.5rem;text-align:center;color:#718198}
+.empty-state i{font-size:2rem;margin-bottom:.5rem;display:block}
