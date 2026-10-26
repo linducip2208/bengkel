@@ -33,7 +33,7 @@
         <tbody>
             @forelse($salaries as $s)
             <tr>
-                <td><strong>{{ $s->user->name }}</strong><br><small class="text-muted">{{ $s->user->position }}</small></td>
+                <td><strong>{{ $s->user->name }}</strong><br><small class="text-muted">{{ $s->user->position ?? '-' }}</small></td>
                 <td>{{ $s->days_present }}/{{ $s->days_absent }}</td>
                 <td class="text-end">@money($s->base_salary)</td>
                 <td class="text-end text-warning">@money($s->commission_total)</td>

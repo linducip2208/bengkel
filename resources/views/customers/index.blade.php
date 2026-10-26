@@ -50,7 +50,10 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+                    <a href="{{ route('customers.index') }}" class="btn btn-outline-danger" title="Reset filter" aria-label="Reset filter"><i class="fas fa-rotate-left"></i></a>
+                </div>
             </div>
         </form>
 
