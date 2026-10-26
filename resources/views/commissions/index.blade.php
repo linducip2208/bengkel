@@ -50,7 +50,7 @@
             <div class="col-md-2"><button class="btn btn-outline-secondary w-100"><i class="bi bi-funnel me-1"></i>Filter</button></div>
         </form>
 
-        <form action="{{ route('commissions.markPaidBatch') }}" method="POST">
+        <form id="commissionBatchForm" action="{{ route('commissions.markPaidBatch') }}" method="POST">
             @csrf
             <div class="d-flex justify-content-between mb-2">
                 <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Tandai semua yang dicentang sebagai sudah dibayar?')">
@@ -58,6 +58,7 @@
                 </button>
                 <small class="text-muted">Klik checkbox lalu klik tombol batch</small>
             </div>
+        </form>
             <div class="table-responsive">
                 <table class="table table-hover align-middle small">
                     <thead class="table-light">
@@ -70,7 +71,7 @@
                         @forelse($rows as $r)
                         <tr>
                             <td>
-                                @if(!$r->paid_at)<input type="checkbox" name="ids[]" value="{{ $r->id }}" class="row-check">@endif
+                                @if(!$r->paid_at)<input type="checkbox" name="ids[]" value="{{ $r->id }}" class="row-check" form="commissionBatchForm">@endif
                             </td>
                             <td>{{ $r->service->service_date->format('d M Y') }}</td>
                             <td>
@@ -95,7 +96,7 @@
                                 @else
                                     <form action="{{ route('commissions.markPaid', $r) }}" method="POST" class="d-inline">
                                         @csrf @method('PUT')
-                                        <button class="btn btn-sm btn-success" title="Bayar"><i class="bi bi-check2"></i></button>
+                                        <button class="btn btn-sm btn-success" title="Tandai komisi ini dibayar" aria-label="Tandai komisi dibayar" onclick="return confirm('Tandai komisi ini sebagai sudah dibayar?')"><i class="bi bi-check2"></i></button>
                                     </form>
                                 @endif
                             </td>
@@ -106,7 +107,6 @@
                     </tbody>
                 </table>
             </div>
-        </form>
         <div class="d-flex justify-content-end">{{ $rows->withQueryString()->links() }}</div>
     </div>
 </div>

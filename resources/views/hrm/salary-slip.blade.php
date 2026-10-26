@@ -14,11 +14,18 @@
     table.detail th { background: #f3f4f6; text-align: left; }
     .total { font-weight: bold; background: #fef3c7; }
     .text-right { text-align: right; }
+    .no-print { margin-bottom: 1rem; display: flex; gap: .5rem; }
+    .no-print a, .no-print button { padding: .4rem .9rem; border-radius: 6px; border: 1px solid #ccc; background: #fff; cursor: pointer; text-decoration: none; color: #333; font-size: 10pt; }
+    @media print { .no-print { display: none; } }
 </style>
 </head>
 <body>
+    <div class="no-print">
+        <a href="{{ route('hrm.salary') }}">&larr; Kembali</a>
+        <button onclick="window.print()">Cetak Slip</button>
+    </div>
     <h2>SLIP GAJI</h2>
-    <div class="sub">{{ config('app.name') }} — Periode {{ \Carbon\Carbon::create()->month($salary->period_month)->format('F') }} {{ $salary->period_year }}</div>
+    <div class="sub">{{ $appSettings['name'] ?? config('app.name') }}@if(!empty($appSettings['address'])) — {{ $appSettings['address'] }}@endif<br>Periode {{ \Carbon\Carbon::create()->month($salary->period_month)->format('F') }} {{ $salary->period_year }} &middot; Status: {{ $salary->paid_at ? 'Lunas' : 'Draft' }}</div>
 
     <table class="info">
         <tr><td width="30%"><strong>Nama Karyawan</strong></td><td>: {{ $salary->user->name }}</td></tr>
