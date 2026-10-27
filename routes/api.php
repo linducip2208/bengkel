@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login')->middleware('throttle:10,1');
+    Route::post('/2fa/verify', [AuthController::class, 'verifyTwoFactor'])->name('2fa.verify')->middleware('throttle:10,1');
     Route::get('/health', [ApiWorkshopController::class, 'health'])->name('health');
 
     Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
