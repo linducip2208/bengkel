@@ -11,7 +11,7 @@
     <form action="{{ route('hrm.salary.generate') }}" method="POST" class="row g-2">
         @csrf
         <div class="col-md-3"><select name="period_month" class="form-select">
-            @foreach(range(1,12) as $m)<option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->format('F') }}</option>@endforeach
+            @foreach(range(1,12) as $m)<option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}</option>@endforeach
         </select></div>
         <div class="col-md-2"><input type="number" name="period_year" class="form-control" value="{{ $year }}" min="2020" max="2100"></div>
         <div class="col-md-3"><button class="btn btn-primary w-100"><i class="bi bi-gear me-1"></i>Generate Gaji Periode Ini</button></div>
@@ -22,7 +22,7 @@
 <div class="card"><div class="card-body">
     <form method="GET" class="row g-2 mb-3">
         <div class="col-md-2"><select name="month" class="form-select">
-            @foreach(range(1,12) as $m)<option value="{{ $m }}" {{ request('month', $month) == $m ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->format('F') }}</option>@endforeach
+            @foreach(range(1,12) as $m)<option value="{{ $m }}" {{ request('month', $month) == $m ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}</option>@endforeach
         </select></div>
         <div class="col-md-2"><input type="number" name="year" class="form-control" value="{{ request('year', $year) }}"></div>
         <div class="col-md-2"><div class="d-flex gap-2"><button class="btn btn-outline-secondary w-100" title="Filter" aria-label="Filter"><i class="bi bi-funnel"></i></button><a href="{{ route('hrm.salary') }}" class="btn btn-outline-danger" title="Reset filter" aria-label="Reset filter"><i class="bi bi-rotate-left"></i></a></div></div>

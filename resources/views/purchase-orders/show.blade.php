@@ -50,12 +50,12 @@
                     </tr>
                     <tr>
                         <td class="text-muted">Tanggal</td>
-                        <td>{{ $purchaseOrder->order_date->format('d F Y') }}</td>
+                        <td>{{ $purchaseOrder->order_date?->translatedFormat('d F Y') ?? '-' }}</td>
                     </tr>
                     @if($purchaseOrder->expected_date)
                     <tr>
                         <td class="text-muted">Estimasi Tiba</td>
-                        <td>{{ $purchaseOrder->expected_date->format('d F Y') }}</td>
+                        <td>{{ $purchaseOrder->expected_date?->translatedFormat('d F Y') ?? '-' }}</td>
                     </tr>
                     @endif
                     <tr>

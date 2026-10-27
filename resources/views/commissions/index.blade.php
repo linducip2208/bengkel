@@ -63,7 +63,7 @@
                 <table class="table table-hover align-middle small">
                     <thead class="table-light">
                         <tr>
-                            <th width="40"><input type="checkbox" id="selectAll"></th>
+                            <th width="40"><input type="checkbox" id="selectAll" aria-label="Pilih semua komisi"></th>
                             <th>Tanggal Service</th><th>Service</th><th>Teknisi</th><th>Role</th><th class="text-end">Charge</th><th class="text-end">%</th><th class="text-end">Komisi</th><th>Status</th><th>Dibayar</th>
                         </tr>
                     </thead>

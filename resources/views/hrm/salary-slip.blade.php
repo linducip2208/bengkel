@@ -28,7 +28,7 @@
     @if(!empty($appSettings['logo']))
     <div style="text-align: center; margin-bottom: .5rem;"><img src="{{ asset('storage/' . $appSettings['logo']) }}" alt="Logo" style="height: 42px; width: auto;"></div>
     @endif
-    <div class="sub">{{ $appSettings['name'] ?? config('app.name') }}@if(!empty($appSettings['address'])) — {{ $appSettings['address'] }}@endif<br>Periode {{ \Carbon\Carbon::create()->month($salary->period_month)->format('F') }} {{ $salary->period_year }} &middot; Status: {{ $salary->paid_at ? 'Lunas' : 'Draft' }}</div>
+    <div class="sub">{{ $appSettings['name'] ?? config('app.name') }}@if(!empty($appSettings['address'])) — {{ $appSettings['address'] }}@endif<br>Periode {{ \Carbon\Carbon::create()->month($salary->period_month)->translatedFormat('F') }} {{ $salary->period_year }} &middot; Status: {{ $salary->paid_at ? 'Lunas' : 'Draft' }}</div>
 
     <table class="info">
         <tr><td width="30%"><strong>Nama Karyawan</strong></td><td>: {{ $salary->user->name }}</td></tr>

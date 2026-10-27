@@ -42,7 +42,7 @@
                     </tr>
                     <tr>
                         <td class="text-muted">Tanggal</td>
-                        <td>{{ $purchase->purchase_date->format('d F Y') }}</td>
+                        <td>{{ $purchase->purchase_date?->translatedFormat('d F Y') ?? '-' }}</td>
                     </tr>
                     <tr>
                         <td class="text-muted">Status</td>

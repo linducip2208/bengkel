@@ -24,7 +24,7 @@
             </tr>
             <tr>
                 <td class="text-muted">Tanggal</td>
-                <td>{{ $expense->expense_date->format('d F Y') }}</td>
+                <td>{{ $expense->expense_date->translatedFormat('d F Y') }}</td>
             </tr>
             <tr>
                 <td class="text-muted">Jumlah</td>

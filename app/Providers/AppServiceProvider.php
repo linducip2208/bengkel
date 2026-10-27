@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Services\LicenseClient;
 use App\Services\SettingsService;
+use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
@@ -23,6 +25,11 @@ class AppServiceProvider extends ServiceProvider
         if (! $this->app->runningInConsole() && session()->has('locale')) {
             app()->setLocale(session('locale'));
         }
+
+        // Tanggal Indonesia konsisten (Januari, Februari, ...): Carbon
+        // mengikuti locale aplikasi untuk translatedFormat().
+        Carbon::setLocale(app()->getLocale());
+        CarbonImmutable::setLocale(app()->getLocale());
 
         Paginator::defaultView('partials.pagination');
 
