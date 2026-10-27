@@ -72,7 +72,7 @@ class BookingController extends Controller
             'this_week' => Booking::whereBetween('booking_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
         ];
 
-        $technicians = User::role(['mekanik', 'service_advisor'])->orderBy('name')->get();
+        $technicians = User::workshopStaffQuery()->orderBy('name')->get();
 
         return view('bookings.index', compact('bookings', 'summary', 'technicians'));
     }

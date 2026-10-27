@@ -144,14 +144,14 @@ class User extends Authenticatable
     }
 
     /**
-     * Query builder untuk staff bengkel (mekanik + service_advisor).
-     * Hanya pakai role yang benar-benar ada; tanpa role sama sekali
-     * kembalikan query kosong (jangan throw di halaman publik).
+     * Query builder untuk role apa pun tanpa throw bila role belum di-seed.
+     * Sama seperti HasRoles::scopeRole(), tapi mengembalikan query
+     * kosong saat tidak ada role yang cocok (halaman tidak 500).
      */
-    public static function workshopStaffQuery()
+    public static function withRole(string ...$names)
     {
         $existing = Role::query()
-            ->whereIn('name', ['mekanik', 'service_advisor'])
+            ->whereIn('name', $names)
             ->where('guard_name', 'web')
             ->pluck('name')
             ->all();
@@ -161,5 +161,15 @@ class User extends Authenticatable
         }
 
         return static::role($existing);
+    }
+
+    /**
+     * Query builder untuk staff bengkel (mekanik + service_advisor).
+     * Hanya pakai role yang benar-benar ada; tanpa role sama sekali
+     * kembalikan query kosong (jangan throw di halaman publik).
+     */
+    public static function workshopStaffQuery()
+    {
+        return static::withRole('mekanik', 'service_advisor');
     }
 }

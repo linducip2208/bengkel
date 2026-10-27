@@ -184,7 +184,7 @@ class ServiceController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        $technicians = User::role('mekanik')->get();
+        $technicians = User::withRole('mekanik')->get();
         $customers = Customer::orderBy('name')->get();
 
         return view('services.history', compact('services', 'technicians', 'customers'));

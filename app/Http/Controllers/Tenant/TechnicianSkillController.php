@@ -12,7 +12,7 @@ class TechnicianSkillController extends Controller
 {
     public function index()
     {
-        $technicians = User::role('mekanik')
+        $technicians = User::withRole('mekanik')
             ->where('is_active', true)
             ->with('skills')
             ->orderBy('name')

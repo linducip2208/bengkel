@@ -96,7 +96,7 @@ class RoleController extends Controller
         if ($user->id === auth()->id()) {
             return back()->with('error', 'Tidak bisa hapus diri sendiri.');
         }
-        if ($user->hasRole('super_admin', 'web') && User::role('super_admin')->count() <= 1) {
+        if ($user->hasRole('super_admin', 'web') && User::withRole('super_admin')->count() <= 1) {
             return back()->with('error', 'Minimal harus ada 1 super_admin.');
         }
         ActivityLog::record('user.delete', $user, "Delete user {$user->email}");

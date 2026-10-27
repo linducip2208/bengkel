@@ -32,7 +32,7 @@ class ReportController extends Controller
         $filters = $request->only(['start_date', 'end_date', 'technician_id', 'status']);
         $report = $reportService->serviceReport($filters);
 
-        $technicians = User::role('mekanik')->get();
+        $technicians = User::withRole('mekanik')->get();
 
         return view('reports.service', compact('report', 'technicians', 'filters'));
     }

@@ -28,7 +28,9 @@ class ServiceService extends BaseService
 
     public function index(Request $request)
     {
-        $services = Service::with(['customer', 'vehicle', 'repairCategory', 'technicians'])
+        $services = Service::with(['customer', 'vehicle', 'repairCategory', 'technicians',
+            'serviceObservationPoints', 'findings.workPackages', 'workPackages.task',
+            'workPackages.qcChecks', 'estimates.groups', 'invoice.paymentRecords'])
             ->when($request->filled('status') && $request->status !== 'all', function ($q) use ($request) {
                 if ($request->status === 'active') {
                     $q->where('workflow_status', '<', 12);
@@ -53,7 +55,7 @@ class ServiceService extends BaseService
             ->withQueryString();
 
         $stats = $this->getStats();
-        $technicians = User::role('mekanik')->get();
+        $technicians = User::withRole('mekanik')->get();
 
         $progressService = app(WorkshopProgressService::class);
         $progressByService = $services->getCollection()->mapWithKeys(fn (Service $service) => [
@@ -66,7 +68,7 @@ class ServiceService extends BaseService
     public function create()
     {
         $repairCategories = RepairCategory::orderBy('repair_category_name')->get();
-        $technicians = User::role('mekanik')->get();
+        $technicians = User::withRole('mekanik')->get();
         $serviceAdvisors = User::workshopStaffQuery()->orderBy('name')->get();
 
         return view('services.create', compact('repairCategories', 'technicians', 'serviceAdvisors'));
@@ -214,7 +216,7 @@ class ServiceService extends BaseService
     {
         $service = Service::with(['technicians'])->findOrFail($id);
         $repairCategories = RepairCategory::orderBy('repair_category_name')->get();
-        $technicians = User::role('mekanik')->get();
+        $technicians = User::withRole('mekanik')->get();
         $serviceAdvisors = User::workshopStaffQuery()->orderBy('name')->get();
         $selectedCustomer = $service->customer;
         $selectedVehicle = $service->vehicle;
