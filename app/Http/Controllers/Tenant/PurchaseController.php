@@ -103,7 +103,7 @@ class PurchaseController extends Controller
 
     private function generateDraftPurchaseNo(): string
     {
-        $prefix = 'PO-'.date('Ymd');
+        $prefix = 'PB-'.date('Ymd');
         $last = Purchase::where('purchase_no', 'like', $prefix.'%')
             ->orderByDesc('id')
             ->first();

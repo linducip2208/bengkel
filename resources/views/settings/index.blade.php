@@ -417,8 +417,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const cards = document.querySelectorAll('.template-card');
     const input = document.getElementById('invoiceTemplateInput');
 
-    const input = document.getElementById('invoiceTemplateInput');
-
     cards.forEach(card => {
         card.addEventListener('click', function () {
             const template = this.dataset.template;

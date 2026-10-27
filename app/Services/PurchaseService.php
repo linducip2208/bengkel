@@ -162,6 +162,6 @@ class PurchaseService
 
     private function generatePurchaseNo(): string
     {
-        return DocumentNumberService::generate(DocumentNumberService::PURCHASES, 'PO', 'Ymd', 4);
+        return DocumentNumberService::generate(DocumentNumberService::PURCHASES, 'PB', 'Ymd', 4);
     }
 }

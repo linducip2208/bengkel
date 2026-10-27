@@ -49,7 +49,7 @@ class PurchaseOrderReceiptService
 
             $total = round(collect($receiptLines)->sum(fn ($line) => $line[1] * (float) $line[0]->unit_price), 2);
             $purchase = Purchase::create([
-                'purchase_no' => DocumentNumberService::generate(DocumentNumberService::PURCHASES, 'PO', 'Ymd', 4),
+                'purchase_no' => DocumentNumberService::generate(DocumentNumberService::PURCHASES, 'PB', 'Ymd', 4),
                 'supplier_id' => $locked->supplier_id,
                 'purchase_date' => now()->toDateString(),
                 'status' => 'received',

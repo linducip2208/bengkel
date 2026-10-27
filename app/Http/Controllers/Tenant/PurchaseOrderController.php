@@ -242,6 +242,6 @@ class PurchaseOrderController extends Controller
     private function generatePurchaseNo(): string
     {
         // Unified with PurchaseService so purchase_no sequences never fork.
-        return DocumentNumberService::generate(DocumentNumberService::PURCHASES, 'PO', 'Ymd', 4);
+        return DocumentNumberService::generate(DocumentNumberService::PURCHASES, 'PB', 'Ymd', 4);
     }
 }
