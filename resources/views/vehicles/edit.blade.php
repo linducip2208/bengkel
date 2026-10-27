@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0"><i class="fas fa-car-side me-2"></i>Edit Kendaraan: {{ $vehicle->license_plate }}</h4>
+    <h4 class="mb-0"><i class="fas fa-car-side me-2"></i>Edit Kendaraan: {{ $vehicle->number_plate }}</h4>
     <a href="{{ route('vehicles.index') }}" class="btn btn-outline-secondary">
         <i class="fas fa-arrow-left me-1"></i>Kembali
     </a>
@@ -31,7 +31,7 @@
                     <label class="form-label">Nomor Plat</label>
                     <input type="text" name="number_plate" class="form-control @error('number_plate') is-invalid @enderror"
                         value="{{ old('number_plate', $vehicle->number_plate) }}">
-                    @error('license_plate') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    @error('number_plate') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Tipe Kendaraan <span class="text-danger">*</span></label>
@@ -81,7 +81,7 @@
                     <label class="form-label">Tahun</label>
                     <input type="number" name="model_year" class="form-control @error('model_year') is-invalid @enderror"
                         value="{{ old('model_year', $vehicle->model_year) }}">
-                    @error('year') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    @error('model_year') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Warna</label>
@@ -99,7 +99,7 @@
                     <label class="form-label">No. Rangka (VIN)</label>
                     <input type="text" name="chassis_number" class="form-control @error('chassis_number') is-invalid @enderror"
                         value="{{ old('chassis_number', $vehicle->chassis_number) }}">
-                    @error('vin') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    @error('chassis_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">No. Mesin</label>
@@ -109,8 +109,8 @@
                 </div>
                 <div class="col-12">
                     <label class="form-label">Catatan</label>
-                    <textarea name="notes" class="form-control @error('notes') is-invalid @enderror" rows="2">{{ old('notes', $vehicle->notes) }}</textarea>
-                    @error('notes') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <textarea name="description" class="form-control @error('description') is-invalid @enderror" rows="2">{{ old('description', $vehicle->description) }}</textarea>
+                    @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-12">
                     <hr>

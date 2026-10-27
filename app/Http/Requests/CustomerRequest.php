@@ -31,6 +31,8 @@ class CustomerRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255', Rule::unique('customers')->ignore($customerId)],
             'phone' => ['nullable', 'string', 'max:20', Rule::unique('customers')->ignore($customerId)],
             'address' => ['nullable', 'string', 'max:500'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'postal_code' => ['nullable', 'string', 'max:20'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }

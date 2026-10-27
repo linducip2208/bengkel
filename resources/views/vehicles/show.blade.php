@@ -116,7 +116,7 @@
                                     <tr><th>KM Saat Ini</th><td>{{ $vehicle->odometer ? number_format($vehicle->odometer) . ' km' : '-' }}</td></tr>
                                     <tr><th>VIN</th><td>{{ $vehicle->vin ?? '-' }}</td></tr>
                                     <tr><th>No. Mesin</th><td>{{ $vehicle->engine_number ?? '-' }}</td></tr>
-                                    <tr><th>Catatan</th><td>{{ $vehicle->notes ?? '-' }}</td></tr>
+                                    <tr><th>Catatan</th><td>{{ $vehicle->description ?? '-' }}</td></tr>
                                     <tr><th>Terdaftar</th><td>{{ $vehicle->created_at->format('d M Y') }}</td></tr>
                                 </table>
                             </div>

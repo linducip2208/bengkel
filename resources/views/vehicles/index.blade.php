@@ -77,7 +77,7 @@
                         <td>{{ $loop->iteration + $vehicles->firstItem() - 1 }}</td>
                         <td>
                             <a href="{{ route('vehicles.show', $vehicle) }}" class="text-decoration-none fw-semibold">
-                                {{ $vehicle->license_plate }}
+                                {{ $vehicle->number_plate }}
                             </a>
                         </td>
                         <td>{{ $vehicle->customer->name ?? '-' }}</td>

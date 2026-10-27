@@ -128,25 +128,26 @@
 
 <div class="modal fade" id="addUserModal" tabindex="-1"><div class="modal-dialog"><form action="{{ route('users.store') }}" method="POST" class="modal-content">
     @csrf
+    <input type="hidden" name="_form" value="add-user">
     <div class="modal-header"><h5>Tambah User</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
     <div class="modal-body">
-        <div class="mb-2"><label class="form-label">Nama <span class="text-danger">*</span></label><input type="text" name="name" class="form-control" required></div>
-        <div class="mb-2"><label class="form-label">Email <span class="text-danger">*</span></label><input type="email" name="email" class="form-control" required></div>
-        <div class="mb-2"><label class="form-label">Password <span class="text-danger">*</span></label><input type="password" name="password" class="form-control" required minlength="6"></div>
-        <div class="mb-2"><label class="form-label">Role <span class="text-danger">*</span></label><select name="role" class="form-select" required>
-            @foreach($roles as $r)<option value="{{ $r->name }}">{{ $r->name }}</option>@endforeach
-        </select></div>
+        <div class="mb-2"><label class="form-label">Nama <span class="text-danger">*</span></label><input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>@error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+        <div class="mb-2"><label class="form-label">Email <span class="text-danger">*</span></label><input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" required>@error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+        <div class="mb-2"><label class="form-label">Password <span class="text-danger">*</span></label><input type="password" name="password" class="form-control @error('password') is-invalid @enderror" required minlength="6" autocomplete="new-password">@error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
+        <div class="mb-2"><label class="form-label">Role <span class="text-danger">*</span></label><select name="role" class="form-select @error('role') is-invalid @enderror" required>
+            @foreach($roles as $r)<option value="{{ $r->name }}" {{ old('role') === $r->name ? 'selected' : '' }}>{{ $r->name }}</option>@endforeach
+        </select>@error('role')<div class="invalid-feedback">{{ $message }}</div>@enderror</div>
         <div class="mb-2"><label class="form-label">Cabang (kosong = tanpa akses cabang)</label>
             <div class="border rounded p-2" style="max-height: 160px; overflow-y: auto;">
                 @forelse($branches ?? [] as $b)
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="branch_ids[]" value="{{ $b->id }}" id="nb_{{ $b->id }}">
+                    <input class="form-check-input" type="checkbox" name="branch_ids[]" value="{{ $b->id }}" id="nb_{{ $b->id }}" {{ in_array($b->id, (array) old('branch_ids', [])) ? 'checked' : '' }}>
                     <label class="form-check-label" for="nb_{{ $b->id }}">{{ $b->name }} ({{ $b->code }})</label>
                 </div>
                 @empty<span class="text-muted small">Belum ada cabang.</span>@endforelse
             </div>
         </div>
-        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="is_active" value="1" id="newActive" checked><label class="form-check-label" for="newActive">Aktif</label></div>
+        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="is_active" value="1" id="newActive" {{ old('is_active', true) ? 'checked' : '' }}><label class="form-check-label" for="newActive">Aktif</label></div>
     </div>
     <div class="modal-footer"><button type="submit" class="btn btn-success">Buat User</button></div>
 </form></div></div>
@@ -159,6 +160,14 @@
         var failedModal = document.getElementById('editUserModal{{ $editingUserId }}');
         if (failedModal) {
             bootstrap.Modal.getOrCreateInstance(failedModal).show();
+        }
+    });
+    @endif
+    @if(old('_form') === 'add-user')
+    document.addEventListener('DOMContentLoaded', function () {
+        var failedAddModal = document.getElementById('addUserModal');
+        if (failedAddModal) {
+            bootstrap.Modal.getOrCreateInstance(failedAddModal).show();
         }
     });
     @endif
