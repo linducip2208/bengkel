@@ -199,6 +199,31 @@ class ThermalPrintService
     }
 
     /**
+     * Print a small test page (connection check)
+     */
+    public function printTestPage(string $label): self
+    {
+        if (! $this->printer) {
+            throw new \RuntimeException('Printer not initialized.');
+        }
+
+        $p = $this->printer;
+        $p->setJustification(Printer::JUSTIFY_CENTER);
+        $p->setTextSize(2, 1);
+        $p->text("TEST PRINT\n");
+        $p->setTextSize(1, 1);
+        $p->text(($label ?: config('app.name'))."\n");
+        $p->text(date('d/m/Y H:i')."\n");
+        $p->text(str_repeat('-', 32)."\n");
+        $p->text("Printer terhubung.\n");
+        $p->text("\n");
+        $p->cut();
+        $p->close();
+
+        return $this;
+    }
+
+    /**
      * Open cash drawer (if supported)
      */
     public function openCashDrawer(): self

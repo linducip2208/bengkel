@@ -17,21 +17,7 @@ class PrintController extends Controller
      */
     public function invoice(Invoice $invoice, Request $request, ThermalPrintService $printService)
     {
-        $printerIp = $request->get('printer_ip');
-        $printerPort = $request->get('printer_port');
-
-        if (! $printerIp) {
-            $printer = Printer::query()
-                ->where('is_active', true)
-                ->where('type', 'thermal')
-                ->whereNotNull('ip_address')
-                ->orderByDesc('is_default')
-                ->orderBy('id')
-                ->first();
-
-            $printerIp = $printer?->ip_address ?? config('services.printer.ip', '192.168.1.100');
-            $printerPort = $printer?->port ?? config('services.printer.port', 9100);
-        }
+        [$printerIp, $printerPort] = $this->resolvePrinter($request);
 
         try {
             $items = $invoice->items->map(fn ($i) => [
@@ -73,8 +59,7 @@ class PrintController extends Controller
      */
     public function jobcard(Service $service, Request $request, ThermalPrintService $printService)
     {
-        $printerIp = $request->get('printer_ip', config('services.printer.ip', '192.168.1.100'));
-        $printerPort = $request->get('printer_port', config('services.printer.port', 9100));
+        [$printerIp, $printerPort] = $this->resolvePrinter($request);
 
         try {
             $printService->printToNetwork($printerIp, (int) $printerPort)
@@ -101,8 +86,7 @@ class PrintController extends Controller
      */
     public function openDrawer(Request $request, ThermalPrintService $printService)
     {
-        $printerIp = $request->get('printer_ip', config('services.printer.ip', '192.168.1.100'));
-        $printerPort = $request->get('printer_port', config('services.printer.port', 9100));
+        [$printerIp, $printerPort] = $this->resolvePrinter($request);
 
         try {
             $printService->printToNetwork($printerIp, (int) $printerPort)->openCashDrawer();
@@ -111,6 +95,32 @@ class PrintController extends Controller
         } catch (\Throwable $e) {
             return response()->json(['ok' => false, 'message' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * IP/port printer: pilihan user (printer_ip) > default thermal aktif > config/env.
+     *
+     * @return array{0: string, 1: int}
+     */
+    private function resolvePrinter(Request $request): array
+    {
+        $printerIp = $request->get('printer_ip');
+        $printerPort = $request->get('printer_port');
+
+        if (! $printerIp) {
+            $printer = Printer::query()
+                ->where('is_active', true)
+                ->where('type', 'thermal')
+                ->whereNotNull('ip_address')
+                ->orderByDesc('is_default')
+                ->orderBy('id')
+                ->first();
+
+            $printerIp = $printer?->ip_address ?? config('services.printer.ip', '192.168.1.100');
+            $printerPort = $printer?->port ?? config('services.printer.port', 9100);
+        }
+
+        return [(string) $printerIp, (int) ($printerPort ?: 9100)];
     }
 
     /**

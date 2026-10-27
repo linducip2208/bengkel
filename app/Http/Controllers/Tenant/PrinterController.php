@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Printer;
+use App\Services\ThermalPrintService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -104,5 +105,24 @@ class PrinterController extends Controller
         $printer->delete();
 
         return redirect()->route('printers.index')->with('success', 'Printer berhasil dihapus.');
+    }
+
+    /**
+     * Kirim halaman test ke printer jaringan (cek koneksi fisik)
+     */
+    public function test(Printer $printer, ThermalPrintService $printService)
+    {
+        if (! $printer->ip_address) {
+            return back()->with('error', 'Printer ini tidak punya alamat IP (bukan printer jaringan).');
+        }
+
+        try {
+            $printService->printToNetwork($printer->ip_address, (int) ($printer->port ?? 9100))
+                ->printTestPage($printer->name);
+
+            return back()->with('success', "Test print terkirim ke {$printer->name} ({$printer->ip_address}).");
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Test print gagal: '.$e->getMessage());
+        }
     }
 }

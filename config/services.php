@@ -45,4 +45,9 @@ return [
         'api_key' => env('SMS_API_KEY'),
     ],
 
+    'printer' => [
+        'ip' => env('PRINTER_IP', '192.168.1.100'),
+        'port' => env('PRINTER_PORT', 9100),
+    ],
+
 ];

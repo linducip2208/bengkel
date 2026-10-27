@@ -10,6 +10,7 @@ use App\Models\HeldPosTransaction;
 use App\Models\Invoice;
 use App\Models\PaymentMethod;
 use App\Models\PosSession;
+use App\Models\Printer;
 use App\Models\Product;
 use App\Models\ProductSellingPrice;
 use App\Models\Voucher;
@@ -338,8 +339,15 @@ class PosController extends Controller
     {
         $invoice->load(['items.product', 'customer', 'paymentRecords.paymentMethod', 'posSession.user', 'voucherUsages.voucher']);
         $change = max($invoice->amount_received - $invoice->grand_total, 0);
+        $thermalPrinters = Printer::query()
+            ->where('is_active', true)
+            ->where('type', 'thermal')
+            ->whereNotNull('ip_address')
+            ->orderByDesc('is_default')
+            ->orderBy('name')
+            ->get();
 
-        return view('pos.receipt', compact('invoice', 'change'));
+        return view('pos.receipt', compact('invoice', 'change', 'thermalPrinters'));
     }
 
     /**

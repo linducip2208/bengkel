@@ -20,6 +20,12 @@
                     <td class="text-center">@if($printer->is_default)<span class="badge bg-success">Default</span>@else<span class="text-muted">—</span>@endif</td>
                     <td class="text-center">@if($printer->is_active)<span class="badge bg-success">Aktif</span>@else<span class="badge bg-secondary">Off</span>@endif</td>
                     <td class="text-end">
+                        @if($printer->ip_address)
+                        <form action="{{ route('printers.test', $printer) }}" method="POST" class="d-inline" onsubmit="return confirm('Kirim test print ke {{ $printer->name }}?')">
+                            @csrf
+                            <button class="btn btn-sm btn-outline-info me-1" title="Test print" aria-label="Test print {{ $printer->name }}"><i class="fas fa-print"></i></button>
+                        </form>
+                        @endif
                         <a href="{{ route('printers.edit', $printer) }}" class="btn btn-sm btn-outline-warning me-1"><i class="fas fa-edit"></i></a>
                         <form action="{{ route('printers.destroy', $printer) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus?')">
                             @csrf @method('DELETE')

@@ -294,6 +294,7 @@ Route::middleware(['auth'])->group(function () {
 
     // --- Printer, Numbering & Bank Accounts ---
     Route::resource('printers', PrinterController::class)->except(['show'])->middleware('can.perm:settings.edit');
+    Route::post('/printers/{printer}/test', [PrinterController::class, 'test'])->name('printers.test')->middleware('can.perm:settings.edit');
     Route::resource('invoice-schemes', InvoiceSchemeController::class)->except(['show'])->middleware('can.perm:settings.edit');
     Route::resource('bank-accounts', BankAccountController::class)->except(['show'])->middleware('can.module:master-data');
     Route::resource('bank-reconciliations', BankReconciliationController::class)->only(['index', 'create', 'store', 'show'])->middleware('can.module:master-data');

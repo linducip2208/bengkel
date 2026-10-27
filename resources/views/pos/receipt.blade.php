@@ -29,8 +29,16 @@
 @section('content')
 <div class="d-flex justify-content-center mb-3 no-print gap-2 flex-wrap">
     <button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer me-1"></i>Print Browser</button>
-    <form method="POST" action="{{ route('print.invoice', $invoice) }}" class="d-inline" onsubmit="return confirm('Kirim struk ke thermal printer?')">
+    <form method="POST" action="{{ route('print.invoice', $invoice) }}" class="d-inline-flex gap-2 align-items-center" onsubmit="return confirm('Kirim struk ke thermal printer?')">
         @csrf
+        @if($thermalPrinters->count() > 1)
+        <select name="printer_ip" class="form-select form-select-sm" style="max-width: 200px;" title="Pilih printer" aria-label="Pilih printer thermal">
+            @foreach($thermalPrinters as $tp)
+            <option value="{{ $tp->ip_address }}" data-port="{{ $tp->port }}" {{ $tp->is_default ? 'selected' : '' }}>{{ $tp->name }} ({{ $tp->ip_address }})</option>
+            @endforeach
+        </select>
+        <input type="hidden" name="printer_port" id="thermalPort" value="{{ $thermalPrinters->firstWhere('is_default')?->port ?? $thermalPrinters->first()?->port ?? 9100 }}">
+        @endif
         <button type="submit" class="btn btn-dark"><i class="bi bi-receipt me-1"></i>Print Thermal</button>
     </form>
     <a href="{{ route('invoices.show', $invoice) }}" class="btn btn-info text-white"><i class="bi bi-file-earmark-text me-1"></i>Lihat Invoice</a>
@@ -95,5 +103,10 @@
 <script>
     // Auto-trigger print dialog on first load
     window.addEventListener('load', () => setTimeout(() => window.print(), 400));
+    // Ikutkan port printer yang dipilih
+    document.querySelector('select[name="printer_ip"]')?.addEventListener('change', function () {
+        const port = this.selectedOptions[0]?.dataset.port;
+        if (port) document.getElementById('thermalPort').value = port;
+    });
 </script>
 @endpush
