@@ -42,4 +42,11 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Logged out']);
     }
+
+    public function logoutAll(Request $request): JsonResponse
+    {
+        $request->user()->tokens()->delete();
+
+        return response()->json(['message' => 'Logged out from all devices']);
+    }
 }

@@ -29,6 +29,7 @@ Route::prefix('v1')->name('api.')->group(function () {
 
     Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+        Route::post('/logout-all', [AuthController::class, 'logoutAll'])->name('logout-all');
         Route::get('/me', [AuthController::class, 'me'])->name('me');
 
         Route::get('/dashboard/stats', [ApiDashboardController::class, 'stats'])->name('dashboard.stats')->middleware('can.perm:income.view,service.view,report.view');

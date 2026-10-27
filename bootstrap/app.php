@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AuthorizeModuleAccess;
 use App\Http\Middleware\AuthorizePermissions;
+use App\Http\Middleware\ClampPerPage;
 use App\Http\Middleware\RequirePair;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -37,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             EnsureFrontendRequestsAreStateful::class,
         ], append: [
+            ClampPerPage::class,
             SecurityHeaders::class,
         ]);
 
