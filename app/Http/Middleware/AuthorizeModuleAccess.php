@@ -24,6 +24,7 @@ class AuthorizeModuleAccess
         'create' => 'create', 'store' => 'create',
         'edit' => 'edit', 'update' => 'edit',
         'destroy' => 'delete',
+        'void' => 'void',
         // custom actions
         'preview' => 'view', 'validate' => 'view',
         'submit' => 'submit', 'approve' => 'approve',

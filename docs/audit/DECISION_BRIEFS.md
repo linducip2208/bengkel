@@ -14,6 +14,8 @@
 
 **Rekomendasi:** A atau B. Estimasi +/*: tidak ada yang aman dipilih sepihak karena menyentuh nilai persediaan.
 
+**Status 2026-10-28: SENGAJA TIDAK di-auto-dedup.** De-duplikasi otomatis berisiko *under-count* diam-diam bila dua event ternyata konsumsi sah yang berbeda (part estimasi + part tambahan servis). Tanpa kunci bisnis yang compuesto (mis. estimate_id di usage events), kode tidak bisa membedakan "ganda" vs "dua pemakaian sah" — tebakan otomatis ke arah mana pun merusak satu skenario. Menunggu pilihan A/B/C di atas.
+
 ## D2. Void invoice ber-payment (P0-8)
 
 **Koreksi temuan lama:** hapus invoice UNPAID ternyata SUDAH mengembalikan stok + reversal jurnal (`InvoiceService::deleteWithStockRestore`, `InvoiceController:destroy`). Klaim "tanpa jalur pembatalan" hanya benar untuk invoice BERBAYAR: `destroy` abort 403 bila ada payment (`InvoiceController:147`, `InvoiceService:285`).
@@ -25,6 +27,8 @@
 
 **Rekomendasi:** A (sketsa: tiru `deleteWithStockRestore` + buat payment negatif + `reverseJournal*`, bukan hapus fisik).
 
+**Status 2026-10-28: TERIMPLEMENTASI (opsi A).** `POST /invoices/{invoice}/void` (perm `invoice.void`): migrasi `voided_at`/`void_reason`, `InvoiceService::voidInvoice` (restore stok + reverse jurnal AR/HPP/payment + refund PaymentRecord negatif + Income offset + ActivityLog, riwayat dipertahankan), guard anti double-void (422), blokir bayar/hapus pada invoice void, badge Void di index/show, `InvoiceVoidTest` 4/4.
+
 ## D3. Stock-adjust langsung vs approval workflow (P1)
 
 **Mekanisme aktual:** `products.stock-adjust` (perm `product.stock-adjust`, `ProductController:133-163`) langsung apply add/reduce/set. Terpisah, `stock-adjustments.*` (perm `inventory.adjust` + `stock-adjustment.approve`) adalah workflow pengajuan→approve. Keduanya fungsional, bukan bug — pertanyaannya governance.
@@ -35,6 +39,8 @@
 - C. Berbasis ambang: kecil langsung, besar butuh approve.
 
 **Rekomendasi:** A atau C.
+
+**Status 2026-10-28: opsi A didokumentasikan (tanpa perubahan kode).** `products.stock-adjust` (perm `product.stock-adjust`) = koreksi cepat langsung-apply oleh pemegang gudang; `stock-adjustments.*` (perm `inventory.adjust` + `stock-adjustment.approve`) = opname formal dua-tahap dengan approver terpisah. Keduanya tercatat di `StockHistory` + `ActivityLog`. Bila volume koreksi besar ingin dibatasi, lanjutkan ke opsi C (ambang nominal) — perlu keputusan angka ambang.
 
 ## D4. RequirePair API (verifikasi, bukan keputusan)
 

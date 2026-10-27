@@ -33,6 +33,7 @@ class PaymentController extends Controller
 
     public function create(Invoice $invoice): View
     {
+        abort_if($invoice->isVoided(), 403, 'Invoice sudah di-void, tidak dapat dibayar.');
         $invoice->load(['customer', 'paymentRecords']);
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
         $totalPaid = (float) $invoice->paid_amount;

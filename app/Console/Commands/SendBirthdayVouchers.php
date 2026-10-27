@@ -19,8 +19,8 @@ class SendBirthdayVouchers extends Command
 
         $customers = Customer::withoutGlobalScopes()
             ->whereNotNull('birth_date')
-            ->whereRaw('MONTH(birth_date) = ?', [$today->month])
-            ->whereRaw('DAY(birth_date) = ?', [$today->day])
+            ->whereMonth('birth_date', $today->month)
+            ->whereDay('birth_date', $today->day)
             ->get();
 
         if ($customers->isEmpty()) {

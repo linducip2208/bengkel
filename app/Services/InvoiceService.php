@@ -3,11 +3,16 @@
 namespace App\Services;
 
 use App\Models\ActivityLog;
+use App\Models\Income;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\InvoiceScheme;
+use App\Models\PaymentMethod;
+use App\Models\PaymentRecord;
 use App\Models\Product;
 use App\Models\Service;
 use App\Models\StockRecord;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -304,6 +309,94 @@ class InvoiceService extends BaseService
         });
 
         ActivityLog::record('invoice.delete', null, "Invoice {$invoice->invoice_number} dibatalkan");
+    }
+
+    /**
+     * Void invoice ber-stok/ber-payment (D2 opsi A): TIDAK menghapus fisik.
+     * Mengembalikan stok, me-reverse jurnal AR + HPP + pembayaran, mencatat
+     * refund sebagai PaymentRecord negatif + Income offset (net collected
+     * tetap benar), lalu menandai voided_at. Idempoten terhadap double-void
+     * (abort 422) dan terhadap jurnal (entryExists per tipe reversal).
+     *
+     * @return array{refunded: float}
+     */
+    public function voidInvoice(Invoice $invoice, string $reason, ?int $actorId = null): array
+    {
+        return DB::transaction(function () use ($invoice, $reason, $actorId) {
+            /** @var Invoice $locked */
+            $locked = Invoice::query()->whereKey($invoice->id)->lockForUpdate()->firstOrFail();
+            abort_if($locked->isVoided(), 422, 'Invoice sudah di-void.');
+
+            $locked->loadMissing(['items', 'paymentRecords']);
+
+            foreach ($locked->items as $item) {
+                /** @var InvoiceItem $item */
+                if (! empty($item->product_id)) {
+                    StockService::increment(
+                        (int) $item->product_id,
+                        (float) $item->quantity,
+                        'in',
+                        'Invoice #'.$locked->invoice_number.' (void)',
+                        Invoice::class,
+                        $locked->id,
+                    );
+                }
+            }
+
+            $journals = app(AutoJournalService::class);
+            $journals->reverseJournalInvoiceIssued($locked);
+            $journals->reverseJournalCogs($locked);
+
+            $refunded = 0.0;
+            /** @var Collection<int, PaymentRecord> $payments */
+            $payments = $locked->paymentRecords()->withoutGlobalScopes()->orderBy('id')->get();
+            foreach ($payments as $payment) {
+                $journals->reverseJournalInvoicePayment($payment);
+            }
+
+            $collected = round($locked->collectedValue(), 2);
+            if ($collected > 0) {
+                $refunded = $collected;
+                /** @var PaymentRecord|null $firstPayment */
+                $firstPayment = $payments->first();
+                $methodId = ($firstPayment ? $firstPayment->payment_method_id : null)
+                    ?? $locked->payment_method_id
+                    ?? PaymentMethod::where('is_active', true)->orderBy('id')->value('id');
+                abort_if(! $methodId, 422, 'Tidak ada metode pembayaran aktif untuk mencatat refund.');
+
+                PaymentRecord::withoutGlobalScopes()->create([
+                    'invoice_id' => $locked->id,
+                    'payment_method_id' => $methodId,
+                    'amount' => -$refunded,
+                    'payment_date' => now(),
+                    'reference_number' => 'VOID-'.$locked->id,
+                    'notes' => 'Refund void invoice '.$locked->invoice_number.': '.$reason,
+                    'idempotency_key' => 'void-'.$locked->id,
+                    'created_by' => $actorId ?? auth()->id() ?? $locked->created_by ?? 1,
+                    'branch_id' => $locked->branch_id,
+                ]);
+
+                Income::create([
+                    'invoice_number' => $locked->invoice_number,
+                    'customer_id' => $locked->customer_id,
+                    'payment_method_id' => $methodId,
+                    'amount' => -$refunded,
+                    'income_date' => now(),
+                    'label' => 'Refund void Invoice '.$locked->invoice_number,
+                    'created_by' => $actorId ?? auth()->id() ?? $locked->created_by ?? 1,
+                    'branch_id' => $locked->branch_id,
+                ]);
+            }
+
+            $locked->forceFill([
+                'voided_at' => now(),
+                'void_reason' => $reason,
+            ])->save();
+
+            ActivityLog::record('invoice.void', $locked, "Invoice {$locked->invoice_number} di-void (refund {$refunded}): {$reason}");
+
+            return ['refunded' => $refunded];
+        });
     }
 
     /**

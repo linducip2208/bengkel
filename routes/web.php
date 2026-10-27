@@ -388,6 +388,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/invoices/{invoice}/send-wa', [InvoiceController::class, 'sendWA'])->name('invoices.sendWA')->middleware('can.perm:invoice.send-wa');
     Route::post('/invoices/{invoice}/send-email', [InvoiceController::class, 'sendEmail'])->name('invoices.sendEmail')->middleware('can.perm:invoice.send-email');
     Route::post('/invoices/{invoice}/share', [InvoiceController::class, 'share'])->name('invoices.share')->middleware('can.perm:invoice.view');
+    Route::post('/invoices/{invoice}/void', [InvoiceController::class, 'void'])->name('invoices.void')->middleware('can.perm:invoice.void');
 
     // --- Thermal Print ---
     Route::post('/invoices/{invoice}/print', [PrintController::class, 'invoice'])->name('print.invoice')->middleware('can.perm:invoice.pdf');

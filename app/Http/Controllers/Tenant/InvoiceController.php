@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class InvoiceController extends Controller
 {
@@ -144,6 +145,7 @@ class InvoiceController extends Controller
 
     public function destroy(Invoice $invoice): RedirectResponse
     {
+        abort_if($invoice->isVoided(), 403, 'Invoice yang sudah di-void tidak dapat dihapus (riwayat dipertahankan).');
         abort_if($invoice->paymentRecords()->exists() || $invoice->collectedValue() > 0.009, 403, 'Invoice yang sudah memiliki pembayaran/DP tidak dapat dihapus.');
         $this->authorize('invoices.delete');
 
@@ -152,6 +154,28 @@ class InvoiceController extends Controller
 
         return redirect()->route('invoices.index')
             ->with('success', 'Invoice berhasil dihapus.');
+    }
+
+    /**
+     * Void invoice ber-payment (D2 opsi A): tidak menghapus fisik,
+     * mengembalikan stok + me-reverse jurnal + mencatat refund.
+     */
+    public function void(Request $request, Invoice $invoice): RedirectResponse
+    {
+        $validated = $request->validate([
+            'reason' => 'required|string|max:500',
+        ]);
+
+        try {
+            $result = $this->invoiceService->voidInvoice($invoice, $validated['reason'], auth()->id());
+        } catch (HttpException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        $refunded = number_format($result['refunded'], 0, ',', '.');
+
+        return redirect()->route('invoices.show', $invoice)
+            ->with('success', "Invoice berhasil di-void (refund Rp {$refunded}).");
     }
 
     /**

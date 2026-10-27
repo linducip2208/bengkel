@@ -138,6 +138,84 @@ class AutoJournalService
         );
     }
 
+    /** Reverse the COGS entry of a voided invoice (idempotent). */
+    public function reverseJournalCogs(Invoice $invoice): void
+    {
+        $original = JournalEntry::where('reference_type', Invoice::class)
+            ->where('reference_id', $invoice->id)
+            ->where('entry_type', 'cogs')
+            ->first();
+
+        if (! $original || $this->entryExists($invoice, 'cogs_reversal')) {
+            return;
+        }
+
+        $lines = [];
+        foreach ($original->lines as $line) {
+            /** @var JournalEntryLine $line */
+            /** @var ChartOfAccount|null $account */
+            $account = $line->account;
+            $lines[] = [
+                $account,
+                (float) $line->credit,
+                (float) $line->debit,
+                'Void '.$original->description,
+            ];
+        }
+
+        $this->createEntry(
+            'COGSR-'.$invoice->id,
+            'cogs_reversal',
+            now(),
+            'Pembatalan HPP invoice '.($invoice->invoice_number ?? '#'.$invoice->id),
+            $invoice,
+            $lines,
+            auth()->id() ?? 1,
+        );
+    }
+
+    /** Reverse one payment journal (cash/bank back to receivable, idempotent). */
+    public function reverseJournalInvoicePayment(PaymentRecord $payment): void
+    {
+        if ($this->entryExists($payment, 'payment_reversal')) {
+            return;
+        }
+
+        $original = JournalEntry::where('reference_type', $payment::class)
+            ->where('reference_id', $payment->id)
+            ->where('entry_type', 'payment')
+            ->first();
+
+        if (! $original) {
+            return;
+        }
+
+        $lines = [];
+        foreach ($original->lines as $line) {
+            /** @var JournalEntryLine $line */
+            /** @var ChartOfAccount|null $account */
+            $account = $line->account;
+            $lines[] = [
+                $account,
+                (float) $line->credit,
+                (float) $line->debit,
+                'Void '.$original->description,
+            ];
+        }
+
+        $invoice = $payment->invoice;
+
+        $this->createEntry(
+            'PMTR-'.$payment->id,
+            'payment_reversal',
+            now(),
+            'Pengembalian pembayaran invoice '.($invoice->invoice_number ?? '#'.$payment->invoice_id),
+            $payment,
+            $lines,
+            auth()->id() ?? 1,
+        );
+    }
+
     /**
      * Accrued COGS for parts sold on an invoice: Dr COGS / Cr Inventory
      * at the product's cost price.

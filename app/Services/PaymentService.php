@@ -41,6 +41,8 @@ class PaymentService extends BaseService
             // Re-read under lock to get authoritative paid_amount.
             $locked = Invoice::query()->whereKey($invoice->id)->lockForUpdate()->first();
 
+            abort_if($locked->isVoided(), 422, 'Invoice sudah di-void, tidak dapat dibayar.');
+
             // Guard overpayment — jangan izinkan bayar melebihi sisa tagihan.
             // Sisa = grand total - pembayaran tercatat - DP.
             $alreadyPaid = round((float) $locked->paid_amount, 2);

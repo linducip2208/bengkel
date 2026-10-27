@@ -7,14 +7,14 @@ Alasan: (a) browser QA + cetak hardware belum dilakukan; (b) backup-restore belu
 Detail per fitur di FEATURE_SCORECARD.md (metodologi: 25+20+20+15+10+5+5, UI dibatasi tanpa browser, P0/P1 terbuka membatasi skor). Tidak ada 100/100 — sesuai aturan.
 
 ## 3. TEMUAN DAN PERBAIKAN
-P0 diperbaiki (7): duplikat const settings fatal; SSRF printer->allowlist+422; IDOR download->branch 404; sesi nonaktif->EnsureActiveUser+401; deadlock 6->5; advance tanpa invoice/lunas->guard + test; 2FA API->challenge OTP+verify+test.
-P0 ditahan (2, alasan tercatat): double-decrement stok (butuh aturan bisnis), void invoice (butuh desain fitur).
+P0 diperbaiki (8): duplikat const settings fatal; SSRF printer->allowlist+422; IDOR download->branch 404; sesi nonaktif->EnsureActiveUser+401; deadlock 6->5; advance tanpa invoice/lunas->guard + test; 2FA API->challenge OTP+verify+test; void invoice ber-payment->POST void + restore stok + reverse jurnal + refund + test.
+P0 ditahan (1, alasan tercatat): double-decrement stok lintas jalur (auto-dedup sengaja tidak dipasang tanpa aturan bisnis, lihat D1).
 P1 diperbaiki (~25 item, lihat FINDINGS.md): @can sidebar, quick action, notifikasi, aria, form terbuang + @error + modal reopen, opname transaksional, withRole anti-crash, N+1 laporan, eager load, prefix PB-, dead code sales, double-submit guard, over-refund test, settings sticky+tab, dsb.
-P1 ditahan: stock-approval API, portal brute-force, gate-pass pre-lunas, mass-assign latent (aman-terverifikasi).
+P1 ditahan: portal brute-force, gate-pass pre-lunas (butuh SOP). Stock-approval governance didokumentasikan opsi A (D3); mass-assign dikunci test user+customer.
 
-## 4. TEST: 477 tests - 476 passed, 1 skipped (pra-ada), 0 failed.
-- Baru: SecurityHardeningTest(4), LicenseGateTest(3), CrudFormRegressionTest(6), ReportsAggregationTest(3), SellReturnGuardTest(2), SettingsPageTest(1), CompanySmokeTest(2), FleetContractSmokeTest(2), InsuranceClaimSmokeTest(3), TaxRateSmokeTest(2), PurchaseRequisitionSmokeTest(2), RefundAuthZTest(2), SchedulerSmokeTest(1), VoucherLoyaltySmokeTest(3), ApiTwoFactorTest(6).
-- Pint PASSED, PHPStan level 5 0 error, view:cache OK, migrate:fresh --seed OK (sqlite :memory:), routes 798, diff --check bersih.
+## 4. TEST: 487 tests - 486 passed, 1 skipped (pra-ada), 0 failed.
+- Baru: SecurityHardeningTest(4), LicenseGateTest(3), CrudFormRegressionTest(6), ReportsAggregationTest(3), SellReturnGuardTest(2), SettingsPageTest(1), CompanySmokeTest(2), FleetContractSmokeTest(2), InsuranceClaimSmokeTest(3), TaxRateSmokeTest(2), PurchaseRequisitionSmokeTest(2), RefundAuthZTest(2), SchedulerSmokeTest(1), VoucherLoyaltySmokeTest(3), MarketingCommandsTest(6), InvoiceVoidTest(4), ApiTwoFactorTest(6).
+- Pint PASSED, PHPStan level 5 0 error, view:cache OK, migrate:fresh --seed OK (sqlite :memory:, termasuk migrasi void), routes 799, diff --check bersih.
 - Tidak dijalankan: browser automation (tidak tersedia), MySQL lokal (CI), backup drill.
 
 ## 5. SECURITY & DATA
@@ -22,15 +22,16 @@ Server-side enforcement dipertahankan (middleware+gate+scope). Regression: SSRF 
 
 ## 6. FILES & GIT
 Ubah: app/Http/{Controllers(Api/Auth, Tenant/PrintController, MediaAttachmentController, BookingController, Purchase*Controller, ServiceController, ReportController, TechnicianSkill, RoleController, User withRole)}, app/Services/{ServiceService, ReportService, CustomerService, PosService? tidak}, app/Models/{Customer}, app/Http/Requests/CustomerRequest, database/migrations 2 file, bootstrap/app.php, config/services.php, composer.json (lint/stan), belasan views, docs (TESTING, REDESIGN-UI-UX ronde, audit/*), 6 file test baru; hapus: SaleController + 4 view sales.
-Commit: bfce48e → 4b5ab2d (working tree BERSIH setelah commit; ahead 1 — TIDAK di-push per aturan V11, menunggu otorisasi).
+Commit: main sinkron origin/main (bfce48e → … → bc31018, dst. `git log --oneline`).
+Ronde lanjutan: fitur void invoice (migrasi voided_at/reason, InvoiceService::voidInvoice, reverse jurnal COGS/payment, route+perm invoice.void, badge Void), fix birthday:send (birth_date + whereMonth/whereDay), MarketingCommandsTest(6), InvoiceVoidTest(4).
 Tidak ada secret/data produksi di diff (verifikasi: git status bersih kecuali file kerja; .env/bengkel_paten/log ter-ignore).
 
 ## 7. REMAINING WORK (prioritas)
 1. Endpoint OTP 2FA API + test (P0) - SELESAI ronde ini.
-2. Kebijakan double-decrement + void invoice (P0 bisnis) — analisis presisi + opsi di DECISION_BRIEFS.md (D1/D2), menunggu pilihan A/B/C.
+2. Void invoice (P0 bisnis) - SELESAI ronde ini (D2 opsi A terimplementasi + InvoiceVoidTest). Double-decrement - menunggu pilihan A/B/C (D1, sengaja tanpa auto-fix).
 3. Browser QA + cetak hardware + screenshot (gate rilis).
 4. Backup drill (butuh MySQL + eksekusi restore; perintah `backup:db` memakai mysqldump). RequirePair integrasi penuh - TERVERIFIKASI by-design (global web + allowlist, LicenseGateTest 3/3, lihat D4).
-5. Test modul nol (companies/fleet/insurance/tax/PR) + refund authZ + voucher/loyalty - SELESAI (Company/Fleet/Insurance/TaxRate/PR/RefundAuthZ/VoucherLoyalty smoke). Tersisa: marketing lanjutan (reaktivasi/birthday-voucher commands), notifikasi/pengingat web.
+5. Test modul nol + marketing commands + notifikasi - SELESAI (Company/Fleet/insurance/TaxRate/PR/RefundAuthZ/VoucherLoyalty/MarketingCommands smoke). Nutup juga bug birthday:send (kolom tak-ada + MONTH() MySQL-only).
 6. Mass-assign test khusus - SELESAI (user + customer privileged-fields). Stock-approval governance - opsi di DECISION_BRIEFS.md (D3), menunggu pilihan.
 7. Purchases-vs-PO navigasi, settings save-per-tab kompleks, CSP.
 

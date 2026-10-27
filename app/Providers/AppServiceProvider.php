@@ -59,6 +59,7 @@ class AppServiceProvider extends ServiceProvider
          */
         Gate::define('invoices.manage', fn ($user) => $user->hasWebPermission('invoice.create', 'invoice.edit'));
         Gate::define('invoices.delete', fn ($user) => $user->hasWebPermission('invoice.delete'));
+        Gate::define('invoices.void', fn ($user) => $user->hasWebPermission('invoice.void'));
         Gate::define('estimates.override', fn ($user) => $user->hasWebPermission('estimates.override'));
         Gate::define('estimates.convert_invoice', fn ($user) => $user->hasWebPermission('estimates.convert_invoice'));
         Gate::define('payments.process', fn ($user) => $user->hasWebPermission('payment.process'));

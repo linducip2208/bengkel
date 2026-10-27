@@ -73,14 +73,23 @@
         @can('invoice.send-wa')
         <a href="{{ route('invoices.sendWA', $invoice) }}" class="btn btn-outline-success" target="_blank"><i class="bi bi-whatsapp"></i> Kirim WA</a>
         @endcan
-        @if ($remaining > 0)
+        @if ($remaining > 0 && ! $invoice->isVoided())
             @can('invoice.edit')
             <a href="{{ route('payments.create', $invoice) }}" class="btn btn-primary"><i class="bi bi-cash-coin"></i> Catat Pembayaran</a>
             @endcan
         @endif
-        @if ($invoice->status !== 'full_paid')
+        @if ($invoice->status !== 'full_paid' && ! $invoice->isVoided())
             @can('invoice.edit')
             <a href="{{ route('invoices.edit', $invoice) }}" class="btn btn-warning"><i class="bi bi-pencil"></i> Edit</a>
+            @endcan
+        @endif
+        @if (! $invoice->isVoided())
+            @can('invoices.void')
+            <form action="{{ route('invoices.void', $invoice) }}" method="POST" class="d-inline" onsubmit="return confirm('Void invoice ini? Stok dikembalikan, jurnal di-reverse, pembayaran di-refund.');">
+                @csrf
+                <input type="hidden" name="reason" value="Void dari halaman invoice">
+                <button type="submit" class="btn btn-outline-danger"><i class="bi bi-x-octagon"></i> Void</button>
+            </form>
             @endcan
         @endif
         <a href="{{ route('invoices.index') }}" class="btn btn-secondary">Kembali</a>
@@ -121,7 +130,9 @@
                     <div class="col-6 text-end">
                         <small class="text-muted">Status</small>
                         <div>
-                            @if ($invoice->status === 'full_paid')
+                            @if ($invoice->isVoided())
+                                <span class="badge bg-dark fs-6">Void</span>
+                            @elseif ($invoice->status === 'full_paid')
                                 <span class="badge bg-success fs-6">Lunas</span>
                             @elseif ($invoice->status === 'half_paid')
                                 <span class="badge bg-warning text-dark fs-6">Dibayar Sebagian</span>

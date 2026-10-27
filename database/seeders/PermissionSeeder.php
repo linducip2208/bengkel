@@ -28,7 +28,7 @@ class PermissionSeeder extends Seeder
         'service-package' => ['view', 'create', 'edit', 'delete'],
         'jobcard' => ['view', 'create', 'edit', 'delete', 'print'],
         'gate-pass' => ['view', 'create', 'edit', 'delete', 'print'],
-        'invoice' => ['view', 'create', 'edit', 'delete', 'pdf', 'send-wa', 'send-email'],
+        'invoice' => ['view', 'create', 'edit', 'delete', 'void', 'pdf', 'send-wa', 'send-email'],
         'product' => ['view', 'create', 'edit', 'delete', 'stock-opname', 'stock-adjust', 'import'],
         'supplier' => ['view', 'create', 'edit', 'delete'],
         'purchase' => ['view', 'create', 'edit', 'delete', 'receive', 'cancel'],

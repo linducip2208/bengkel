@@ -82,7 +82,9 @@
                     <td>@money($collected)@if($dpRow > 0)<br><small class="text-muted">termasuk DP @money($dpRow)</small>@endif</td>
                     <td>@money($remaining)</td>
                     <td>
-                        @if ($invoice->status === 'full_paid')
+                        @if ($invoice->isVoided())
+                            <span class="badge bg-dark">Void</span>
+                        @elseif ($invoice->status === 'full_paid')
                             <span class="badge bg-success">Lunas</span>
                         @elseif ($invoice->status === 'half_paid')
                             <span class="badge bg-warning text-dark">Sebagian</span>

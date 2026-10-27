@@ -29,7 +29,13 @@ class Invoice extends Model
             'paid_amount' => 'decimal:2',
             'amount_received' => 'decimal:2',
             'dp_amount' => 'decimal:2',
+            'voided_at' => 'datetime',
         ];
+    }
+
+    public function isVoided(): bool
+    {
+        return $this->voided_at !== null;
     }
 
     public function service(): BelongsTo

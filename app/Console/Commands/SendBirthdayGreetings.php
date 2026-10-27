@@ -19,9 +19,9 @@ class SendBirthdayGreetings extends Command
     {
         $today = now();
         $customers = Customer::withoutGlobalScopes()
-            ->whereNotNull('birthday')
-            ->whereRaw('MONTH(birthday) = ?', [$today->month])
-            ->whereRaw('DAY(birthday) = ?', [$today->day])
+            ->whereNotNull('birth_date')
+            ->whereMonth('birth_date', $today->month)
+            ->whereDay('birth_date', $today->day)
             ->get();
 
         if ($customers->isEmpty()) {
