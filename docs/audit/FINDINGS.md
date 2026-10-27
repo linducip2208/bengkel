@@ -8,9 +8,9 @@
 5. **Deadlock workflow 6 (Waiting Parts)**: advance +1 selalu gagal, tanpa jalan kembali. → advance dari 6 kembali ke 5 (sesuai WORKFLOW_TRANSITIONS) + test.
 6. **Advance finansial tanpa dokumen**: 8→9 tanpa invoice, 9→10 tanpa pelunasan. → Guard invoice-ada + payment_status==2 + test.
 
-## P0 — TERBUKTI tapi DITAHAN (butuh keputusan produk, bukan bugfix aman)
-7. **Double-decrement stok**: `useInService` (saat buat servis) + `convertToInvoice` (saat konversi) keduanya decrement tanpa dedup silang; reference tercatat (Service vs Invoice) tapi tidak bisa dibedakan otomatis apakah pemakaian ganda atau dua pemakaian sah. Perlu aturan bisnis eksplisit.
-8. **Tanpa void/cancel invoice ber-stok**: tidak ada jalur pembatalan yang mengembalikan decrement `convertToInvoice`; destroy diblokir bila ada payment. Perlu desain fitur void/refund-stok.
+## P0 — TERBUKTI tapi DITAHAN (butuh keputusan produk, bukan bugfix aman — lihat DECISION_BRIEFS.md D1/D2)
+7. **Double-decrement stok lintas jalur**: tiap jalur aman internal (servis: use→record tanpa decrement ulang; estimasi: guard 422 double-convert), tapi tidak ada dedup silang usage-vs-out. Opsi A/B/C di D1.
+8. **Void invoice ber-payment**: koreksi — hapus UNPAID sudah restore stok + reversal jurnal (`deleteWithStockRestore`); yang belum ada hanya void untuk invoice BERBAYAR (destroy 403). Opsi A/B/C di D2.
 9. **2FA bypass via API**: login API terbit token tanpa OTP. Perlu endpoint challenge OTP mobile (keputusan produk) - DIPERBAIKI ronde ini: challenge OTP+tambah kolom+test.
 
 ## P1 — DIPERBAIKI
@@ -27,8 +27,8 @@
 - Double-submit: disable-on-submit payments/purchases/checkout + hint kurang-bayar POS.
 - over-refund retur: guard ada → kunci dengan test.
 
-## P1 — DITAHAN (keputusan produk / risiko)
-- Stock-adjust API bypass approval (product.stock-adjust vs stock-adjustment.approve): dua fitur berbeda atau pelanggaran SoD? Perlu keputusan.
+## P1 — DITAHAN (keputusan produk / risiko — stock-approval di DECISION_BRIEFS.md D3)
+- Stock-adjust langsung vs approval workflow: dua fitur berbeda atau pelanggaran SoD? Opsi A/B/C di D3.
 - Mass-assignment fillable luas: aman-terverifikasi (semua controller eksplisit/validated); penguncian via test anti-mass-assign? Belum ditambah — disarankan.
 - Customer portal brute-force + password default: kebijakan kredensial portal.
 - Gate Pass bisa dicetak sebelum lunas (by design? perlu SOP).

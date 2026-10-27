@@ -2,7 +2,7 @@
 
 | Area | Command | Hasil |
 |---|---|---|
-| Full suite | `php artisan test` (sqlite :memory:) | 474 tests — 473 passed, 1 skipped (pra-ada), 0 failed |
+| Full suite | `php artisan test` (sqlite :memory:) | 477 tests — 476 passed, 1 skipped (pra-ada), 0 failed |
 | Security regression | `php artisan test --filter="SecurityHardeningTest"` | 4/4 passed (inactive 401, SSRF 422, cross-branch 404, double-submit 1 invoice) |
 | License gate | `php artisan test --filter="LicenseGateTest"` | 3/3 passed (unpaired→/__pair, publik lolos, paired→auth) |
 | CRUD forms | `php artisan test --filter="CrudFormRegressionTest"` | 6/6 passed (city/postal, deskripsi, @error key, modal reopen, anti-mass-assign user+customer) |
@@ -16,6 +16,7 @@
 | PR | `php artisan test --filter="PurchaseRequisitionSmokeTest"` | 2/2 passed (draft→submit→approve, guard hapus, gate) |
 | Refund authZ | `php artisan test --filter="RefundAuthZTest"` | 2/2 passed (sale.view, purchase.view) |
 | Scheduler | `php artisan test --filter="SchedulerSmokeTest"` | 1/1 passed (backup 02:00, birthday 09:00) |
+| Voucher/loyalty | `php artisan test --filter="VoucherLoyaltySmokeTest"` | 3/3 passed (CRUD+validate kode+guard hapus, adjust poin, gate) |
 | Settings page | `php artisan test --filter="SettingsPageTest"` | 1/1 passed (const tunggal + tab key) |
 | AuthZ spot | `php artisan test --filter="AuthorizationTest"` | 16/16 passed |
 | POS spot | `php artisan test --filter="PosCheckoutTest"` | 3/3 passed |

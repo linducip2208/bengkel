@@ -12,8 +12,8 @@ P0 ditahan (2, alasan tercatat): double-decrement stok (butuh aturan bisnis), vo
 P1 diperbaiki (~25 item, lihat FINDINGS.md): @can sidebar, quick action, notifikasi, aria, form terbuang + @error + modal reopen, opname transaksional, withRole anti-crash, N+1 laporan, eager load, prefix PB-, dead code sales, double-submit guard, over-refund test, settings sticky+tab, dsb.
 P1 ditahan: stock-approval API, portal brute-force, gate-pass pre-lunas, mass-assign latent (aman-terverifikasi).
 
-## 4. TEST: 474 tests - 473 passed, 1 skipped (pra-ada), 0 failed.
-- Baru: SecurityHardeningTest(4), LicenseGateTest(3), CrudFormRegressionTest(6), ReportsAggregationTest(3), SellReturnGuardTest(2), SettingsPageTest(1), CompanySmokeTest(2), FleetContractSmokeTest(2), InsuranceClaimSmokeTest(3), TaxRateSmokeTest(2), PurchaseRequisitionSmokeTest(2), RefundAuthZTest(2), SchedulerSmokeTest(1), ApiTwoFactorTest(6).
+## 4. TEST: 477 tests - 476 passed, 1 skipped (pra-ada), 0 failed.
+- Baru: SecurityHardeningTest(4), LicenseGateTest(3), CrudFormRegressionTest(6), ReportsAggregationTest(3), SellReturnGuardTest(2), SettingsPageTest(1), CompanySmokeTest(2), FleetContractSmokeTest(2), InsuranceClaimSmokeTest(3), TaxRateSmokeTest(2), PurchaseRequisitionSmokeTest(2), RefundAuthZTest(2), SchedulerSmokeTest(1), VoucherLoyaltySmokeTest(3), ApiTwoFactorTest(6).
 - Pint PASSED, PHPStan level 5 0 error, view:cache OK, migrate:fresh --seed OK (sqlite :memory:), routes 798, diff --check bersih.
 - Tidak dijalankan: browser automation (tidak tersedia), MySQL lokal (CI), backup drill.
 
@@ -27,11 +27,11 @@ Tidak ada secret/data produksi di diff (verifikasi: git status bersih kecuali fi
 
 ## 7. REMAINING WORK (prioritas)
 1. Endpoint OTP 2FA API + test (P0) - SELESAI ronde ini.
-2. Kebijakan double-decrement + void invoice (P0 bisnis).
+2. Kebijakan double-decrement + void invoice (P0 bisnis) — analisis presisi + opsi di DECISION_BRIEFS.md (D1/D2), menunggu pilihan A/B/C.
 3. Browser QA + cetak hardware + screenshot (gate rilis).
-4. Backup drill + RequirePair integrasi penuh (scheduler SELESAI ronde ini: SchedulerSmokeTest).
-5. Test modul nol (companies/fleet/insurance/tax/PR) + refund authZ - SELESAI ronde ini (Company/Fleet/Insurance/TaxRate/PR/RefundAuthZ smoke). Tersisa: marketing/loyalty, notifikasi/pengingat, warranty khusus.
-6. Mass-assign test khusus - SELESAI ronde ini (user + customer privileged-fields). Stock-approval API governance tetap butuh keputusan.
+4. Backup drill (butuh MySQL + eksekusi restore; perintah `backup:db` memakai mysqldump). RequirePair integrasi penuh - TERVERIFIKASI by-design (global web + allowlist, LicenseGateTest 3/3, lihat D4).
+5. Test modul nol (companies/fleet/insurance/tax/PR) + refund authZ + voucher/loyalty - SELESAI (Company/Fleet/Insurance/TaxRate/PR/RefundAuthZ/VoucherLoyalty smoke). Tersisa: marketing lanjutan (reaktivasi/birthday-voucher commands), notifikasi/pengingat web.
+6. Mass-assign test khusus - SELESAI (user + customer privileged-fields). Stock-approval governance - opsi di DECISION_BRIEFS.md (D3), menunggu pilihan.
 7. Purchases-vs-PO navigasi, settings save-per-tab kompleks, CSP.
 
 ## 8. PRODUKSI
