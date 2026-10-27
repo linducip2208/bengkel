@@ -41,7 +41,7 @@ class TwoFactorController extends Controller
         Session::forget(['2fa_pending_user', '2fa_otp', '2fa_expires_at']);
         auth()->loginUsingId($user->id, (bool) Session::pull('2fa_remember'));
         $request->session()->regenerate();
-        $user->update(['two_factor_verified_at' => now()]);
+        $user->forceFill(['two_factor_verified_at' => now()])->save();
         ActivityLog::record('2fa.verified', $user, "User {$user->email} verifikasi 2FA sukses");
 
         return redirect()->intended(route('dashboard'));

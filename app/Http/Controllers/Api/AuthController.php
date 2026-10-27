@@ -68,7 +68,7 @@ class AuthController extends Controller
         $user = User::where('id', $challenge['user_id'])->where('is_active', true)->first();
         abort_unless($user instanceof User, 401, 'Invalid credentials');
 
-        $user->update(['two_factor_verified_at' => now()]);
+        $user->forceFill(['two_factor_verified_at' => now()])->save();
         ActivityLog::record('2fa.verified', $user, "User {$user->email} verifikasi 2FA via API");
 
         $token = $user->createToken('api-token')->plainTextToken;

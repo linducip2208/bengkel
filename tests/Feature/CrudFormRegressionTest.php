@@ -118,4 +118,23 @@ class CrudFormRegressionTest extends TestCase
         $response->assertSessionHasInput('_form', 'add-user');
         $response->assertSessionHasInput('name', 'Calon User');
     }
+
+    public function test_user_store_ignores_privileged_fields(): void
+    {
+        Role::findOrCreate('kasir', 'web');
+        $this->actingAsRole('custom_hrd2', ['user.create', 'user.edit']);
+
+        $this->post(route('users.store'), [
+            'name' => 'User Biasa',
+            'email' => 'biasa@bengkel.test',
+            'password' => 'secret123',
+            'role' => 'kasir',
+            'base_salary' => 99999999,
+            'email_verified_at' => now()->toDateTimeString(),
+        ])->assertRedirect();
+
+        $user = User::where('email', 'biasa@bengkel.test')->firstOrFail();
+        $this->assertNotSame(99999999.0, (float) $user->base_salary);
+        $this->assertNull($user->email_verified_at);
+    }
 }

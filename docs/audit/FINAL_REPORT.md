@@ -12,7 +12,7 @@ P0 ditahan (2, alasan tercatat): double-decrement stok (butuh aturan bisnis), vo
 P1 diperbaiki (~25 item, lihat FINDINGS.md): @can sidebar, quick action, notifikasi, aria, form terbuang + @error + modal reopen, opname transaksional, withRole anti-crash, N+1 laporan, eager load, prefix PB-, dead code sales, double-submit guard, over-refund test, settings sticky+tab, dsb.
 P1 ditahan: stock-approval API, portal brute-force, gate-pass pre-lunas, mass-assign latent (aman-terverifikasi).
 
-## 4. TEST: 457 tests - 456 passed, 1 skipped (pra-ada), 0 failed.
+## 4. TEST: 461 tests - 460 passed, 1 skipped (pra-ada), 0 failed.
 - Baru: SecurityHardeningTest(4), LicenseGateTest(3), CrudFormRegressionTest(4), ReportsAggregationTest(3), SellReturnGuardTest(2), SettingsPageTest(1).
 - Pint PASSED, PHPStan level 5 0 error, view:cache OK, npm build OK, migrate:fresh --seed OK, diff --check bersih.
 - Tidak dijalankan: browser automation (tidak tersedia), MySQL lokal (CI), backup drill.
