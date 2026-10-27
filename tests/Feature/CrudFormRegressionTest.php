@@ -137,4 +137,22 @@ class CrudFormRegressionTest extends TestCase
         $this->assertNotSame(99999999.0, (float) $user->base_salary);
         $this->assertNull($user->email_verified_at);
     }
+
+    public function test_customer_store_ignores_privileged_fields(): void
+    {
+        $this->actingAsRole('custom_cs2', ['customer.create', 'customer.view']);
+
+        $this->post(route('customers.store'), [
+            'name' => 'Pelanggan Biasa',
+            'phone' => '0812000009',
+            'loyalty_points' => 999999,
+            'membership_tier' => 'platinum',
+            'portal_password' => 'rahasia123',
+        ])->assertRedirect();
+
+        $customer = Customer::where('phone', '+62812000009')->firstOrFail();
+        $this->assertSame(0, (int) $customer->loyalty_points);
+        $this->assertSame('bronze', $customer->membership_tier);
+        $this->assertNull($customer->portal_password);
+    }
 }
