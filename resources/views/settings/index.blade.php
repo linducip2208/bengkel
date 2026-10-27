@@ -393,7 +393,7 @@ Settings - {{ config('app.name') }}
         </div>
     </div>
 
-    <div class="mt-3">
+    <div class="mt-3 position-sticky bottom-0 bg-white border-top py-2" style="z-index: 5;">
         <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save Settings</button>
     </div>
 </form>
@@ -401,7 +401,22 @@ Settings - {{ config('app.name') }}
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Ingat tab aktif antar reload (localStorage, per halaman).
+    const tabKey = 'settings.activeTab';
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (btn) {
+        btn.addEventListener('shown.bs.tab', function () {
+            try { localStorage.setItem(tabKey, btn.getAttribute('data-bs-target')); } catch (e) {}
+        });
+    });
+    try {
+        const saved = localStorage.getItem(tabKey);
+        const savedBtn = saved && document.querySelector('[data-bs-toggle="tab"][data-bs-target="' + saved + '"]');
+        if (savedBtn) bootstrap.Tab.getOrCreateInstance(savedBtn).show();
+    } catch (e) {}
+
     const cards = document.querySelectorAll('.template-card');
+    const input = document.getElementById('invoiceTemplateInput');
+
     const input = document.getElementById('invoiceTemplateInput');
 
     cards.forEach(card => {
