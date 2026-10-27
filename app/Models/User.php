@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Spatie\Permission\Exceptions\RoleDoesNotExist;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['name', 'email', 'password', 'phone', 'avatar', 'is_active', 'email_verified_at', 'base_salary'])]
@@ -145,14 +145,21 @@ class User extends Authenticatable
 
     /**
      * Query builder untuk staff bengkel (mekanik + service_advisor).
-     * Fallback ke mekanik saja jika role service_advisor belum di-seed.
+     * Hanya pakai role yang benar-benar ada; tanpa role sama sekali
+     * kembalikan query kosong (jangan throw di halaman publik).
      */
     public static function workshopStaffQuery()
     {
-        try {
-            return static::role(['mekanik', 'service_advisor']);
-        } catch (RoleDoesNotExist $e) {
-            return static::role('mekanik');
+        $existing = Role::query()
+            ->whereIn('name', ['mekanik', 'service_advisor'])
+            ->where('guard_name', 'web')
+            ->pluck('name')
+            ->all();
+
+        if ($existing === []) {
+            return static::query()->whereRaw('0 = 1');
         }
+
+        return static::role($existing);
     }
 }

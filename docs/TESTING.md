@@ -1,6 +1,6 @@
 # TESTING — Bengkel Paten
 
-- Runner: `php artisan test` (PHPUnit, sqlite `:memory:`, 443 tests: 442 passed, 1 skipped pra-ada).
+- Runner: `php artisan test` (PHPUnit, sqlite `:memory:`, 446 tests: 445 passed, 1 skipped pra-ada).
 - Kualitas: `vendor/bin/pint --test`, `vendor/bin/phpstan analyse` (level 5, 0 error).
 - Cakupan: unit, feature, API, otorisasi, keamanan (IDOR/BOLA, 429, CORS,
   tampering), database (fresh+seed sqlite & MySQL), workflow E2E

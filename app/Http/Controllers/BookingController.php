@@ -16,7 +16,7 @@ class BookingController extends Controller
     {
         $branches = Branch::where('is_active', true)->orderBy('name')->get();
         $categories = RepairCategory::where('is_active', true)->orderBy('repair_category_name')->get();
-        $technicians = User::role('mekanik')->where('is_active', true)->orderBy('name')->get();
+        $technicians = User::workshopStaffQuery()->where('is_active', true)->orderBy('name')->get();
 
         return view('public.booking-form', compact('branches', 'categories', 'technicians'));
     }
