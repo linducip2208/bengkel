@@ -51,10 +51,14 @@ class ReportService
                 'revenue' => $group->sum('charge'),
             ]);
 
+        $techNames = User::query()
+            ->whereIn('id', $services->pluck('assign_to')->filter()->unique()->values()->all())
+            ->pluck('name', 'id');
+
         $byTechnician = $services->groupBy('assign_to')
             ->map(fn ($group, $techId) => [
                 'technician_id' => $techId,
-                'technician_name' => User::find($techId)?->name ?? 'Unassigned',
+                'technician_name' => $techNames->get($techId) ?? 'Unassigned',
                 'count' => $group->count(),
                 'revenue' => $group->sum('charge'),
             ]);
@@ -173,15 +177,31 @@ class ReportService
 
         $monthlyBreakdown = collect([]);
 
+        // Satu query per sumber untuk seluruh rentang (per-bulan diagregat
+        // di PHP), bukan 3 query per bulan.
+        $rangeStart = Carbon::parse($startDate)->startOfMonth()->toDateString();
+        $rangeEnd = Carbon::parse($endDate)->endOfMonth()->toDateString();
+
+        $incomeByMonth = Income::whereBetween('income_date', [$rangeStart, $rangeEnd])
+            ->get(['income_date', 'amount'])
+            ->groupBy(fn ($r) => Carbon::parse($r->income_date)->format('Y-m'))
+            ->map(fn ($g) => $g->sum('amount'));
+        $expenseByMonth = Expense::whereBetween('expense_date', [$rangeStart, $rangeEnd])
+            ->get(['expense_date', 'amount'])
+            ->groupBy(fn ($r) => Carbon::parse($r->expense_date)->format('Y-m'))
+            ->map(fn ($g) => $g->sum('amount'));
+        $paidByMonth = Invoice::where('payment_status', 2)
+            ->whereBetween('invoice_date', [$rangeStart, $rangeEnd])
+            ->get(['invoice_date', 'grand_total'])
+            ->groupBy(fn ($r) => Carbon::parse($r->invoice_date)->format('Y-m'))
+            ->map(fn ($g) => $g->sum('grand_total'));
+
         $months = CarbonPeriod::create($startDate, '1 month', $endDate);
         foreach ($months as $month) {
-            $monthStart = $month->copy()->startOfMonth()->toDateString();
-            $monthEnd = $month->copy()->endOfMonth()->toDateString();
-
-            $income = Income::whereBetween('income_date', [$monthStart, $monthEnd])->sum('amount');
-            $expense = Expense::whereBetween('expense_date', [$monthStart, $monthEnd])->sum('amount');
-            $paidInv = Invoice::where('payment_status', 2)
-                ->whereBetween('invoice_date', [$monthStart, $monthEnd])->sum('grand_total');
+            $key = $month->format('Y-m');
+            $income = (float) ($incomeByMonth->get($key) ?? 0);
+            $expense = (float) ($expenseByMonth->get($key) ?? 0);
+            $paidInv = (float) ($paidByMonth->get($key) ?? 0);
 
             $monthlyBreakdown->push([
                 'month' => $month->format('M Y'),
@@ -375,16 +395,20 @@ class ReportService
         $usage = $query->selectRaw('product_id, SUM(ABS(quantity_change)) as total_qty, COUNT(*) as usage_count')
             ->groupBy('product_id')
             ->orderByDesc('total_qty')
-            ->get()
-            ->map(function ($u) {
-                $product = Product::find($u->product_id);
-                $u->product_name = $product?->name ?? 'Unknown';
-                $u->category = $product?->productType?->name ?? '-';
-                $u->unit_cost = $product?->cost_price ?? 0;
-                $u->total_cost = $u->total_qty * $u->unit_cost;
+            ->get();
 
-                return $u;
-            });
+        $products = Product::with('productType')
+            ->whereIn('id', $usage->pluck('product_id')->unique()->values()->all())
+            ->get()
+            ->keyBy('id');
+
+        $usage->each(function ($u) use ($products) {
+            $product = $products->get($u->product_id);
+            $u->product_name = $product?->name ?? 'Unknown';
+            $u->category = $product?->productType?->name ?? '-';
+            $u->unit_cost = $product?->cost_price ?? 0;
+            $u->total_cost = $u->total_qty * $u->unit_cost;
+        });
 
         return ['usages' => $usage, 'total_cost' => $usage->sum('total_cost')];
     }
@@ -394,22 +418,33 @@ class ReportService
         $branches = Branch::where('is_active', true)->get();
         $startDate = $filters['start_date'] ?? now()->startOfMonth()->toDateString();
         $endDate = $filters['end_date'] ?? now()->toDateString();
+        $branchIds = $branches->pluck('id')->all();
 
-        $results = $branches->map(function ($branch) use ($startDate, $endDate) {
-            $serviceRevenue = Service::where('branch_id', $branch->id)
-                ->whereBetween('service_date', [$startDate, $endDate])
-                ->sum('charge');
-            $serviceCount = Service::where('branch_id', $branch->id)
-                ->whereBetween('service_date', [$startDate, $endDate])
-                ->count();
-            $posRevenue = Invoice::where('branch_id', $branch->id)
-                ->where('invoice_type', 'pos')
-                ->whereBetween('invoice_date', [$startDate, $endDate])
-                ->sum('grand_total');
-            $posCount = Invoice::where('branch_id', $branch->id)
-                ->where('invoice_type', 'pos')
-                ->whereBetween('invoice_date', [$startDate, $endDate])
-                ->count();
+        $serviceMap = Service::whereIn('branch_id', $branchIds)
+            ->whereBetween('service_date', [$startDate, $endDate])
+            ->selectRaw('branch_id, SUM(charge) as revenue, COUNT(*) as cnt')
+            ->groupBy('branch_id')
+            ->get()
+            ->mapWithKeys(fn ($row) => [(int) $row['branch_id'] => [
+                'revenue' => (float) $row['revenue'],
+                'cnt' => (int) $row['cnt'],
+            ]]);
+        $posMap = Invoice::whereIn('branch_id', $branchIds)
+            ->where('invoice_type', 'pos')
+            ->whereBetween('invoice_date', [$startDate, $endDate])
+            ->selectRaw('branch_id, SUM(grand_total) as revenue, COUNT(*) as cnt')
+            ->groupBy('branch_id')
+            ->get()
+            ->mapWithKeys(fn ($row) => [(int) $row['branch_id'] => [
+                'revenue' => (float) $row['revenue'],
+                'cnt' => (int) $row['cnt'],
+            ]]);
+
+        $results = $branches->map(function ($branch) use ($serviceMap, $posMap) {
+            $serviceRevenue = (float) (($serviceMap->get($branch->id) ?? [])['revenue'] ?? 0);
+            $serviceCount = (int) (($serviceMap->get($branch->id) ?? [])['cnt'] ?? 0);
+            $posRevenue = (float) (($posMap->get($branch->id) ?? [])['revenue'] ?? 0);
+            $posCount = (int) (($posMap->get($branch->id) ?? [])['cnt'] ?? 0);
 
             return [
                 'id' => $branch->id,
