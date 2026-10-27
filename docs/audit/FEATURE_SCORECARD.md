@@ -10,7 +10,7 @@ N/A hanya bila kategori tidak relevan; di sini semua kategori relevan untuk semu
 | Fitur | B | C | A | T | U | E | D | Total | Status | Bukti / catatan |
 |---|---|---|---|---|---|---|---|---|---|---|
 | Auth web + 2FA + session | 25 | 18 | 18 | 12 | 5 | 4 | 4 | 86 | PARTIAL | Login/gate teruji; tanpa uji browser |
-| Auth API + RBAC + branch | 22 | 18 | 15 | 13 | 4 | 4 | 4 | 80 | PARTIAL | 2FA-bypass P0 terbuka (-auth), envelope inkonsisten |
+| Auth API + RBAC + branch | 22 | 18 | 17 | 13 | 4 | 4 | 4 | 82 | PARTIAL | 2FA challenge+verify+kolom migrasi, envelope inkonsisten (dokumen v2) |
 | Dashboard | 22 | 16 | 15 | 10 | 4 | 3 | 4 | 74 | PARTIAL | KPI nyata; tanpa uji browser/responsif |
 | Booking publik | 23 | 17 | 15 | 8 | 4 | 3 | 3 | 73 | PARTIAL | Tanpa captcha/honeypot; tanpa browser |
 | Customer/Vehicle | 24 | 19 | 17 | 12 | 4 | 4 | 4 | 84 | PARTIAL | Field+error diperbaiki+test; tanpa browser |

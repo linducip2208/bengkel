@@ -2,12 +2,13 @@
 
 | Area | Command | Hasil |
 |---|---|---|
-| Full suite | `php artisan test` (sqlite :memory:) | 452 tests — 451 passed, 1 skipped (pra-ada), 0 failed |
+| Full suite | `php artisan test` (sqlite :memory:) | 457 tests — 456 passed, 1 skipped (pra-ada), 0 failed |
 | Security regression | `php artisan test --filter="SecurityHardeningTest"` | 4/4 passed (inactive 401, SSRF 422, cross-branch 404, double-submit 1 invoice) |
 | License gate | `php artisan test --filter="LicenseGateTest"` | 3/3 passed (unpaired→/__pair, publik lolos, paired→auth) |
 | CRUD forms | `php artisan test --filter="CrudFormRegressionTest"` | 4/4 passed (city/postal, deskripsi, @error key, modal reopen) |
 | Reports aggregation | `php artisan test --filter="ReportsAggregationTest"` | 3/3 passed (branch GROUP BY, monthly identik, teknisi names) |
 | Sell return guard | `php artisan test --filter="SellReturnGuardTest"` | 2/2 passed (tolak over-return, double-retur ditolak) |
+| 2FA API | `php artisan test --filter="ApiTwoFactorTest"` | 5/5 passed (428 tanpa token, kode salah 401, challenge asing 401) |
 | Settings page | `php artisan test --filter="SettingsPageTest"` | 1/1 passed (const tunggal + tab key) |
 | AuthZ spot | `php artisan test --filter="AuthorizationTest"` | 16/16 passed |
 | POS spot | `php artisan test --filter="PosCheckoutTest"` | 3/3 passed |

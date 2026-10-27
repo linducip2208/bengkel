@@ -7,7 +7,7 @@
 
 ## Baseline test (dijalankan, bukan asumsi)
 
-- `php artisan test` (sqlite `:memory:`): 452 tests — 451 passed, 1 skipped, 0 failed (skip pra-ada).
+- `php artisan test` (sqlite `:memory:`): 457 tests — 456 passed, 1 skipped, 0 failed.
 - `vendor/bin/pint --test`: PASSED.
 - `php vendor/bin/phpstan analyse` (level 5): 0 ERROR.
 - `php artisan view:cache`: OK (375 blade compile).

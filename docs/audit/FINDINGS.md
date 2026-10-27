@@ -11,7 +11,7 @@
 ## P0 — TERBUKTI tapi DITAHAN (butuh keputusan produk, bukan bugfix aman)
 7. **Double-decrement stok**: `useInService` (saat buat servis) + `convertToInvoice` (saat konversi) keduanya decrement tanpa dedup silang; reference tercatat (Service vs Invoice) tapi tidak bisa dibedakan otomatis apakah pemakaian ganda atau dua pemakaian sah. Perlu aturan bisnis eksplisit.
 8. **Tanpa void/cancel invoice ber-stok**: tidak ada jalur pembatalan yang mengembalikan decrement `convertToInvoice`; destroy diblokir bila ada payment. Perlu desain fitur void/refund-stok.
-9. **2FA bypass via API**: login API terbit token tanpa OTP. Perlu endpoint challenge OTP mobile (keputusan produk) — menolak mentah akan memutus klien mobile 2FA yang ada.
+9. **2FA bypass via API**: login API terbit token tanpa OTP. Perlu endpoint challenge OTP mobile (keputusan produk) - DIPERBAIKI ronde ini: challenge OTP+tambah kolom+test.
 
 ## P1 — DIPERBAIKI
 - Menu sidebar tanpa @can (Leave/Permission, Skill, Bank, Rekonsiliasi, Budget, Printer, Numbering) + quick action service/invoice pakai .create.

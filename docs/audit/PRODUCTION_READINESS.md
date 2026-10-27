@@ -1,7 +1,7 @@
 # PRODUCTION READINESS V11 — VERDIK: BELUM SIAP (blocker tercatat)
 
 ## Status: BELUM SIAP produksi
-Alasan: P0 terbuka (2FA API bypass), browser QA belum dilakukan, backup drill belum dilakukan.
+Alasan: P0 terbuka (double-decrement policy, void-invoice policy), browser QA belum dilakukan, backup drill belum dilakukan.
 
 ## Checklist deploy
 - [x] Full suite hijau lokal (452/451+1 skip), Pint + PHPStan hijau
@@ -12,7 +12,7 @@ Alasan: P0 terbuka (2FA API bypass), browser QA belum dilakukan, backup drill be
 - [ ] Backup drill: restore ke DB terpisah + catat hasil
 - [ ] Browser QA: 1366x768, 1920x1080, tablet, mobile (landing, login, dashboard, POS, cetak)
 - [ ] Uji cetak thermal ke hardware nyata + test-print
-- [ ] Tutup/putuskan P0: 2FA API, double-decrement policy, void-invoice policy, P1 stock-approval API
+- [ ] Tutup/putuskan P0 bisnis: double-decrement policy, void-invoice policy; P1 stock-approval API
 - [ ] Pantau CI GitHub Actions untuk commit ini (tests, frontend, tests-mysql)
 
 ## Rollback

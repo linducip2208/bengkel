@@ -16,7 +16,7 @@ Review kode statis + regression test HTTP (bukan pentest eksternal). Tidak ada e
 - XSS: `{{ }}` dominan; `{!! !!}` tersisa hanya JSON hex-escaped (sales) + konten statis docs.
 
 ## Batas audit / risiko tersisa
-- 2FA bypass via API login (P0 TERBUKA — butuh endpoint challenge OTP).
+- 2FA API: challenge OTP + verify + migrasi kolom hilang (SELESAI ronde ini, test ApiTwoFactorTest 5/5).
 - Token abadi bila `SANCTUM_TOKEN_EXPIRATION` kosong di prod (ops harus set; `.env.example` sudah 57600).
 - CSRF-except `payment/callback/*`, `webhooks/*` belum verifikasi HMAC.
 - CSP belum dipasang (risiko merusak inline JS bila gegabah).
