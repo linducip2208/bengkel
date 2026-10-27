@@ -449,7 +449,7 @@
         <div class="sidebar-search px-3 py-2">
             <div class="input-group input-group-sm">
                 <span class="input-group-text bg-transparent border-secondary text-white-50"><i class="fas fa-search"></i></span>
-                <input type="text" id="menuSearch" class="form-control bg-transparent border-secondary text-white" placeholder="Cari menu..." autocomplete="off" style="font-size:0.82rem;">
+                <input type="text" id="menuSearch" class="form-control bg-transparent border-secondary text-white" placeholder="Cari menu..." autocomplete="off" aria-label="Cari menu" style="font-size:0.82rem;">
             </div>
         </div>
         <ul class="sidebar-nav">
@@ -555,8 +555,8 @@
                 <ul class="collapse submenu {{ request()->routeIs('commissions.*','hrm.*','technician-skills.*') ? 'show' : '' }}" id="menuTechnicians">
                     @can('commission.view')<li><a href="{{ route('commissions.index') }}" class="nav-link {{ request()->routeIs('commissions.index','commissions.markPaid*') ? 'active' : '' }}"><i class="fas fa-hand-holding-usd me-1"></i> Commissions</a></li>@endcan
                     @can('commission.report')<li><a href="{{ route('commissions.report') }}" class="nav-link {{ request()->routeIs('commissions.report') ? 'active' : '' }}"><i class="fas fa-file-invoice me-1"></i> Commission Report</a></li>@endcan
-                    <li><a href="{{ route('hrm.leaves.index') }}" class="nav-link {{ request()->routeIs('hrm.leaves.*') ? 'active' : '' }}"><i class="fas fa-calendar-alt me-1"></i> Leave / Permission</a></li>
-                    <li><a href="{{ route('technician-skills.index') }}" class="nav-link {{ request()->routeIs('technician-skills.*') ? 'active' : '' }}"><i class="fas fa-clipboard-list me-1"></i> Skill Matrix</a></li>
+                    @can('commission.view')<li><a href="{{ route('hrm.leaves.index') }}" class="nav-link {{ request()->routeIs('hrm.leaves.*') ? 'active' : '' }}"><i class="fas fa-calendar-alt me-1"></i> Leave / Permission</a></li>@endcan
+                    @can('commission.view')<li><a href="{{ route('technician-skills.index') }}" class="nav-link {{ request()->routeIs('technician-skills.*') ? 'active' : '' }}"><i class="fas fa-clipboard-list me-1"></i> Skill Matrix</a></li>@endcan
                 </ul>
             </li>
             @endcanany
@@ -597,7 +597,7 @@
             @endcanany
 
             {{-- 9. FINANCE & ACCOUNTING --}}
-            @canany(['income.view','expense.view','petty-cash.view','finance-coa.view','finance-journal.view'])
+            @canany(['income.view','expense.view','petty-cash.view','finance-coa.view','finance-journal.view','master-data.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuFinance"
                     aria-expanded="{{ request()->routeIs('incomes.*','expenses.*','petty-cash.*','finance.*','bank-accounts.*','bank-reconciliations.*','budgets.*') ? 'true' : 'false' }}">
@@ -610,9 +610,9 @@
                     @can('petty-cash.view')<li><a href="{{ route('petty-cash.index') }}" class="nav-link {{ request()->routeIs('petty-cash.*') ? 'active' : '' }}"><i class="fas fa-wallet me-1"></i> Petty Cash</a></li>@endcan
                     @can('finance-coa.view')<li><a href="{{ route('finance.coa') }}" class="nav-link {{ request()->routeIs('finance.coa*') ? 'active' : '' }}"><i class="fas fa-list-ol me-1"></i> Chart of Accounts</a></li>@endcan
                     @can('finance-journal.view')<li><a href="{{ route('finance.journal') }}" class="nav-link {{ request()->routeIs('finance.journal*') ? 'active' : '' }}"><i class="fas fa-book me-1"></i> Journal Entries</a></li>@endcan
-                    <li><a href="{{ route('bank-accounts.index') }}" class="nav-link {{ request()->routeIs('bank-accounts.*') ? 'active' : '' }}"><i class="fas fa-university me-1"></i> Bank Accounts</a></li>
-                    <li><a href="{{ route('bank-reconciliations.index') }}" class="nav-link {{ request()->routeIs('bank-reconciliations.*') ? 'active' : '' }}"><i class="fas fa-balance-scale me-1"></i> Bank Reconciliation</a></li>
-                    <li><a href="{{ route('budgets.index') }}" class="nav-link {{ request()->routeIs('budgets.*') ? 'active' : '' }}"><i class="fas fa-chart-pie me-1"></i> Budget</a></li>
+                    @can('master-data.view')<li><a href="{{ route('bank-accounts.index') }}" class="nav-link {{ request()->routeIs('bank-accounts.*') ? 'active' : '' }}"><i class="fas fa-university me-1"></i> Bank Accounts</a></li>@endcan
+                    @can('master-data.view')<li><a href="{{ route('bank-reconciliations.index') }}" class="nav-link {{ request()->routeIs('bank-reconciliations.*') ? 'active' : '' }}"><i class="fas fa-balance-scale me-1"></i> Bank Reconciliation</a></li>@endcan
+                    @can('master-data.view')<li><a href="{{ route('budgets.index') }}" class="nav-link {{ request()->routeIs('budgets.*') ? 'active' : '' }}"><i class="fas fa-chart-pie me-1"></i> Budget</a></li>@endcan
                 </ul>
             </li>
             @endcanany
@@ -710,7 +710,7 @@
             @endcanany
 
             {{-- 14. USERS & SECURITY --}}
-            @canany(['user.view','role.view','activity-log.view','note.view'])
+            @canany(['user.view','role.view','activity-log.view','api-token.view','note.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuUsers"
                     aria-expanded="{{ request()->routeIs('users.*','roles.*','activity-logs.*') || request()->is('notes*') ? 'true' : 'false' }}">
@@ -728,7 +728,7 @@
             @endcanany
 
             {{-- 15. SETTINGS --}}
-            @canany(['settings.view','custom-field.view','payment-gateway.view','two-factor.view','backup.view'])
+            @canany(['settings.view','custom-field.view','payment-gateway.view','two-factor.view','backup.view','settings.edit'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuSettings"
                     aria-expanded="{{ request()->routeIs('settings.*','custom-fields.*','payment-gateways.*','2fa.*','printers.*','invoice-schemes.*') ? 'true' : 'false' }}">
@@ -741,8 +741,8 @@
                     @can('payment-gateway.view')<li><a href="{{ route('payment-gateways.index') }}" class="nav-link {{ request()->routeIs('payment-gateways.*') ? 'active' : '' }}"><i class="fas fa-plug me-1"></i> Integrations</a></li>@endcan
                     @can('two-factor.view')<li><a href="{{ route('2fa.enable.form') }}" class="nav-link {{ request()->routeIs('2fa.*') ? 'active' : '' }}"><i class="fas fa-fingerprint me-1"></i> 2FA Security</a></li>@endcan
                     @can('backup.view')<li><a href="{{ route('settings.backup-page') }}" class="nav-link {{ request()->routeIs('settings.backup*') ? 'active' : '' }}"><i class="fas fa-database me-1"></i> Backup & Restore</a></li>@endcan
-                    <li><a href="{{ route('printers.index') }}" class="nav-link {{ request()->routeIs('printers.*') ? 'active' : '' }}"><i class="fas fa-print me-1"></i> Printer</a></li>
-                    <li><a href="{{ route('invoice-schemes.index') }}" class="nav-link {{ request()->routeIs('invoice-schemes.*') ? 'active' : '' }}"><i class="fas fa-hashtag me-1"></i> Numbering</a></li>
+                    @can('settings.edit')<li><a href="{{ route('printers.index') }}" class="nav-link {{ request()->routeIs('printers.*') ? 'active' : '' }}"><i class="fas fa-print me-1"></i> Printer</a></li>@endcan
+                    @can('settings.edit')<li><a href="{{ route('invoice-schemes.index') }}" class="nav-link {{ request()->routeIs('invoice-schemes.*') ? 'active' : '' }}"><i class="fas fa-hashtag me-1"></i> Numbering</a></li>@endcan
                 </ul>
             </li>
             @endcanany
@@ -750,8 +750,8 @@
     </aside>
 
     <nav class="topbar">
-        <button class="btn btn-sm btn-outline-secondary d-md-none sidebar-toggle" onclick="var s=document.getElementById('sidebar');var o=document.getElementById('sidebarOverlay');s.classList.toggle('show');o.classList.toggle('show')">
-            <i class="fas fa-bars"></i>
+        <button class="btn btn-sm btn-outline-secondary d-md-none sidebar-toggle" aria-label="Buka/tutup navigasi" aria-controls="sidebar" onclick="var s=document.getElementById('sidebar');var o=document.getElementById('sidebarOverlay');s.classList.toggle('show');o.classList.toggle('show')">
+            <i class="fas fa-bars" aria-hidden="true"></i>
         </button>
         <span class="tenant-name">{{ config('app.name') }}</span>
 
@@ -763,12 +763,12 @@
                     <i class="fas fa-calendar-plus me-1"></i>{{ __('Booking') }}
                 </a>
                 @endcan
-                @can('service.view')
+                @can('service.create')
                 <a href="{{ route('services.create') }}" class="btn btn-outline-primary btn-sm" title="Job Card Baru" style="font-size:0.75rem;">
                     <i class="fas fa-clipboard-check me-1"></i>{{ __('Job Card') }}
                 </a>
                 @endcan
-                @can('invoice.view')
+                @can('invoice.create')
                 <a href="{{ route('invoices.create') }}" class="btn btn-outline-primary btn-sm" title="Invoice Baru" style="font-size:0.75rem;">
                     <i class="fas fa-file-invoice me-1"></i>{{ __('Invoice') }}
                 </a>
@@ -785,8 +785,8 @@
                 } catch(\Throwable $e) { $notifications = collect(); $reminders = collect(); }
             @endphp
             <div class="dropdown">
-                <button class="btn btn-sm btn-outline-secondary position-relative" data-bs-toggle="dropdown" id="notifBell">
-                    <i class="fas fa-bell"></i>
+                <button class="btn btn-sm btn-outline-secondary position-relative" data-bs-toggle="dropdown" id="notifBell" aria-label="Notifikasi">
+                    <i class="fas fa-bell" aria-hidden="true"></i>
                     @if($unreadCount > 0)
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notifBadge" style="font-size:0.6rem;">
                         {{ $unreadCount > 99 ? '99+' : $unreadCount }}
@@ -797,13 +797,13 @@
                     <li class="dropdown-header fw-semibold small text-uppercase">Notifications</li>
                     @forelse($notifications as $n)
                     <li>
-                        <a href="#" class="dropdown-item small py-2 d-flex">
+                        <span class="dropdown-item small py-2 d-flex">
                             <i class="fas fa-envelope me-2 text-muted mt-1"></i>
                             <div>
                                 <div class="text-truncate" style="max-width:230px;">{{ Str::limit($n->message ?? 'Notification', 50) }}</div>
                                 <small class="text-muted">{{ $n->created_at ? $n->created_at->diffForHumans() : '-' }}</small>
                             </div>
-                        </a>
+                        </span>
                     </li>
                     @empty
                     @endforelse
@@ -827,8 +827,8 @@
                 </ul>
             </div>
 
-            <button class="btn btn-sm btn-outline-secondary" id="globalSearchBtn" title="Pencarian Global (Ctrl+K)">
-                <i class="fas fa-search"></i>
+            <button class="btn btn-sm btn-outline-secondary" id="globalSearchBtn" title="Pencarian Global (Ctrl+K)" aria-label="Pencarian global">
+                <i class="fas fa-search" aria-hidden="true"></i>
             </button>
 
             <button class="btn btn-sm btn-outline-secondary" id="darkToggle" title="Dark Mode" onclick="toggleDark()">

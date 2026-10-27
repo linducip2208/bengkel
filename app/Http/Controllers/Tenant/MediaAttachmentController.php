@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\MediaAttachment;
+use App\Models\Service;
 use App\Models\ServiceObservationPoint;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
@@ -50,9 +51,14 @@ class MediaAttachmentController extends Controller
     /**
      * Authenticated download. Legacy files uploaded to the public disk keep
      * working; new uploads are streamed from local storage.
+     *
+     * Selain permission route, parent (attachable) harus bisa diakses user:
+     * query parent memakai global BranchScope sehingga ID milik cabang
+     * lain gagal 404, bukan bocor.
      */
     public function download(MediaAttachment $media)
     {
+        $this->findAccessibleAttachableOrFail($media);
         if (Storage::disk('local')->exists($media->file_path)) {
             return Storage::disk('local')->download($media->file_path, $media->name);
         }
@@ -63,8 +69,7 @@ class MediaAttachmentController extends Controller
     }
 
     public function destroy(MediaAttachment $media)
-    {
-        // Hapus dokumen butuh permission media.delete agar edit di /roles
+    {        // Hapus dokumen butuh permission media.delete agar edit di /roles
         // berdampak. IDOR guard: uploader boleh hapus file sendiri walau
         // tanpa media.delete (mekanik upload-only), pemegang media.delete
         // boleh hapus file siapa pun.
@@ -82,5 +87,30 @@ class MediaAttachmentController extends Controller
         $media->delete();
 
         return back()->with('success', 'Dokumen dihapus.');
+    }
+
+    /**
+     * Parent (attachable) harus ada DAN terlihat di cabang user.
+     * Tipe morph yang ditulis store() adalah FQCN dengan global
+     * BranchScope (Customer/Vehicle); observation point dicek lewat
+     * service induknya. ID milik cabang lain => findOrFail 404.
+     * Tipe legacy lain dilayani seperti sebelumnya (kompatibel).
+     */
+    private function findAccessibleAttachableOrFail(MediaAttachment $media): void
+    {
+        $type = (string) $media->attachable_type;
+
+        if ($type === Customer::class || $type === Vehicle::class) {
+            $type::query()->findOrFail($media->attachable_id);
+
+            return;
+        }
+
+        if ($type === ServiceObservationPoint::class) {
+            $point = ServiceObservationPoint::query()->findOrFail($media->attachable_id);
+            Service::query()->findOrFail($point->service_id);
+
+            return;
+        }
     }
 }

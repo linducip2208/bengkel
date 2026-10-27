@@ -9,7 +9,7 @@ class CustomerService extends BaseService
 {
     public function list(array $filters = []): LengthAwarePaginator
     {
-        $query = Customer::query();
+        $query = Customer::query()->withCount(['vehicles', 'services']);
 
         if (! empty($filters['search'])) {
             $term = $filters['search'];

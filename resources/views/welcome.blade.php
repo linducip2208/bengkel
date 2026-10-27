@@ -18,9 +18,11 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url('/') }}">
     <meta property="og:site_name" content="{{ $product['name'] }}">
+    <meta property="og:image" content="{{ asset('marketing/screens/dashboard.png') }}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ $product['name'] }} | Full Source Code">
     <meta name="twitter:description" content="Software manajemen bengkel berbasis web. Harga mulai {{ $priceLabel }}.">
+    <meta name="twitter:image" content="{{ asset('marketing/screens/dashboard.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -59,7 +61,7 @@
     </style>
 </head>
 <body>
-<header class="nav"><div class="wrap nav-in"><a class="brand" href="{{ url('/') }}"><span class="mark">⌁</span>{{ $product['name'] }}</a><nav class="nav-links" aria-label="Navigasi utama"><a href="#fitur">Fitur</a><a href="#alur">Alur</a><a href="#harga">Harga</a><a href="{{ url('/docs') }}">Dokumentasi</a><a class="nav-cta" href="{{ $waLink }}" target="_blank" rel="noopener" data-cta="whatsapp" data-source="landing" data-page-intent="core">Minta Demo</a></nav></div></header>
+<header class="nav"><div class="wrap nav-in"><a class="brand" href="{{ url('/') }}"><span class="mark">⌁</span>{{ $product['name'] }}</a><nav class="nav-links" aria-label="Navigasi utama"><a href="#fitur">Fitur</a><a href="#alur">Alur</a><a href="#harga">Harga</a><a href="{{ url('/docs') }}">Dokumentasi</a><a class="nav-login" href="{{ route('login') }}">Masuk</a><a class="nav-cta" href="{{ $waLink }}" target="_blank" rel="noopener" data-cta="whatsapp" data-source="landing" data-page-intent="core">Minta Demo</a></nav></div></header>
 <main>
     <div class="wrap">
         <section class="hero"><div><div class="eyebrow">FULL SOURCE CODE · WEB BASED · LARAVEL</div><h1>Kelola bengkel dengan sistem yang siap dikembangkan.</h1><p>{{ $product['name'] }} membantu tim mengatur customer, kendaraan, estimasi, pekerjaan mekanik, sparepart, inventory, QC, invoice, dan laporan usaha dalam satu alur.</p><div class="actions"><a class="btn btn-primary" href="{{ $waLink }}" target="_blank" rel="noopener" data-cta="whatsapp" data-source="landing" data-page-intent="core">Konsultasi via WhatsApp</a><a class="btn btn-secondary" href="#fitur">Lihat fitur aplikasi</a></div><div class="price-note"><small>HARGA MULAI</small><strong>{{ $priceLabel }}</strong><span>sesuai paket dan kebutuhan custom</span></div></div><div class="hero-screen"><div class="chrome"><i></i><i></i><i></i><small>{{ parse_url(url('/'), PHP_URL_HOST) }}/dashboard</small></div><img src="{{ asset('marketing/screens/dashboard.png') }}" alt="Dashboard aplikasi bengkel" width="900" height="560"></div></section>
@@ -79,10 +81,12 @@
 <script type="application/ld+json">{!! json_encode(['@context'=>'https://schema.org','@type'=>'SoftwareApplication','name'=>$product['name'],'applicationCategory'=>'BusinessApplication','operatingSystem'=>'Web Browser','description'=>'Software manajemen bengkel berbasis web untuk customer, service, sparepart, QC, invoice, dan laporan.','offers'=>['@type'=>'Offer','price'=>$product['starting_price'],'priceCurrency'=>'IDR','url'=>url('/')]], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 <script>
 (function () {
-    const nav = document.querySelector('.nav-links');
-    const cta = nav?.querySelector('.nav-cta');
-    if (!nav || !cta || nav.querySelector('[data-login-link]')) return;
-    const login = document.createElement('a');
+    // "Masuk" link is rendered server-side in nav; this is a no-JS fallback guard only.
+    var nav = document.querySelector('.nav-links');
+    if (!nav || nav.querySelector('.nav-login')) return;
+    var cta = nav.querySelector('.nav-cta');
+    if (!cta) return;
+    var login = document.createElement('a');
     login.href = @json(route('login'));
     login.className = 'nav-login';
     login.dataset.loginLink = 'true';

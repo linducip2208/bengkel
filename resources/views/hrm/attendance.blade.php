@@ -22,6 +22,7 @@
     <div class="table-responsive">
         <style>
             .att-matrix thead th:first-child, .att-matrix tbody th[scope="row"] { position: sticky; left: 0; background: #f8fafc; z-index: 2; }
+            .att-matrix thead th { position: sticky; top: 0; background: #f8fafc; z-index: 3; }
         </style>
         <table class="table table-bordered table-hover align-middle small att-matrix">
             <thead class="table-light">

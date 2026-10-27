@@ -209,7 +209,7 @@
             </p>
 
             @if ($errors->any())
-            <div class="alert">
+            <div class="alert" role="alert">
                 @foreach ($errors->all() as $error)
                     <div>{{ $error }}</div>
                 @endforeach
@@ -220,11 +220,11 @@
                 @csrf
                 <div class="form-group">
                     <label for="email">{{ __('Alamat Email') }}</label>
-                    <input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus autocomplete="email">
+                    <input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus autocomplete="email" @error('email') aria-invalid="true" @enderror>
                 </div>
                 <div class="form-group">
                     <label for="password">{{ __('Password') }}</label>
-                    <input type="password" name="password" id="password" required autocomplete="current-password">
+                    <input type="password" name="password" id="password" required autocomplete="current-password" @error('password') aria-invalid="true" @enderror>
                 </div>
                 <div class="form-row">
                     <label>

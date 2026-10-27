@@ -43,7 +43,7 @@
         <div class="error-code">500</div>
         <h1 class="error-title">Terjadi kesalahan pada server.</h1>
         <p class="error-message">Silakan coba lagi atau hubungi admin jika masalah berlanjut.</p>
-        <a href="{{ url('/') }}" class="error-btn">&larr; Kembali ke Dashboard</a>
+        <a href="{{ url('/') }}" class="error-btn">&larr; @guest Kembali ke Beranda @else Kembali ke Dashboard @endguest</a>
         <div class="error-foot">&copy; {{ date('Y') }} {{ config('app.name') }}</div>
     </div>
 </body>

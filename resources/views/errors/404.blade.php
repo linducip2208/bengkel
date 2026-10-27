@@ -43,7 +43,7 @@
         <div class="error-code">404</div>
         <h1 class="error-title">Halaman tidak ditemukan.</h1>
         <p class="error-message">Halaman yang Anda cari tidak tersedia atau sudah dipindahkan.</p>
-        <a href="{{ url('/') }}" class="error-btn">&larr; Kembali ke Dashboard</a>
+        <a href="{{ url('/') }}" class="error-btn">&larr; @guest Kembali ke Beranda @else Kembali ke Dashboard @endguest</a>
         <div class="error-foot">&copy; {{ date('Y') }} {{ config('app.name') }}</div>
     </div>
 </body>

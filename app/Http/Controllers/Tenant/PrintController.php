@@ -107,18 +107,36 @@ class PrintController extends Controller
         $printerIp = $request->get('printer_ip');
         $printerPort = $request->get('printer_port');
 
-        if (! $printerIp) {
-            $printer = Printer::query()
-                ->where('is_active', true)
-                ->where('type', 'thermal')
-                ->whereNotNull('ip_address')
-                ->orderByDesc('is_default')
-                ->orderBy('id')
-                ->first();
+        if ($printerIp) {
+            // Allowlist ketat: hanya IP+port printer aktif yang terdaftar
+            // di database. Tanpa ini, endpoint cetak bisa dipakai memindai
+            // host internal (SSRF) karena ThermalPrintService membuka
+            // socket TCP ke alamat apa pun yang diminta.
+            $printerIp = (string) $printerIp;
+            $printerPort = (int) ($printerPort ?: 9100);
 
-            $printerIp = $printer?->ip_address ?? config('services.printer.ip', '192.168.1.100');
-            $printerPort = $printer?->port ?? config('services.printer.port', 9100);
+            $registered = Printer::query()
+                ->where('is_active', true)
+                ->whereNotNull('ip_address')
+                ->where('ip_address', $printerIp)
+                ->where('port', $printerPort)
+                ->exists();
+
+            abort_unless($registered, 422, 'Printer tidak terdaftar atau tidak aktif.');
+
+            return [$printerIp, $printerPort];
         }
+
+        $printer = Printer::query()
+            ->where('is_active', true)
+            ->where('type', 'thermal')
+            ->whereNotNull('ip_address')
+            ->orderByDesc('is_default')
+            ->orderBy('id')
+            ->first();
+
+        $printerIp = $printer?->ip_address ?? config('services.printer.ip', '192.168.1.100');
+        $printerPort = $printer?->port ?? config('services.printer.port', 9100);
 
         return [(string) $printerIp, (int) ($printerPort ?: 9100)];
     }

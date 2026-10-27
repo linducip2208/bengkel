@@ -3,6 +3,7 @@
 use App\Http\Middleware\AuthorizeModuleAccess;
 use App\Http\Middleware\AuthorizePermissions;
 use App\Http\Middleware\ClampPerPage;
+use App\Http\Middleware\EnsureActiveUser;
 use App\Http\Middleware\RequirePair;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -32,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             RequirePair::class,
+            EnsureActiveUser::class,
             SecurityHeaders::class,
         ]);
 
@@ -39,6 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
             EnsureFrontendRequestsAreStateful::class,
         ], append: [
             ClampPerPage::class,
+            EnsureActiveUser::class,
             SecurityHeaders::class,
         ]);
 

@@ -78,14 +78,15 @@
 
 @push('scripts')
 @php
+$jsonFlags = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT;
 $productsJson = json_encode($products->map(fn($p) => [
     'id' => $p->id,
     'name' => $p->name,
     'code' => $p->code,
     'price' => (float) $p->price,
     'stock' => (int) ($p->stockRecord?->quantity ?? 0),
-])->values());
-$oldItemsJson = json_encode(old('items', []));
+])->values(), $jsonFlags);
+$oldItemsJson = json_encode(old('items', []), $jsonFlags);
 @endphp
 <script>
 (function () {

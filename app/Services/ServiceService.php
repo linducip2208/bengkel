@@ -523,7 +523,10 @@ class ServiceService extends BaseService
             if ($locked->cancelled_at) {
                 return ['error' => 'Servis sudah dibatalkan.'];
             }
-            $nextStatus = (int) $locked->workflow_status + 1;
+            // 6 (Waiting Parts) satu-satunya transisi legal adalah kembali
+            // ke 5 (In Progress) saat parts tiba — bukan +1 ke QC.
+            $current = (int) $locked->workflow_status;
+            $nextStatus = $current === 6 ? 5 : $current + 1;
             if (! $locked->canTransitionTo($nextStatus)) {
                 return ['error' => 'Transisi status tidak valid dari '.$locked->status_label.'.'];
             }
@@ -539,6 +542,20 @@ class ServiceService extends BaseService
             if ($nextStatus === 4 && $activeEstimate !== null && $activeEstimate->status !== ServiceEstimate::STATUS_APPROVED) {
                 return ['error' => 'Estimasi '.$activeEstimate->estimate_number.' belum disetujui pelanggan ('
                         .$activeEstimate->statusLabel().'). Tunggu persetujuan customer atau gunakan override manager dengan alasan.'];
+            }
+
+            // Status finansial tidak boleh dimajukan manual tanpa dokumennya:
+            // 9 butuh Invoice, 10 butuh Invoice lunas. Tanpa ini, advance
+            // bisa memalsukan Invoiced/Paid tanpa pembayaran nyata.
+            if ($nextStatus === 9 && $locked->invoice === null) {
+                return ['error' => 'Transisi ke Invoiced memerlukan Invoice. Buat invoice pada tab Invoice terlebih dahulu.'];
+            }
+
+            if ($nextStatus === 10) {
+                $invoice = $locked->invoice;
+                if ($invoice === null || (int) $invoice->payment_status !== 2) {
+                    return ['error' => 'Transisi ke Paid memerlukan Invoice yang sudah lunas. Catat pembayaran terlebih dahulu.'];
+                }
             }
 
             $data = ['workflow_status' => $nextStatus];
