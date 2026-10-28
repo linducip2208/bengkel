@@ -506,7 +506,7 @@
             @endcanany
 
             {{-- 4. INVENTORY --}}
-            @canany(['product.view','supplier.view','purchase.view','equipment.view','warehouse.view'])
+            @canany(['product.view','product.stock-opname','inventory.adjust','stock-adjustment.approve','supplier.view','purchase.view','purchase-order.view','purchase-order.create','purchase-order.receive','purchase-order.approve','purchase-requisition.view','purchase-requisition.create','purchase-requisition.submit','purchase-requisition.approve','equipment.view','warehouse.view'])
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="collapse" data-bs-target="#menuInventory"
                     aria-expanded="{{ request()->routeIs('products.*','suppliers.*','purchases.*','purchase-orders.*','purchase-requisitions.*','equipment.*','warehouses.*','stock-adjustments.*') ? 'true' : 'false' }}">
@@ -519,7 +519,7 @@
                     @canany(['inventory.adjust','stock-adjustment.approve'])<li><a href="{{ route('stock-adjustments.index') }}" class="nav-link {{ request()->routeIs('stock-adjustments.*') ? 'active' : '' }}"><i class="fas fa-balance-scale me-1"></i> Stock Adjustment</a></li>@endcanany
                     @can('supplier.view')<li><a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"><i class="fas fa-truck me-1"></i> Suppliers</a></li>@endcan
                     @can('purchase.view')<li><a href="{{ route('purchases.index') }}" class="nav-link {{ request()->routeIs('purchases.*') ? 'active' : '' }}"><i class="fas fa-shopping-basket me-1"></i> Purchases</a></li>@endcan
-                    @can('purchase.view')<li><a href="{{ route('purchase-orders.index') }}" class="nav-link {{ request()->routeIs('purchase-orders.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar me-1"></i> Purchase Orders</a></li>@endcan
+                    @canany(['purchase-order.view','purchase-order.create','purchase-order.receive','purchase-order.approve'])<li><a href="{{ route('purchase-orders.index') }}" class="nav-link {{ request()->routeIs('purchase-orders.*') ? 'active' : '' }}"><i class="fas fa-file-invoice-dollar me-1"></i> Purchase Orders</a></li>@endcanany
                     @canany(['purchase-requisition.view','purchase-requisition.create','purchase-requisition.submit','purchase-requisition.approve'])<li><a href="{{ route('purchase-requisitions.index') }}" class="nav-link {{ request()->routeIs('purchase-requisitions.*') ? 'active' : '' }}"><i class="fas fa-clipboard-list me-1"></i> Purchase Requisitions</a></li>@endcanany
                     @can('equipment.view')<li><a href="{{ route('equipment.index') }}" class="nav-link {{ request()->routeIs('equipment.*') ? 'active' : '' }}"><i class="fas fa-toolbox me-1"></i> Equipment</a></li>@endcan
                     @can('warehouse.view')<li><a href="{{ route('warehouses.index') }}" class="nav-link {{ request()->routeIs('warehouses.*') ? 'active' : '' }}"><i class="fas fa-warehouse me-1"></i> Warehouses</a></li>@endcan

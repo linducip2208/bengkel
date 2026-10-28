@@ -2,7 +2,7 @@
 
 | Area | Command | Hasil |
 |---|---|---|
-| Full suite | `php artisan test` (sqlite :memory:) | 487 tests — 486 passed, 1 skipped (pra-ada), 0 failed |
+| Full suite | `php artisan test` (sqlite :memory:) | 492 tests — 491 passed, 1 skipped (pra-ada), 0 failed |
 | Security regression | `php artisan test --filter="SecurityHardeningTest"` | 4/4 passed (inactive 401, SSRF 422, cross-branch 404, double-submit 1 invoice) |
 | License gate | `php artisan test --filter="LicenseGateTest"` | 3/3 passed (unpaired→/__pair, publik lolos, paired→auth) |
 | CRUD forms | `php artisan test --filter="CrudFormRegressionTest"` | 6/6 passed (city/postal, deskripsi, @error key, modal reopen, anti-mass-assign user+customer) |
@@ -19,6 +19,9 @@
 | Voucher/loyalty | `php artisan test --filter="VoucherLoyaltySmokeTest"` | 3/3 passed (CRUD+validate kode+guard hapus, adjust poin, gate) |
 | Marketing commands | `php artisan test --filter="MarketingCommandsTest"` | 6/6 passed (birthday dry, voucher ultah, reaktivasi, notif queue, reminder) |
 | Invoice void | `php artisan test --filter="InvoiceVoidTest"` | 4/4 passed (unpaid restore+jurnal, paid refund+blokir, double-void 422, gate) |
+| Estimate dedup | `php artisan test --filter="EstimateConvertStockDedupTest"` | 3/3 passed (skip terpakai, sisa parsial, penuh tanpa pemakaian) |
+| Purchase menu | `php artisan test --filter="PurchaseMenuVisibilityTest"` | 2/2 passed (link PO ikut perm PO, bukan purchase.view) |
+| Deps | `composer audit` + `npm audit --omit=dev` | bersih (guzzle 8.3.1), 0 vuln |
 | Settings page | `php artisan test --filter="SettingsPageTest"` | 1/1 passed (const tunggal + tab key) |
 | AuthZ spot | `php artisan test --filter="AuthorizationTest"` | 16/16 passed |
 | POS spot | `php artisan test --filter="PosCheckoutTest"` | 3/3 passed |

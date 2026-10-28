@@ -11,6 +11,7 @@ use App\Models\ServiceEstimateItem;
 use App\Models\ServiceFinding;
 use App\Models\ServiceWorkPackage;
 use App\Models\Setting;
+use App\Models\StockHistory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -866,14 +867,24 @@ class EstimateService
                     'discount_type' => $item->discount_type,
                 ]);
                 if ($item->product_id) {
-                    StockService::decrement(
+                    // D1: part yang sudah dipakai saat servis (event `usage`
+                    // ref Service — consume reservasi / input servis) tidak
+                    // boleh di-decrement lagi saat konversi; hanya sisanya.
+                    $toDecrement = $this->unconsumedQuantity(
+                        $locked->service_id ? (int) $locked->service_id : null,
                         (int) $item->product_id,
-                        (float) $item->quantity,
-                        'out',
-                        'Invoice #'.$invoice->invoice_number.' dari Estimasi '.$locked->estimate_number,
-                        Invoice::class,
-                        $invoice->id,
+                        (float) $item->quantity
                     );
+                    if ($toDecrement > 0) {
+                        StockService::decrement(
+                            (int) $item->product_id,
+                            $toDecrement,
+                            'out',
+                            'Invoice #'.$invoice->invoice_number.' dari Estimasi '.$locked->estimate_number,
+                            Invoice::class,
+                            $invoice->id,
+                        );
+                    }
                 }
             }
 
@@ -896,6 +907,28 @@ class EstimateService
 
             return $invoice;
         });
+    }
+
+    /**
+     * D1 (double-decrement lintas jalur): hitung sisa kuantitas estimate item
+     * yang BELUM dikonsumsi servis tertaut (event `usage` ref Service dari
+     * consume reservasi / input part servis). Prinsip yang sama dengan
+     * ServiceService::executeComplete — stok hanya berkurang sekali, saat
+     * pemakaian; konversi hanya mencatat + menutup sisanya.
+     */
+    private function unconsumedQuantity(?int $serviceId, int $productId, float $quantity): float
+    {
+        if ($serviceId === null || $serviceId <= 0 || $quantity <= 0) {
+            return max(0.0, $quantity);
+        }
+
+        $used = (float) StockHistory::where('reference_type', Service::class)
+            ->where('reference_id', $serviceId)
+            ->where('product_id', $productId)
+            ->where('type', 'usage')
+            ->sum(DB::raw('ABS(quantity_change)'));
+
+        return max(0.0, $quantity - $used);
     }
 
     // ------------------------------------------------------------------

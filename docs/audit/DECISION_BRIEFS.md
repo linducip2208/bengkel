@@ -14,7 +14,7 @@
 
 **Rekomendasi:** A atau B. Estimasi +/*: tidak ada yang aman dipilih sepihak karena menyentuh nilai persediaan.
 
-**Status 2026-10-28: SENGAJA TIDAK di-auto-dedup.** De-duplikasi otomatis berisiko *under-count* diam-diam bila dua event ternyata konsumsi sah yang berbeda (part estimasi + part tambahan servis). Tanpa kunci bisnis yang compuesto (mis. estimate_id di usage events), kode tidak bisa membedakan "ganda" vs "dua pemakaian sah" — tebakan otomatis ke arah mana pun merusak satu skenario. Menunggu pilihan A/B/C di atas.
+**Status 2026-10-28: TERIMPLEMENTASI (prinsip codebase sendiri).** Verifikasi alur menunjukkan reservasi→consume (`usage`) + konversi (`out`) memang ganda untuk part yang sama, dan prinsip `executeComplete` ("stok berkurang sekali, saat pakai; invoice hanya mencatat") sudah mapan. `convertToInvoice` kini mengurangi event `usage` servis tertaut dulu (`unconsumedQuantity`) — tanpa pemakaian, perilaku lama dipertahankan. EstimateConvertStockDedupTest 3/3.
 
 ## D2. Void invoice ber-payment (P0-8)
 

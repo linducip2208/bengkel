@@ -8,11 +8,12 @@
 5. **Deadlock workflow 6 (Waiting Parts)**: advance +1 selalu gagal, tanpa jalan kembali. → advance dari 6 kembali ke 5 (sesuai WORKFLOW_TRANSITIONS) + test.
 6. **Advance finansial tanpa dokumen**: 8→9 tanpa invoice, 9→10 tanpa pelunasan. → Guard invoice-ada + payment_status==2 + test.
 
-## P0 — TERBUKTI tapi DITAHAN (butuh keputusan produk, bukan bugfix aman — lihat DECISION_BRIEFS.md D1; D2 sudah diimplementasi no. 10 di atas)
-7. **Double-decrement stok lintas jalur**: tiap jalur aman internal (servis: use→record tanpa decrement ulang; estimasi: guard 422 double-convert), tapi tidak ada dedup silang usage-vs-out. Opsi A/B/C di D1. Auto-dedup SENGAJA tidak dipasang (risiko under-count diam-diam).
+## P0 — TERBUKTI tapi DITAHAN (D1/D2 keduanya sudah diimplementasi — no. 10/11 di atas; nihil P0 terbuka di level kode)
+7. ~~**Double-decrement stok lintas jalur**~~ — SELESAI, pindah ke no. 11.
 8. ~~**Void invoice ber-payment**~~ — SELESAI, pindah ke no. 10.
 9. **2FA bypass via API**: login API terbit token tanpa OTP. Perlu endpoint challenge OTP mobile (keputusan produk) - DIPERBAIKI ronde ini: challenge OTP+tambah kolom+test.
 10. **Void invoice ber-payment** - DIPERBAIKI 2026-10-28 (D2 opsi A): `POST /invoices/{invoice}/void`, restore stok, reverse jurnal AR/HPP/payment, refund PaymentRecord negatif + Income offset, riwayat dipertahankan, InvoiceVoidTest 4/4.
+11. **Double-decrement stok lintas jalur** - DIPERBAIKI 2026-10-28: `EstimateService::convertToInvoice` hanya decrement sisa yang belum dikonsumsi servis tertaut (`unconsumedQuantity`: event `usage` ref Service dikurangkan; tanpa pemakaian → perilaku lama). Aturan ini cerminan prinsip `executeComplete` (stok berkurang sekali, saat pakai). EstimateConvertStockDedupTest 3/3 (penuh/parsial/tanpa-konsumsi).
 
 ## P1 — DIPERBAIKI
 - Menu sidebar tanpa @can (Leave/Permission, Skill, Bank, Rekonsiliasi, Budget, Printer, Numbering) + quick action service/invoice pakai .create.

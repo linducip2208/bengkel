@@ -24,4 +24,4 @@ Review kode statis + regression test HTTP (bukan pentest eksternal). Tidak ada e
 - Public token routes tanpa rate-limit (mengandalkan entropi 32-char).
 - `SESSION_SECURE_COOKIE`/`encrypt` tergantung env (tidak di-force agar dev lokal tetap jalan).
 - Mass-assign fillable luas tetap latent (perlu test anti-mass-assign khusus — disarankan).
-- Tidak ada pemindaian dependency berbayar; `composer/npm audit` non-blocking di CI.
+- Tidak ada pemindaian dependency berbayar; `composer/npm audit` non-blocking di CI. Hasil 2026-10-28: `composer audit` BERSIH setelah guzzle 7.10.6 → 8.3.1 (9 advisory tertutup; pemakaian langsung hanya `new Client(['timeout'])` — kompatibel), `npm audit --omit=dev` 0 vulnerabilities.
