@@ -496,7 +496,7 @@ class ReportService
     public function workPackageTimeReport(?string $startDate = null, ?string $endDate = null): array
     {
         $packages = ServiceWorkPackage::query()
-            ->with(['task', 'service:id,job_no', 'finding:id,finding_number,title'])
+            ->with(['task.timeEntries', 'service:id,job_no', 'finding:id,finding_number,title'])
             ->when($startDate !== null && $startDate !== '', fn ($q) => $q->whereDate('created_at', '>=', $startDate))
             ->when($endDate !== null && $endDate !== '', fn ($q) => $q->whereDate('created_at', '<=', $endDate))
             ->orderByDesc('id')
@@ -539,7 +539,7 @@ class ReportService
     public function technicianTimeReport(): array
     {
         $tasks = ServiceWorkTask::query()
-            ->with(['assignee:id,name'])
+            ->with(['assignee:id,name', 'timeEntries'])
             ->whereNotNull('assigned_to')
             ->get();
 

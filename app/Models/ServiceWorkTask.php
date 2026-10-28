@@ -97,8 +97,13 @@ class ServiceWorkTask extends Model
     public function actualSeconds(): int
     {
         $total = 0;
+        // Pakai relasi yang sudah di-eager-load bila ada (laporan batch),
+        // agar tidak jadi N+1; pemanggil tunggal tetap query seperti biasa.
+        $entries = $this->relationLoaded('timeEntries')
+            ? $this->timeEntries
+            : $this->timeEntries()->get();
         /** @var ServiceWorkTimeEntry $entry */
-        foreach ($this->timeEntries()->get() as $entry) {
+        foreach ($entries as $entry) {
             $total += $entry->effectiveSeconds();
         }
 

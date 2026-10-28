@@ -28,6 +28,7 @@
 - Hapus Tenant\SaleController + 4 view yatim (0 referensi, test 0).
 - Double-submit: disable-on-submit payments/purchases/checkout + hint kurang-bayar POS.
 - over-refund retur: guard ada → kunci dengan test.
+- Login portal customer: nomor HP ternormalisasi (+62…) tidak cocok format cari mentah → semua login portal gagal; cocokkan format normal + lawas (CustomerPortalTest 6/6: login default, throttle 429, isolasi invoice).
 
 ## P1 — DITAHAN (keputusan produk / risiko — stock-approval di DECISION_BRIEFS.md D3)
 - Stock-adjust langsung vs approval workflow: dua fitur berbeda atau pelanggaran SoD? Opsi A/B/C di D3.
@@ -37,7 +38,7 @@
 - Tanpa void invoice ber-payment (lihat P0-8).
 
 ## P2/P3 — DIPERBAIKI (pilihan aman)
-Dark-mode scoping enterprise CSS; thead sticky absensi; filter lanjutan estimates (details); reset di 40+ filter GET; ikon alt/aria; thead sticky; localStorage try/catch (layout); SW hanya GET; kalender responsif + noscript; slip gaji (tombol cetak/kop/status/baris nol); ringkasan cetak invoice; composer lint/stan; docs count sync.
+Dark-mode scoping enterprise CSS; thead sticky absensi; filter lanjutan estimates (details); reset di 40+ filter GET; ikon alt/aria; thead sticky; localStorage try/catch (layout); SW hanya GET; kalender responsif + noscript; slip gaji (tombol cetak/kop/status/baris nol); ringkasan cetak invoice; composer lint/stan; docs count sync; N+1 time-entries di laporan teknisi/paket (eager + pakai relasi loaded, batas query di TimeReportTest).
 
 ## P2/P3 — DITAHAN
 CSP (berisiko matikan inline JS), N+1 kecil (technicianTimeReport, workPackageTimeReport, HrmController, stockReport agregat PHP), purchases vs PO duplikasi menu (navigasi), settings save-per-tab kompleks (cukup sticky+ingat tab), kalkulasi di view invoices (finansial), format tanggal campur di luar komisi, backup-restore drill, RequirePair integrasi penuh, duplikasi helper test.

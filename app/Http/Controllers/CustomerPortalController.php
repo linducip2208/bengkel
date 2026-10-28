@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Service;
+use App\Support\IdentityNormalizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
@@ -29,7 +30,14 @@ class CustomerPortalController extends Controller
         ]);
 
         $phone = preg_replace('/[^0-9]/', '', $validated['phone']);
-        $phoneFormats = [$phone, '0'.ltrim($phone, '0'), '62'.ltrim($phone, '0')];
+        // Nomor tersimpan ternormalisasi (+62…) sejak Customer::saving;
+        // tetap dukung format mentah lawas agar login lama tidak putus.
+        $phoneFormats = array_values(array_unique(array_filter([
+            $phone,
+            '0'.ltrim($phone, '0'),
+            '62'.ltrim($phone, '0'),
+            IdentityNormalizer::indonesianPhone($phone),
+        ])));
 
         $customer = Customer::withoutGlobalScopes()
             ->where(function ($q) use ($phoneFormats) {

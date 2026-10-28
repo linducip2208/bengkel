@@ -12,8 +12,8 @@ P0 terbuka: NIHIL di level kode (sisa gate rilis: browser QA, cetak hardware, ba
 P1 diperbaiki (~25 item, lihat FINDINGS.md): @can sidebar, quick action, notifikasi, aria, form terbuang + @error + modal reopen, opname transaksional, withRole anti-crash, N+1 laporan, eager load, prefix PB-, dead code sales, double-submit guard, over-refund test, settings sticky+tab, dsb.
 P1 ditahan: portal brute-force, gate-pass pre-lunas (butuh SOP). Stock-approval governance didokumentasikan opsi A (D3); mass-assign dikunci test user+customer.
 
-## 4. TEST: 492 tests - 491 passed, 1 skipped (pra-ada), 0 failed.
-- Baru: SecurityHardeningTest(4), LicenseGateTest(3), CrudFormRegressionTest(6), ReportsAggregationTest(3), SellReturnGuardTest(2), SettingsPageTest(1), CompanySmokeTest(2), FleetContractSmokeTest(2), InsuranceClaimSmokeTest(3), TaxRateSmokeTest(2), PurchaseRequisitionSmokeTest(2), RefundAuthZTest(2), SchedulerSmokeTest(1), VoucherLoyaltySmokeTest(3), MarketingCommandsTest(6), InvoiceVoidTest(4), EstimateConvertStockDedupTest(3), PurchaseMenuVisibilityTest(2), ApiTwoFactorTest(6).
+## 4. TEST: 500 tests - 499 passed, 1 skipped (pra-ada), 0 failed.
+- Baru: SecurityHardeningTest(4), LicenseGateTest(3), CrudFormRegressionTest(6), ReportsAggregationTest(3), SellReturnGuardTest(2), SettingsPageTest(1), CompanySmokeTest(2), FleetContractSmokeTest(2), InsuranceClaimSmokeTest(3), TaxRateSmokeTest(2), PurchaseRequisitionSmokeTest(2), RefundAuthZTest(2), SchedulerSmokeTest(1), VoucherLoyaltySmokeTest(3), MarketingCommandsTest(6), InvoiceVoidTest(4), EstimateConvertStockDedupTest(3), PurchaseMenuVisibilityTest(2), CustomerPortalTest(6), TimeReportTest(2), ApiTwoFactorTest(6).
 - Pint PASSED, PHPStan level 5 0 error, view:cache OK, migrate:fresh --seed OK (sqlite :memory:), routes 799, `composer audit` bersih (guzzle 8.3.1), `npm audit` 0 vuln, diff --check bersih.
 - Tidak dijalankan: browser automation (tidak tersedia), MySQL lokal (CI), backup drill.
 
