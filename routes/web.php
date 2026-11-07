@@ -119,31 +119,31 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
 
 // Public tracking service (token-based, no auth)
-Route::get('/track/{token}', [TrackingController::class, 'show'])->name('public.tracking');
-Route::post('/track/{token}/review', [TrackingController::class, 'review'])->name('public.tracking.review');
+Route::get('/track/{token}', [TrackingController::class, 'show'])->name('public.tracking')->middleware('throttle:60,1');
+Route::post('/track/{token}/review', [TrackingController::class, 'review'])->name('public.tracking.review')->middleware('throttle:30,1');
 
 // Public NPS survey (post-service rating, token-based, no auth)
-Route::get('/survey/{token}', [PublicSurveyController::class, 'show'])->name('survey.show');
-Route::post('/survey/{token}', [PublicSurveyController::class, 'store'])->name('survey.store');
+Route::get('/survey/{token}', [PublicSurveyController::class, 'show'])->name('survey.show')->middleware('throttle:60,1');
+Route::post('/survey/{token}', [PublicSurveyController::class, 'store'])->name('survey.store')->middleware('throttle:30,1');
 
 // Public shareable invoice link (token-based, no auth)
-Route::get('/invoice/{token}', [PublicInvoiceController::class, 'show'])->name('public.invoice');
+Route::get('/invoice/{token}', [PublicInvoiceController::class, 'show'])->name('public.invoice')->middleware('throttle:60,1');
 
 // Public service estimate approval (token-based, no auth)
-Route::get('/approve/{token}', [ApprovalController::class, 'showApprove'])->name('public.approval.approve');
-Route::post('/approve/{token}', [ApprovalController::class, 'approve'])->name('public.approval.approve.store');
-Route::get('/reject/{token}', [ApprovalController::class, 'showReject'])->name('public.approval.reject');
-Route::post('/reject/{token}', [ApprovalController::class, 'reject'])->name('public.approval.reject.store');
+Route::get('/approve/{token}', [ApprovalController::class, 'showApprove'])->name('public.approval.approve')->middleware('throttle:60,1');
+Route::post('/approve/{token}', [ApprovalController::class, 'approve'])->name('public.approval.approve.store')->middleware('throttle:30,1');
+Route::get('/reject/{token}', [ApprovalController::class, 'showReject'])->name('public.approval.reject')->middleware('throttle:60,1');
+Route::post('/reject/{token}', [ApprovalController::class, 'reject'])->name('public.approval.reject.store')->middleware('throttle:30,1');
 
 // Public estimate document (token-based, no auth) — current estimate version
-Route::get('/estimate/{token}', [PublicEstimateController::class, 'show'])->name('public.estimate.show');
-Route::get('/estimate/{token}/pdf', [PublicEstimateController::class, 'pdf'])->name('public.estimate.pdf');
-Route::post('/estimate/{token}/approve', [PublicEstimateController::class, 'approve'])->name('public.estimate.approve');
-Route::post('/estimate/{token}/decide', [PublicEstimateController::class, 'decide'])->name('public.estimate.decide');
-Route::post('/estimate/{token}/reject', [PublicEstimateController::class, 'reject'])->name('public.estimate.reject');
+Route::get('/estimate/{token}', [PublicEstimateController::class, 'show'])->name('public.estimate.show')->middleware('throttle:60,1');
+Route::get('/estimate/{token}/pdf', [PublicEstimateController::class, 'pdf'])->name('public.estimate.pdf')->middleware('throttle:30,1');
+Route::post('/estimate/{token}/approve', [PublicEstimateController::class, 'approve'])->name('public.estimate.approve')->middleware('throttle:30,1');
+Route::post('/estimate/{token}/decide', [PublicEstimateController::class, 'decide'])->name('public.estimate.decide')->middleware('throttle:30,1');
+Route::post('/estimate/{token}/reject', [PublicEstimateController::class, 'reject'])->name('public.estimate.reject')->middleware('throttle:30,1');
 
 // Payment Gateway webhook callback (PUBLIC — gateway POST tanpa session)
-Route::any('/payment/callback/{token}', [PaymentGatewayController::class, 'callback'])->name('payment.callback');
+Route::any('/payment/callback/{token}', [PaymentGatewayController::class, 'callback'])->name('payment.callback')->middleware('throttle:60,1');
 
 // 2FA challenge (post-login)
 Route::get('/2fa/challenge', [TwoFactorController::class, 'showChallenge'])->name('2fa.challenge');

@@ -48,19 +48,20 @@ class CustomerPortalController extends Controller
             ->first();
 
         if (! $customer) {
-            return back()->withInput()->with('error', 'Nomor HP tidak terdaftar.');
+            return back()->withInput()->with('error', 'Nomor HP atau password salah.');
         }
 
         // Jika belum set portal_password, izinkan first-time setup pakai password 6 digit terakhir HP
         if (! $customer->portal_password) {
             $defaultPass = substr($phone, -6);
             if ($validated['password'] !== $defaultPass) {
-                return back()->withInput()->with('error', 'Password belum di-set. Password default = 6 digit terakhir HP.');
+                return back()->withInput()->with('error', 'Nomor HP atau password salah.');
             }
         } elseif (! Hash::check($validated['password'], $customer->portal_password)) {
-            return back()->withInput()->with('error', 'Password salah.');
+            return back()->withInput()->with('error', 'Nomor HP atau password salah.');
         }
 
+        $request->session()->regenerate();
         Session::put('customer_id', $customer->id);
         $customer->update(['portal_last_login' => now()]);
 
@@ -78,7 +79,7 @@ class CustomerPortalController extends Controller
 
     public function changePassword(Request $request)
     {
-        $validated = $request->validate(['new_password' => 'required|min:6']);
+        $validated = $request->validate(['new_password' => 'required|string|min:8']);
         $customer = $this->currentCustomer();
         $customer->update(['portal_password' => Hash::make($validated['new_password'])]);
 
@@ -137,9 +138,11 @@ class CustomerPortalController extends Controller
         return back()->with('success', 'Bukti pembayaran berhasil diupload. Admin akan memverifikasi.');
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
         Session::forget('customer_id');
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return redirect()->route('customer.login')->with('success', 'Logout berhasil.');
     }

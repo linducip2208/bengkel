@@ -86,7 +86,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
                 return response()->json([
                     'success' => false,
-                    'message' => $status === 404 ? 'Data tidak ditemukan.' : $e->getMessage(),
+                    'message' => match (true) {
+                        $status === 404 => 'Data tidak ditemukan.',
+                        $status === 403 => 'Akses ditolak.',
+                        config('app.debug') => $e->getMessage(),
+                        default => 'Terjadi kesalahan pada server.',
+                    },
                 ], $status);
             }
 

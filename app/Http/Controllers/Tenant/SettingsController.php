@@ -8,6 +8,7 @@ use App\Services\SettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class SettingsController extends Controller
@@ -66,7 +67,7 @@ class SettingsController extends Controller
             mkdir($dir, 0755, true);
         }
         $db = config('database.connections.mysql');
-        $filename = 'backup-'.now()->format('Ymd-His').'.sql';
+        $filename = 'backup-'.now()->format('Ymd-His').'-'.Str::random(8).'.sql';
         $path = $dir.'/'.$filename;
         $cmd = sprintf('mysqldump --user=%s --password=%s --host=%s --port=%s %s > %s',
             escapeshellarg($db['username']), escapeshellarg($db['password']),

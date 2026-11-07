@@ -235,7 +235,10 @@ class PaymentGatewayService
         $headerName = strtolower((string) ($config['webhook_signature_header'] ?? ''));
 
         if ($headerName === '') {
-            if (($config['require_webhook_signature'] ?? false) === true) {
+            // Fail-closed: gateway tanpa konfigurasi signature harus
+            // eksplisit opt-out (require_webhook_signature=false).
+            // Default true agar callback palsu tidak diterima diam-diam.
+            if (($config['require_webhook_signature'] ?? true) === true) {
                 throw new \RuntimeException('Header signature webhook belum dikonfigurasi.');
             }
 

@@ -35,7 +35,7 @@ class RoleController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('users', 'email')],
-            'password' => 'required|min:6',
+            'password' => 'required|string|min:8',
             'role' => 'required|exists:roles,name',
             'is_active' => 'nullable|boolean',
             'branch_ids' => 'nullable|array',
@@ -63,7 +63,7 @@ class RoleController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
-            'password' => 'nullable|min:6',
+            'password' => 'nullable|string|min:8',
             'role' => 'required|exists:roles,name',
             'is_active' => 'nullable|boolean',
             'branch_ids' => 'nullable|array',
