@@ -462,7 +462,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('products', ProductController::class)->middleware('can.module:product');
     Route::resource('purchases', PurchaseController::class)->middleware('can.module:purchase');
     Route::resource('purchase-orders', PurchaseOrderController::class)->middleware('can.module:purchase-order');
-    Route::resource('purchase-requisitions', PurchaseRequisitionController::class)->middleware('can.module:purchase-requisition');
+    Route::resource('purchase-requisitions', PurchaseRequisitionController::class)->except(['edit', 'update'])->middleware('can.module:purchase-requisition');
     Route::resource('sell-returns', SellReturnController::class)->only(['index', 'create', 'store', 'show'])->middleware('can.module:sale');
     // Sales merged into POS — redirect old URLs to POS terminal
     Route::redirect('/sales', '/pos/terminal')->name('sales.index');

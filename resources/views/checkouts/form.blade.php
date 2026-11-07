@@ -86,6 +86,8 @@
     </div>
 </div>
 
+@endsection
+
 @push('scripts')
 <script>
     var checkoutIndex = {{ $service->checkoutResults->count() }};
