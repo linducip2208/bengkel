@@ -266,16 +266,65 @@ class ProgrammaticSeoController extends Controller
     }
 
     /**
-     * Generic PSEO handler — menangkap SEMUA pattern URL masif
-     * yang digenerate dari SeoData (1 juta+ halaman).
-     * Render template generik dengan konten dinamis dari slug.
+     * Generic PSEO handler — hanya slug terkurasi di PseoPageRegistry yang
+     * dirender. Slug massal era lama (kombinasi servis x kota x brand x
+     * tahun x harga) dikembalikan 410 Gone agar cepat deindex dari Google,
+     * bukan 500 dan bukan halaman tipis.
      */
     public function commercialPseo(string $slug): View
     {
         $page = app(PseoPageResolver::class)->resolve($slug);
+
+        if ($page === null && self::isLegacyMassSlug($slug)) {
+            abort(410);
+        }
+
         abort_unless($page !== null, 404);
 
         return view('pseo.page', compact('page'));
+    }
+
+    /**
+     * Pola slug massal era lama yang sudah tidak diterbitkan lagi.
+     * Contoh: terdekat-ganti-oli-sorong-terbaik, bengkel-makassar-300rb-express,
+     * tune-up-bmw-cimahi-2020, erp-bengkel-indonesia-bandung-harga-10jt-lengkap.
+     */
+    public static function isLegacyMassSlug(string $slug): bool
+    {
+        $slug = strtolower(trim($slug, '/'));
+
+        // Prefix massal: terdekat-, murah-, profesional-, rekomendasi-, express-, top-, best-, dll.
+        if (preg_match('/^(terdekat|murah|profesional|rekomendasi|express|top|best|terpercaya|terlengkap|berpengalaman|custom|download|order)-/', $slug)) {
+            return true;
+        }
+
+        // Suffix / infix tahun: -2020 ... -2027 (khas URL servis-kota lama).
+        if (preg_match('/-20(1[9]|2[0-7])(-|$)/', $slug)) {
+            return true;
+        }
+
+        // Sisipan harga: -6jt-, -300rb-, -10jt-lengkap, -5jt-profesional.
+        if (preg_match('/-\d+(jt|rb)(-|$)/', $slug)) {
+            return true;
+        }
+
+        // Pola layanan-kota lama: tune-up-*, ganti-oli-*, servis-*, cuci-mobil-*, body-repair-*, dll.
+        if (preg_match('/^(tune-up|ganti-|servis-|service-|cuci-mobil|body-repair|coating-mobil|spooring|poles-mobil|kaca-film|repair-transmisi|perbaikan-radiator|ketok-magic|overhaul-mesin|turun-mesin|servis-aki|servis-injeksi|servis-kopling|servis-rem|servis-berkala)-/', $slug)) {
+            return true;
+        }
+
+        // Pola bengkel-kota/brand lama: bengkel-{brand|kota}-* (tidak ada slug kurasi berawalan bengkel-).
+        if (str_starts_with($slug, 'bengkel-')) {
+            return true;
+        }
+
+        // Prefix komersial yang tidak terdaftar di registry berarti URL massal lama,
+        // karena semua slug kurasi (yang resolve) tidak sampai ke pengecekan ini.
+        if (preg_match('/^(aplikasi-|software-|sistem-|erp-|source-code-|beli-|jual-|harga-)/', $slug)) {
+            return true;
+        }
+
+        return false;
     }
 
     /** @deprecated Legacy parser kept only for source compatibility. */

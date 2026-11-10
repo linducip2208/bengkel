@@ -34,4 +34,4 @@ Disallow: /reject
 Disallow: /track
 Disallow: /payment
 
-Sitemap: /sitemap.xml
+Sitemap: https://bengkel.whitelabel.co.id/sitemap.xml
