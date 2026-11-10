@@ -74,7 +74,7 @@
         <a href="{{ route('invoices.sendWA', $invoice) }}" class="btn btn-outline-success" target="_blank"><i class="bi bi-whatsapp"></i> Kirim WA</a>
         @endcan
         @if ($remaining > 0 && ! $invoice->isVoided())
-            @can('invoice.edit')
+            @can('payments.process')
             <a href="{{ route('payments.create', $invoice) }}" class="btn btn-primary"><i class="bi bi-cash-coin"></i> Catat Pembayaran</a>
             @endcan
         @endif
@@ -83,7 +83,7 @@
             <a href="{{ route('invoices.edit', $invoice) }}" class="btn btn-warning"><i class="bi bi-pencil"></i> Edit</a>
             @endcan
         @endif
-        @if (! $invoice->isVoided())
+        @if (! $invoice->isVoided() && \Illuminate\Support\Facades\Route::has('invoices.void'))
             @can('invoices.void')
             <form action="{{ route('invoices.void', $invoice) }}" method="POST" class="d-inline" onsubmit="return confirm('Void invoice ini? Stok dikembalikan, jurnal di-reverse, pembayaran di-refund.');">
                 @csrf
@@ -144,7 +144,7 @@
                 </div>
                 <div class="row mb-3">
                     <div class="col-4"><small class="text-muted">No. Invoice</small><div><strong>{{ $invoice->invoice_number }}</strong></div></div>
-                    <div class="col-4"><small class="text-muted">Tanggal</small><div>{{ $invoice->invoice_date->format('d M Y') }}</div></div>
+                    <div class="col-4"><small class="text-muted">Tanggal</small><div>{{ $invoice->invoice_date?->format('d M Y') ?? '-' }}</div></div>
                     <div class="col-4"><small class="text-muted">Tipe</small><div><span class="badge bg-secondary">{{ $invoice->invoice_type }}</span></div></div>
                 </div>
                 @php $vehicle = $invoice->vehicle ?? $invoice->service?->vehicle ?? $invoice->sale?->vehicle; @endphp
@@ -293,7 +293,7 @@
                         <tbody>
                             @foreach ($invoice->paymentRecords as $payment)
                                 <tr>
-                                    <td>{{ $payment->payment_date->format('d/m/Y') }}</td>
+                                    <td>{{ $payment->payment_date?->format('d/m/Y') ?? '-' }}</td>
                                     <td>{{ $payment->paymentMethod?->name }}</td>
                                     <td class="text-end">@money($payment->amount)</td>
                                 </tr>
@@ -324,7 +324,7 @@
 <div class="d-none d-print-block mt-2" style="font-size: 12px;">
     <strong>Riwayat Pembayaran:</strong>
     @if ($invoice->paymentRecords->count() > 0)
-        {{ $invoice->paymentRecords->map(fn ($p) => $p->payment_date->format('d/m/Y') . ' — ' . ($p->paymentMethod?->name ?? '-') . ' — Rp ' . number_format($p->amount, 0, ',', '.'))->join('; ') }}
+        {{ $invoice->paymentRecords->map(fn ($p) => ($p->payment_date?->format('d/m/Y') ?? '-') . ' — ' . ($p->paymentMethod?->name ?? '-') . ' — Rp ' . number_format($p->amount, 0, ',', '.'))->join('; ') }}
     @else
         Belum ada pembayaran.
     @endif

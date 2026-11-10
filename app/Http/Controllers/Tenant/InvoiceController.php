@@ -162,6 +162,8 @@ class InvoiceController extends Controller
      */
     public function void(Request $request, Invoice $invoice): RedirectResponse
     {
+        $this->authorize('invoices.void');
+
         $validated = $request->validate([
             'reason' => 'required|string|max:500',
         ]);
@@ -214,7 +216,7 @@ class InvoiceController extends Controller
     {
         [$view, $paperSize, $template] = $this->resolveTemplateView($request->get('template'));
 
-        $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
+        $invoice->load(['items', 'customer', 'vehicle', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod', 'paymentMethod']);
         $totalPaid = (float) $invoice->paid_amount;
         $dpAmount = max(0, (float) ($invoice->dp_amount ?? 0));
         $remaining = max($invoice->grand_total - $totalPaid - $dpAmount, 0);
@@ -241,7 +243,7 @@ class InvoiceController extends Controller
         ];
         $view = $previews[$template] ?? $previews['modern'];
 
-        $invoice->load(['items', 'customer', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
+        $invoice->load(['items', 'customer', 'vehicle', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod', 'paymentMethod']);
         $totalPaid = (float) $invoice->paid_amount;
         $dpAmount = max(0, (float) ($invoice->dp_amount ?? 0));
         $remaining = max($invoice->grand_total - $totalPaid - $dpAmount, 0);
@@ -252,7 +254,7 @@ class InvoiceController extends Controller
 
     public function sendEmail(Invoice $invoice): RedirectResponse
     {
-        $invoice->load(['items', 'customer', 'vehicle', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod']);
+        $invoice->load(['items', 'customer', 'vehicle', 'service.vehicle', 'service.jobcardDetail', 'sale.vehicle', 'paymentRecords.paymentMethod', 'paymentMethod']);
 
         $email = $invoice->customer?->email;
         if (! $email) {
@@ -335,7 +337,7 @@ class InvoiceController extends Controller
         $dpAmount = max(0, (float) ($invoice->dp_amount ?? 0));
         $remaining = max((float) $invoice->grand_total - (float) $invoice->paid_amount - $dpAmount, 0);
         $lines = [
-            "Halo {$invoice->customer->name}, berikut invoice Anda:",
+            "Halo " . ($invoice->customer?->name ?? 'Pelanggan') . ", berikut invoice Anda:",
             "*{$invoice->invoice_number}*",
             'Total: Rp '.number_format($invoice->grand_total, 0, ',', '.'),
         ];
