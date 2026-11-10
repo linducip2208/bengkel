@@ -46,7 +46,7 @@ class ProgrammaticSeoController extends Controller
                     'description' => $s->description,
                     'provider' => ['@type' => 'LocalBusiness', 'name' => config('app.name')],
                     'price' => $s->charge,
-                    'date' => $s->service_date->toDateString(),
+                    'date' => $s->service_date?->toDateString(),
                 ],
             ])->toArray(),
         ];
